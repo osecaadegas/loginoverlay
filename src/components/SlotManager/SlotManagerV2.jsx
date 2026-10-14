@@ -4,6 +4,7 @@ import { DEFAULT_SLOT_IMAGE, resolveSlotImage } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import { getErrorMessage } from '../../utils/errorUtils';
 import { getProviderIdentityKey, getProviderImage } from '../../utils/gameProviders';
+import { findBrokenSlotImages, getSlotImageHealthKey } from '../../utils/slotImageHealth';
 import { useProviderLogo } from '../../hooks/useProviderLogo';
 import { fetchSlotProviderCatalog, saveSlotProvider, ensureManagedProvider, moveSlotProviderSlots, removeSlotProvider } from '../../services/slotProviderService';
 import { findCatalogProvider, normalizeProviderName } from '../../utils/slotProviderCatalog';
@@ -48,6 +49,7 @@ const FEATURE_OPTIONS = [
 ];
 
 const PAGE_SIZES = [25, 50, 100, 200];
+const IMAGE_SCAN_BATCH_SIZE = 1000;
 
 /* ═══════════════════════════════════════════════════════════════════
    TINY INLINE COMPONENTS
@@ -714,6 +716,10 @@ const SlotManagerV2 = () => {
   const [statusFilter, setStatusFilter] = useState(['live']);
   const [providerFilter, setProviderFilter] = useState([]);
   const [volFilter, setVolFilter] = useState([]);
+  const [imageLinkFilter, setImageLinkFilter] = useState('all');
+  const [brokenLinkSlots, setBrokenLinkSlots] = useState([]);
+  const [imageScanProgress, setImageScanProgress] = useState({ running: false, checked: 0, total: 0, broken: 0 });
+  const [imageScanVersion, setImageScanVersion] = useState(0);
 
   // Pagination & sort
   const [page, setPage] = useState(1);
@@ -731,6 +737,8 @@ const SlotManagerV2 = () => {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
   const searchRef = useRef(null);
+  const imageHealthCacheRef = useRef(new Map());
+  const imageScanAbortRef = useRef(null);
 
   /* ── Notifications ─────────────────────────────────────────── */
   const notify = useCallback((message, type = 'success') => {
@@ -760,21 +768,25 @@ const SlotManagerV2 = () => {
 
   useEffect(() => { loadProviders(); }, [loadProviders]);
 
+  const buildFilteredSlotsQuery = useCallback((select = '*', options) => {
+    let q = supabase.from('slots').select(select, options);
+
+    if (debouncedSearch) q = q.or(`name.ilike.%${debouncedSearch}%,provider.ilike.%${debouncedSearch}%`);
+    if (statusFilter.length) q = q.in('status', statusFilter);
+    if (providerFilter.length) {
+      const providerValues = [...new Set(providerFilter.flatMap(provider => providerAliases[provider] || [provider]))];
+      q = q.in('provider', providerValues);
+    }
+    if (volFilter.length) q = q.in('volatility', volFilter);
+
+    return q.order(sortBy, { ascending: sortDir === 'asc', nullsFirst: false });
+  }, [debouncedSearch, statusFilter, providerFilter, providerAliases, volFilter, sortBy, sortDir]);
+
   /* ── Load slots (paginated + filtered) ─────────────────────── */
   const loadSlots = useCallback(async () => {
     setLoading(true);
     try {
-      let q = supabase.from('slots').select('*', { count: 'exact' });
-
-      if (debouncedSearch) q = q.or(`name.ilike.%${debouncedSearch}%,provider.ilike.%${debouncedSearch}%`);
-      if (statusFilter.length) q = q.in('status', statusFilter);
-      if (providerFilter.length) {
-        const providerValues = [...new Set(providerFilter.flatMap(provider => providerAliases[provider] || [provider]))];
-        q = q.in('provider', providerValues);
-      }
-      if (volFilter.length) q = q.in('volatility', volFilter);
-
-      q = q.order(sortBy, { ascending: sortDir === 'asc', nullsFirst: false });
+      let q = buildFilteredSlotsQuery('*', { count: 'exact' });
       const from = (page - 1) * pageSize;
       q = q.range(from, from + pageSize - 1);
 
@@ -790,10 +802,97 @@ const SlotManagerV2 = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, statusFilter, providerFilter, providerAliases, volFilter, page, pageSize, sortBy, sortDir, notify]);
+  }, [buildFilteredSlotsQuery, page, pageSize, notify]);
 
-  useEffect(() => { loadSlots(); }, [loadSlots]);
-  useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, providerFilter, volFilter, pageSize]);
+  useEffect(() => {
+    if (imageLinkFilter === 'all') loadSlots();
+  }, [imageLinkFilter, loadSlots]);
+  useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, providerFilter, volFilter, imageLinkFilter, pageSize]);
+
+  const scanBrokenImageLinks = useCallback(async () => {
+    imageScanAbortRef.current?.abort();
+    const controller = new AbortController();
+    imageScanAbortRef.current = controller;
+    setLoading(true);
+    setSlots([]);
+    setBrokenLinkSlots([]);
+    setTotalCount(0);
+    setTotalPages(1);
+    setImageScanProgress({ running: true, checked: 0, total: 0, broken: 0 });
+
+    try {
+      const candidates = [];
+      for (let from = 0; ; from += IMAGE_SCAN_BATCH_SIZE) {
+        if (controller.signal.aborted) return;
+        const { data, error } = await buildFilteredSlotsQuery('*').range(from, from + IMAGE_SCAN_BATCH_SIZE - 1);
+        if (error) throw error;
+        candidates.push(...(data || []));
+        setImageScanProgress(progress => ({ ...progress, total: candidates.length }));
+        if (!data || data.length < IMAGE_SCAN_BATCH_SIZE) break;
+      }
+
+      let lastProgressAt = 0;
+      const broken = await findBrokenSlotImages(candidates, {
+        cache: imageHealthCacheRef.current,
+        signal: controller.signal,
+        onProgress: progress => {
+          const now = performance.now();
+          if (progress.checked === progress.total || now - lastProgressAt > 80) {
+            lastProgressAt = now;
+            setImageScanProgress({ running: true, ...progress });
+          }
+        },
+      });
+      if (controller.signal.aborted) return;
+      setBrokenLinkSlots(broken);
+      setTotalCount(broken.length);
+      setImageScanProgress({ running: false, checked: candidates.length, total: candidates.length, broken: broken.length });
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        console.error('scanBrokenImageLinks:', error);
+        notify('Could not check slot image links', 'error');
+        setImageScanProgress(progress => ({ ...progress, running: false }));
+      }
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [buildFilteredSlotsQuery, notify]);
+
+  useEffect(() => {
+    if (imageLinkFilter !== 'broken') {
+      imageScanAbortRef.current?.abort();
+      return undefined;
+    }
+    scanBrokenImageLinks();
+    return () => imageScanAbortRef.current?.abort();
+  }, [imageLinkFilter, imageScanVersion, scanBrokenImageLinks]);
+
+  useEffect(() => {
+    if (imageLinkFilter !== 'broken' || imageScanProgress.running) return;
+    const safePage = Math.min(page, Math.max(1, Math.ceil(brokenLinkSlots.length / pageSize)));
+    if (safePage !== page) {
+      setPage(safePage);
+      return;
+    }
+    const from = (safePage - 1) * pageSize;
+    setSlots(brokenLinkSlots.slice(from, from + pageSize));
+    setTotalCount(brokenLinkSlots.length);
+    setTotalPages(Math.max(1, Math.ceil(brokenLinkSlots.length / pageSize)));
+  }, [brokenLinkSlots, imageLinkFilter, imageScanProgress.running, page, pageSize]);
+
+  const refreshVisibleSlots = useCallback(({ clearImageCache = false } = {}) => {
+    if (imageLinkFilter === 'broken') {
+      if (clearImageCache) imageHealthCacheRef.current.clear();
+      setImageScanVersion(version => version + 1);
+      return;
+    }
+    loadSlots();
+  }, [imageLinkFilter, loadSlots]);
+
+  const rescanImageLinks = useCallback(() => {
+    imageHealthCacheRef.current.clear();
+    setImageScanVersion(version => version + 1);
+  }, []);
 
   /* ── Selection ─────────────────────────────────────────────── */
   const toggleSelect = useCallback((id) => {
@@ -805,7 +904,12 @@ const SlotManagerV2 = () => {
   }, []);
 
   const toggleAll = useCallback(() => {
-    setSelectedIds(prev => prev.size === slots.length ? new Set() : new Set(slots.map(s => s.id)));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      const allVisibleSelected = slots.length > 0 && slots.every(slot => next.has(slot.id));
+      slots.forEach(slot => allVisibleSelected ? next.delete(slot.id) : next.add(slot.id));
+      return next;
+    });
   }, [slots]);
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
@@ -870,12 +974,15 @@ const SlotManagerV2 = () => {
       }
       setEditorSlot(null);
       setIsNewSlot(false);
-      await Promise.all([loadSlots(), loadProviders()]);
+      imageHealthCacheRef.current.delete(getSlotImageHealthKey(editorSlot?.image));
+      imageHealthCacheRef.current.delete(getSlotImageHealthKey(d.image));
+      refreshVisibleSlots();
+      await loadProviders();
     } catch (e) {
       console.error('handleSave:', e);
       notify(getErrorMessage(e, 'Could not save slot.'), 'error');
     }
-  }, [isNewSlot, loadSlots, loadProviders, notify, providerAliases, providers]);
+  }, [editorSlot?.image, isNewSlot, loadProviders, notify, providerAliases, providers, refreshVisibleSlots]);
 
   const handleDelete = useCallback(async (id) => {
     try {
@@ -883,11 +990,11 @@ const SlotManagerV2 = () => {
       if (error) throw error;
       notify('Slot deleted');
       setEditorSlot(null);
-      loadSlots();
+      refreshVisibleSlots();
     } catch (e) {
       notify(getErrorMessage(e, 'Could not delete slot.'), 'error');
     }
-  }, [loadSlots, notify]);
+  }, [refreshVisibleSlots, notify]);
 
   /* ── Bulk actions ──────────────────────────────────────────── */
   const bulkDelete = useCallback(async () => {
@@ -897,9 +1004,9 @@ const SlotManagerV2 = () => {
       if (error) throw error;
       notify(`${selectedIds.size} deleted`);
       clearSelection();
-      loadSlots();
+      refreshVisibleSlots();
     } catch (e) { notify(getErrorMessage(e, 'Could not delete slots.'), 'error'); }
-  }, [selectedIds, loadSlots, clearSelection, notify]);
+  }, [selectedIds, refreshVisibleSlots, clearSelection, notify]);
 
   const bulkStatus = useCallback(async (status) => {
     try {
@@ -907,9 +1014,9 @@ const SlotManagerV2 = () => {
       if (error) throw error;
       notify(`${selectedIds.size} → ${status}`);
       clearSelection();
-      loadSlots();
+      refreshVisibleSlots();
     } catch (e) { notify(getErrorMessage(e, 'Could not update slots.'), 'error'); }
-  }, [selectedIds, loadSlots, clearSelection, notify]);
+  }, [selectedIds, refreshVisibleSlots, clearSelection, notify]);
 
   const bulkFeature = useCallback(async (featured) => {
     try {
@@ -917,9 +1024,9 @@ const SlotManagerV2 = () => {
       if (error) throw error;
       notify(`${selectedIds.size} ${featured ? 'featured' : 'unfeatured'}`);
       clearSelection();
-      loadSlots();
+      refreshVisibleSlots();
     } catch (e) { notify(getErrorMessage(e, 'Could not update slots.'), 'error'); }
-  }, [selectedIds, loadSlots, clearSelection, notify]);
+  }, [selectedIds, refreshVisibleSlots, clearSelection, notify]);
 
   /* ── Bulk stat check (scrape RTP / Max Win / Volatility) ─── */
   const [statCheckRunning, setStatCheckRunning] = useState(false);
@@ -1060,7 +1167,7 @@ const SlotManagerV2 = () => {
 
       setStatCheckReport({ entries: report, total: totalChecked, updated: totalUpdated, skipped: totalSkipped, failed: totalFailed });
       notify(`Done! Checked ${totalChecked} slots, updated ${totalUpdated}`);
-      loadSlots();
+      refreshVisibleSlots();
       refreshStatCheckCount();
     } catch (e) {
       console.error('bulkStatCheck:', e);
@@ -1068,7 +1175,7 @@ const SlotManagerV2 = () => {
     } finally {
       setStatCheckRunning(false);
     }
-  }, [getProviderQueryValues, statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, statCheckFast, statCheckSources, statCheckDataFilter, loadSlots, notify, refreshStatCheckCount]);
+  }, [getProviderQueryValues, statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, statCheckFast, statCheckSources, statCheckDataFilter, refreshVisibleSlots, notify, refreshStatCheckCount]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
@@ -1100,12 +1207,14 @@ const SlotManagerV2 = () => {
   /* ── Active filter count ───────────────────────────────────── */
   const hasNonDefaultFilters = (statusFilter.length > 0 && !(statusFilter.length === 1 && statusFilter[0] === 'live'))
     || providerFilter.length > 0
-    || volFilter.length > 0;
+    || volFilter.length > 0
+    || imageLinkFilter !== 'all';
 
   const clearAllFilters = () => {
     setStatusFilter(['live']);
     setProviderFilter([]);
     setVolFilter([]);
+    setImageLinkFilter('all');
     setSearchTerm('');
   };
 
@@ -1116,6 +1225,7 @@ const SlotManagerV2 = () => {
     ...statusFilter.map(value => `Status: ${statusLabelMap[value] || value}`),
     ...providerFilter.map(value => `Provider: ${value}`),
     ...volFilter.map(value => `Volatility: ${volatilityLabelMap[value] || value}`),
+    ...(imageLinkFilter === 'broken' ? ['Images: Broken links'] : []),
     ...(searchTerm.trim() ? [`Search: ${searchTerm.trim()}`] : []),
   ];
   const slotsWithStats = slots.filter(slot => slot.rtp || slot.max_win_multiplier || slot.volatility).length;
@@ -1192,8 +1302,25 @@ const SlotManagerV2 = () => {
             <DropdownFilter label="Status" options={STATUS_OPTIONS} selected={statusFilter} onChange={setStatusFilter} />
             <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
             <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
+            <button
+              type="button"
+              className={`sm-broken-links-filter ${imageLinkFilter === 'broken' ? 'active' : ''}`}
+              aria-pressed={imageLinkFilter === 'broken'}
+              onClick={() => setImageLinkFilter(current => current === 'broken' ? 'all' : 'broken')}
+            >
+              <ImageOff size={15} />
+              {imageScanProgress.running && imageLinkFilter === 'broken'
+                ? `Checking ${imageScanProgress.checked}/${imageScanProgress.total}`
+                : 'Broken links'}
+              {imageLinkFilter === 'broken' && !imageScanProgress.running && <span className="sm-badge sm-badge--danger">{totalCount}</span>}
+            </button>
           </div>
           <div className="sm-toolbar-right">
+            {imageLinkFilter === 'broken' && (
+              <button type="button" className="sm-rescan-links" onClick={rescanImageLinks} disabled={imageScanProgress.running}>
+                <RefreshCw size={14} /> Rescan
+              </button>
+            )}
             <span className="sm-count">
               {shownRangeStart.toLocaleString()}-{shownRangeEnd.toLocaleString()} of {totalCount.toLocaleString()}
             </span>
@@ -1206,6 +1333,17 @@ const SlotManagerV2 = () => {
           <div className="sm-active-filters" aria-label="Active filters">
             {activeFilterChips.slice(0, 8).map(chip => <span key={chip} className="sm-filter-chip">{chip}</span>)}
             {activeFilterChips.length > 8 && <span className="sm-filter-chip">+{activeFilterChips.length - 8} more</span>}
+          </div>
+        )}
+        {imageLinkFilter === 'broken' && imageScanProgress.running && (
+          <div className="sm-image-scan" role="status" aria-live="polite">
+            <div className="sm-image-scan-copy">
+              <span>Checking every matching slot image…</span>
+              <strong>{imageScanProgress.checked.toLocaleString()} / {imageScanProgress.total.toLocaleString()}</strong>
+            </div>
+            <div className="sm-image-scan-track">
+              <div style={{ width: `${imageScanProgress.total ? (imageScanProgress.checked / imageScanProgress.total) * 100 : 0}%` }} />
+            </div>
           </div>
         )}
       </section>
@@ -1364,8 +1502,10 @@ const SlotManagerV2 = () => {
           <div className="sm-empty"><div className="sm-spinner" /><p>Loading slots…</p></div>
         ) : slots.length === 0 ? (
           <div className="sm-empty">
-            <p className="sm-empty-icon">No slots found</p>
-            <p className="sm-empty-sub">Adjust search or filters, or add a new slot.</p>
+            <p className="sm-empty-icon">{imageLinkFilter === 'broken' ? 'No broken image links' : 'No slots found'}</p>
+            <p className="sm-empty-sub">{imageLinkFilter === 'broken'
+              ? 'Every image in the current filter loaded successfully.'
+              : 'Adjust search or filters, or add a new slot.'}</p>
           </div>
         ) : (
           <table className="sm-table">
@@ -1374,8 +1514,11 @@ const SlotManagerV2 = () => {
                 <th className="sm-th-check">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === slots.length && slots.length > 0}
-                    ref={el => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < slots.length; }}
+                    checked={slots.length > 0 && slots.every(slot => selectedIds.has(slot.id))}
+                    ref={el => { if (el) {
+                      const visibleSelected = slots.filter(slot => selectedIds.has(slot.id)).length;
+                      el.indeterminate = visibleSelected > 0 && visibleSelected < slots.length;
+                    } }}
                     onChange={toggleAll}
                   />
                 </th>
@@ -1404,6 +1547,7 @@ const SlotManagerV2 = () => {
                       <div className="sm-slot-title-row">
                         <span>{slot.name}</span>
                         {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
+                        {slot.imageLinkIssue && <span className="sm-broken-link-badge" title={slot.imageLinkIssue}><ImageOff size={11} /> {slot.imageLinkIssue}</span>}
                       </div>
                       <div className="sm-slot-meta">
                         {slot.theme || slot.reels || slot.paylines || 'Slot record'}
@@ -1490,7 +1634,7 @@ const SlotManagerV2 = () => {
           setProviderFilter(current => [...new Set(current.map(name => findCatalogProvider(catalog, name))
             .filter(provider => provider && provider.is_active !== false).map(provider => provider.name))]);
           clearSelection();
-          await loadSlots();
+          refreshVisibleSlots();
           notify(message);
         }}
       />}

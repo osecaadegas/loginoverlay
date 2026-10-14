@@ -1564,6 +1564,49 @@
   background: rgba(44, 231, 220, 0.09);
 }
 
+.slot-manager-v2 .sm-broken-links-filter,
+.slot-manager-v2 .sm-rescan-links {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid rgba(139, 169, 208, 0.2);
+  border-radius: 12px;
+  color: #c8d7e8;
+  background: rgba(5, 10, 18, 0.74);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.slot-manager-v2 .sm-broken-links-filter:hover,
+.slot-manager-v2 .sm-rescan-links:hover:not(:disabled) {
+  border-color: rgba(255, 113, 122, 0.48);
+  color: #ffe3e5;
+  background: rgba(255, 91, 105, 0.08);
+}
+
+.slot-manager-v2 .sm-broken-links-filter.active {
+  border-color: rgba(255, 113, 122, 0.58);
+  color: #ffdadd;
+  background: rgba(255, 91, 105, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 140, 148, 0.08);
+}
+
+.slot-manager-v2 .sm-rescan-links:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.slot-manager-v2 .sm-badge.sm-badge--danger {
+  background: #ff6571;
+  color: #1c0508;
+}
+
 .slot-manager-v2 .sm-badge {
   background: linear-gradient(135deg, #2ce7dc, #7c5cff);
   color: #031016;
@@ -1595,6 +1638,41 @@
   flex-wrap: wrap;
   gap: 7px;
   padding: 0 12px 12px;
+}
+
+.slot-manager-v2 .sm-image-scan {
+  padding: 0 12px 12px;
+}
+
+.slot-manager-v2 .sm-image-scan-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  color: #a9bdd4;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.slot-manager-v2 .sm-image-scan-copy strong {
+  color: #ffd3d6;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot-manager-v2 .sm-image-scan-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.slot-manager-v2 .sm-image-scan-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff6571, #ffab76);
+  box-shadow: 0 0 14px rgba(255, 101, 113, 0.38);
+  transition: width 100ms linear;
 }
 
 .slot-manager-v2 .sm-filter-chip {
@@ -1795,6 +1873,29 @@
   background: rgba(255, 196, 73, 0.12);
   font-size: 0.74rem;
   flex-shrink: 0;
+}
+
+.slot-manager-v2 .sm-broken-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 180px;
+  padding: 3px 7px;
+  border: 1px solid rgba(255, 113, 122, 0.28);
+  border-radius: 999px;
+  color: #ffb5bb;
+  background: rgba(255, 91, 105, 0.09);
+  font-size: 0.66rem;
+  font-weight: 850;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+}
+
+.slot-manager-v2 .sm-broken-link-badge svg {
+  flex: 0 0 auto;
 }
 
 .slot-manager-v2 .sm-dot {
