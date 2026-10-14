@@ -7234,6 +7234,10 @@ function BetterSlotBingoControls({ config, onChange }) {
 function FreezeShatterControls({ config, onChange, widget }) {
   const c = normalizeFreezeShatterConfig(config);
   const [devices, setDevices] = useState([]);
+  const [cameraPermission, setCameraPermission] = useState("prompt");
+  const [cameraPermissionMessage, setCameraPermissionMessage] = useState(
+    "Allow access once so StreamersCenter can list and use your camera.",
+  );
   const set = (patch) => onChange(normalizeFreezeShatterConfig({ ...c, ...patch }));
 
   useEffect(() => {
@@ -7248,12 +7252,51 @@ function FreezeShatterControls({ config, onChange, widget }) {
       }
     };
     void refresh();
+    navigator.permissions?.query?.({ name: "camera" }).then((permission) => {
+      if (!active) return;
+      setCameraPermission(permission.state);
+      if (permission.state === "granted") {
+        setCameraPermissionMessage("Camera access is ready. Your video stays on this device.");
+      } else if (permission.state === "denied") {
+        setCameraPermissionMessage("Camera access is blocked. Allow it from the camera icon in the address bar, then try again.");
+      }
+    }).catch(() => undefined);
     navigator.mediaDevices?.addEventListener?.("devicechange", refresh);
     return () => {
       active = false;
       navigator.mediaDevices?.removeEventListener?.("devicechange", refresh);
     };
   }, []);
+
+  const requestCameraAccess = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraPermission("unavailable");
+      setCameraPermissionMessage("Camera access needs HTTPS or localhost in a compatible browser.");
+      return;
+    }
+    setCameraPermission("requesting");
+    setCameraPermissionMessage("Choose Allow in the browser permission popup.");
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const selectedDeviceId = stream.getVideoTracks()[0]?.getSettings?.().deviceId;
+      const list = await navigator.mediaDevices.enumerateDevices();
+      setDevices(list.filter((device) => device.kind === "videoinput"));
+      if (selectedDeviceId) set({ source: selectedDeviceId });
+      setCameraPermission("granted");
+      setCameraPermissionMessage("Camera access granted. Select Live data to check your real framing.");
+    } catch (error) {
+      const blocked = error?.name === "NotAllowedError" || error?.name === "SecurityError";
+      setCameraPermission(blocked ? "denied" : "error");
+      setCameraPermissionMessage(
+        blocked
+          ? "Camera access is blocked. Allow it from the camera icon in the address bar, then click Try again."
+          : "The camera could not start. Close other camera apps or choose another device, then try again.",
+      );
+    } finally {
+      stream?.getTracks?.().forEach((track) => track.stop());
+    }
+  };
 
   const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
   const action = (name) =>
@@ -7313,8 +7356,30 @@ function FreezeShatterControls({ config, onChange, widget }) {
       </Section>
 
       <Section title="Camera" icon={<MonitorPlay size={13} />} category="content" simple>
+        <div className="bp-camera-permission" data-state={cameraPermission} role="status">
+          <span className="bp-camera-permission__icon" aria-hidden="true">
+            {cameraPermission === "granted" ? <Check size={17} /> : <MonitorPlay size={17} />}
+          </span>
+          <div>
+            <strong>{cameraPermission === "granted" ? "Camera connected" : "Camera permission"}</strong>
+            <p>{cameraPermissionMessage}</p>
+          </div>
+          <button
+            type="button"
+            onClick={requestCameraAccess}
+            disabled={cameraPermission === "requesting"}
+          >
+            {cameraPermission === "requesting"
+              ? "Waiting for browser…"
+              : cameraPermission === "granted"
+                ? "Refresh cameras"
+                : cameraPermission === "denied"
+                  ? "Try again"
+                  : "Allow camera access"}
+          </button>
+        </div>
         <SelectRow label="Camera source" value={c.source} options={cameraOptions} onChange={(source) => set({ source })} />
-        <p className="bp-hint">Camera access requires HTTPS or localhost. Frames stay inside the browser and are never uploaded.</p>
+        <p className="bp-hint">In OBS, open the Browser Source with Interact and press Allow camera access if permission is requested there.</p>
       </Section>
 
       <Section title="Camera placement" icon={<Maximize2 size={13} />} category="layout" simple>

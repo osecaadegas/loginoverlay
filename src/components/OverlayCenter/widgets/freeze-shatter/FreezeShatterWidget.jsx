@@ -88,6 +88,16 @@ export default function FreezeShatterWidget({
     [clearTimer],
   );
 
+  const retryCamera = useCallback(() => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+    setError("");
+    setReady(false);
+    void renderer.setSource(normalizedRef.current.source).catch((failure) => {
+      setError(failure?.message || "The selected camera is unavailable.");
+    });
+  }, []);
+
   useEffect(() => {
     installBrowserApi();
     const receive = (event) => {
@@ -200,7 +210,11 @@ export default function FreezeShatterWidget({
       {error && (
         <div className="freeze-shatter-widget__error" role="alert">
           <TriangleAlert size={18} />
-          <span>{error}</span>
+          <span className="freeze-shatter-widget__error-copy">
+            <strong>Camera access needed</strong>
+            <span>{error}</span>
+          </span>
+          <button type="button" onClick={retryCamera}>Allow camera</button>
         </div>
       )}
     </div>

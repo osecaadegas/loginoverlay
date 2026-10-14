@@ -37,7 +37,28 @@ try {
   );
 
   await page.evaluate(async (version) => {
+    let cameraRequests = 0;
+    const cameraTrack = {
+      getSettings: () => ({ deviceId: "test-camera" }),
+      stop: () => undefined,
+    };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        enumerateDevices: async () => [{ kind: "videoinput", deviceId: "test-camera", label: cameraRequests ? "Test Camera" : "" }],
+        getUserMedia: async () => {
+          cameraRequests += 1;
+          return {
+            getVideoTracks: () => [cameraTrack],
+            getTracks: () => [cameraTrack],
+          };
+        },
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      },
+    });
     await import("/src/index.css");
+    await import("/src/components/OverlayCenter/editor/BetterWidgetPackages.css");
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const registry = await import("/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx");
@@ -66,6 +87,7 @@ try {
       sharedLayout,
       config: initial.config,
       renderObs: null,
+      cameraRequests: () => cameraRequests,
     };
 
     function TestApp() {
@@ -135,6 +157,13 @@ try {
     sections.filter((section) => getComputedStyle(section).display !== "none").map((section) => section.getAttribute("data-control-section")),
   );
   assert.ok((await visibleSections()).includes("Camera"));
+  await page.click(".bp-camera-permission > button");
+  await page.waitForFunction(() => document.querySelector(".bp-camera-permission")?.dataset.state === "granted");
+  assert.deepEqual(
+    await page.evaluate(() => ({ requests: window.freezeAudit.cameraRequests(), source: window.freezeAudit.config.source })),
+    { requests: 1, source: "test-camera" },
+  );
+  await page.screenshot({ path: ".codex-dev/freeze-shatter-camera-permission.png" });
   await page.click('.bp-panel-tabs[data-level="primary"] button[data-category="appearance"]');
   assert.ok((await visibleSections()).includes("Ice material"));
   await page.click('.bp-panel-tabs[data-level="primary"] button[data-category="behavior"]');
