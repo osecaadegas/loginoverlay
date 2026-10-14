@@ -3,6 +3,18 @@ import { readFileSync } from "node:fs";
 import puppeteer from "puppeteer";
 
 const base = process.env.TEST_BASE_URL || "http://127.0.0.1:3011";
+const vercelConfig = JSON.parse(
+  readFileSync(new URL("../vercel.json", import.meta.url), "utf8"),
+);
+const globalPermissionsPolicy = vercelConfig.headers
+  .find((entry) => entry.source === "/(.*)")
+  ?.headers.find((header) => header.key === "Permissions-Policy")?.value;
+assert.match(
+  globalPermissionsPolicy || "",
+  /(?:^|,\s*)camera=\(self\)(?:,|$)/,
+  "Production must allow same-origin camera requests so the browser can show its permission prompt",
+);
+assert.doesNotMatch(globalPermissionsPolicy || "", /camera=\(\)/);
 const browser = await puppeteer.launch({ headless: true });
 
 try {
