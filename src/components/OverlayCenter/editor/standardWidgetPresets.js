@@ -1,4 +1,5 @@
 export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
+  freeze_shatter: { x: 1230, y: 680, width: 640, height: 360, zIndex: 75 },
   current_slot: { x: 300, y: 760, width: 1100, height: 240, zIndex: 65 },
   background: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
   tournament: {
@@ -45,6 +46,7 @@ export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
 });
 
 export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
+  freeze_shatter: {},
   current_slot: {},
   slot_bingo: {},
   connect_four: {},

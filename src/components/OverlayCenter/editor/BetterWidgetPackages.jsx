@@ -83,6 +83,12 @@ import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import SlideshowFrameWidget from "../widgets/slideshow-frame/SlideshowFrameWidget";
+import FreezeShatterWidget from "../widgets/freeze-shatter/FreezeShatterWidget";
+import {
+  DEFAULT_CONFIG as DEFAULT_FREEZE_SHATTER_CONFIG,
+  QUALITY_PRESETS as FREEZE_SHATTER_QUALITY_PRESETS,
+  sanitizeConfig as normalizeFreezeShatterConfig,
+} from "../widgets/freeze-shatter/config";
 import {
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
@@ -1120,6 +1126,9 @@ const BASE_BETTER_CONFIG = {
   raid_shoutout: {
     displayStyle: "better_raid_shoutout",
   },
+  freeze_shatter: {
+    ...DEFAULT_FREEZE_SHATTER_CONFIG,
+  },
 };
 
 export const DEFAULT_BETTER_CONFIG = Object.freeze(
@@ -1135,6 +1144,14 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "freeze_shatter",
+    label: "Freeze & Shatter",
+    styleKey: "displayStyle",
+    styleId: "freeze_shatter",
+    icon: "❄",
+    defaultSize: { width: 640, height: 360 },
+  },
   { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1100, height: 240 } },
   {
     type: "slot_bingo",
@@ -1576,6 +1593,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       ? { [meta.styleKey]: meta.styleId }
       : {}),
   };
+  if (type === "freeze_shatter") return normalizeFreezeShatterConfig(merged);
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "slot_bingo") return normalizeSlotBingoConfig(merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
@@ -2091,6 +2109,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "freeze_shatter":
+      return <FreezeShatterWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} previewOnly />;
     case "slot_bingo":
       return <SlotBingoWidget config={config} widgetId={widget?.id || widget?.instanceId} />;
@@ -7211,6 +7231,175 @@ function BetterSlotBingoControls({ config, onChange }) {
   );
 }
 
+function FreezeShatterControls({ config, onChange, widget }) {
+  const c = normalizeFreezeShatterConfig(config);
+  const [devices, setDevices] = useState([]);
+  const set = (patch) => onChange(normalizeFreezeShatterConfig({ ...c, ...patch }));
+
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const list = await navigator.mediaDevices?.enumerateDevices?.();
+        if (active)
+          setDevices((list || []).filter((device) => device.kind === "videoinput"));
+      } catch {
+        if (active) setDevices([]);
+      }
+    };
+    void refresh();
+    navigator.mediaDevices?.addEventListener?.("devicechange", refresh);
+    return () => {
+      active = false;
+      navigator.mediaDevices?.removeEventListener?.("devicechange", refresh);
+    };
+  }, []);
+
+  const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
+  const action = (name) =>
+    window.dispatchEvent(
+      new CustomEvent("streamerscenter:freeze-shatter", {
+        detail: { action: name, instanceId },
+      }),
+    );
+  const cameraOptions = [
+    { value: "default", label: "Default camera" },
+    ...devices.filter((device) => device.deviceId && device.deviceId !== "default").map((device, index) => ({
+      value: device.deviceId,
+      label: device.label || `Camera ${index + 1}`,
+    })),
+  ];
+  if (c.source !== "default" && !cameraOptions.some((item) => item.value === c.source)) {
+    cameraOptions.push({ value: c.source, label: "Saved camera" });
+  }
+
+  return (
+    <div className="bp-controls bp-controls--freeze-shatter">
+      <CategorizedControls
+        tabs={STANDARD_CONTROL_CATEGORIES}
+        defaultCategory="content"
+      >
+      <Section title="Preview & trigger" icon={<MonitorPlay size={13} />} category="behavior" simple>
+        <p className="bp-hint">
+          Sample mode uses the supplied generic portrait. The published OBS overlay uses your selected camera locally.
+        </p>
+        <div className="bp-freeze-actions">
+          <button type="button" className="bp-reset" onClick={() => action("preview")}>
+            <Snowflake size={13} /> Preview full cycle
+          </button>
+          <button type="button" className="bp-reset" onClick={() => action("resetWebcamTransition")}>
+            <RotateCcw size={13} /> Reset
+          </button>
+        </div>
+        <SelectRow
+          label="OBS trigger"
+          value={c.triggerMode}
+          options={[
+            { value: "manual", label: "Manual event" },
+            { value: "on_load", label: "When source loads" },
+            { value: "loop", label: "Continuous demo loop" },
+          ]}
+          onChange={(triggerMode) => set({ triggerMode })}
+        />
+        {c.triggerMode !== "manual" && (
+          <SliderRow label="Start delay" value={c.triggerDelay} min={0} max={10} step={0.1} unit="s" onChange={(triggerDelay) => set({ triggerDelay })} />
+        )}
+        {c.triggerMode === "loop" && (
+          <SliderRow label="Hidden hold" value={c.hiddenDuration} min={0.25} max={20} step={0.25} unit="s" onChange={(hiddenDuration) => set({ hiddenDuration })} />
+        )}
+        <p className="bp-hint">
+          Manual integrations can call <code>window.StreamersCenter.freezeAndShatter()</code>, <code>reconstructWebcam()</code>, or dispatch the widget event.
+        </p>
+      </Section>
+
+      <Section title="Camera" icon={<MonitorPlay size={13} />} category="content" simple>
+        <SelectRow label="Camera source" value={c.source} options={cameraOptions} onChange={(source) => set({ source })} />
+        <p className="bp-hint">Camera access requires HTTPS or localhost. Frames stay inside the browser and are never uploaded.</p>
+      </Section>
+
+      <Section title="Camera placement" icon={<Maximize2 size={13} />} category="layout" simple>
+        <ToggleRow label="Mirror camera" checked={c.mirror} onChange={(mirror) => set({ mirror })} />
+        <SliderRow label="Camera scale" value={Math.round(c.subjectScale * 100)} min={30} max={180} unit="%" onChange={(value) => set({ subjectScale: value / 100 })} />
+        <SliderRow label="Horizontal position" value={Math.round(c.subjectX * 100)} min={0} max={100} unit="%" onChange={(value) => set({ subjectX: value / 100 })} />
+        <SliderRow label="Vertical position" value={Math.round(c.subjectY * 100)} min={30} max={120} unit="%" onChange={(value) => set({ subjectY: value / 100 })} />
+      </Section>
+
+      <Section title="Chroma key" icon={<Pipette size={13} />} category="appearance">
+        <ColorRow label="Key colour" value={c.chromaColor} onChange={(chromaColor) => set({ chromaColor })} />
+        <SliderRow label="Tolerance" value={Math.round(c.tolerance * 100)} min={1} max={80} unit="%" onChange={(value) => set({ tolerance: value / 100 })} />
+        <SliderRow label="Edge softness" value={Math.round(c.softness * 100)} min={1} max={40} unit="%" onChange={(value) => set({ softness: value / 100 })} />
+        <SliderRow label="Spill removal" value={Math.round(c.spill * 100)} min={0} max={100} unit="%" onChange={(value) => set({ spill: value / 100 })} />
+      </Section>
+
+      <Section title="Ice material" icon={<Snowflake size={13} />} category="appearance" simple>
+        <ColorRow label="Ice colour" value={c.iceColor} onChange={(iceColor) => set({ iceColor })} />
+        {[
+          ["Frost", "frost"],
+          ["Crystal facets", "crystals"],
+          ["Cracks", "cracks"],
+          ["Reflections", "reflections"],
+          ["Ice mist", "mist"],
+          ["Edge glow", "glow"],
+        ].map(([label, key]) => (
+          <SliderRow key={key} label={label} value={Math.round(c[key] * 100)} min={0} max={100} unit="%" onChange={(value) => set({ [key]: value / 100 })} />
+        ))}
+      </Section>
+
+      <Section title="Timing & motion" icon={<Zap size={13} />} category="behavior" simple>
+        <SliderRow label="Transition duration" value={c.duration} min={0.5} max={5} step={0.1} unit="s" onChange={(duration) => set({ duration })} />
+        <SliderRow label="Freeze build" value={c.freezeDuration} min={0.05} max={2} step={0.05} unit="s" onChange={(freezeDuration) => set({ freezeDuration })} />
+        <SliderRow label="Crack delay" value={c.fractureDelay} min={0} max={2} step={0.05} unit="s" onChange={(fractureDelay) => set({ fractureDelay })} />
+        <SliderRow label="Shatter time" value={c.shatterDuration} min={0.1} max={3} step={0.05} unit="s" onChange={(shatterDuration) => set({ shatterDuration })} />
+        <SliderRow label="Reconstruction" value={c.reconstructionDuration} min={0.5} max={5} step={0.1} unit="s" onChange={(reconstructionDuration) => set({ reconstructionDuration })} />
+        <SelectRow label="Motion curve" value={c.easing} options={[
+          { value: "cinematic", label: "Cinematic" },
+          { value: "smooth", label: "Smooth" },
+          { value: "snappy", label: "Snappy" },
+          { value: "linear", label: "Linear" },
+        ]} onChange={(easing) => set({ easing })} />
+        <SelectRow label="Shatter direction" value={c.direction} options={[
+          { value: "outward", label: "Outward" },
+          { value: "downward", label: "Downward" },
+          { value: "left", label: "Left" },
+          { value: "right", label: "Right" },
+          { value: "vortex", label: "Vortex" },
+        ]} onChange={(direction) => set({ direction })} />
+        <SliderRow label="Fragments" value={c.fragmentCount} min={30} max={200} step={5} onChange={(fragmentCount) => set({ fragmentCount })} />
+        <SliderRow label="Explosion" value={Math.round(c.explosion * 100)} min={10} max={300} unit="%" onChange={(value) => set({ explosion: value / 100 })} />
+        <SliderRow label="Gravity" value={Math.round(c.gravity * 100)} min={0} max={200} unit="%" onChange={(value) => set({ gravity: value / 100 })} />
+        <SliderRow label="Rotation" value={Math.round(c.rotation * 100)} min={0} max={200} unit="%" onChange={(value) => set({ rotation: value / 100 })} />
+      </Section>
+
+      <Section title="Sound" icon={<Waves size={13} />} category="behavior">
+        <ToggleRow label="Widget sound" checked={c.sound} onChange={(sound) => set({ sound })} hint="OBS must be configured to control and route browser-source audio." />
+        {c.sound && (
+          <>
+            <SliderRow label="Formation volume" value={Math.round(c.formationVolume * 100)} min={0} max={100} unit="%" onChange={(value) => set({ formationVolume: value / 100 })} />
+            <SliderRow label="Crack volume" value={Math.round(c.crackingVolume * 100)} min={0} max={100} unit="%" onChange={(value) => set({ crackingVolume: value / 100 })} />
+            <SliderRow label="Shatter volume" value={Math.round(c.shatterVolume * 100)} min={0} max={100} unit="%" onChange={(value) => set({ shatterVolume: value / 100 })} />
+          </>
+        )}
+      </Section>
+
+      <Section title="Performance" icon={<Gauge size={13} />} category="behavior" simple>
+        <Segmented
+          value={c.quality}
+          columns={4}
+          options={["Low", "Medium", "High", "Ultra"].map((value) => ({ value, label: value }))}
+          onChange={(quality) => set({ quality, ...FREEZE_SHATTER_QUALITY_PRESETS[quality] })}
+        />
+        <ToggleRow label="Automatic quality" checked={c.autoQuality} onChange={(autoQuality) => set({ autoQuality })} hint="Reduces render resolution after sustained low frame rates." />
+        <ToggleRow label="Release hidden textures" checked={c.cleanup} onChange={(cleanup) => set({ cleanup })} />
+      </Section>
+
+      <button className="bp-reset" type="button" onClick={() => onChange({ ...DEFAULT_FREEZE_SHATTER_CONFIG })}>
+        <RotateCcw size={13} /> Reset Freeze &amp; Shatter
+      </button>
+      </CategorizedControls>
+    </div>
+  );
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -7218,6 +7407,19 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  if (type === "freeze_shatter") {
+    return <FreezeShatterControls config={c} onChange={onChange} widget={props.widget} />;
+  }
+  return <ThemedBetterWidgetControls type={type} config={config} normalizedConfig={c} onChange={onChange} {...props} />;
+}
+
+function ThemedBetterWidgetControls({
+  type,
+  config,
+  normalizedConfig: c,
+  onChange,
+  ...props
+}) {
   const access = useOverlayAssetAccess(props.userId || props.user?.id);
   const selected = getSelectedWidgetColourTheme(type, c);
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
@@ -7403,6 +7605,9 @@ function WidgetSpecificControls({
   allWidgets,
   appearanceOnly,
 }) {
+  if (type === "freeze_shatter") {
+    return <FreezeShatterControls config={config} onChange={onChange} widget={widget} />;
+  }
   if (type === "slot_bingo") {
     return <BetterSlotBingoControls config={config} onChange={onChange} />;
   }

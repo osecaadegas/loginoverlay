@@ -1,5 +1,11 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
+  freeze_shatter: {
+    category: "Stream",
+    keywords: "webcam camera freeze ice shatter transition chroma green screen",
+    source: "Local camera",
+    simpleSections: ["Preview & trigger", "Camera", "Camera placement", "Ice material", "Timing & motion", "Performance"],
+  },
   current_slot: { category: 'Hunt', keywords: 'current game slot records payout personal best', source: 'Current Game', route: '/overlay-center/widgets/current-slot', simpleSections: ['Display', 'Colours'] },
   slot_bingo: {
     category: "Community",

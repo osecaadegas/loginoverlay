@@ -17,6 +17,7 @@ import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
+import FreezeShatterWidget from "../widgets/freeze-shatter/FreezeShatterWidget";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -635,6 +636,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  freeze_shatter: FreezeShatterWidget,
   current_slot: CurrentSlotWidget,
   slot_bingo: SlotBingoWidget,
   connect_four: ConnectFourWidget,
@@ -651,6 +653,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  freeze_shatter: ["trigger", "camera", "chroma", "ice", "motion", "sound", "performance"],
   current_slot: ['display', 'colours'],
   slot_bingo: ["content", "board", "layout", "colours"],
   connect_four: ["content", "players", "board", "motion"],
@@ -698,6 +701,12 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
+  freeze_shatter: {
+    minWidth: 320,
+    minHeight: 180,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
   slot_bingo: {
     minWidth: 340,
     minHeight: 260,
@@ -780,6 +789,7 @@ export function stripBetterRuntimeData(widgetType, config = {}) {
     ...(MOCK_DATA_KEYS[widgetType] || []),
   ]);
   runtimeKeys.forEach((key) => delete next[key]);
+  if (widgetType === "freeze_shatter") delete next.source;
   return next;
 }
 

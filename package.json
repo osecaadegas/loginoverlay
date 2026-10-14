@@ -13,6 +13,7 @@
     "test:preview-data-parity": "node scripts/test-preview-data-parity.mjs",
     "test:background-editor": "node scripts/test-background-editor.mjs",
     "test:editor-backgrounds": "node scripts/test-editor-backgrounds-browser.mjs",
+    "test:freeze-shatter": "node scripts/test-freeze-shatter-widget.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",
     "test:page-cache": "node scripts/test-page-cache.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",

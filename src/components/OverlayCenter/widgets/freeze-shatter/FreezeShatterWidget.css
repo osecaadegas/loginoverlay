@@ -1,0 +1,78 @@
+.freeze-shatter-widget {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  container-type: size;
+}
+
+.freeze-shatter-widget__renderer,
+.freeze-shatter-widget__renderer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.freeze-shatter-widget__renderer canvas {
+  object-fit: contain;
+  background: transparent;
+}
+
+.freeze-shatter-widget__status {
+  position: absolute;
+  left: clamp(8px, 1.8cqw, 18px);
+  bottom: clamp(8px, 1.8cqw, 18px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 6px 10px;
+  color: #eafaff;
+  border: 1px solid rgba(138, 232, 255, 0.48);
+  border-radius: 999px;
+  background: rgba(3, 17, 31, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 7px 20px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(8px);
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(10px, 1.2cqw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.freeze-shatter-widget__status svg {
+  color: #8ae8ff;
+  filter: drop-shadow(0 0 5px rgba(38, 201, 255, 0.7));
+}
+
+.freeze-shatter-widget__error {
+  position: absolute;
+  inset: auto 5% 5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 13px;
+  color: #fff5f5;
+  border: 1px solid rgba(255, 92, 110, 0.55);
+  border-radius: 10px;
+  background: rgba(34, 8, 14, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  font: 600 clamp(11px, 1.35cqw, 14px)/1.3 "Rajdhani", sans-serif;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .freeze-shatter-widget *,
+  .freeze-shatter-widget *::before,
+  .freeze-shatter-widget *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

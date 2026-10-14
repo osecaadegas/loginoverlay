@@ -34,7 +34,22 @@ import { SLOT_BINGO_DEFAULT_CONFIG } from "./slot-bingo/slotBingoModel";
 import CurrentSlotWidget from './current-slot/CurrentSlotWidget';
 import CurrentSlotConfig from './current-slot/CurrentSlotConfig';
 import { CURRENT_SLOT_DEFAULTS } from './current-slot/currentSlotModel';
+import FreezeShatterWidget from './freeze-shatter/FreezeShatterWidget';
+import { DEFAULT_CONFIG as FREEZE_SHATTER_DEFAULTS } from './freeze-shatter/config';
 registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [{ id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } }], defaults: { ...CURRENT_SLOT_DEFAULTS } });
+
+registerWidget({
+  type: 'freeze_shatter',
+  label: 'Freeze & Shatter',
+  icon: '❄',
+  description: 'Freeze a chroma-keyed local webcam silhouette, fracture it into ice, and reconstruct it.',
+  category: 'better',
+  component: FreezeShatterWidget,
+  configPanel: null,
+  styleConfigKey: 'displayStyle',
+  styles: [{ id: 'freeze_shatter', label: 'Freeze & Shatter', defaultSize: { width: 640, height: 360 } }],
+  defaults: { ...FREEZE_SHATTER_DEFAULTS },
+});
 const CURRENCY = "EUR ";
 
 registerWidget({
