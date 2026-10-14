@@ -3092,3 +3092,25 @@
   cursor: wait;
   opacity: 0.66;
 }
+.bp-money-uploads {
+  display: grid;
+  gap: 8px;
+}
+
+.bp-money-upload {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 205, 75, 0.28);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(47, 35, 7, 0.64), rgba(7, 16, 27, 0.88));
+  color: #f5e7b6;
+  cursor: pointer;
+}
+
+.bp-money-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.bp-money-upload span { font-size: 12px; font-weight: 700; }
+.bp-money-upload strong { color: #ffd45a; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }

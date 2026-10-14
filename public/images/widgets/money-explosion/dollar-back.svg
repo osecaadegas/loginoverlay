@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="160" viewBox="0 0 360 160">
+  <defs><linearGradient id="p" x2="0" y2="1"><stop stop-color="#bddcae"/><stop offset="1" stop-color="#244b42"/></linearGradient><pattern id="g" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="8" cy="8" r="6" fill="none" stroke="#efffe8" stroke-opacity=".16"/></pattern></defs>
+  <rect x="2" y="2" width="356" height="156" rx="12" fill="url(#p)" stroke="#eaffdf" stroke-width="4"/><rect x="11" y="11" width="338" height="138" rx="8" fill="url(#g)" stroke="#22443b" stroke-width="2"/>
+  <path d="M115 112V63l65-35 65 35v49M98 119h164M126 112V66m27 46V66m27 46V66m27 46V66m27 46V66" fill="none" stroke="#e7d37e" stroke-width="7" stroke-linejoin="round"/><circle cx="180" cy="73" r="19" fill="#193e35" stroke="#efffe8" stroke-width="2"/><path d="m180 59 4 10 11 1-8 7 2 11-9-6-9 6 2-11-8-7 11-1z" fill="#f1d774"/>
+  <g fill="#173d35" font-family="Arial Black,Arial" font-weight="900"><text x="19" y="50" font-size="38">100</text><text x="265" y="140" font-size="38">100</text></g><text x="180" y="145" text-anchor="middle" fill="#efffe8" font-family="Arial" font-size="10" font-weight="700" letter-spacing="3">CREATOR RESERVE</text>
+</svg>

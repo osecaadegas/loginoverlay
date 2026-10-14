@@ -1,5 +1,11 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
+  money_explosion: {
+    category: "Stream",
+    keywords: "webcam camera money banknotes explosion transition reconstruction chroma green screen",
+    source: "Local camera",
+    simpleSections: ["Preview & trigger", "Camera", "Camera placement", "Banknotes", "Explosion", "Performance"],
+  },
   freeze_shatter: {
     category: "Stream",
     keywords: "webcam camera freeze ice shatter transition chroma green screen",

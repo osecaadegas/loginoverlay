@@ -1,6 +1,8 @@
 import { Filter, GlProgram, Texture } from 'pixi.js';
 import type { WidgetConfig } from './config';
 
+type ChromaKeyConfig = Pick<WidgetConfig, 'chromaColor' | 'tolerance' | 'softness' | 'spill'>;
+
 const vertex = `
 precision highp float;
 in vec2 aPosition;
@@ -116,7 +118,7 @@ export function hexRgb(hex: string): Float32Array {
   return new Float32Array([1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) / 255));
 }
 
-export function createKeyFilter(config: WidgetConfig) {
+export function createKeyFilter(config: ChromaKeyConfig) {
   return new Filter({
     glProgram: GlProgram.from({ vertex, fragment: keyFragment, name: 'silhouette-chroma-key' }),
     resources: { keyUniforms: {

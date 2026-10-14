@@ -89,6 +89,12 @@ import {
   QUALITY_PRESETS as FREEZE_SHATTER_QUALITY_PRESETS,
   sanitizeConfig as normalizeFreezeShatterConfig,
 } from "../widgets/freeze-shatter/config";
+import MoneyExplosionWidget from "../widgets/money-explosion/MoneyExplosionWidget";
+import {
+  DEFAULT_MONEY_EXPLOSION_CONFIG,
+  MONEY_QUALITY_PRESETS,
+  sanitizeMoneyExplosionConfig,
+} from "../widgets/money-explosion/config";
 import {
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
@@ -1129,6 +1135,9 @@ const BASE_BETTER_CONFIG = {
   freeze_shatter: {
     ...DEFAULT_FREEZE_SHATTER_CONFIG,
   },
+  money_explosion: {
+    ...DEFAULT_MONEY_EXPLOSION_CONFIG,
+  },
 };
 
 export const DEFAULT_BETTER_CONFIG = Object.freeze(
@@ -1144,6 +1153,14 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "money_explosion",
+    label: "Money Explosion",
+    styleKey: "displayStyle",
+    styleId: "money_explosion",
+    icon: "💸",
+    defaultSize: { width: 640, height: 360 },
+  },
   {
     type: "freeze_shatter",
     label: "Freeze & Shatter",
@@ -1594,6 +1611,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       : {}),
   };
   if (type === "freeze_shatter") return normalizeFreezeShatterConfig(merged);
+  if (type === "money_explosion") return sanitizeMoneyExplosionConfig(merged);
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "slot_bingo") return normalizeSlotBingoConfig(merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
@@ -2109,6 +2127,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "money_explosion":
+      return <MoneyExplosionWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case "freeze_shatter":
       return <FreezeShatterWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case 'current_slot': return <CurrentSlotWidget config={config} userId={userId} widgetId={widget?.id} previewOnly />;
@@ -7231,6 +7251,158 @@ function BetterSlotBingoControls({ config, onChange }) {
   );
 }
 
+function MoneyExplosionControls({ config, onChange, widget }) {
+  const c = sanitizeMoneyExplosionConfig(config);
+  const [devices, setDevices] = useState([]);
+  const [feedback, setFeedback] = useState("");
+  const [cameraPermission, setCameraPermission] = useState("prompt");
+  const testingRef = useRef(false);
+  const testReachedHiddenRef = useRef(false);
+  const set = (patch) => onChange(sanitizeMoneyExplosionConfig({ ...c, ...patch }));
+  const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
+
+  useEffect(() => {
+    const receive = (event) => {
+      const detail = event.detail || {};
+      if (detail.instanceId && String(detail.instanceId) !== String(instanceId || "")) return;
+      if (detail.type === "error") { testingRef.current = false; setFeedback(detail.message || "The effect could not run."); return; }
+      if (detail.type !== "state" || !testingRef.current) return;
+      if (detail.state === "HIDDEN") { testReachedHiddenRef.current = true; setFeedback("Explosion complete. Reconstructing camera…"); }
+      else if (detail.state === "VISIBLE" && testReachedHiddenRef.current) { testingRef.current = false; testReachedHiddenRef.current = false; setFeedback("Effect test complete."); }
+      else setFeedback("Running Money Explosion in the overlay…");
+    };
+    window.addEventListener("streamerscenter:money-explosion-status", receive);
+    return () => window.removeEventListener("streamerscenter:money-explosion-status", receive);
+  }, [instanceId]);
+
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => { try { const list = await navigator.mediaDevices?.enumerateDevices?.(); if (active) setDevices((list || []).filter((device) => device.kind === "videoinput")); } catch { if (active) setDevices([]); } };
+    void refresh();
+    navigator.permissions?.query?.({ name: "camera" }).then((permission) => { if (active) setCameraPermission(permission.state); }).catch(() => undefined);
+    navigator.mediaDevices?.addEventListener?.("devicechange", refresh);
+    return () => { active = false; navigator.mediaDevices?.removeEventListener?.("devicechange", refresh); };
+  }, []);
+
+  const requestCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) { setCameraPermission("unavailable"); setFeedback("Camera access requires HTTPS or localhost."); return; }
+    setCameraPermission("requesting"); let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const id = stream.getVideoTracks()[0]?.getSettings?.().deviceId; const list = await navigator.mediaDevices.enumerateDevices(); const videos = list.filter((device) => device.kind === "videoinput"); setDevices(videos);
+      if (id) { const selected = videos.find((device) => device.deviceId === id); set({ source: id, sourceLabel: selected?.label || "" }); }
+      setCameraPermission("granted"); setFeedback("Camera connected. Switch to Live data to check your real framing.");
+    } catch (error) { setCameraPermission(error?.name === "NotAllowedError" ? "denied" : "error"); setFeedback(error?.name === "NotAllowedError" ? "Camera access is blocked. Allow it from the camera icon in the address bar, then try again." : "The camera could not start. Close other camera apps and try again."); }
+    finally { stream?.getTracks?.().forEach((track) => track.stop()); }
+  };
+
+  const action = (name) => {
+    if (name === "preview") { testingRef.current = true; testReachedHiddenRef.current = false; setFeedback("Starting Money Explosion in the overlay…"); }
+    if (name === "resetMoneyTransition") { testingRef.current = false; setFeedback("Effect reset."); }
+    window.dispatchEvent(new CustomEvent("streamerscenter:money-explosion", { detail: { action: name, instanceId } }));
+  };
+  const cameraOptions = [{ value: "default", label: "Default camera" }, ...devices.filter((device) => device.deviceId && device.deviceId !== "default").map((device, index) => ({ value: device.deviceId, label: device.label || `Camera ${index + 1}` }))];
+  if (c.source !== "default" && !cameraOptions.some((item) => item.value === c.source)) cameraOptions.push({ value: c.source, label: "Saved camera" });
+  const upload = (key) => async (event) => {
+    const file = event.target.files?.[0]; event.target.value = ""; if (!file) return;
+    if (!/^image\/(png|jpeg|webp)$/i.test(file.type) || file.size > 1_500_000) { setFeedback("Use a PNG, JPG, or WebP banknote image smaller than 1.5 MB."); return; }
+    const value = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || "")); reader.onerror = reject; reader.readAsDataURL(file); }).catch(() => "");
+    if (value) { set({ [key]: value, banknoteStyle: "custom" }); setFeedback(`${key === "customFrontTexture" ? "Front" : "Back"} texture loaded.`); }
+  };
+
+  return (
+    <div className="bp-controls bp-controls--money-explosion">
+      <CategorizedControls tabs={STANDARD_CONTROL_CATEGORIES} defaultCategory="content">
+        <Section title="Preview & trigger" icon={<MonitorPlay size={13} />} category="behavior" simple>
+          <ToggleRow label="Enable Money Explosion" checked={c.enabled} onChange={(enabled) => set({ enabled })} />
+          <p className="bp-hint">Test the real shared renderer used by the editor and the published transparent OBS overlay.</p>
+          <div className="bp-freeze-actions">
+            <button type="button" className="bp-freeze-actions__test" onClick={() => action("preview")}><Coins size={15} /> Test effect in overlay</button>
+            <button type="button" className="bp-reset" onClick={() => action("moneyExplosion")}><Zap size={13} /> Trigger</button>
+            <button type="button" className="bp-reset" onClick={() => action("moneyReconstruction")}><Sparkles size={13} /> Reconstruct</button>
+            <button type="button" className="bp-reset" onClick={() => action("resetMoneyTransition")}><RotateCcw size={13} /> Reset</button>
+          </div>
+          {feedback && <p className="bp-freeze-test-feedback" role="status">{feedback}</p>}
+          <SliderRow label="Total duration" value={c.duration} min={1.5} max={6} step={0.1} unit="s" onChange={(duration) => set({ duration })} />
+          <SliderRow label="Reconstruction" value={c.reconstructionDuration} min={1.5} max={6} step={0.1} unit="s" onChange={(reconstructionDuration) => set({ reconstructionDuration })} />
+          <SelectRow label="OBS trigger" value={c.triggerMode} options={[{ value: "manual", label: "Manual event / hotkey" }, { value: "on_load", label: "When source loads" }, { value: "loop", label: "Continuous demo loop" }]} onChange={(triggerMode) => set({ triggerMode })} />
+          {c.triggerMode !== "manual" && <SliderRow label="Start delay" value={c.triggerDelay} min={0} max={10} step={0.1} unit="s" onChange={(triggerDelay) => set({ triggerDelay })} />}
+          {c.triggerMode === "loop" && <SliderRow label="Hidden hold" value={c.hiddenDuration} min={0.25} max={20} step={0.25} unit="s" onChange={(hiddenDuration) => set({ hiddenDuration })} />}
+          <p className="bp-hint">Hotkeys and integrations can call <code>window.StreamersCenter.moneyExplosion()</code>, <code>moneyReconstruction()</code>, or dispatch <code>streamerscenter:money-explosion</code>.</p>
+        </Section>
+
+        <Section title="Camera" icon={<MonitorPlay size={13} />} category="content" simple>
+          <div className="bp-camera-permission" data-state={cameraPermission} role="status"><span className="bp-camera-permission__icon" aria-hidden="true">{cameraPermission === "granted" ? <Check size={17} /> : <MonitorPlay size={17} />}</span><div><strong>{cameraPermission === "granted" ? "Camera connected" : "Camera permission"}</strong><p>{cameraPermission === "granted" ? "Camera access is ready. Video processing stays on this device." : "Allow access once so StreamersCenter can use your camera."}</p></div><button type="button" onClick={requestCamera} disabled={cameraPermission === "requesting"}>{cameraPermission === "requesting" ? "Waiting for browser…" : cameraPermission === "granted" ? "Refresh cameras" : "Allow camera access"}</button></div>
+          <SelectRow label="Camera source" value={c.source} options={cameraOptions} onChange={(source) => { const selected = devices.find((device) => device.deviceId === source); set({ source, sourceLabel: selected?.label || "" }); }} />
+          <p className="bp-hint">In OBS, open Browser Source Interact once and allow camera access if Chromium asks there.</p>
+        </Section>
+
+        <Section title="Camera placement" icon={<Maximize2 size={13} />} category="layout" simple>
+          <ToggleRow label="Mirror camera" checked={c.mirror} onChange={(mirror) => set({ mirror })} />
+          <SliderRow label="Camera scale" value={Math.round(c.subjectScale * 100)} min={30} max={180} unit="%" onChange={(value) => set({ subjectScale: value / 100 })} />
+          <SliderRow label="Horizontal position" value={Math.round(c.subjectX * 100)} min={0} max={100} unit="%" onChange={(value) => set({ subjectX: value / 100 })} />
+          <SliderRow label="Vertical position" value={Math.round(c.subjectY * 100)} min={30} max={120} unit="%" onChange={(value) => set({ subjectY: value / 100 })} />
+        </Section>
+
+        <Section title="Chroma key" icon={<Pipette size={13} />} category="appearance">
+          <ColorRow label="Key colour" value={c.chromaColor} onChange={(chromaColor) => set({ chromaColor })} />
+          <SliderRow label="Tolerance" value={Math.round(c.tolerance * 100)} min={1} max={80} unit="%" onChange={(value) => set({ tolerance: value / 100 })} />
+          <SliderRow label="Edge softness" value={Math.round(c.softness * 100)} min={1} max={40} unit="%" onChange={(value) => set({ softness: value / 100 })} />
+          <SliderRow label="Spill removal" value={Math.round(c.spill * 100)} min={0} max={100} unit="%" onChange={(value) => set({ spill: value / 100 })} />
+        </Section>
+
+        <Section title="Banknotes" icon={<Coins size={13} />} category="appearance" simple>
+          <SelectRow label="Banknote style" value={c.banknoteStyle} options={[{ value: "dollar", label: "Dollar inspired" }, { value: "euro", label: "Euro inspired" }, { value: "custom", label: "Custom upload" }]} onChange={(banknoteStyle) => set({ banknoteStyle })} />
+          {c.banknoteStyle === "custom" && <div className="bp-money-uploads"><label className="bp-money-upload"><span>Front texture</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload("customFrontTexture")} /><strong>{c.customFrontTexture ? "Replace front" : "Upload front"}</strong></label><label className="bp-money-upload"><span>Back texture</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload("customBackTexture")} /><strong>{c.customBackTexture ? "Replace back" : "Upload back"}</strong></label>{(c.customFrontTexture || c.customBackTexture) && <button className="bp-reset" type="button" onClick={() => set({ customFrontTexture: "", customBackTexture: "" })}>Clear custom textures</button>}</div>}
+          <SliderRow label="Banknote count" value={c.banknoteCount} min={50} max={400} step={10} onChange={(banknoteCount) => set({ banknoteCount })} />
+          <SliderRow label="Minimum size" value={c.minBanknoteSize} min={16} max={100} unit="px" onChange={(minBanknoteSize) => set({ minBanknoteSize })} />
+          <SliderRow label="Maximum size" value={c.maxBanknoteSize} min={24} max={160} unit="px" onChange={(maxBanknoteSize) => set({ maxBanknoteSize })} />
+          <SliderRow label="Random size variation" value={Math.round(c.sizeVariation * 100)} min={0} max={100} unit="%" onChange={(value) => set({ sizeVariation: value / 100 })} />
+        </Section>
+
+        <Section title="Explosion" icon={<Zap size={13} />} category="behavior" simple>
+          <SliderRow label="Explosion force" value={Math.round(c.explosionForce * 100)} min={20} max={300} unit="%" onChange={(value) => set({ explosionForce: value / 100 })} />
+          <SliderRow label="Radial spread" value={Math.round(c.radialSpread * 100)} min={0} max={100} unit="%" onChange={(value) => set({ radialSpread: value / 100 })} />
+          <SliderRow label="Directional bias" value={Math.round(c.directionalBias * 100)} min={-100} max={100} unit="%" onChange={(value) => set({ directionalBias: value / 100 })} />
+          <SliderRow label="Initial upward velocity" value={Math.round(c.upwardVelocity * 100)} min={0} max={200} unit="%" onChange={(value) => set({ upwardVelocity: value / 100 })} />
+          <SliderRow label="Depth intensity" value={Math.round(c.depthIntensity * 100)} min={0} max={100} unit="%" onChange={(value) => set({ depthIntensity: value / 100 })} />
+          <SliderRow label="Motion blur" value={Math.round(c.motionBlur * 100)} min={0} max={100} unit="%" onChange={(value) => set({ motionBlur: value / 100 })} />
+        </Section>
+
+        <Section title="Physics" icon={<SlidersHorizontal size={13} />} category="behavior">
+          <SliderRow label="Gravity" value={Math.round(c.gravity * 100)} min={10} max={250} unit="%" onChange={(value) => set({ gravity: value / 100 })} />
+          <SliderRow label="Air resistance" value={Math.round(c.airResistance * 100)} min={0} max={75} unit="%" onChange={(value) => set({ airResistance: value / 100 })} />
+          <SliderRow label="Flutter intensity" value={Math.round(c.flutter * 100)} min={0} max={200} unit="%" onChange={(value) => set({ flutter: value / 100 })} />
+          <SliderRow label="Rotation speed" value={Math.round(c.rotationSpeed * 100)} min={0} max={200} unit="%" onChange={(value) => set({ rotationSpeed: value / 100 })} />
+          <SliderRow label="Horizontal wind" value={Math.round(c.horizontalWind * 100)} min={-100} max={100} unit="%" onChange={(value) => set({ horizontalWind: value / 100 })} />
+          <SliderRow label="Falling speed" value={Math.round(c.fallingSpeed * 100)} min={25} max={200} unit="%" onChange={(value) => set({ fallingSpeed: value / 100 })} />
+          <SliderRow label="Exit acceleration" value={Math.round(c.exitAcceleration * 100)} min={25} max={300} unit="%" onChange={(value) => set({ exitAcceleration: value / 100 })} />
+        </Section>
+
+        <Section title="Visual effects" icon={<Sparkles size={13} />} category="appearance">
+          <ToggleRow label="Golden flash" checked={c.goldenFlash} onChange={(goldenFlash) => set({ goldenFlash })} />
+          <ToggleRow label="Money burst particles" checked={c.burstParticles} onChange={(burstParticles) => set({ burstParticles })} />
+          <SliderRow label="Lighting intensity" value={Math.round(c.lightingIntensity * 100)} min={0} max={100} unit="%" onChange={(value) => set({ lightingIntensity: value / 100 })} />
+          <SliderRow label="Particle density" value={Math.round(c.particleDensity * 100)} min={0} max={100} unit="%" onChange={(value) => set({ particleDensity: value / 100 })} />
+        </Section>
+
+        <Section title="Audio" icon={<Waves size={13} />} category="behavior">
+          <ToggleRow label="Widget sound" checked={c.sound} onChange={(sound) => set({ sound })} hint="OBS must be configured to route browser-source audio." />
+          {c.sound && <><ToggleRow label="Explosion sound" checked={c.explosionSound} onChange={(explosionSound) => set({ explosionSound })} /><SliderRow label="Explosion volume" value={Math.round(c.explosionVolume * 100)} min={0} max={100} unit="%" onChange={(value) => set({ explosionVolume: value / 100 })} /><ToggleRow label="Paper flutter sound" checked={c.flutterSound} onChange={(flutterSound) => set({ flutterSound })} /><SliderRow label="Flutter volume" value={Math.round(c.flutterVolume * 100)} min={0} max={100} unit="%" onChange={(value) => set({ flutterVolume: value / 100 })} /></>}
+        </Section>
+
+        <Section title="Performance" icon={<Gauge size={13} />} category="behavior" simple>
+          <Segmented value={c.quality} columns={4} options={["Low", "Medium", "High", "Ultra"].map((value) => ({ value, label: value }))} onChange={(quality) => set({ quality, ...MONEY_QUALITY_PRESETS[quality] })} />
+          <ToggleRow label="Automatic quality" checked={c.autoQuality} onChange={(autoQuality) => set({ autoQuality })} hint="Reduces render resolution after sustained low frame rates." />
+          <ToggleRow label="Release hidden textures" checked={c.cleanup} onChange={(cleanup) => set({ cleanup })} />
+        </Section>
+
+        <button className="bp-reset" type="button" onClick={() => onChange({ ...DEFAULT_MONEY_EXPLOSION_CONFIG })}><RotateCcw size={13} /> Reset Money Explosion</button>
+      </CategorizedControls>
+    </div>
+  );
+}
+
 function FreezeShatterControls({ config, onChange, widget }) {
   const c = normalizeFreezeShatterConfig(config);
   const [devices, setDevices] = useState([]);
@@ -7519,6 +7691,9 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  if (type === "money_explosion") {
+    return <MoneyExplosionControls config={c} onChange={onChange} widget={props.widget} />;
+  }
   if (type === "freeze_shatter") {
     return <FreezeShatterControls config={c} onChange={onChange} widget={props.widget} />;
   }
@@ -7717,6 +7892,9 @@ function WidgetSpecificControls({
   allWidgets,
   appearanceOnly,
 }) {
+  if (type === "money_explosion") {
+    return <MoneyExplosionControls config={config} onChange={onChange} widget={widget} />;
+  }
   if (type === "freeze_shatter") {
     return <FreezeShatterControls config={config} onChange={onChange} widget={widget} />;
   }
