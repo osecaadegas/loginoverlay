@@ -8,7 +8,6 @@ import {
   Handshake,
   LogIn,
   LogOut,
-  MonitorUp,
   Radar,
   ShieldCheck,
   SlidersHorizontal,
@@ -58,14 +57,6 @@ export default function AppsPage() {
             icon: Radar,
             tone: "cyan",
             art: "slot-detector",
-          },
-          {
-            to: "/slot-capture",
-            label: "Slot Capture",
-            desc: "Captura local para OBS",
-            icon: MonitorUp,
-            tone: "teal",
-            art: "slot-capture",
           },
         ]
       : []),

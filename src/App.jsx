@@ -82,9 +82,6 @@ const ProtectedPlayerRoute = lazy(
 const SlotDetectorDashboard = lazy(
   () => import("./features/slotDetector/SlotDetectorDashboard"),
 );
-const SlotCaptureManager = lazy(
-  () => import("./features/slotCapture/SlotCaptureManager"),
-);
 
 function AppRuntimeHooks() {
   useSlotRequestListener(); // persistent chat listener for !sr commands
@@ -319,18 +316,6 @@ function App() {
                           redirectTo="/premium"
                         >
                           <SlotDetectorDashboard />
-                        </ProtectedAdminRoute>
-                      }
-                    />
-                    <Route
-                      path="/slot-capture"
-                      element={
-                        <ProtectedAdminRoute
-                          allowPremium
-                          allowModerator
-                          redirectTo="/premium"
-                        >
-                          <SlotCaptureManager />
                         </ProtectedAdminRoute>
                       }
                     />

@@ -1,6 +1,5 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Grid3X3, MonitorUp } from "lucide-react";
-import { useAdmin } from "../../hooks/useAdmin";
+import { Grid3X3 } from "lucide-react";
 import "./TopNavigation.css";
 
 const AUDIENCE_OPTIONS = [
@@ -74,8 +73,6 @@ function getActiveAudience(pathname) {
 export default function TopNavigation() {
   const location = useLocation();
   const activeAudience = getActiveAudience(location.pathname);
-  const { isAdmin, isModerator, isPremium } = useAdmin();
-  const hasSlotCaptureAccess = isAdmin || isModerator || isPremium;
 
   return (
     <header className="topnav-shell">
@@ -89,19 +86,6 @@ export default function TopNavigation() {
       </div>
 
       <div className="topnav-actions">
-        {hasSlotCaptureAccess && (
-          <NavLink
-            to="/slot-capture"
-            aria-label="Slot Capture"
-            title="Slot Capture"
-            className={({ isActive }) =>
-              `topnav-account${isActive ? " topnav-account--active" : ""}`
-            }
-          >
-            <MonitorUp size={17} />
-            <span>Slot Capture</span>
-          </NavLink>
-        )}
         <NavLink
           to="/apps"
           aria-label="Apps"

@@ -17,9 +17,6 @@ const toolLandingSource = readSource(
 const overlayCenterSource = readSource(
   "../src/components/OverlayCenter/OverlayControlCenter.jsx",
 );
-const editorSource = readSource(
-  "../src/components/OverlayCenter/editor/WidgetEditorPage.jsx",
-);
 
 assert.match(
   appSource,
@@ -30,15 +27,9 @@ assert.ok(
   navigationSource.includes('to="/"') &&
     navigationSource.includes("<AudienceToggle") &&
     navigationSource.includes('to="/apps"') &&
-    navigationSource.includes('to="/slot-capture"') &&
     navigationSource.includes('label: "Gamblers"') &&
     navigationSource.includes('label: "Streamers"'),
-  "Shared navigation owns the home logo, audience toggle, Apps link, and authorized Slot Capture entry",
-);
-assert.ok(
-  editorSource.includes('navigateSource("/slot-capture")') &&
-    editorSource.includes("Open Slot Capture Manager"),
-  "The overlay editor exposes the Slot Capture Manager directly from its toolbar",
+  "Shared navigation owns the home logo, Gambler/Streamer toggle, and Apps link",
 );
 assert.ok(
   !landingSource.includes("StreamerCenterLogo.png") &&
