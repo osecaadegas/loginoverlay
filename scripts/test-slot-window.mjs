@@ -35,14 +35,23 @@ try {
 
   const configured = model.buildSlotWindowSourceUrl({
     sourceUrl: SOURCE,
-    maskShape: "angled",
+    maskShape: "rounded",
+    cornerTopLeft: 72,
+    cornerTopRight: 0,
+    cornerBottomRight: 18,
+    cornerBottomLeft: 0,
     feather: 8,
     cropTop: 3,
     cropLeft: 4,
     fps: 24,
   });
   const configuredUrl = new URL(configured);
-  assert.equal(configuredUrl.searchParams.get("shape"), "angled");
+  assert.equal(configuredUrl.searchParams.get("shape"), "rounded");
+  assert.equal(configuredUrl.searchParams.get("radius"), "0");
+  assert.equal(configuredUrl.searchParams.get("radiusTopLeft"), "72");
+  assert.equal(configuredUrl.searchParams.get("radiusTopRight"), "0");
+  assert.equal(configuredUrl.searchParams.get("radiusBottomRight"), "18");
+  assert.equal(configuredUrl.searchParams.get("radiusBottomLeft"), "0");
   assert.equal(configuredUrl.searchParams.get("feather"), "8");
   assert.equal(configuredUrl.searchParams.get("cropTop"), "3");
   assert.equal(configuredUrl.searchParams.get("cropLeft"), "4");
@@ -76,6 +85,29 @@ try {
     assert.ok(markup.includes("panel-2"));
   }
 
+  const independentlyRounded = {
+    ...first.config,
+    maskShape: "rounded",
+    cornerTopLeft: 72,
+    cornerTopRight: 0,
+    cornerBottomRight: 18,
+    cornerBottomLeft: 0,
+  };
+  for (const runtime of ["editor", "obs"]) {
+    const markup = renderToStaticMarkup(
+      createElement(definition.component, { config: independentlyRounded, runtime }),
+    );
+    assert.match(markup, /border-radius:72px 0px 18px 0px/);
+    assert.match(markup, /clip-path:inset\(0 round 72px 0px 18px 0px\)/);
+  }
+  const angledMarkup = renderToStaticMarkup(
+    createElement(definition.component, {
+      config: { ...first.config, maskShape: "angled" },
+      runtime: "obs",
+    }),
+  );
+  assert.match(angledMarkup, /clip-path:polygon\(/, "Angled OBS corners are clipped to transparency by the widget shell");
+
   const emptyEditor = renderToStaticMarkup(
     createElement(definition.component, { config: {}, runtime: "editor" }),
   );
@@ -92,7 +124,7 @@ try {
       onChange: () => {},
     }),
   );
-  for (const label of ["Source URL", "Shape", "Soft edge"]) {
+  for (const label of ["Source URL", "Shape", "Top-left corner", "Top-right corner", "Bottom-right corner", "Bottom-left corner", "Soft edge"]) {
     assert.ok(controlMarkup.includes(label), `Slot Window exposes ${label}`);
   }
   assert.ok(controlMarkup.includes("Paste &amp; connect"));

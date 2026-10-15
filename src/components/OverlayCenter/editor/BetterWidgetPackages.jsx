@@ -1742,7 +1742,12 @@ function SlotWindowControls({ config, onChange }) {
           onChange={(maskShape) => set({ maskShape })}
         />
         {c.maskShape === "rounded" && (
-          <SliderRow label="Corner radius" value={c.cornerRadius} min={0} max={240} unit="px" onChange={(cornerRadius) => set({ cornerRadius })} />
+          <>
+            <SliderRow label="Top-left corner" value={c.cornerTopLeft} min={0} max={240} unit="px" onChange={(cornerTopLeft) => set({ cornerTopLeft })} />
+            <SliderRow label="Top-right corner" value={c.cornerTopRight} min={0} max={240} unit="px" onChange={(cornerTopRight) => set({ cornerTopRight })} />
+            <SliderRow label="Bottom-right corner" value={c.cornerBottomRight} min={0} max={240} unit="px" onChange={(cornerBottomRight) => set({ cornerBottomRight })} />
+            <SliderRow label="Bottom-left corner" value={c.cornerBottomLeft} min={0} max={240} unit="px" onChange={(cornerBottomLeft) => set({ cornerBottomLeft })} />
+          </>
         )}
         <SliderRow label="Soft edge" value={c.feather} min={0} max={80} unit="px" onChange={(feather) => set({ feather })} />
       </Section>

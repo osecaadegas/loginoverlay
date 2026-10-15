@@ -54,6 +54,12 @@ export function normalizeSlotWindowSourceUrl(value) {
 }
 
 export function sanitizeSlotWindowConfig(config = {}) {
+  const cornerRadius = clampNumber(
+    config.cornerRadius,
+    0,
+    240,
+    SLOT_WINDOW_DEFAULTS.cornerRadius,
+  );
   return {
     ...SLOT_WINDOW_DEFAULTS,
     ...config,
@@ -62,7 +68,11 @@ export function sanitizeSlotWindowConfig(config = {}) {
     maskShape: VALID_SHAPES.has(config.maskShape)
       ? config.maskShape
       : SLOT_WINDOW_DEFAULTS.maskShape,
-    cornerRadius: clampNumber(config.cornerRadius, 0, 240, SLOT_WINDOW_DEFAULTS.cornerRadius),
+    cornerRadius,
+    cornerTopLeft: clampNumber(config.cornerTopLeft, 0, 240, cornerRadius),
+    cornerTopRight: clampNumber(config.cornerTopRight, 0, 240, cornerRadius),
+    cornerBottomRight: clampNumber(config.cornerBottomRight, 0, 240, cornerRadius),
+    cornerBottomLeft: clampNumber(config.cornerBottomLeft, 0, 240, cornerRadius),
     feather: clampNumber(config.feather, 0, 80, SLOT_WINDOW_DEFAULTS.feather),
     cropTop: clampNumber(config.cropTop, 0, 45, SLOT_WINDOW_DEFAULTS.cropTop),
     cropRight: clampNumber(config.cropRight, 0, 45, SLOT_WINDOW_DEFAULTS.cropRight),
@@ -77,7 +87,20 @@ export function buildSlotWindowSourceUrl(config = {}) {
   if (!normalized.sourceUrl) return "";
   const url = new URL(normalized.sourceUrl);
   url.searchParams.set("shape", normalized.maskShape);
-  url.searchParams.set("radius", String(normalized.cornerRadius));
+  const cornerRadii = [
+    normalized.cornerTopLeft,
+    normalized.cornerTopRight,
+    normalized.cornerBottomRight,
+    normalized.cornerBottomLeft,
+  ];
+  const uniformRadius = cornerRadii.every((radius) => radius === cornerRadii[0])
+    ? cornerRadii[0]
+    : 0;
+  url.searchParams.set("radius", String(uniformRadius));
+  url.searchParams.set("radiusTopLeft", String(normalized.cornerTopLeft));
+  url.searchParams.set("radiusTopRight", String(normalized.cornerTopRight));
+  url.searchParams.set("radiusBottomRight", String(normalized.cornerBottomRight));
+  url.searchParams.set("radiusBottomLeft", String(normalized.cornerBottomLeft));
   url.searchParams.set("feather", String(normalized.feather));
   url.searchParams.set("cropTop", String(normalized.cropTop));
   url.searchParams.set("cropRight", String(normalized.cropRight));

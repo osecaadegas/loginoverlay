@@ -7,16 +7,34 @@ import {
 import "./SlotWindowWidget.css";
 
 function outerMaskStyle(config) {
-  if (config.maskShape === "ellipse") return { borderRadius: "50%" };
-  if (config.maskShape === "angled") {
+  if (config.maskShape === "ellipse") {
     return {
-      clipPath:
-        "polygon(4% 0,96% 0,100% 7%,100% 93%,96% 100%,4% 100%,0 93%,0 7%)",
+      borderRadius: "50%",
+      clipPath: "ellipse(50% 50% at 50% 50%)",
+      WebkitClipPath: "ellipse(50% 50% at 50% 50%)",
+    };
+  }
+  if (config.maskShape === "angled") {
+    const clipPath =
+      "polygon(4% 0,96% 0,100% 7%,100% 93%,96% 100%,4% 100%,0 93%,0 7%)";
+    return {
+      clipPath,
+      WebkitClipPath: clipPath,
+    };
+  }
+  if (config.maskShape === "rounded") {
+    const radii = `${config.cornerTopLeft}px ${config.cornerTopRight}px ${config.cornerBottomRight}px ${config.cornerBottomLeft}px`;
+    const clipPath = `inset(0 round ${radii})`;
+    return {
+      borderRadius: radii,
+      clipPath,
+      WebkitClipPath: clipPath,
     };
   }
   return {
-    borderRadius:
-      config.maskShape === "rounded" ? `${config.cornerRadius}px` : 0,
+    borderRadius: 0,
+    clipPath: "inset(0)",
+    WebkitClipPath: "inset(0)",
   };
 }
 
