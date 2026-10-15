@@ -64,6 +64,7 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
           sandbox="allow-scripts allow-same-origin"
           referrerPolicy="no-referrer"
           scrolling="no"
+          style={outerMaskStyle(normalized)}
         />
       ) : (
         <div className="slot-window-widget__setup" data-element-id="emptyState">

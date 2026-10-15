@@ -93,6 +93,21 @@ try {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
   for (const runtime of ["editor", "obs"]) {
+    const captureMask = await page.$eval(`#rounded-${runtime} iframe`, (iframe) => ({
+      topLeftRadius: getComputedStyle(iframe).borderTopLeftRadius,
+      topRightRadius: getComputedStyle(iframe).borderTopRightRadius,
+      bottomRightRadius: getComputedStyle(iframe).borderBottomRightRadius,
+      bottomLeftRadius: getComputedStyle(iframe).borderBottomLeftRadius,
+      clipPath: getComputedStyle(iframe).clipPath,
+    }));
+    assert.equal(captureMask.topLeftRadius, "80px", `${runtime} applies the selected radius to the iframe layer itself`);
+    assert.deepEqual(
+      [captureMask.topRightRadius, captureMask.bottomRightRadius, captureMask.bottomLeftRadius],
+      ["0px", "0px", "0px"],
+      `${runtime} preserves independent radii on the other iframe corners`,
+    );
+    assert.match(captureMask.clipPath, /inset\(0px round 80px 0px 0px(?: 0px)?\)/, `${runtime} clips the iframe layer at the selected corner`);
+
     const roundedAlpha = await readAlpha(page, `#rounded-${runtime}`, [
       [1, 1],
       [238, 1],
