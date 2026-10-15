@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import puppeteer from 'puppeteer';
 
-const executable = process.env.SLOT_CAPTURE_AGENT_EXE || path.resolve('native/slot-capture-agent/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/streamerscenter-slot-capture-agent.exe');
+const executable = process.env.SLOT_CAPTURE_AGENT_EXE || path.resolve('native/slot-capture-agent/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/StreamersCenterSlotCaptureSetup.exe');
 const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--window-size=900,700', '--window-position=40,40'] });
 const page = (await browser.pages())[0];
 await page.goto(`data:text/html,${encodeURIComponent('<!doctype html><title>SC capture live fixture</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17324c}.game{position:absolute;inset:45px;background:linear-gradient(135deg,#06b6d4,#4f46e5 55%,#f59e0b);border:12px solid #fff}</style><div class="game"></div>')}`);
@@ -15,7 +15,7 @@ const metrics = await page.evaluate(() => ({
   browserMetrics: { screenX, screenY, outerWidth, outerHeight, innerWidth, innerHeight },
 }));
 
-const child = spawn(executable, [], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+const child = spawn(executable, ['--native-host'], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
 let buffered = Buffer.alloc(0);
 const messages = [];
 const errors = [];

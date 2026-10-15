@@ -6,7 +6,18 @@ This delivery contains the real selection, persistence, local capture and loopba
 
 Windows Graphics Capture, GPU mask/filter execution, shared D3D textures and the native OBS plugin are not included in this milestone. Therefore minimized windows, protected content, four simultaneous 1080p30 outputs and native zero-copy OBS transport are not claimed as supported.
 
-## Instalar o agente Windows
+## Instalador Windows recomendado
+
+1. Em **Apps → Slot Capture**, descarregue `StreamersCenterSlotCaptureSetup.exe`.
+2. Execute o instalador. Este coloca o agente local no AppData do utilizador e prepara os ficheiros da extensão.
+3. Use os botões do instalador para abrir `chrome://extensions` ou `edge://extensions` e a pasta preparada.
+4. Ative o modo de programador, escolha **Carregar expandida** e selecione essa pasta.
+5. Copie o ID de 32 caracteres da extensão, cole-o no instalador e clique em **Concluir instalação**.
+6. Recarregue a página Slot Capture.
+
+O Chrome e o Edge exigem a confirmação manual **Carregar expandida** para extensões que não são distribuídas através das lojas oficiais. O instalador não contorna esta proteção do navegador.
+
+## Instalação manual para desenvolvimento
 
 1. Install the .NET 8 SDK on the streaming PC.
 2. From the repository root, publish the local agent:

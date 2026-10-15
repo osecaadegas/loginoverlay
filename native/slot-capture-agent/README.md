@@ -2,7 +2,11 @@
 
 Local-only Windows capture host used by the MV3 extension and OBS Browser Source fallback. It never sends frames to StreamersCenter, Supabase, or Vercel.
 
-## Build and register
+## User installer
+
+Download and run `StreamersCenterSlotCaptureSetup.exe` from the Slot Capture page. It is self-contained, installs the per-user native host, prepares the extension folder, and does not require the .NET SDK or administrator rights. Chrome/Edge still require the user to approve **Load unpacked** and paste the generated extension ID into the installer.
+
+## Build and register manually
 
 ```powershell
 dotnet publish .\native\slot-capture-agent\StreamersCenter.SlotCapture.Agent.csproj -c Release

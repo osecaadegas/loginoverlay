@@ -170,16 +170,17 @@ export default function SlotCaptureManager() {
           <div className="sc-extension-setup__content">
             <span className="sc-eyebrow">Configuração necessária</span>
             <h2 id="slot-capture-extension-title">Instalar a extensão StreamersCenter</h2>
-            <p>O Chrome e o Edge não permitem instalar uma extensão diretamente a partir desta página. Descarregue o pacote e carregue a pasta extraída uma única vez.</p>
+            <p>O instalador Windows prepara o agente local e extrai a extensão. O Chrome ou Edge exige apenas uma confirmação manual para carregar a pasta.</p>
             <ol>
-              <li>Descarregue e extraia o ficheiro ZIP.</li>
-              <li>Abra <code>chrome://extensions</code> ou <code>edge://extensions</code>.</li>
-              <li>Ative <strong>Modo de programador</strong> e escolha <strong>Carregar expandida</strong>.</li>
-              <li>Selecione a pasta extraída e depois recarregue esta página.</li>
+              <li>Descarregue e execute o instalador Windows.</li>
+              <li>No instalador, abra <code>chrome://extensions</code> ou <code>edge://extensions</code>.</li>
+              <li>Ative <strong>Modo de programador</strong>, carregue a pasta preparada e copie o ID.</li>
+              <li>Cole o ID no instalador, conclua e recarregue esta página.</li>
             </ol>
           </div>
           <div className="sc-extension-setup__actions">
-            <a className="sc-primary" href="/downloads/streamerscenter-slot-capture-extension.zip" download><Download size={16} /> Descarregar extensão</a>
+            <a className="sc-primary" href="/downloads/StreamersCenterSlotCaptureSetup.exe" download><Download size={16} /> Instalador Windows (.exe)</a>
+            <a href="/downloads/streamerscenter-slot-capture-extension.zip" download><Download size={15} /> Apenas extensão (.zip)</a>
             <button type="button" onClick={() => navigator.clipboard.writeText(navigator.userAgent.includes('Edg') ? 'edge://extensions' : 'chrome://extensions').then(() => setMessage('Endereço das extensões copiado. Cole-o na barra de endereço.'))}><Copy size={15} /> Copiar endereço</button>
             <button type="button" onClick={() => window.location.reload()}><RefreshCw size={15} /> Já instalei — recarregar</button>
           </div>

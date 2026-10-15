@@ -1,8 +1,12 @@
 param(
   [Parameter(Mandatory=$true)][ValidatePattern('^[a-p]{32}$')][string]$ExtensionId,
-  [string]$AgentPath = (Join-Path $PSScriptRoot 'bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\streamerscenter-slot-capture-agent.exe')
+  [string]$AgentPath = (Join-Path $PSScriptRoot 'bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\StreamersCenterSlotCaptureSetup.exe')
 )
-$resolvedAgent = (Resolve-Path -LiteralPath $AgentPath -ErrorAction Stop).Path
+$sourceAgent = (Resolve-Path -LiteralPath $AgentPath -ErrorAction Stop).Path
+$installDirectory = Join-Path $env:LOCALAPPDATA 'StreamersCenter\SlotCapture'
+New-Item -ItemType Directory -Force -Path $installDirectory | Out-Null
+$resolvedAgent = Join-Path $installDirectory 'streamerscenter-slot-capture-native-host.exe'
+Copy-Item -LiteralPath $sourceAgent -Destination $resolvedAgent -Force
 $manifestPath = Join-Path (Split-Path $resolvedAgent) 'com.streamerscenter.slot_capture.json'
 $manifest = [ordered]@{
   name = 'com.streamerscenter.slot_capture'

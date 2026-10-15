@@ -6,10 +6,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>None</DebugType>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <AssemblyName>streamerscenter-slot-capture-agent</AssemblyName>
+    <AssemblyName>StreamersCenterSlotCaptureSetup</AssemblyName>
     <RootNamespace>StreamersCenter.SlotCapture.Agent</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\public\downloads\streamerscenter-slot-capture-extension.zip" LogicalName="StreamersCenter.SlotCapture.Extension.zip" />
+  </ItemGroup>
 </Project>

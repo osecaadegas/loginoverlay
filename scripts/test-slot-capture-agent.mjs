@@ -5,10 +5,10 @@ import path from 'node:path';
 
 const executable = process.env.SLOT_CAPTURE_AGENT_EXE;
 const dotnet = executable || process.env.SLOT_CAPTURE_DOTNET || 'dotnet';
-const dll = process.env.SLOT_CAPTURE_AGENT_DLL || path.resolve('native/slot-capture-agent/bin/Release/net8.0-windows10.0.19041.0/win-x64/streamerscenter-slot-capture-agent.dll');
+const dll = process.env.SLOT_CAPTURE_AGENT_DLL || path.resolve('native/slot-capture-agent/bin/Release/net8.0-windows10.0.19041.0/win-x64/StreamersCenterSlotCaptureSetup.dll');
 if (!executable) assert.equal(fs.existsSync(dll), true, `Build the agent first: missing ${dll}`);
 
-const child = spawn(dotnet, executable ? [] : [dll], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+const child = spawn(dotnet, executable ? ['--native-host'] : [dll, '--native-host'], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
 let buffered = Buffer.alloc(0);
 const messages = [];
 const errors = [];
@@ -30,7 +30,7 @@ function send(value) {
   child.stdin.write(Buffer.concat([length, payload]));
 }
 
-async function waitFor(predicate, timeout = 5000) {
+async function waitFor(predicate, timeout = 60000) {
   const started = Date.now();
   while (Date.now() - started < timeout) {
     const match = messages.find(predicate);

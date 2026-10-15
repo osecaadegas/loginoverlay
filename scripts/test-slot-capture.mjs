@@ -75,12 +75,16 @@ assert.match(manager, /Nenhum vídeo é simulado ou enviado para a nuvem/);
 assert.match(manager, /Selecionar slot no browser/);
 assert.match(manager, /Saída OBS independente/);
 assert.match(manager, /streamerscenter-slot-capture-extension\.zip/);
+assert.match(manager, /StreamersCenterSlotCaptureSetup\.exe/);
 assert.match(manager, /chrome:\/\/extensions/);
 assert.match(manager, /extensionDetected/);
 
 const extensionPackage = await fs.stat(path.join(root, 'public/downloads/streamerscenter-slot-capture-extension.zip'));
 assert.equal(extensionPackage.isFile(), true);
 assert.equal(extensionPackage.size > 1000, true, 'Published extension ZIP must contain the unpacked MV3 extension');
+const windowsInstaller = await fs.stat(path.join(root, 'public/downloads/StreamersCenterSlotCaptureSetup.exe'));
+assert.equal(windowsInstaller.isFile(), true);
+assert.equal(windowsInstaller.size > 1_000_000, true, 'Published Windows installer must be a built executable');
 const extensionReadme = await fs.readFile(path.join(root, 'browser-extension/README.txt'), 'utf8');
 assert.match(extensionReadme, /Carregar expandida/);
 
