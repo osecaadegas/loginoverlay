@@ -211,13 +211,13 @@ export default function FreezeShatterWidget({
   }, [normalized]);
 
   useEffect(() => {
-    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled) {
+    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled || error) {
       setObsPermissionWait(false);
       return undefined;
     }
     const timer = window.setTimeout(() => setObsPermissionWait(true), 1800);
     return () => window.clearTimeout(timer);
-  }, [normalized.enabled, previewOnly, ready, runtime]);
+  }, [error, normalized.enabled, previewOnly, ready, runtime]);
 
   useEffect(() => {
     if (!ready || previewOnly || normalized.triggerMode === "manual") return;
@@ -233,7 +233,10 @@ export default function FreezeShatterWidget({
   const errorInfo = describeError(error);
   const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled &&
     (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera"));
-  const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera;
+  const showError =
+    (previewOnly && Boolean(error) && errorInfo.kind === "camera") ||
+    obsNeedsCamera ||
+    (runtime === "obs" && Boolean(error) && errorInfo.kind !== "camera");
   const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
 
   return (

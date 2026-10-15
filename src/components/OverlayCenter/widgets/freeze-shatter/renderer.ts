@@ -1,3 +1,4 @@
+import 'pixi.js/unsafe-eval';
 import {
   Application, Container, Graphics, Mesh, MeshGeometry, Rectangle, RenderTexture, Sprite, Texture,
   type Filter, type Ticker,

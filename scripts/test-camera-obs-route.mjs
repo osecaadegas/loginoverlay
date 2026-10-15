@@ -27,6 +27,10 @@ try {
     if (url.pathname === "/__camera-obs-route-test") {
       return request.respond({
         contentType: "text/html",
+        headers: {
+          // Match the production overlay CSP: Pixi must initialize without unsafe-eval.
+          "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws: wss:;",
+        },
         body: `<html><body style="margin:0"><div id="root"></div>
           <script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`,
       });
@@ -139,6 +143,7 @@ try {
   });
   assert.equal(await page.$(".better-obs-overlay--empty"), null, "The published Camera widget must not render the empty OBS shell");
   assert.equal(await page.$eval(".freeze-shatter-widget__renderer canvas", (canvas) => canvas.width), 1280);
+  assert.equal(await page.$eval(".freeze-shatter-widget", (widget) => widget.dataset.ready), "true", "The Camera renderer initializes under a CSP that blocks unsafe-eval");
   assert.ok(await page.evaluate(() => window.cameraObsAudit.requestedConstraints.some((item) => item?.video?.deviceId?.exact === "obs-camera")), "The OBS route resolves the saved camera label to the OBS browser profile device");
   assert.equal(await page.$(".freeze-shatter-widget__error"), null, "A ready camera does not retain the OBS permission notice");
   await page.screenshot({ path: ".codex-dev/camera-published-obs-route.png", omitBackground: true });

@@ -81,22 +81,22 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
 
   useEffect(() => { rendererRef.current?.updateConfig(normalized); }, [normalized]);
   useEffect(() => {
-    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled) { setObsPermissionWait(false); return undefined; }
+    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled || error) { setObsPermissionWait(false); return undefined; }
     const timer = window.setTimeout(() => setObsPermissionWait(true), 1800);
     return () => window.clearTimeout(timer);
-  }, [normalized.enabled, previewOnly, ready, runtime]);
+  }, [error, normalized.enabled, previewOnly, ready, runtime]);
   useEffect(() => {
     if (!ready || previewOnly || normalized.triggerMode === "manual") return;
     if (normalized.triggerMode === "on_load" && ranOnLoadRef.current) return;
     clearTimer(); timerRef.current = window.setTimeout(() => { ranOnLoadRef.current = true; rendererRef.current?.moneyExplosion(); }, normalized.triggerDelay * 1000); return clearTimer;
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
-  const errorInfo = describeError(error); const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled && (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera")); const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera; const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
+  const errorInfo = describeError(error); const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled && (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera")); const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera || (runtime === "obs" && Boolean(error) && errorInfo.kind !== "camera"); const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
   return (
     <div className="money-explosion-widget" data-ready={ready ? "true" : "false"} data-state={state.toLowerCase()} data-runtime={runtime} data-trigger-mode={normalized.triggerMode} data-widget-instance={instanceId} data-banknotes={metrics.banknotes} data-visible-banknotes={state === "HIDDEN" || state === "VISIBLE" ? 0 : metrics.banknotes} data-particles={metrics.particles}>
       <div className="money-explosion-widget__renderer" ref={hostRef} />
       {previewOnly && <div className="money-explosion-widget__status" aria-live="polite"><Banknote size={15} /><span>{ready ? state.replaceAll("_", " ") : "Preparing renderer"}</span></div>}
-      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong><span>{visibleError}</span></span><button type="button" onClick={retryCamera}>{obsNeedsCamera ? "Enable camera" : errorInfo.action}</button></div>}
+      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong><span>{visibleError}</span></span><button type="button" onClick={obsNeedsCamera || errorInfo.kind === "camera" ? retryCamera : () => setError("")}>{obsNeedsCamera ? "Enable camera" : errorInfo.action}</button></div>}
     </div>
   );
 }

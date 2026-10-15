@@ -21,7 +21,7 @@ try {
   await page.setRequestInterception(true);
   page.on("request", async (request) => {
     const url = new URL(request.url());
-    if (url.pathname === "/__money-explosion-test") return request.respond({ contentType: "text/html", body: `<html><body style="margin:0;background:#07111e;color:white"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>` });
+    if (url.pathname === "/__money-explosion-test") return request.respond({ contentType: "text/html", headers: { "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws: wss:;" }, body: `<html><body style="margin:0;background:#07111e;color:white"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>` });
     if (url.origin === new URL(base).origin) return request.continue(); return request.abort();
   });
   await page.goto(`${base}/__money-explosion-test`, { waitUntil: "domcontentloaded", timeout: 30000 });
