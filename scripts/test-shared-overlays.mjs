@@ -16,6 +16,12 @@ try {
   supabase.rpc = client.rpc;
 
   const layout = registry.createDefaultBetterLayout();
+  layout.instances.push(registry.createBetterInstance('slot_window', {
+    config: {
+      sourceUrl: 'http://127.0.0.1:17832/view/panel-1?token=0123456789abcdef0123456789abcdef0123456789abcdef',
+      maskShape: 'rounded',
+    },
+  }));
   const chat = layout.instances.find((item) => item.widgetType === 'chat');
   chat.config = {
     ...chat.config,
@@ -53,6 +59,8 @@ try {
   assert.equal(storedChat.config.fontFamily, 'Impact');
   assert.equal(storedChat.config.colourTheme, 'arctic');
   assert.equal(storedChat.config.textureUrl, '/images/safe-built-in-texture.webp');
+  const storedSlotWindow = stored.layout.instances.find((item) => item.widgetType === 'slot_window');
+  assert.equal(storedSlotWindow.config.sourceUrl, '', 'Shared overlays never publish the local ScreenSplit token');
 
   const library = await service.listSharedBetterOverlays('owner-b');
   assert.equal(library.length, 1);

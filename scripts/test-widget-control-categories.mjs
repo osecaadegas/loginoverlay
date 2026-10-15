@@ -51,6 +51,17 @@ try {
       );
       continue;
     }
+    if (widgetDefinition.type === "slot_window") {
+      assert.ok(
+        markup.includes("ScreenSplit source") &&
+          markup.includes("Source URL") &&
+          markup.includes("Mask") &&
+          markup.includes("Performance") &&
+          !markup.includes("Colour Theme"),
+        "Slot Window exposes only its supported source, mask and performance controls",
+      );
+      continue;
+    }
     assert.ok(
       markup.includes('role="tablist"') &&
         markup.includes('aria-label="Widget control categories"') &&

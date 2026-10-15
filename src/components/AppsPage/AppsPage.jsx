@@ -21,7 +21,7 @@ import { useAdmin } from "../../hooks/useAdmin";
 import "./AppsPage.css";
 
 const SCREEN_SPLIT_DOWNLOAD_URL =
-  "https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.9/StreamersCenterBrowserSetup-0.1.9.exe";
+  "https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.10/StreamersCenterBrowserSetup-0.1.10.exe";
 
 export default function AppsPage() {
   const { user, signOut } = useAuth();

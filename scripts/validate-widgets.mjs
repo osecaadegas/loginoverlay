@@ -20,6 +20,7 @@ const builtinSource = readFileSync(
 
 const expectedTypes = [
   "camera",
+  "slot_window",
   "current_slot",
   "slot_bingo",
   "connect_four",

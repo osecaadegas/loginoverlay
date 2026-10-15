@@ -1,5 +1,12 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
+  slot_window: {
+    category: "Stream",
+    keywords: "slot window screensplit iframe capture game obs mask crop",
+    source: "ScreenSplit Browser",
+    supportsColourTheme: false,
+    simpleSections: ["ScreenSplit source", "Mask", "Performance"],
+  },
   camera: {
     category: "Stream",
     keywords: "webcam camera ice shatter money banknotes transition reconstruction chroma green screen",

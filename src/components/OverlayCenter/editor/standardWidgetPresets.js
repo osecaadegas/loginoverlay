@@ -1,4 +1,5 @@
 export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
+  slot_window: { x: 420, y: 170, width: 1080, height: 608, zIndex: 18 },
   camera: { x: 640, y: 360, width: 640, height: 360, zIndex: 76 },
   current_slot: { x: 300, y: 760, width: 1100, height: 240, zIndex: 65 },
   background: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
@@ -46,6 +47,7 @@ export const STANDARD_BETTER_WIDGET_GEOMETRY = Object.freeze({
 });
 
 export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
+  slot_window: {},
   camera: {},
   current_slot: {},
   slot_bingo: {},

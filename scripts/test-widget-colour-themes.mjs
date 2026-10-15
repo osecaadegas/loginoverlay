@@ -100,7 +100,9 @@ try {
     window.themeTest = {
       ...themes, ...registry, routing, switchChatStyle, ensureBetterWidgetConfig, resolveBonusHuntSyncedColors,
       themes: WIDGET_COLOUR_THEMES.map(theme => theme.key),
-      types: registry.getBetterWidgetTypes(),
+      types: registry.getBetterWidgetTypes().filter(
+        type => registry.getBetterWidgetDefinition(type)?.editor?.supportsColourTheme !== false,
+      ),
       base(type) {
         const c = registry.resolveBetterWidgetConfig(type, registry.getBetterWidgetDefinition(type).defaultConfig, 'mock');
         return { ...c, twitchChannel: '', twitchEnabled: false, youtubeEnabled: false, kickEnabled: false,

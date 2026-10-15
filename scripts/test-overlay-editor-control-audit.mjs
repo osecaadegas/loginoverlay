@@ -168,7 +168,7 @@ try {
   };
 
   const types = await page.evaluate(() => window.controlAudit.types);
-  assert.equal(types.length, 13, "The audit covers every production editor widget");
+  assert.equal(types.length, 15, "The audit covers every production editor widget");
   const sampleParity = await page.evaluate(() => {
     const sentinel = {
       fontFamily: "Georgia, serif",

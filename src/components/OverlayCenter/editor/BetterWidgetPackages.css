@@ -581,6 +581,30 @@
   font-weight: 800;
 }
 
+.bp-controls--slot-window .bp-inline-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.bp-controls--slot-window .bp-inline-actions .bp-reset {
+  min-height: 34px;
+  margin-top: 0;
+  border-color: rgba(34, 211, 238, 0.3);
+  background: rgba(8, 89, 112, 0.22);
+  color: #b9f4ff;
+  font-size: 11px;
+}
+
+.bp-controls--slot-window [data-slot-window-status="connected"] {
+  color: #62edb9;
+}
+
+.bp-controls--slot-window [data-slot-window-status="invalid"] {
+  color: #fda4af;
+}
+
 .bp-hint {
   margin: 0;
   color: #7f9bbb;

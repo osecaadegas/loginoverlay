@@ -96,6 +96,14 @@ import {
   sanitizeMoneyExplosionConfig,
 } from "../widgets/money-explosion/config";
 import CameraWidget from "../widgets/camera/CameraWidget";
+import SlotWindowWidget from "../widgets/slot-window/SlotWindowWidget";
+import {
+  SLOT_WINDOW_DEFAULTS,
+  SLOT_WINDOW_MASK_OPTIONS,
+  getSlotWindowPanelLabel,
+  normalizeSlotWindowSourceUrl,
+  sanitizeSlotWindowConfig,
+} from "../widgets/slot-window/slotWindowModel";
 import {
   DEFAULT_CAMERA_CONFIG,
   migrateCameraConfig,
@@ -1178,6 +1186,9 @@ const BASE_BETTER_CONFIG = {
   camera: {
     ...DEFAULT_CAMERA_CONFIG,
   },
+  slot_window: {
+    ...SLOT_WINDOW_DEFAULTS,
+  },
 };
 
 export const DEFAULT_BETTER_CONFIG = Object.freeze(
@@ -1193,6 +1204,14 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {
+    type: "slot_window",
+    label: "Slot Window",
+    styleKey: "displayStyle",
+    styleId: "screen_split",
+    icon: "▣",
+    defaultSize: { width: 960, height: 540 },
+  },
   {
     type: "camera",
     label: "Camera",
@@ -1645,6 +1664,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       : {}),
   };
   if (type === "camera") return sanitizeCameraConfig(merged);
+  if (type === "slot_window") return sanitizeSlotWindowConfig(merged);
   if (type === "freeze_shatter" || type === "money_explosion") return migrateCameraConfig(merged, type);
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "slot_bingo") return normalizeSlotBingoConfig(merged);
@@ -1659,6 +1679,90 @@ export function ensureBetterWidgetConfig(type, config = {}) {
     merged.carouselMode = "3d";
   }
   return merged;
+}
+
+function SlotWindowControls({ config, onChange }) {
+  const c = sanitizeSlotWindowConfig(config);
+  const [sourceDraft, setSourceDraft] = useState(c.sourceUrl);
+  const set = (patch) => onChange(sanitizeSlotWindowConfig({ ...c, ...patch }));
+  useEffect(() => {
+    if (c.sourceUrl) setSourceDraft(c.sourceUrl);
+  }, [c.sourceUrl]);
+  const connectSource = (value = sourceDraft) => {
+    const normalized = normalizeSlotWindowSourceUrl(value);
+    if (!normalized) return false;
+    setSourceDraft(normalized);
+    set({ sourceUrl: normalized });
+    return true;
+  };
+  const pasteAndConnect = async () => {
+    try {
+      const value = await navigator.clipboard.readText();
+      setSourceDraft(value);
+      connectSource(value);
+    } catch {
+      // Clipboard access may be disabled. The field and Connect button remain available.
+    }
+  };
+  const invalidDraft = Boolean(sourceDraft.trim()) && !normalizeSlotWindowSourceUrl(sourceDraft);
+  return (
+    <div className="bp-controls bp-controls--slot-window">
+      <Section title="ScreenSplit source" icon={<MonitorPlay size={13} />} defaultOpen simple>
+        <TextRow
+          label="Source URL"
+          value={sourceDraft}
+          onChange={setSourceDraft}
+        />
+        <div className="bp-inline-actions">
+          <button className="bp-reset" type="button" onClick={pasteAndConnect}>
+            <MonitorPlay size={13} /> Paste &amp; connect
+          </button>
+          <button className="bp-reset" type="button" onClick={() => connectSource()}>
+            <Check size={13} /> Connect
+          </button>
+        </div>
+        <p className="bp-hint">
+          In ScreenSplit Browser, open the slot and press Export. Paste the copied link here.
+        </p>
+        {invalidDraft && (
+          <p className="bp-hint" data-slot-window-status="invalid">
+            This is not a valid ScreenSplit Slot Window link.
+          </p>
+        )}
+        <p className="bp-hint" data-slot-window-status={c.sourceUrl ? "connected" : "empty"}>
+          {getSlotWindowPanelLabel(c)}
+        </p>
+      </Section>
+
+      <Section title="Mask" icon={<Frame size={13} />} defaultOpen simple>
+        <SelectRow
+          label="Shape"
+          value={c.maskShape}
+          options={SLOT_WINDOW_MASK_OPTIONS}
+          onChange={(maskShape) => set({ maskShape })}
+        />
+        {c.maskShape === "rounded" && (
+          <SliderRow label="Corner radius" value={c.cornerRadius} min={0} max={240} unit="px" onChange={(cornerRadius) => set({ cornerRadius })} />
+        )}
+        <SliderRow label="Soft edge" value={c.feather} min={0} max={80} unit="px" onChange={(feather) => set({ feather })} />
+      </Section>
+
+      <Section title="Crop" icon={<Maximize2 size={13} />} defaultOpen={false}>
+        <SliderRow label="Top" value={c.cropTop} min={0} max={45} unit="%" onChange={(cropTop) => set({ cropTop })} />
+        <SliderRow label="Right" value={c.cropRight} min={0} max={45} unit="%" onChange={(cropRight) => set({ cropRight })} />
+        <SliderRow label="Bottom" value={c.cropBottom} min={0} max={45} unit="%" onChange={(cropBottom) => set({ cropBottom })} />
+        <SliderRow label="Left" value={c.cropLeft} min={0} max={45} unit="%" onChange={(cropLeft) => set({ cropLeft })} />
+      </Section>
+
+      <Section title="Performance" icon={<Gauge size={13} />} defaultOpen={false} simple>
+        <SliderRow label="Capture rate" value={c.fps} min={5} max={30} unit=" FPS" onChange={(fps) => set({ fps })} />
+      </Section>
+
+      <button className="bp-reset" type="button" onClick={() => onChange({ ...SLOT_WINDOW_DEFAULTS })}>
+        <RotateCcw size={13} /> Reset Slot Window
+      </button>
+    </div>
+  );
 }
 
 export function updateBetterBonusTypography(config, elementId, patch) {
@@ -2161,6 +2265,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "slot_window":
+      return <SlotWindowWidget config={config} runtime="editor" />;
     case "camera":
       return <CameraWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case "money_explosion":
@@ -7738,6 +7844,9 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  if (type === "slot_window") {
+    return <SlotWindowControls config={c} onChange={onChange} />;
+  }
   if (type === "camera") {
     const style = c.displayStyle;
     const updateStyleConfig = (nextStyleConfig) => onChange(updateCameraStyleConfig(c, nextStyleConfig));

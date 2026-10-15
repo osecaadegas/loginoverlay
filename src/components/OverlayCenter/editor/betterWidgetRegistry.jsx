@@ -18,6 +18,7 @@ import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
 import CameraWidget from "../widgets/camera/CameraWidget";
+import SlotWindowWidget from "../widgets/slot-window/SlotWindowWidget";
 import { migrateCameraConfig } from "../widgets/camera/cameraConfig";
 import {
   BETTER_WIDGETS,
@@ -637,6 +638,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  slot_window: SlotWindowWidget,
   camera: CameraWidget,
   current_slot: CurrentSlotWidget,
   slot_bingo: SlotBingoWidget,
@@ -654,6 +656,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  slot_window: ["source", "mask", "crop", "performance"],
   camera: ["style", "trigger", "camera", "chroma", "effect", "motion", "audio", "performance"],
   current_slot: ['display', 'colours'],
   slot_bingo: ["content", "board", "layout", "colours"],
@@ -702,6 +705,12 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
+  slot_window: {
+    minWidth: 240,
+    minHeight: 135,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
   camera: {
     minWidth: 320,
     minHeight: 180,

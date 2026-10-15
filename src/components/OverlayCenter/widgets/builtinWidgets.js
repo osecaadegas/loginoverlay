@@ -36,6 +36,24 @@ import CurrentSlotConfig from './current-slot/CurrentSlotConfig';
 import { CURRENT_SLOT_DEFAULTS } from './current-slot/currentSlotModel';
 import CameraWidget from './camera/CameraWidget';
 import { DEFAULT_CAMERA_CONFIG } from './camera/cameraConfig';
+import SlotWindowWidget from './slot-window/SlotWindowWidget';
+import { SLOT_WINDOW_DEFAULTS } from './slot-window/slotWindowModel';
+
+registerWidget({
+  type: 'slot_window',
+  label: 'Slot Window',
+  icon: '▣',
+  description: 'Display an isolated ScreenSplit slot panel as an independent overlay window.',
+  category: 'better',
+  component: SlotWindowWidget,
+  configPanel: null,
+  styleConfigKey: 'displayStyle',
+  styles: [
+    { id: 'screen_split', label: 'ScreenSplit', defaultSize: { width: 960, height: 540 } },
+  ],
+  defaults: { ...SLOT_WINDOW_DEFAULTS },
+});
+
 registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [
   { id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } },
   { id: 'portrait_card', label: 'Portrait Card', defaultSize: { width: 225, height: 400 } },

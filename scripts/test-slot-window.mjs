@@ -1,0 +1,120 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createServer } from "vite";
+
+globalThis.window = { location: { origin: "https://streamerscenter.com" } };
+
+const TOKEN = "0123456789abcdef0123456789abcdef0123456789abcdef";
+const SOURCE = `http://127.0.0.1:17832/view/panel-2?token=${TOKEN}`;
+
+const server = await createServer({
+  logLevel: "silent",
+  server: { middlewareMode: true },
+  appType: "custom",
+});
+
+try {
+  const model = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/slot-window/slotWindowModel.js",
+  );
+  const registry = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
+  );
+  const controls = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+  );
+  const templates = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/sharedOverlayTemplates.js",
+  );
+
+  assert.equal(model.normalizeSlotWindowSourceUrl(SOURCE), SOURCE);
+  assert.equal(model.normalizeSlotWindowSourceUrl("https://evil.example/view/panel-2?token=" + TOKEN), "");
+  assert.equal(model.normalizeSlotWindowSourceUrl("http://127.0.0.1:17899/view/panel-2?token=" + TOKEN), "");
+
+  const configured = model.buildSlotWindowSourceUrl({
+    sourceUrl: SOURCE,
+    maskShape: "angled",
+    feather: 8,
+    cropTop: 3,
+    cropLeft: 4,
+    fps: 24,
+  });
+  const configuredUrl = new URL(configured);
+  assert.equal(configuredUrl.searchParams.get("shape"), "angled");
+  assert.equal(configuredUrl.searchParams.get("feather"), "8");
+  assert.equal(configuredUrl.searchParams.get("cropTop"), "3");
+  assert.equal(configuredUrl.searchParams.get("cropLeft"), "4");
+  assert.equal(configuredUrl.searchParams.get("fps"), "24");
+
+  const first = registry.createBetterInstance("slot_window", {
+    config: { sourceUrl: SOURCE, cropTop: 2 },
+  });
+  const second = registry.createBetterInstance("slot_window", {
+    config: {
+      ...first.config,
+      sourceUrl: SOURCE.replace("panel-2", "panel-3"),
+    },
+  });
+  assert.ok(first && second, "Slot Window instances can be created and duplicated");
+  assert.notEqual(first.instanceId, second.instanceId, "Each Slot Window keeps an independent instance ID");
+  assert.notEqual(first.config.sourceUrl, second.config.sourceUrl, "Each Slot Window keeps an independent panel source");
+
+  const definition = registry.getBetterWidgetDefinition("slot_window");
+  assert.ok(definition.controlSchema.includes("performance"), "Slot Window registers performance controls");
+  const editorMarkup = renderToStaticMarkup(
+    createElement(definition.component, { config: first.config, runtime: "editor" }),
+  );
+  const obsMarkup = renderToStaticMarkup(
+    createElement(definition.component, { config: first.config, runtime: "obs" }),
+  );
+  for (const markup of [editorMarkup, obsMarkup]) {
+    assert.ok(markup.includes("slot-window-widget__capture"));
+    assert.ok(markup.includes("local-network-access; local-network; loopback-network"));
+    assert.ok(markup.includes("127.0.0.1:17832"));
+    assert.ok(markup.includes("panel-2"));
+  }
+
+  const emptyEditor = renderToStaticMarkup(
+    createElement(definition.component, { config: {}, runtime: "editor" }),
+  );
+  const emptyObs = renderToStaticMarkup(
+    createElement(definition.component, { config: {}, runtime: "obs" }),
+  );
+  assert.ok(emptyEditor.includes("In ScreenSplit, isolate the slot and press Export."));
+  assert.equal(emptyObs, "", "An unconfigured Slot Window stays transparent in OBS");
+
+  const controlMarkup = renderToStaticMarkup(
+    createElement(controls.BetterWidgetControls, {
+      type: "slot_window",
+      config: first.config,
+      onChange: () => {},
+    }),
+  );
+  for (const label of ["Source URL", "Shape", "Soft edge"]) {
+    assert.ok(controlMarkup.includes(label), `Slot Window exposes ${label}`);
+  }
+  assert.ok(controlMarkup.includes("Paste &amp; connect"));
+  assert.ok(!controlMarkup.includes("Colour Theme"));
+
+  const layout = registry.normalizeBetterLayout({
+    name: "Slot windows",
+    instances: [first, second],
+  });
+  const shareable = templates.createShareableBetterLayout(layout);
+  for (const slotWindow of shareable.instances.filter((item) => item.widgetType === "slot_window")) {
+    assert.equal(slotWindow.config.sourceUrl, "", "Community templates strip local ScreenSplit URLs and tokens");
+  }
+
+  const vercel = readFileSync(new URL("../vercel.json", import.meta.url), "utf8");
+  assert.match(vercel, /local-network-access=\*/);
+  assert.match(vercel, /local-network=\*/);
+  assert.match(vercel, /loopback-network=\*/);
+  assert.match(vercel, /frame-src[^\n]+http:\/\/127\.0\.0\.1:\*/);
+  assert.match(vercel, /frame-src[^\n]+http:\/\/localhost:\*/);
+
+  console.log("Slot Window checks passed: URL security, multiple instances, controls, editor/OBS parity, local framing and sharing privacy.");
+} finally {
+  await server.close();
+}

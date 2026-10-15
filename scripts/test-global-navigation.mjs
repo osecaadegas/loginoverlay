@@ -47,7 +47,7 @@ const headerSource = readSource('../src/components/LandingPage/LandingHeader.jsx
 assert.ok(landingSource.includes('<LandingHeader') && headerSource.includes('StreamerCenterLogo.png'), 'Homepage owns one branded marketing header');
 assert.match(appSource, /const isMarketingHome = location.pathname === ["']\/["'];/);
 assert.ok(
-  appsPageSource.includes("screensplit-browser-v0.1.9/StreamersCenterBrowserSetup-0.1.9.exe") &&
+  appsPageSource.includes("screensplit-browser-v0.1.10/StreamersCenterBrowserSetup-0.1.10.exe") &&
     appsPageSource.includes('label: "ScreenSplit Browser"'),
   "Apps exposes the versioned ScreenSplit Browser installer download",
 );
