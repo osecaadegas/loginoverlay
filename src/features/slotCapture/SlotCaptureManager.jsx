@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Activity, Blend, BoxSelect, Circle, Copy, Cpu, Eye, EyeOff, Filter,
+  Activity, Blend, BoxSelect, Circle, Copy, Cpu, Download, Eye, EyeOff, Filter,
   Layers3, MonitorPlay, MousePointer2, Plus, RefreshCw, Save, Scissors,
-  Square, Trash2, Unplug, WandSparkles, Wifi, WifiOff,
+  Square, Trash2, Unplug, WandSparkles, Wifi, WifiOff, Puzzle,
 } from 'lucide-react';
 import {
   addCaptureFilter, addCaptureMask, createCaptureProfile, deleteCaptureFilter,
@@ -59,7 +59,7 @@ export default function SlotCaptureManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [agent, setAgent] = useState({ connected: false });
+  const [agent, setAgent] = useState({ connected: false, extensionDetected: null });
 
   const selected = useMemo(() => profiles.find((profile) => profile.id === selectedId) || profiles[0] || null, [profiles, selectedId]);
   const source = selected?.slot_capture_sources?.[0] || null;
@@ -82,13 +82,13 @@ export default function SlotCaptureManager() {
   const refreshAgent = useCallback(async () => {
     try {
       const response = await sendCaptureCommand('status');
-      setAgent(response.agent || { connected: false });
+      setAgent({ ...(response.agent || { connected: false }), extensionDetected: true });
       if (response.selection && selected) {
         const alreadySaved = source?.element_fingerprint === response.selection.fingerprint;
         if (!alreadySaved) setMessage('Existe uma nova região selecionada na extensão. Use “Associar seleção”.');
       }
     } catch (bridgeError) {
-      setAgent({ connected: false, error: bridgeError.message });
+      setAgent({ connected: false, extensionDetected: false, error: bridgeError.message });
     }
   }, [selected, source?.element_fingerprint]);
 
@@ -158,11 +158,33 @@ export default function SlotCaptureManager() {
           <p>Capture apenas o jogo selecionado. O vídeo permanece neste computador.</p>
         </div>
         <div className={`sc-agent sc-agent--${agent.connected ? 'online' : 'offline'}`}>
-          {agent.connected ? <Wifi size={18} /> : <WifiOff size={18} />}
-          <div><strong>{agent.connected ? 'Agente ligado' : 'Agente desligado'}</strong><small>{agent.connected ? `v${agent.version || '-'}` : agent.error || 'Inicie o agente local'}</small></div>
+          {agent.connected ? <Wifi size={18} /> : agent.extensionDetected ? <Puzzle size={18} /> : <WifiOff size={18} />}
+          <div><strong>{agent.connected ? 'Agente ligado' : agent.extensionDetected ? 'Extensão detetada' : 'Extensão não detetada'}</strong><small>{agent.connected ? `v${agent.version || '-'}` : agent.extensionDetected ? agent.error || 'Inicie o agente local' : 'Instale a extensão e recarregue esta página'}</small></div>
           <button type="button" onClick={refreshAgent} title="Atualizar estado"><RefreshCw size={15} /></button>
         </div>
       </header>
+
+      {agent.extensionDetected === false && (
+        <section className="sc-extension-setup" aria-labelledby="slot-capture-extension-title">
+          <div className="sc-extension-setup__icon"><Puzzle size={28} /></div>
+          <div className="sc-extension-setup__content">
+            <span className="sc-eyebrow">Configuração necessária</span>
+            <h2 id="slot-capture-extension-title">Instalar a extensão StreamersCenter</h2>
+            <p>O Chrome e o Edge não permitem instalar uma extensão diretamente a partir desta página. Descarregue o pacote e carregue a pasta extraída uma única vez.</p>
+            <ol>
+              <li>Descarregue e extraia o ficheiro ZIP.</li>
+              <li>Abra <code>chrome://extensions</code> ou <code>edge://extensions</code>.</li>
+              <li>Ative <strong>Modo de programador</strong> e escolha <strong>Carregar expandida</strong>.</li>
+              <li>Selecione a pasta extraída e depois recarregue esta página.</li>
+            </ol>
+          </div>
+          <div className="sc-extension-setup__actions">
+            <a className="sc-primary" href="/downloads/streamerscenter-slot-capture-extension.zip" download><Download size={16} /> Descarregar extensão</a>
+            <button type="button" onClick={() => navigator.clipboard.writeText(navigator.userAgent.includes('Edg') ? 'edge://extensions' : 'chrome://extensions').then(() => setMessage('Endereço das extensões copiado. Cole-o na barra de endereço.'))}><Copy size={15} /> Copiar endereço</button>
+            <button type="button" onClick={() => window.location.reload()}><RefreshCw size={15} /> Já instalei — recarregar</button>
+          </div>
+        </section>
+      )}
 
       {error && <div className="sc-alert sc-alert--error">{error}</div>}
       {message && <div className="sc-alert sc-alert--success">{message}</div>}
