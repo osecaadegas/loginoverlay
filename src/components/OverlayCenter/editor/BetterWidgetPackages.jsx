@@ -235,6 +235,32 @@ const CHAT_FONTS = [
   { label: "Impact", value: "Impact, 'Arial Black', sans-serif" },
 ];
 
+const CAMERA_PERMISSION_STORAGE_KEY = "streamerscenter:camera-permission:v1";
+
+function readRememberedCameraPermission() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CAMERA_PERMISSION_STORAGE_KEY) || "null");
+    return saved?.decision === "granted" || saved?.decision === "denied"
+      ? saved.decision
+      : "prompt";
+  } catch {
+    return "prompt";
+  }
+}
+
+function rememberCameraPermission(decision, deviceId = "", deviceLabel = "") {
+  try {
+    localStorage.setItem(CAMERA_PERMISSION_STORAGE_KEY, JSON.stringify({
+      decision,
+      deviceId: String(deviceId || ""),
+      deviceLabel: String(deviceLabel || ""),
+      updatedAt: new Date().toISOString(),
+    }));
+  } catch {
+    // Browser permission remains authoritative when storage is unavailable.
+  }
+}
+
 const CONNECT_FOUR_FONTS = [
   { label: "Rajdhani", value: "'Rajdhani', sans-serif" },
   { label: "Chakra Petch", value: "'Chakra Petch', sans-serif" },
@@ -7265,7 +7291,7 @@ function MoneyExplosionControls({ config, onChange, widget }) {
   const c = sanitizeMoneyExplosionConfig(config);
   const [devices, setDevices] = useState([]);
   const [feedback, setFeedback] = useState("");
-  const [cameraPermission, setCameraPermission] = useState("prompt");
+  const [cameraPermission, setCameraPermission] = useState(readRememberedCameraPermission);
   const testingRef = useRef(false);
   const testReachedHiddenRef = useRef(false);
   const set = (patch) => onChange(sanitizeMoneyExplosionConfig({ ...c, ...patch }));
@@ -7289,7 +7315,11 @@ function MoneyExplosionControls({ config, onChange, widget }) {
     let active = true;
     const refresh = async () => { try { const list = await navigator.mediaDevices?.enumerateDevices?.(); if (active) setDevices((list || []).filter((device) => device.kind === "videoinput")); } catch { if (active) setDevices([]); } };
     void refresh();
-    navigator.permissions?.query?.({ name: "camera" }).then((permission) => { if (active) setCameraPermission(permission.state); }).catch(() => undefined);
+    navigator.permissions?.query?.({ name: "camera" }).then((permission) => {
+      if (!active) return;
+      setCameraPermission(permission.state);
+      if (permission.state === "granted" || permission.state === "denied") rememberCameraPermission(permission.state);
+    }).catch(() => undefined);
     navigator.mediaDevices?.addEventListener?.("devicechange", refresh);
     return () => { active = false; navigator.mediaDevices?.removeEventListener?.("devicechange", refresh); };
   }, []);
@@ -7300,9 +7330,10 @@ function MoneyExplosionControls({ config, onChange, widget }) {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       const id = stream.getVideoTracks()[0]?.getSettings?.().deviceId; const list = await navigator.mediaDevices.enumerateDevices(); const videos = list.filter((device) => device.kind === "videoinput"); setDevices(videos);
-      if (id) { const selected = videos.find((device) => device.deviceId === id); set({ source: id, sourceLabel: selected?.label || "" }); }
+      if (id) { const selected = videos.find((device) => device.deviceId === id); set({ source: id, sourceLabel: selected?.label || "" }); rememberCameraPermission("granted", id, selected?.label || ""); }
+      else rememberCameraPermission("granted");
       setCameraPermission("granted"); setFeedback("Camera connected. Switch to Live data to check your real framing.");
-    } catch (error) { setCameraPermission(error?.name === "NotAllowedError" ? "denied" : "error"); setFeedback(error?.name === "NotAllowedError" ? "Camera access is blocked. Allow it from the camera icon in the address bar, then try again." : "The camera could not start. Close other camera apps and try again."); }
+    } catch (error) { const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError"; if (denied) rememberCameraPermission("denied"); setCameraPermission(denied ? "denied" : "error"); setFeedback(denied ? "Camera access is blocked. Allow it from the camera icon in the address bar, then try again." : "The camera could not start. Close other camera apps and try again."); }
     finally { stream?.getTracks?.().forEach((track) => track.stop()); }
   };
 
@@ -7418,7 +7449,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
   const [devices, setDevices] = useState([]);
   const [effectFeedback, setEffectFeedback] = useState("");
   const effectTestActiveRef = useRef(false);
-  const [cameraPermission, setCameraPermission] = useState("prompt");
+  const [cameraPermission, setCameraPermission] = useState(readRememberedCameraPermission);
   const [cameraPermissionMessage, setCameraPermissionMessage] = useState(
     "Allow access once so StreamersCenter can list and use your camera.",
   );
@@ -7465,8 +7496,10 @@ function FreezeShatterControls({ config, onChange, widget }) {
       if (!active) return;
       setCameraPermission(permission.state);
       if (permission.state === "granted") {
+        rememberCameraPermission("granted");
         setCameraPermissionMessage("Camera access is ready. Your video stays on this device.");
       } else if (permission.state === "denied") {
+        rememberCameraPermission("denied");
         setCameraPermissionMessage("Camera access is blocked. Allow it from the camera icon in the address bar, then try again.");
       }
     }).catch(() => undefined);
@@ -7495,11 +7528,15 @@ function FreezeShatterControls({ config, onChange, widget }) {
       if (selectedDeviceId) {
         const selectedDevice = videoDevices.find((device) => device.deviceId === selectedDeviceId);
         set({ source: selectedDeviceId, sourceLabel: selectedDevice?.label || "" });
+        rememberCameraPermission("granted", selectedDeviceId, selectedDevice?.label || "");
+      } else {
+        rememberCameraPermission("granted");
       }
       setCameraPermission("granted");
       setCameraPermissionMessage("Camera access granted. Select Live data to check your real framing.");
     } catch (error) {
       const blocked = error?.name === "NotAllowedError" || error?.name === "SecurityError";
+      if (blocked) rememberCameraPermission("denied");
       setCameraPermission(blocked ? "denied" : "error");
       setCameraPermissionMessage(
         blocked

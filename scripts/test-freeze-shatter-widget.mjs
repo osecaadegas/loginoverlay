@@ -202,6 +202,11 @@ try {
     })),
     { requests: 1, source: "test-camera", sourceLabel: "Test Camera" },
   );
+  assert.equal(
+    await page.evaluate(() => JSON.parse(localStorage.getItem("streamerscenter:camera-permission:v1") || "null")?.decision),
+    "granted",
+    "The Camera widget remembers the permission decision for later mounts and reloads",
+  );
   await page.screenshot({ path: ".codex-dev/freeze-shatter-camera-permission.png" });
   await page.click('.bp-panel-tabs[data-level="primary"] button[data-category="appearance"]');
   assert.ok((await visibleSections()).includes("Ice material"));
