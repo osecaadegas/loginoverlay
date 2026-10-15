@@ -19,8 +19,7 @@ const builtinSource = readFileSync(
 );
 
 const expectedTypes = [
-  "money_explosion",
-  "freeze_shatter",
+  "camera",
   "current_slot",
   "slot_bingo",
   "connect_four",
@@ -52,6 +51,8 @@ for (const type of expectedTypes) {
 }
 
 const removedTypes = [
+  "money_explosion",
+  "freeze_shatter",
   "image_slideshow",
   "spotify_now_playing",
   "slot_requests",

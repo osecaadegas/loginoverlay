@@ -86,7 +86,7 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
     clearTimer(); timerRef.current = window.setTimeout(() => { ranOnLoadRef.current = true; rendererRef.current?.moneyExplosion(); }, normalized.triggerDelay * 1000); return clearTimer;
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
-  const errorInfo = describeError(error); const showError = Boolean(error) && errorInfo.kind === "camera";
+  const errorInfo = describeError(error); const showError = previewOnly && Boolean(error) && errorInfo.kind === "camera";
   return (
     <div className="money-explosion-widget" data-ready={ready ? "true" : "false"} data-state={state.toLowerCase()} data-runtime={runtime} data-trigger-mode={normalized.triggerMode} data-widget-instance={instanceId} data-banknotes={metrics.banknotes} data-visible-banknotes={state === "HIDDEN" || state === "VISIBLE" ? 0 : metrics.banknotes} data-particles={metrics.particles}>
       <div className="money-explosion-widget__renderer" ref={hostRef} />

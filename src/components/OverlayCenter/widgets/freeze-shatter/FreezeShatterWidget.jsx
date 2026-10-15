@@ -218,7 +218,9 @@ export default function FreezeShatterWidget({
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
   const errorInfo = describeError(error);
-  const showError = Boolean(error) && errorInfo.kind === "camera";
+  // Setup guidance belongs in the editor. OBS output must remain transparent
+  // when its browser profile has not been granted camera access yet.
+  const showError = previewOnly && Boolean(error) && errorInfo.kind === "camera";
 
   return (
     <div

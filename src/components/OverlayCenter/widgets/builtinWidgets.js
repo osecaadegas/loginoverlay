@@ -34,39 +34,27 @@ import { SLOT_BINGO_DEFAULT_CONFIG } from "./slot-bingo/slotBingoModel";
 import CurrentSlotWidget from './current-slot/CurrentSlotWidget';
 import CurrentSlotConfig from './current-slot/CurrentSlotConfig';
 import { CURRENT_SLOT_DEFAULTS } from './current-slot/currentSlotModel';
-import FreezeShatterWidget from './freeze-shatter/FreezeShatterWidget';
-import { DEFAULT_CONFIG as FREEZE_SHATTER_DEFAULTS } from './freeze-shatter/config';
-import MoneyExplosionWidget from './money-explosion/MoneyExplosionWidget';
-import { DEFAULT_MONEY_EXPLOSION_CONFIG } from './money-explosion/config';
+import CameraWidget from './camera/CameraWidget';
+import { DEFAULT_CAMERA_CONFIG } from './camera/cameraConfig';
 registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [
   { id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } },
   { id: 'portrait_card', label: 'Portrait Card', defaultSize: { width: 225, height: 400 } },
 ], defaults: { ...CURRENT_SLOT_DEFAULTS } });
 
 registerWidget({
-  type: 'money_explosion',
-  label: 'Money Explosion',
-  icon: '💸',
-  description: 'Transform a chroma-keyed local webcam silhouette into an explosive cloud of physical banknotes.',
+  type: 'camera',
+  label: 'Camera',
+  icon: '◉',
+  description: 'Camera with selectable cinematic transition styles.',
   category: 'better',
-  component: MoneyExplosionWidget,
+  component: CameraWidget,
   configPanel: null,
   styleConfigKey: 'displayStyle',
-  styles: [{ id: 'money_explosion', label: 'Money Explosion', defaultSize: { width: 640, height: 360 } }],
-  defaults: { ...DEFAULT_MONEY_EXPLOSION_CONFIG },
-});
-
-registerWidget({
-  type: 'freeze_shatter',
-  label: 'Freeze & Shatter',
-  icon: '❄',
-  description: 'Freeze a chroma-keyed local webcam silhouette, fracture it into ice, and reconstruct it.',
-  category: 'better',
-  component: FreezeShatterWidget,
-  configPanel: null,
-  styleConfigKey: 'displayStyle',
-  styles: [{ id: 'freeze_shatter', label: 'Freeze & Shatter', defaultSize: { width: 640, height: 360 } }],
-  defaults: { ...FREEZE_SHATTER_DEFAULTS },
+  styles: [
+    { id: 'ice_shatter', label: 'Ice Shatter', defaultSize: { width: 640, height: 360 } },
+    { id: 'money_explosion', label: 'Money Explosion', defaultSize: { width: 640, height: 360 } },
+  ],
+  defaults: { ...DEFAULT_CAMERA_CONFIG },
 });
 const CURRENCY = "EUR ";
 

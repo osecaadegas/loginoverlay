@@ -95,6 +95,14 @@ import {
   MONEY_QUALITY_PRESETS,
   sanitizeMoneyExplosionConfig,
 } from "../widgets/money-explosion/config";
+import CameraWidget from "../widgets/camera/CameraWidget";
+import {
+  DEFAULT_CAMERA_CONFIG,
+  migrateCameraConfig,
+  sanitizeCameraConfig,
+  switchCameraStyle,
+  updateCameraStyleConfig,
+} from "../widgets/camera/cameraConfig";
 import {
   formatSlotBingoMultiplier,
   getSlotBingoSquareCount,
@@ -1141,6 +1149,9 @@ const BASE_BETTER_CONFIG = {
   money_explosion: {
     ...DEFAULT_MONEY_EXPLOSION_CONFIG,
   },
+  camera: {
+    ...DEFAULT_CAMERA_CONFIG,
+  },
 };
 
 export const DEFAULT_BETTER_CONFIG = Object.freeze(
@@ -1157,19 +1168,11 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 
 export const BETTER_WIDGETS = [
   {
-    type: "money_explosion",
-    label: "Money Explosion",
+    type: "camera",
+    label: "Camera",
     styleKey: "displayStyle",
-    styleId: "money_explosion",
-    icon: "💸",
-    defaultSize: { width: 640, height: 360 },
-  },
-  {
-    type: "freeze_shatter",
-    label: "Freeze & Shatter",
-    styleKey: "displayStyle",
-    styleId: "freeze_shatter",
-    icon: "❄",
+    styleId: "ice_shatter",
+    icon: "◉",
     defaultSize: { width: 640, height: 360 },
   },
   { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1100, height: 240 } },
@@ -1608,14 +1611,15 @@ export function ensureBetterWidgetConfig(type, config = {}) {
     ...config,
     ...(meta &&
       type !== "tournament" &&
+      !(type === "camera" && (config.displayStyle === "ice_shatter" || config.displayStyle === "money_explosion")) &&
       !(type === "chat" && isBetterChatStyle(config.chatStyle)) &&
       !(type === "bets" && BETS_DISPLAY_STYLES.has(config.displayStyle)) &&
       !(type === "current_slot" && CURRENT_SLOT_DISPLAY_STYLES.has(config.displayStyle))
       ? { [meta.styleKey]: meta.styleId }
       : {}),
   };
-  if (type === "freeze_shatter") return normalizeFreezeShatterConfig(merged);
-  if (type === "money_explosion") return sanitizeMoneyExplosionConfig(merged);
+  if (type === "camera") return sanitizeCameraConfig(merged);
+  if (type === "freeze_shatter" || type === "money_explosion") return migrateCameraConfig(merged, type);
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
   if (type === "slot_bingo") return normalizeSlotBingoConfig(merged);
   if (type === "rtp_stats") return normalizeBetterRtpConfig(merged);
@@ -2131,6 +2135,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "camera":
+      return <CameraWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case "money_explosion":
       return <MoneyExplosionWidget config={config} widgetId={widget?.id || widget?.instanceId} previewOnly runtime="editor" />;
     case "freeze_shatter":
@@ -7695,6 +7701,26 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  if (type === "camera") {
+    const style = c.displayStyle;
+    const updateStyleConfig = (nextStyleConfig) => onChange(updateCameraStyleConfig(c, nextStyleConfig));
+    return (
+      <div className="bp-controls bp-controls--camera">
+        <Section title="Transition style" icon={<MonitorPlay size={12} />} defaultOpen>
+          <label className="bp-field">
+            <span>Camera effect</span>
+            <select value={style} onChange={(event) => onChange(switchCameraStyle(c, event.target.value))}>
+              <option value="ice_shatter">Ice Shatter</option>
+              <option value="money_explosion">Money Explosion</option>
+            </select>
+          </label>
+        </Section>
+        {style === "money_explosion"
+          ? <MoneyExplosionControls config={c.moneyConfig} onChange={updateStyleConfig} widget={props.widget} />
+          : <FreezeShatterControls config={c.iceConfig} onChange={updateStyleConfig} widget={props.widget} />}
+      </div>
+    );
+  }
   if (type === "money_explosion") {
     return <MoneyExplosionControls config={c} onChange={onChange} widget={props.widget} />;
   }

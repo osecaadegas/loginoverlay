@@ -17,8 +17,8 @@ import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
-import FreezeShatterWidget from "../widgets/freeze-shatter/FreezeShatterWidget";
-import MoneyExplosionWidget from "../widgets/money-explosion/MoneyExplosionWidget";
+import CameraWidget from "../widgets/camera/CameraWidget";
+import { migrateCameraConfig } from "../widgets/camera/cameraConfig";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -637,8 +637,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
-  money_explosion: MoneyExplosionWidget,
-  freeze_shatter: FreezeShatterWidget,
+  camera: CameraWidget,
   current_slot: CurrentSlotWidget,
   slot_bingo: SlotBingoWidget,
   connect_four: ConnectFourWidget,
@@ -655,8 +654,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
-  money_explosion: ["trigger", "camera", "chroma", "banknotes", "explosion", "physics", "visual", "audio", "performance"],
-  freeze_shatter: ["trigger", "camera", "chroma", "ice", "motion", "sound", "performance"],
+  camera: ["style", "trigger", "camera", "chroma", "effect", "motion", "audio", "performance"],
   current_slot: ['display', 'colours'],
   slot_bingo: ["content", "board", "layout", "colours"],
   connect_four: ["content", "players", "board", "motion"],
@@ -704,13 +702,7 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
-  money_explosion: {
-    minWidth: 320,
-    minHeight: 180,
-    maxWidth: 1920,
-    maxHeight: 1080,
-  },
-  freeze_shatter: {
+  camera: {
     minWidth: 320,
     minHeight: 180,
     maxWidth: 1920,
@@ -798,9 +790,15 @@ export function stripBetterRuntimeData(widgetType, config = {}) {
     ...(MOCK_DATA_KEYS[widgetType] || []),
   ]);
   runtimeKeys.forEach((key) => delete next[key]);
-  if (widgetType === "freeze_shatter" || widgetType === "money_explosion") {
+  if (widgetType === "camera" || widgetType === "freeze_shatter" || widgetType === "money_explosion") {
     delete next.source;
     delete next.sourceLabel;
+    if (next.iceConfig) {
+      next.iceConfig = { ...next.iceConfig, source: "default", sourceLabel: "" };
+    }
+    if (next.moneyConfig) {
+      next.moneyConfig = { ...next.moneyConfig, source: "default", sourceLabel: "" };
+    }
   }
   return next;
 }
@@ -1192,15 +1190,21 @@ function migrateLegacyConnectFourConfig(widgetType, rawConfig) {
 }
 
 export function normalizeBetterInstance(rawInstance = {}) {
-  const widgetType =
+  const storedWidgetType =
     rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
+  const widgetType = storedWidgetType === "freeze_shatter" || storedWidgetType === "money_explosion"
+    ? "camera"
+    : storedWidgetType;
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return null;
   const usesLegacyShoutoutGeometry =
     widgetType === "raid_shoutout" &&
     Number(rawInstance.width) === 560 &&
     Number(rawInstance.height) === 420;
-  const rawConfig = rawInstance.config || definition.defaultConfig;
+  const storedConfig = rawInstance.config || definition.defaultConfig;
+  const rawConfig = widgetType === "camera"
+    ? migrateCameraConfig(storedConfig, storedWidgetType)
+    : storedConfig;
   const config = validateBetterWidgetConfig(
     widgetType,
     migrateLegacyBackgroundMediaDefaults(
@@ -1227,7 +1231,7 @@ export function normalizeBetterInstance(rawInstance = {}) {
     instanceId:
       rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
     widgetType,
-    label: rawInstance.label || definition.label,
+    label: widgetType === "camera" ? "Camera" : (rawInstance.label || definition.label),
     config,
     visible: rawInstance.visible !== false && rawInstance.is_visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : rawInstance.locked === true,

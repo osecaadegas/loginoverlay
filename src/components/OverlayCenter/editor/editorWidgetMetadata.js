@@ -1,16 +1,11 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
-  money_explosion: {
+  camera: {
     category: "Stream",
-    keywords: "webcam camera money banknotes explosion transition reconstruction chroma green screen",
+    keywords: "webcam camera ice shatter money banknotes transition reconstruction chroma green screen",
     source: "Local camera",
-    simpleSections: ["Preview & trigger", "Camera", "Camera placement", "Banknotes", "Explosion", "Performance"],
-  },
-  freeze_shatter: {
-    category: "Stream",
-    keywords: "webcam camera freeze ice shatter transition chroma green screen",
-    source: "Local camera",
-    simpleSections: ["Preview & trigger", "Camera", "Camera placement", "Ice material", "Timing & motion", "Performance"],
+    supportsColourTheme: false,
+    simpleSections: ["Transition style", "Preview & trigger", "Camera", "Camera placement", "Effect", "Performance"],
   },
   current_slot: { category: 'Hunt', keywords: 'current game slot records payout personal best', source: 'Current Game', route: '/overlay-center/widgets/current-slot', simpleSections: ['Display', 'Colours'] },
   slot_bingo: {
@@ -106,6 +101,9 @@ const WIDGET_METADATA = {
 export const EDITOR_WIDGET_METADATA = Object.freeze(Object.fromEntries(
   Object.entries(WIDGET_METADATA).map(([type, metadata]) => [type, {
     ...metadata,
-    simpleSections: [...new Set(["Colour Theme", ...metadata.simpleSections])],
+    simpleSections: [...new Set([
+      ...(metadata.supportsColourTheme === false ? [] : ["Colour Theme"]),
+      ...metadata.simpleSections,
+    ])],
   }]),
 ));

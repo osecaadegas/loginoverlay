@@ -95,10 +95,10 @@ try {
     const { BetterWidgetControls } = await import("/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx");
     const shared = await import("/src/components/OverlayCenter/editor/sharedOverlayTemplates.js");
 
-    const initial = registry.createBetterInstance("freeze_shatter", {
+    const initial = registry.createBetterInstance("camera", {
       width: 640,
       height: 360,
-      config: {
+      config: { displayStyle: "ice_shatter", iceConfig: {
         source: "demo",
         duration: 0.7,
         freezeDuration: 0.16,
@@ -109,7 +109,7 @@ try {
         fragmentCount: 60,
         maxParticles: 90,
         cleanup: false,
-      },
+      } },
     });
     const sharedLayout = shared.createShareableBetterLayout({ instances: [initial] });
     window.freezeAudit = {
@@ -124,14 +124,13 @@ try {
     function TestApp() {
       const [config, setConfig] = React.useState(initial.config);
       const [obs, setObs] = React.useState(false);
-      const instance = registry.createBetterInstance("freeze_shatter", {
+      const instance = registry.createBetterInstance("camera", {
         ...initial,
-        config: {
-          ...config,
+        config: { ...config, iceConfig: { ...config.iceConfig,
           source: obs ? "stale-browser-camera" : "demo",
-          sourceLabel: obs ? "Test Camera" : config.sourceLabel,
-          triggerMode: obs ? "on_load" : config.triggerMode,
-        },
+          sourceLabel: obs ? "Test Camera" : config.iceConfig.sourceLabel,
+          triggerMode: obs ? "on_load" : config.iceConfig.triggerMode,
+        } },
       });
       window.freezeAudit.config = config;
       window.freezeAudit.renderObs = () => setObs(true);
@@ -140,7 +139,7 @@ try {
         null,
         !obs && React.createElement("aside", { style: { width: 340, height: 820, overflow: "auto", float: "left" } },
           React.createElement(BetterWidgetControls, {
-            type: "freeze_shatter",
+            type: "camera",
             config,
             widget: { id: instance.instanceId, instanceId: instance.instanceId },
             onChange: setConfig,
@@ -198,8 +197,8 @@ try {
   assert.deepEqual(
     await page.evaluate(() => ({
       requests: window.freezeAudit.cameraRequests(),
-      source: window.freezeAudit.config.source,
-      sourceLabel: window.freezeAudit.config.sourceLabel,
+      source: window.freezeAudit.config.iceConfig.source,
+      sourceLabel: window.freezeAudit.config.iceConfig.sourceLabel,
     })),
     { requests: 1, source: "test-camera", sourceLabel: "Test Camera" },
   );
@@ -224,23 +223,23 @@ try {
   await page.waitForFunction(() => document.querySelector(".bp-freeze-test-feedback")?.textContent.includes("complete"));
 
   await page.click('.bp-segmented button:nth-child(1)');
-  await page.waitForFunction(() => window.freezeAudit.config.quality === "Low");
+  await page.waitForFunction(() => window.freezeAudit.config.iceConfig.quality === "Low");
   assert.deepEqual(
     await page.evaluate(() => ({
-      quality: window.freezeAudit.config.quality,
-      resolution: window.freezeAudit.config.resolution,
-      particles: window.freezeAudit.config.maxParticles,
-      fragments: window.freezeAudit.config.fragmentCount,
+      quality: window.freezeAudit.config.iceConfig.quality,
+      resolution: window.freezeAudit.config.iceConfig.resolution,
+      particles: window.freezeAudit.config.iceConfig.maxParticles,
+      fragments: window.freezeAudit.config.iceConfig.fragmentCount,
     })),
     { quality: "Low", resolution: 0.5, particles: 50, fragments: 45 },
   );
   assert.equal(
-    await page.evaluate(() => window.freezeAudit.sharedLayout.instances.find((instance) => instance.widgetType === "freeze_shatter")?.config.source),
+    await page.evaluate(() => window.freezeAudit.sharedLayout.instances.find((instance) => instance.widgetType === "camera")?.config.iceConfig.source),
     "default",
     "Community copies reset the machine-specific camera device",
   );
   assert.equal(
-    await page.evaluate(() => window.freezeAudit.sharedLayout.instances.find((instance) => instance.widgetType === "freeze_shatter")?.config.sourceLabel),
+    await page.evaluate(() => window.freezeAudit.sharedLayout.instances.find((instance) => instance.widgetType === "camera")?.config.iceConfig.sourceLabel),
     "",
     "Community copies reset the machine-specific camera label",
   );
