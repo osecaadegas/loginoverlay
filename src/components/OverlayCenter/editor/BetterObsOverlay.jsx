@@ -38,6 +38,14 @@ class BetterObsWidgetBoundary extends React.Component {
     return { error };
   }
 
+  componentDidCatch(error, info) {
+    console.error("[BetterObsOverlay] Widget render failed:", {
+      instanceId: this.props.instanceId,
+      error,
+      componentStack: info?.componentStack,
+    });
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.instanceId !== this.props.instanceId && this.state.error) {
       this.setState({ error: null });

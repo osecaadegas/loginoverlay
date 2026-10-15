@@ -310,6 +310,7 @@ function WidgetListItem({
   instance,
   selected,
   obsUrl,
+  obsPublicationCurrent,
   onSelect,
   onCopyUrl,
   onDownloadPreset,
@@ -449,7 +450,7 @@ function WidgetListItem({
             onClick={(event) => menuAction(event, () => onCopyUrl(obsUrl))}
           >
             <Copy size={14} />
-            <span>Copy OBS URL</span>
+            <span>{obsPublicationCurrent ? "Copy OBS URL" : "Publish & Copy OBS URL"}</span>
           </button>
           <button
             type="button"
@@ -882,6 +883,10 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const fullOverlayUrl = publicOverlayId
     ? `${origin}/obs/overlay/${publicOverlayId}`
     : "";
+  const obsPublicationCurrent =
+    !dirty &&
+    overlayRecord?.hasUnpublishedChanges !== true &&
+    Number(overlayRecord?.publishedVersion || 0) > 0;
 
   const setLayoutDraft = useCallback((updater) => {
     setLayout((current) => {
@@ -1386,6 +1391,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           );
         }
         setSavingState(name === "Publishing" ? "published" : "saved");
+        return record;
       } catch (failure) {
         if (failure.committedEditorRecord) {
           overlayRecordRef.current = failure.committedEditorRecord;
@@ -1396,6 +1402,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           runEditorOperation(name, action, replaceLayout);
         setSavingState("error");
         setError(failure);
+        return null;
       } finally {
         operationRef.current = false;
         setOperation(null);
@@ -1463,6 +1470,20 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       );
     }
   }, []);
+
+  const publishAndCopyUrl = useCallback(async (url) => {
+    if (!url || operationRef.current) return;
+    const currentRecord = overlayRecordRef.current;
+    const publicationIsCurrent =
+      !dirtyRef.current &&
+      currentRecord?.hasUnpublishedChanges !== true &&
+      Number(currentRecord?.publishedVersion || 0) > 0;
+    if (!publicationIsCurrent) {
+      const publishedRecord = await publishNow();
+      if (!publishedRecord) return;
+    }
+    await copyUrl(url);
+  }, [copyUrl, publishNow]);
 
   const selectedLegacyWidget = selectedInstance
     ? betterInstanceToLegacyWidget(
@@ -1730,11 +1751,11 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               <button
                 type="button"
                 onClick={(event) =>
-                  closeActions(event, () => copyUrl(fullOverlayUrl))
+                  closeActions(event, () => publishAndCopyUrl(fullOverlayUrl))
                 }
               >
                 <Copy size={16} />
-                Copy Overlay URL
+                {obsPublicationCurrent ? "Copy Overlay URL" : "Publish & Copy Overlay URL"}
               </button>
               <button
                 type="button"
@@ -1842,8 +1863,9 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                 publicOverlayId,
                 instance.instanceId,
               )}
+              obsPublicationCurrent={obsPublicationCurrent}
               onSelect={selectInstance}
-              onCopyUrl={copyUrl}
+              onCopyUrl={publishAndCopyUrl}
               onDownloadPreset={handleDownloadPreset}
               onToggleVisible={handleToggleVisible}
               onToggleLock={handleToggleLock}

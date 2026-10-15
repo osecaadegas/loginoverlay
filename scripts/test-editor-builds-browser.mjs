@@ -71,8 +71,12 @@ try {
     supabase.removeChannel = client.removeChannel;
     supabase.auth.getSession = async () => ({ data: { session: { user, access_token: 'test-fixture' } } });
     supabase.auth.onAuthStateChange = () => ({ data: { subscription: { unsubscribe() {} } } });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (value) => { window.buildTest.copiedUrl = value; } },
+    });
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    window.buildTest = { state, unmount: () => root.unmount() };
+    window.buildTest = { state, copiedUrl: '', unmount: () => root.unmount() };
     root.render(React.createElement(
       AuthProvider,
       null,
@@ -143,9 +147,11 @@ try {
   await waitBuild('My Evening Build');
   await page.waitForSelector('[aria-label="My Live Hunt actions"]');
   assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.length), 3);
-  await clickText('Publish to OBS');
+  await page.click('[aria-label="My Live Hunt actions"]');
+  await clickText('Publish & Copy OBS URL', '.better-editor-widget-list');
   await page.waitForFunction(() => window.buildTest.state.tables.better_overlay_publications?.length === 1);
   assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_overlay_publications[0].published_layout.name), 'My Evening Build');
+  assert.match(await page.evaluate(() => window.buildTest.copiedUrl), /\/obs\/overlay\/bo_[a-f0-9]{48}\/widget\/bonus_hunt-/);
   assert.equal(await page.evaluate(() => window.buildTest.state.tables.better_editor_overlays.find((row) => row.id === 'build-a').published_version), 0);
 
   // A different folder's broadcast must not replace the selected build.
