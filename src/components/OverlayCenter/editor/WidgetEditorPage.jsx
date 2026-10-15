@@ -40,6 +40,7 @@ import {
   MoreHorizontal,
   ArrowLeft,
   AlertCircle,
+  MonitorUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
@@ -1684,6 +1685,15 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          <button
+            type="button"
+            disabled={Boolean(operation)}
+            title="Open Slot Capture Manager"
+            onClick={() => navigateSource("/slot-capture")}
+          >
+            <MonitorUp size={16} />
+            <span>Slot Capture</span>
+          </button>
           {layout.instances.some(isOrbitalCompositionWidget) && (
             <button
               type="button"
