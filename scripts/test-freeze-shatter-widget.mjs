@@ -51,6 +51,7 @@ try {
   await page.evaluate(async (version) => {
     let cameraRequests = 0;
     const cameraConstraints = [];
+    let delayObsCamera = true;
     const createCameraStream = () => {
       const canvas = document.createElement("canvas");
       canvas.width = 640;
@@ -80,6 +81,10 @@ try {
           cameraConstraints.push(constraints);
           if (constraints?.video?.deviceId?.exact === "stale-browser-camera") {
             throw new DOMException("Unknown browser-local device", "OverconstrainedError");
+          }
+          if (window.freezeAudit?.obsStarting && delayObsCamera) {
+            delayObsCamera = false;
+            await new Promise((resolve) => setTimeout(resolve, 2500));
           }
           return createCameraStream();
         },
@@ -117,6 +122,7 @@ try {
       sharedLayout,
       config: initial.config,
       renderObs: null,
+      obsStarting: false,
       cameraRequests: () => cameraRequests,
       cameraConstraints: () => cameraConstraints,
     };
@@ -133,7 +139,10 @@ try {
         } },
       });
       window.freezeAudit.config = config;
-      window.freezeAudit.renderObs = () => setObs(true);
+      window.freezeAudit.renderObs = () => {
+        window.freezeAudit.obsStarting = true;
+        setObs(true);
+      };
       return React.createElement(
         React.Fragment,
         null,
@@ -149,13 +158,16 @@ try {
           id: "stage",
           "data-runtime": obs ? "obs" : "editor",
           style: { marginLeft: obs ? 0 : 360, width: 640, height: 360, background: "linear-gradient(135deg,#071425,#0d2940)" },
+        }, React.createElement("div", {
+          key: obs ? "obs" : "editor",
+          style: { display: "contents" },
         }, registry.renderBetterWidgetInstance({
           instance,
           layout: { instances: [instance] },
           mode: obs ? "live" : "mock",
           runtime: obs ? "obs" : "editor",
           accessVerified: true,
-        })),
+        }))),
       );
     }
     ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(TestApp));
@@ -250,7 +262,9 @@ try {
   );
 
   await page.evaluate(() => window.freezeAudit.renderObs());
+  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget__error")?.textContent.includes("Enable camera in OBS"), { timeout: 5000 });
   await page.waitForSelector('#stage[data-runtime="obs"] .freeze-shatter-widget[data-ready="true"]', { timeout: 15000 });
+  assert.equal(await page.$("#stage .freeze-shatter-widget__error"), null, "The OBS camera prompt clears as soon as the camera stream is ready");
   await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state !== "visible", { timeout: 5000 }).catch(async (failure) => {
     console.error("OBS trigger diagnostics", await page.evaluate(() => ({
       state: document.querySelector(".freeze-shatter-widget")?.dataset.state,

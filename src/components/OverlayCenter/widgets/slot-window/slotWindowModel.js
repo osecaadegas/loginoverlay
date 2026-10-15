@@ -8,7 +8,7 @@ export const SLOT_WINDOW_DEFAULTS = Object.freeze({
   cropRight: 0,
   cropBottom: 0,
   cropLeft: 0,
-  fps: 20,
+  fps: 30,
 });
 
 export const SLOT_WINDOW_MASK_OPTIONS = Object.freeze([

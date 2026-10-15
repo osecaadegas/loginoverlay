@@ -35,7 +35,7 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
   const normalized = useMemo(() => rendererConfig(config, previewOnly), [config, previewOnly]);
   const normalizedRef = useRef(normalized); normalizedRef.current = normalized;
   const hostRef = useRef(null); const rendererRef = useRef(null); const timerRef = useRef(null); const previewCycleRef = useRef(false); const ranOnLoadRef = useRef(false);
-  const [ready, setReady] = useState(false); const [state, setState] = useState("VISIBLE"); const [error, setError] = useState(""); const [metrics, setMetrics] = useState({ banknotes: 0, particles: 0 });
+  const [ready, setReady] = useState(false); const [state, setState] = useState("VISIBLE"); const [error, setError] = useState(""); const [obsPermissionWait, setObsPermissionWait] = useState(false); const [metrics, setMetrics] = useState({ banknotes: 0, particles: 0 });
 
   const clearTimer = useCallback(() => { if (timerRef.current) window.clearTimeout(timerRef.current); timerRef.current = null; }, []);
   const emitStatus = useCallback((detail) => window.dispatchEvent(new CustomEvent(STATUS_EVENT_NAME, { detail: { ...detail, instanceId } })), [instanceId]);
@@ -51,7 +51,7 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
   }, [clearTimer]);
 
   const retryCamera = useCallback(() => {
-    const renderer = rendererRef.current; if (!renderer) return; setError(""); setReady(false);
+    const renderer = rendererRef.current; if (!renderer) return; setError(""); setReady(false); setObsPermissionWait(false);
     void renderer.setSource(normalizedRef.current.source).catch((failure) => setError(failure?.message || "The selected camera is unavailable."));
   }, []);
 
@@ -71,8 +71,8 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
         if (nextState === "VISIBLE" && !previewOnly && normalizedRef.current.triggerMode === "loop" && ranOnLoadRef.current) { clearTimer(); timerRef.current = window.setTimeout(() => renderer.moneyExplosion(), normalizedRef.current.triggerDelay * 1000); }
       },
       onProgress: () => undefined,
-      onError: (message) => { if (!cancelled) { setError(message); emitStatus({ type: "error", message, kind: describeError(message).kind }); } },
-      onReady: () => { if (!cancelled) { setReady(true); setError(""); emitStatus({ type: "ready" }); } },
+      onError: (message) => { if (!cancelled) { setObsPermissionWait(false); setError(message); emitStatus({ type: "error", message, kind: describeError(message).kind }); } },
+      onReady: () => { if (!cancelled) { setObsPermissionWait(false); setReady(true); setError(""); emitStatus({ type: "ready" }); } },
       onMetrics: (nextMetrics) => { if (!cancelled) setMetrics(nextMetrics); },
     });
     rendererRef.current = renderer; void renderer.init(host).catch((failure) => { if (!cancelled) setError(failure?.message || "The money renderer could not start."); });
@@ -81,17 +81,22 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
 
   useEffect(() => { rendererRef.current?.updateConfig(normalized); }, [normalized]);
   useEffect(() => {
+    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled) { setObsPermissionWait(false); return undefined; }
+    const timer = window.setTimeout(() => setObsPermissionWait(true), 1800);
+    return () => window.clearTimeout(timer);
+  }, [normalized.enabled, previewOnly, ready, runtime]);
+  useEffect(() => {
     if (!ready || previewOnly || normalized.triggerMode === "manual") return;
     if (normalized.triggerMode === "on_load" && ranOnLoadRef.current) return;
     clearTimer(); timerRef.current = window.setTimeout(() => { ranOnLoadRef.current = true; rendererRef.current?.moneyExplosion(); }, normalized.triggerDelay * 1000); return clearTimer;
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
-  const errorInfo = describeError(error); const showError = previewOnly && Boolean(error) && errorInfo.kind === "camera";
+  const errorInfo = describeError(error); const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled && (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera")); const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera; const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
   return (
     <div className="money-explosion-widget" data-ready={ready ? "true" : "false"} data-state={state.toLowerCase()} data-runtime={runtime} data-trigger-mode={normalized.triggerMode} data-widget-instance={instanceId} data-banknotes={metrics.banknotes} data-visible-banknotes={state === "HIDDEN" || state === "VISIBLE" ? 0 : metrics.banknotes} data-particles={metrics.particles}>
       <div className="money-explosion-widget__renderer" ref={hostRef} />
       {previewOnly && <div className="money-explosion-widget__status" aria-live="polite"><Banknote size={15} /><span>{ready ? state.replaceAll("_", " ") : "Preparing renderer"}</span></div>}
-      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{errorInfo.title}</strong><span>{error}</span></span><button type="button" onClick={retryCamera}>{errorInfo.action}</button></div>}
+      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong><span>{visibleError}</span></span><button type="button" onClick={retryCamera}>{obsNeedsCamera ? "Enable camera" : errorInfo.action}</button></div>}
     </div>
   );
 }

@@ -71,6 +71,7 @@ export default function FreezeShatterWidget({
   const [ready, setReady] = useState(false);
   const [state, setState] = useState("VISIBLE");
   const [error, setError] = useState("");
+  const [obsPermissionWait, setObsPermissionWait] = useState(false);
 
   normalizedRef.current = normalized;
 
@@ -111,6 +112,7 @@ export default function FreezeShatterWidget({
     if (!renderer) return;
     setError("");
     setReady(false);
+    setObsPermissionWait(false);
     void renderer.setSource(normalizedRef.current.source).catch((failure) => {
       setError(failure?.message || "The selected camera is unavailable.");
     });
@@ -176,12 +178,14 @@ export default function FreezeShatterWidget({
       onProgress: () => undefined,
       onError: (message) => {
         if (!cancelled) {
+          setObsPermissionWait(false);
           setError(message);
           emitStatus({ type: "error", message, kind: describeError(message).kind });
         }
       },
       onReady: () => {
         if (!cancelled) {
+          setObsPermissionWait(false);
           setReady(true);
           setError("");
           emitStatus({ type: "ready" });
@@ -207,6 +211,15 @@ export default function FreezeShatterWidget({
   }, [normalized]);
 
   useEffect(() => {
+    if (previewOnly || runtime !== "obs" || ready || !normalized.enabled) {
+      setObsPermissionWait(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setObsPermissionWait(true), 1800);
+    return () => window.clearTimeout(timer);
+  }, [normalized.enabled, previewOnly, ready, runtime]);
+
+  useEffect(() => {
     if (!ready || previewOnly || normalized.triggerMode === "manual") return;
     if (normalized.triggerMode === "on_load" && ranOnLoadRef.current) return;
     clearTimer();
@@ -218,9 +231,10 @@ export default function FreezeShatterWidget({
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
   const errorInfo = describeError(error);
-  // Setup guidance belongs in the editor. OBS output must remain transparent
-  // when its browser profile has not been granted camera access yet.
-  const showError = previewOnly && Boolean(error) && errorInfo.kind === "camera";
+  const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled &&
+    (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera"));
+  const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera;
+  const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
 
   return (
     <div
@@ -242,11 +256,11 @@ export default function FreezeShatterWidget({
         <div className="freeze-shatter-widget__error" data-error-kind={errorInfo.kind} role="alert">
           <TriangleAlert size={18} />
           <span className="freeze-shatter-widget__error-copy">
-            <strong>{errorInfo.title}</strong>
-            <span>{error}</span>
+            <strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong>
+            <span>{visibleError}</span>
           </span>
-          <button type="button" onClick={errorInfo.kind === "camera" ? retryCamera : () => setError("")}>
-            {errorInfo.action}
+          <button type="button" onClick={obsNeedsCamera || errorInfo.kind === "camera" ? retryCamera : () => setError("")}>
+            {obsNeedsCamera ? "Enable camera" : errorInfo.action}
           </button>
         </div>
       )}
