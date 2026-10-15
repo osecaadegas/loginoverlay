@@ -21,7 +21,7 @@ import { useAdmin } from "../../hooks/useAdmin";
 import "./AppsPage.css";
 
 const SCREEN_SPLIT_DOWNLOAD_URL =
-  "https://mega.nz/folder/2yRmlAKT#tJsEhmABpz6OND8Jo8MsfA";
+  "https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.8/StreamersCenterBrowserSetup-0.1.8.exe";
 
 export default function AppsPage() {
   const { user, signOut } = useAuth();
@@ -88,7 +88,7 @@ export default function AppsPage() {
       href: SCREEN_SPLIT_DOWNLOAD_URL,
       external: true,
       label: "ScreenSplit Browser",
-      desc: "Open download folder",
+      desc: "Download the Windows installer",
       icon: Download,
       tone: "sky",
       art: "screensplit",
