@@ -16,6 +16,7 @@
     "test:freeze-shatter": "node scripts/test-freeze-shatter-widget.mjs",
     "test:money-explosion": "node scripts/test-money-explosion-widget.mjs",
     "test:camera-obs-route": "node scripts/test-camera-obs-route.mjs",
+    "test:screensplit-download": "node scripts/test-screensplit-download.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",
     "test:page-cache": "node scripts/test-page-cache.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",

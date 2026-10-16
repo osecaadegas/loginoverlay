@@ -20,8 +20,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useAdmin } from "../../hooks/useAdmin";
 import "./AppsPage.css";
 
-const SCREEN_SPLIT_DOWNLOAD_URL =
-  "https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.11/StreamersCenterBrowserSetup-0.1.11.exe";
+const SCREEN_SPLIT_VERSION = "0.1.13";
+const SCREEN_SPLIT_DOWNLOAD_URL = `https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v${SCREEN_SPLIT_VERSION}/StreamersCenterBrowserSetup-${SCREEN_SPLIT_VERSION}.exe`;
 
 export default function AppsPage() {
   const { user, signOut } = useAuth();
@@ -88,7 +88,7 @@ export default function AppsPage() {
       href: SCREEN_SPLIT_DOWNLOAD_URL,
       external: true,
       label: "ScreenSplit Browser",
-      desc: "Download the Windows installer",
+      desc: `Download the Windows installer (v${SCREEN_SPLIT_VERSION})`,
       icon: Download,
       tone: "sky",
       art: "screensplit",
