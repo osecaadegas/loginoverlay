@@ -11,12 +11,12 @@ const ACTIONS = new Set(["moneyExplosion", "moneyReconstruction", "toggleMoneyTr
 function describeError(message) {
   const text = String(message || "");
   if (/transparent background|visible silhouette|chroma key/i.test(text)) return { kind: "chroma", title: "Adjust chroma key", action: "Dismiss" };
-  if (/camera|permission|selected source|capture requires/i.test(text)) return { kind: "camera", title: "Camera access needed", action: "Try camera again" };
+  if (/screen.?split|local camera relay|camera|permission|selected source|capture requires/i.test(text)) return { kind: "camera", title: "Start local camera relay", action: "Retry relay" };
   return { kind: "renderer", title: "Effect needs attention", action: "Dismiss" };
 }
 
-function rendererConfig(config, previewOnly) {
-  return sanitizeMoneyExplosionConfig({ ...DEFAULT_MONEY_EXPLOSION_CONFIG, ...config, source: previewOnly ? "demo" : config?.source || "default", sound: previewOnly ? false : config?.sound === true });
+function rendererConfig(config, previewOnly, runtime) {
+  return sanitizeMoneyExplosionConfig({ ...DEFAULT_MONEY_EXPLOSION_CONFIG, ...config, source: previewOnly ? "demo" : runtime === "obs" ? "screen-splitter" : config?.source || "default", sound: previewOnly ? false : config?.sound === true });
 }
 
 function installBrowserApi() {
@@ -32,7 +32,7 @@ function installBrowserApi() {
 
 export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnly = false, runtime = "editor" }) {
   const instanceId = String(config.__betterInstanceId || widgetId || "money-explosion");
-  const normalized = useMemo(() => rendererConfig(config, previewOnly), [config, previewOnly]);
+  const normalized = useMemo(() => rendererConfig(config, previewOnly, runtime), [config, previewOnly, runtime]);
   const normalizedRef = useRef(normalized); normalizedRef.current = normalized;
   const hostRef = useRef(null); const rendererRef = useRef(null); const timerRef = useRef(null); const previewCycleRef = useRef(false); const ranOnLoadRef = useRef(false);
   const [ready, setReady] = useState(false); const [state, setState] = useState("VISIBLE"); const [error, setError] = useState(""); const [obsPermissionWait, setObsPermissionWait] = useState(false); const [metrics, setMetrics] = useState({ banknotes: 0, particles: 0 });
@@ -91,12 +91,12 @@ export default function MoneyExplosionWidget({ config = {}, widgetId, previewOnl
     clearTimer(); timerRef.current = window.setTimeout(() => { ranOnLoadRef.current = true; rendererRef.current?.moneyExplosion(); }, normalized.triggerDelay * 1000); return clearTimer;
   }, [clearTimer, normalized.triggerDelay, normalized.triggerMode, previewOnly, ready]);
 
-  const errorInfo = describeError(error); const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled && (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera")); const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera || (runtime === "obs" && Boolean(error) && errorInfo.kind !== "camera"); const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
+  const errorInfo = describeError(error); const obsNeedsCamera = runtime === "obs" && !previewOnly && normalized.enabled && (obsPermissionWait || (Boolean(error) && errorInfo.kind === "camera")); const showError = (previewOnly && Boolean(error) && errorInfo.kind === "camera") || obsNeedsCamera || (runtime === "obs" && Boolean(error) && errorInfo.kind !== "camera"); const visibleError = error || "Start Camera relay in Streamers Center Browser, then retry this source.";
   return (
     <div className="money-explosion-widget" data-ready={ready ? "true" : "false"} data-state={state.toLowerCase()} data-runtime={runtime} data-trigger-mode={normalized.triggerMode} data-widget-instance={instanceId} data-banknotes={metrics.banknotes} data-visible-banknotes={state === "HIDDEN" || state === "VISIBLE" ? 0 : metrics.banknotes} data-particles={metrics.particles}>
       <div className="money-explosion-widget__renderer" ref={hostRef} />
       {previewOnly && <div className="money-explosion-widget__status" aria-live="polite"><Banknote size={15} /><span>{ready ? state.replaceAll("_", " ") : "Preparing renderer"}</span></div>}
-      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong><span>{visibleError}</span></span><button type="button" onClick={obsNeedsCamera || errorInfo.kind === "camera" ? retryCamera : () => setError("")}>{obsNeedsCamera ? "Enable camera" : errorInfo.action}</button></div>}
+      {showError && <div className="money-explosion-widget__error" data-error-kind={errorInfo.kind} role="alert"><TriangleAlert size={18} /><span className="money-explosion-widget__error-copy"><strong>{obsNeedsCamera ? "Start local camera relay" : errorInfo.title}</strong><span>{visibleError}</span></span><button type="button" onClick={obsNeedsCamera || errorInfo.kind === "camera" ? retryCamera : () => setError("")}>{obsNeedsCamera ? "Retry relay" : errorInfo.action}</button></div>}
     </div>
   );
 }

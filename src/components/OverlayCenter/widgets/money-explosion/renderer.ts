@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { createKeyFilter, hexRgb } from '../freeze-shatter/shaders';
 import { seededRandom } from '../freeze-shatter/geometry';
 import { MoneyExplosionAudio } from './audio';
+import { discoverLocalCameraRelay, fetchRelayFrame } from '../cameraRelay';
 import {
   moneyPhaseTimings, type MoneyExplosionConfig, type MoneyTransitionState,
 } from './config';
@@ -51,6 +52,9 @@ export class MoneyExplosionRenderer {
   private video?: HTMLVideoElement;
   private stream?: MediaStream;
   private sourceTexture?: Texture;
+  private bridgeCanvas?: HTMLCanvasElement;
+  private bridgeFrameUrl?: string;
+  private bridgeTimer?: number;
   private captureTexture?: RenderTexture;
   private frontTexture = Texture.EMPTY;
   private backTexture = Texture.EMPTY;
@@ -100,6 +104,7 @@ export class MoneyExplosionRenderer {
   private onContextLost = (event: Event) => { event.preventDefault(); this.animation?.kill(); this.animation = undefined; this.audio.stop(); this.app.stop(); this.callbacks.onError('The GPU context was lost. Waiting for your graphics device to recover.'); };
   private onContextRestored = () => { this.captureReady = false; this.resetMoneyTransition(); this.callbacks.onReady(); };
   private tick = (ticker: Ticker) => {
+    if (this.bridgeCanvas && this.sourceTexture) this.sourceTexture.source.update();
     this.frameCount++; const now = performance.now();
     if (now - this.metricsAt < 1200) return;
     this.fps = Math.min(60, Math.round(this.frameCount * 1000 / (now - this.metricsAt))); this.reportMetrics();
@@ -133,6 +138,18 @@ export class MoneyExplosionRenderer {
     if (source === 'demo') {
       const image = new Image(); image.src = '/images/widgets/freeze-shatter/demo-streamer.png'; await image.decode();
       if (this.disposed || version !== this.sourceVersion) return; this.sourceTexture = Texture.from(image);
+    } else if (source === 'screen-splitter') {
+      const relay = await discoverLocalCameraRelay();
+      if (this.disposed || version !== this.sourceVersion) return;
+      const bitmap = await fetchRelayFrame(relay.frameUrl);
+      if (this.disposed || version !== this.sourceVersion) { bitmap.close(); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      this.bridgeCanvas = canvas;
+      this.bridgeFrameUrl = relay.frameUrl;
+      this.sourceTexture = Texture.from(canvas);
     } else {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera capture requires HTTPS or localhost and a compatible browser.');
       const constraints = (deviceId?: string) => ({ ...(deviceId ? { deviceId: { exact: deviceId } } : {}), width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } });
@@ -163,13 +180,41 @@ export class MoneyExplosionRenderer {
       if (this.disposed || version !== this.sourceVersion) return; this.sourceTexture = Texture.from(video);
       stream.getVideoTracks()[0].addEventListener('ended', () => { if (!this.disposed && version === this.sourceVersion) { this.finishHidden(); this.callbacks.onError('Camera access ended. Reconnect the camera and select it again to recover.'); } }, { once: true });
     }
-    this.camera = new Sprite(this.sourceTexture); this.camera.filters = [this.keyFilter]; this.cameraLayer.addChild(this.camera); this.layoutCamera(); this.cameraLayer.visible = this.config.enabled; this.app.start(); this.callbacks.onReady();
+    this.camera = new Sprite(this.sourceTexture); this.camera.filters = [this.keyFilter]; this.cameraLayer.addChild(this.camera); this.layoutCamera(); this.cameraLayer.visible = this.config.enabled; if (this.bridgeFrameUrl) this.startRelayPolling(version); this.app.start(); this.callbacks.onReady();
   }
 
   private releaseSource() {
+    if (this.bridgeTimer !== undefined) window.clearTimeout(this.bridgeTimer);
+    this.bridgeTimer = undefined; this.bridgeCanvas = undefined; this.bridgeFrameUrl = undefined;
     if (this.video) { this.video.pause(); this.video.srcObject = null; this.video = undefined; }
     this.stream?.getTracks().forEach(track => track.stop()); this.stream = undefined;
     this.camera?.destroy(); this.camera = undefined; this.sourceTexture?.destroy(true); this.sourceTexture = undefined;
+  }
+
+  private startRelayPolling(version: number) {
+    const frameUrl = this.bridgeFrameUrl;
+    if (!frameUrl) return;
+    let failures = 0;
+    const poll = async () => {
+      if (this.disposed || version !== this.sourceVersion || !this.bridgeCanvas) return;
+      try {
+        const bitmap = await fetchRelayFrame(frameUrl);
+        if (this.disposed || version !== this.sourceVersion || !this.bridgeCanvas) { bitmap.close(); return; }
+        const canvas = this.bridgeCanvas;
+        if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+          canvas.width = bitmap.width; canvas.height = bitmap.height;
+          this.layoutCamera();
+        }
+        canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        failures = 0;
+      } catch {
+        failures += 1;
+        if (failures === 15) this.callbacks.onError('The ScreenSplit camera relay stopped sending frames. Start the relay again and retry.');
+      }
+      if (!this.disposed && version === this.sourceVersion) this.bridgeTimer = window.setTimeout(() => void poll(), 66);
+    };
+    this.bridgeTimer = window.setTimeout(() => void poll(), 66);
   }
 
   private layoutCamera() {

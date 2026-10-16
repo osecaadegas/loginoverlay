@@ -9,6 +9,7 @@ import { createSilhouetteCells, sampleBody, seededRandom, type Cell } from './ge
 import { phaseTimings, type WidgetConfig, type TransitionState } from './config';
 import { IceAudio } from './audio';
 import { TransitionMachine } from './state';
+import { discoverLocalCameraRelay, fetchRelayFrame } from '../cameraRelay';
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -51,6 +52,9 @@ export class WebcamTransitionRenderer {
   private iceFilter: Filter;
   private video?: HTMLVideoElement;
   private stream?: MediaStream;
+  private bridgeCanvas?: HTMLCanvasElement;
+  private bridgeFrameUrl?: string;
+  private bridgeTimer?: number;
   private fragments: Fragment[] = [];
   private dust: Dust[] = [];
   private cells: Cell[] = [];
@@ -161,6 +165,7 @@ export class WebcamTransitionRenderer {
   };
 
   private tick = (ticker: Ticker) => {
+    if (this.bridgeCanvas && this.sourceTexture) this.sourceTexture.source.update();
     this.iceFilter.resources.iceUniforms.uniforms.uTime = performance.now() / 1000;
     this.frameCount++;
     const now = performance.now();
@@ -194,6 +199,18 @@ export class WebcamTransitionRenderer {
       await image.decode();
       if (this.disposed || version !== this.sourceVersion) return;
       this.sourceTexture = Texture.from(image);
+    } else if (source === 'screen-splitter') {
+      const relay = await discoverLocalCameraRelay();
+      if (this.disposed || version !== this.sourceVersion) return;
+      const bitmap = await fetchRelayFrame(relay.frameUrl);
+      if (this.disposed || version !== this.sourceVersion) { bitmap.close(); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      this.bridgeCanvas = canvas;
+      this.bridgeFrameUrl = relay.frameUrl;
+      this.sourceTexture = Texture.from(canvas);
     } else {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera capture requires HTTPS or localhost and a compatible browser.');
       let stream: MediaStream | undefined;
@@ -263,15 +280,48 @@ export class WebcamTransitionRenderer {
     this.cameraLayer.addChild(this.camera);
     this.layoutCamera();
     this.cameraLayer.visible = this.config.enabled;
+    if (this.bridgeFrameUrl) this.startRelayPolling(version);
     this.app.start();
     this.callbacks.onReady();
   }
 
   private releaseSource() {
+    if (this.bridgeTimer !== undefined) window.clearTimeout(this.bridgeTimer);
+    this.bridgeTimer = undefined;
+    this.bridgeCanvas = undefined;
+    this.bridgeFrameUrl = undefined;
     if (this.video) { this.video.pause(); this.video.srcObject = null; this.video = undefined; }
     this.stream?.getTracks().forEach(track => track.stop()); this.stream = undefined;
     this.camera?.destroy(); this.camera = undefined;
     this.sourceTexture?.destroy(true); this.sourceTexture = undefined;
+  }
+
+  private startRelayPolling(version: number) {
+    const frameUrl = this.bridgeFrameUrl;
+    if (!frameUrl) return;
+    let failures = 0;
+    const poll = async () => {
+      if (this.disposed || version !== this.sourceVersion || !this.bridgeCanvas) return;
+      try {
+        const bitmap = await fetchRelayFrame(frameUrl);
+        if (this.disposed || version !== this.sourceVersion || !this.bridgeCanvas) { bitmap.close(); return; }
+        const canvas = this.bridgeCanvas;
+        if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
+          canvas.width = bitmap.width; canvas.height = bitmap.height;
+          this.layoutCamera();
+        }
+        canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        failures = 0;
+      } catch {
+        failures += 1;
+        if (failures === 15) this.callbacks.onError('The ScreenSplit camera relay stopped sending frames. Start the relay again and retry.');
+      }
+      if (!this.disposed && version === this.sourceVersion) {
+        this.bridgeTimer = window.setTimeout(() => void poll(), 66);
+      }
+    };
+    this.bridgeTimer = window.setTimeout(() => void poll(), 66);
   }
 
   private layoutCamera() {

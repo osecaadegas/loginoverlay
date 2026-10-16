@@ -19,18 +19,18 @@ function describeError(message) {
   if (/transparent background|visible silhouette|chroma key/i.test(text)) {
     return { kind: "chroma", title: "Adjust chroma key", action: "Dismiss" };
   }
-  if (/camera|permission|selected source|capture requires/i.test(text)) {
-    return { kind: "camera", title: "Camera access needed", action: "Try camera again" };
+  if (/screen.?split|local camera relay|camera|permission|selected source|capture requires/i.test(text)) {
+    return { kind: "camera", title: "Start local camera relay", action: "Retry relay" };
   }
   return { kind: "renderer", title: "Effect needs attention", action: "Dismiss" };
 }
 
-function rendererConfig(config, previewOnly) {
+function rendererConfig(config, previewOnly, runtime) {
   return sanitizeConfig({
     ...DEFAULT_CONFIG,
     ...config,
     mode: "browser",
-    source: previewOnly ? "demo" : config?.source || "default",
+    source: previewOnly ? "demo" : runtime === "obs" ? "screen-splitter" : config?.source || "default",
     sound: previewOnly ? false : config?.sound === true,
   });
 }
@@ -59,8 +59,8 @@ export default function FreezeShatterWidget({
     config.__betterInstanceId || widgetId || "freeze-shatter",
   );
   const normalized = useMemo(
-    () => rendererConfig(config, previewOnly),
-    [config, previewOnly],
+    () => rendererConfig(config, previewOnly, runtime),
+    [config, previewOnly, runtime],
   );
   const normalizedRef = useRef(normalized);
   const hostRef = useRef(null);
@@ -237,7 +237,7 @@ export default function FreezeShatterWidget({
     (previewOnly && Boolean(error) && errorInfo.kind === "camera") ||
     obsNeedsCamera ||
     (runtime === "obs" && Boolean(error) && errorInfo.kind !== "camera");
-  const visibleError = error || "Open this Browser Source with Interact, then press Enable camera once.";
+  const visibleError = error || "Start Camera relay in Streamers Center Browser, then retry this source.";
 
   return (
     <div
@@ -259,11 +259,11 @@ export default function FreezeShatterWidget({
         <div className="freeze-shatter-widget__error" data-error-kind={errorInfo.kind} role="alert">
           <TriangleAlert size={18} />
           <span className="freeze-shatter-widget__error-copy">
-            <strong>{obsNeedsCamera ? "Enable camera in OBS" : errorInfo.title}</strong>
+            <strong>{obsNeedsCamera ? "Start local camera relay" : errorInfo.title}</strong>
             <span>{visibleError}</span>
           </span>
           <button type="button" onClick={obsNeedsCamera || errorInfo.kind === "camera" ? retryCamera : () => setError("")}>
-            {obsNeedsCamera ? "Enable camera" : errorInfo.action}
+            {obsNeedsCamera ? "Retry relay" : errorInfo.action}
           </button>
         </div>
       )}

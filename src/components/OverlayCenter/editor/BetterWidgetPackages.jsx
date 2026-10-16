@@ -7443,7 +7443,7 @@ function MoneyExplosionControls({ config, onChange, widget }) {
       const id = stream.getVideoTracks()[0]?.getSettings?.().deviceId; const list = await navigator.mediaDevices.enumerateDevices(); const videos = list.filter((device) => device.kind === "videoinput"); setDevices(videos);
       if (id) { const selected = videos.find((device) => device.deviceId === id); set({ source: id, sourceLabel: selected?.label || "" }); rememberCameraPermission("granted", id, selected?.label || ""); }
       else rememberCameraPermission("granted");
-      setCameraPermission("granted"); setFeedback("Camera connected. Switch to Live data to check your real framing.");
+      setCameraPermission("granted"); setFeedback("Editor camera verified. OBS uses the local ScreenSplit relay; this browser permission is separate.");
     } catch (error) { const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError"; if (denied) rememberCameraPermission("denied"); setCameraPermission(denied ? "denied" : "error"); setFeedback(denied ? "Camera access is blocked. Allow it from the camera icon in the address bar, then try again." : "The camera could not start. Close other camera apps and try again."); }
     finally { stream?.getTracks?.().forEach((track) => track.stop()); }
   };
@@ -7484,9 +7484,9 @@ function MoneyExplosionControls({ config, onChange, widget }) {
         </Section>
 
         <Section title="Camera" icon={<MonitorPlay size={13} />} category="content" simple>
-          <div className="bp-camera-permission" data-state={cameraPermission} role="status"><span className="bp-camera-permission__icon" aria-hidden="true">{cameraPermission === "granted" ? <Check size={17} /> : <MonitorPlay size={17} />}</span><div><strong>{cameraPermission === "granted" ? "Camera connected" : "Camera permission"}</strong><p>{cameraPermission === "granted" ? "Camera access is ready. Video processing stays on this device." : "Allow access once so StreamersCenter can use your camera."}</p></div><button type="button" onClick={requestCamera} disabled={cameraPermission === "requesting"}>{cameraPermission === "requesting" ? "Waiting for browser…" : cameraPermission === "granted" ? "Refresh cameras" : "Allow camera access"}</button></div>
+          <div className="bp-camera-permission" data-state={cameraPermission} role="status"><span className="bp-camera-permission__icon" aria-hidden="true">{cameraPermission === "granted" ? <Check size={17} /> : <MonitorPlay size={17} />}</span><div><strong>{cameraPermission === "granted" ? "Editor camera verified" : "Camera permission"}</strong><p>{cameraPermission === "granted" ? "This confirms access in this browser only. OBS uses the ScreenSplit local relay." : "Allow access to preview your camera here. OBS uses a separate local relay."}</p></div><button type="button" onClick={requestCamera} disabled={cameraPermission === "requesting"}>{cameraPermission === "requesting" ? "Waiting for browser…" : cameraPermission === "granted" ? "Refresh cameras" : "Allow camera access"}</button></div>
           <SelectRow label="Camera source" value={c.source} options={cameraOptions} onChange={(source) => { const selected = devices.find((device) => device.deviceId === source); set({ source, sourceLabel: selected?.label || "" }); }} />
-          <p className="bp-hint">In OBS, open Browser Source Interact once and allow camera access if Chromium asks there.</p>
+          <p className="bp-hint">Camera permission here applies only to this browser. Keep Streamers Center Browser open, start Camera relay in the app, then reload the OBS Browser Source.</p>
         </Section>
 
         <Section title="Camera placement" icon={<Maximize2 size={13} />} category="layout" simple>
@@ -7562,7 +7562,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
   const effectTestActiveRef = useRef(false);
   const [cameraPermission, setCameraPermission] = useState(readRememberedCameraPermission);
   const [cameraPermissionMessage, setCameraPermissionMessage] = useState(
-    "Allow access once so StreamersCenter can list and use your camera.",
+    "Allow access here to list and preview your camera. OBS uses the local ScreenSplit relay instead.",
   );
   const set = (patch) => onChange(normalizeFreezeShatterConfig({ ...c, ...patch }));
   const instanceId = widget?.instanceId || widget?.id || c.__betterInstanceId;
@@ -7574,7 +7574,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
       if (detail.type === "error") {
         effectTestActiveRef.current = false;
         setEffectFeedback(detail.kind === "chroma"
-          ? "Camera connected. Match Key colour to the background behind you, then test again."
+          ? "Editor camera verified. OBS still needs the local ScreenSplit relay. Match Key colour to your background, then test the preview."
           : detail.message || "The effect could not run.");
         return;
       }
@@ -7608,7 +7608,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
       setCameraPermission(permission.state);
       if (permission.state === "granted") {
         rememberCameraPermission("granted");
-        setCameraPermissionMessage("Camera access is ready. Your video stays on this device.");
+        setCameraPermissionMessage("Editor camera permission is available. OBS uses the separate local ScreenSplit relay.");
       } else if (permission.state === "denied") {
         rememberCameraPermission("denied");
         setCameraPermissionMessage("Camera access is blocked. Allow it from the camera icon in the address bar, then try again.");
@@ -7644,7 +7644,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
         rememberCameraPermission("granted");
       }
       setCameraPermission("granted");
-      setCameraPermissionMessage("Camera access granted. Select Live data to check your real framing.");
+      setCameraPermissionMessage("Editor camera access granted. Select Live data to check framing; OBS uses the local ScreenSplit relay.");
     } catch (error) {
       const blocked = error?.name === "NotAllowedError" || error?.name === "SecurityError";
       if (blocked) rememberCameraPermission("denied");
@@ -7692,7 +7692,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
       >
       <Section title="Preview & trigger" icon={<MonitorPlay size={13} />} category="behavior" simple>
         <p className="bp-hint">
-          Sample mode uses the supplied generic portrait. The published OBS overlay uses your selected camera locally.
+          The editor preview uses the camera available in this browser. OBS receives the camera through the local ScreenSplit relay.
         </p>
         <div className="bp-freeze-actions">
           <button type="button" className="bp-freeze-actions__test" onClick={() => action("preview")}>
@@ -7730,7 +7730,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
             {cameraPermission === "granted" ? <Check size={17} /> : <MonitorPlay size={17} />}
           </span>
           <div>
-            <strong>{cameraPermission === "granted" ? "Camera connected" : "Camera permission"}</strong>
+            <strong>{cameraPermission === "granted" ? "Editor camera verified" : "Camera permission"}</strong>
             <p>{cameraPermissionMessage}</p>
           </div>
           <button
@@ -7756,7 +7756,7 @@ function FreezeShatterControls({ config, onChange, widget }) {
             set({ source, sourceLabel: selectedDevice?.label || "" });
           }}
         />
-        <p className="bp-hint">In OBS, open the Browser Source with Interact and press Allow camera access if permission is requested there.</p>
+        <p className="bp-hint">Keep Streamers Center Browser open, start Camera relay there, then reload this OBS Browser Source. OBS does not share the camera permission from this editor.</p>
       </Section>
 
       <Section title="Camera placement" icon={<Maximize2 size={13} />} category="layout" simple>

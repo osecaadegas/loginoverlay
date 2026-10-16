@@ -5,6 +5,8 @@ import puppeteer from "puppeteer";
 const base = process.env.TEST_BASE_URL || "http://127.0.0.1:3010";
 const publicOverlayId = `bo_${"e".repeat(48)}`;
 const browser = await puppeteer.launch({ headless: true });
+let relayFrameBody = Buffer.alloc(0);
+let relayFrameRequests = 0;
 
 try {
   const page = await browser.newPage();
@@ -29,54 +31,57 @@ try {
         contentType: "text/html",
         headers: {
           // Match the production overlay CSP: Pixi must initialize without unsafe-eval.
-          "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws: wss:;",
+          "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' http://127.0.0.1:* http://localhost:* ws: wss:;",
         },
-        body: `<html><body style="margin:0"><div id="root"></div>
+        body: `<html><head><link rel="stylesheet" href="/src/index.css"></head><body style="margin:0;background:#ff00ff"><div id="root"></div>
           <script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`,
       });
+    }
+    if (url.origin === "http://127.0.0.1:17832" && url.pathname.startsWith("/camera/")) {
+      const corsHeaders = {
+        "Access-Control-Allow-Origin": new URL(base).origin,
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Private-Network": "true",
+        "Cross-Origin-Resource-Policy": "cross-origin",
+      };
+      if (request.method() === "OPTIONS") return request.respond({ status: 204, headers: corsHeaders });
+      if (url.pathname === "/camera/status") {
+        return request.respond({ status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, active: true }) });
+      }
+      if (url.pathname === "/camera/frame") {
+        relayFrameRequests += 1;
+        return request.respond({ status: 200, headers: { ...corsHeaders, "Content-Type": "image/jpeg", "Cache-Control": "no-store" }, body: relayFrameBody });
+      }
     }
     if (url.origin === new URL(base).origin) return request.continue();
     return request.abort();
   });
   await page.goto(`${base}/__camera-obs-route-test`, { waitUntil: "domcontentloaded" });
+  relayFrameBody = await page.evaluate(() => {
+    const canvas = document.createElement("canvas"); canvas.width = 640; canvas.height = 360;
+    const context = canvas.getContext("2d"); context.fillStyle = "#00ff00"; context.fillRect(0, 0, 640, 360);
+    context.fillStyle = "#4aa8ff"; context.beginPath(); context.arc(320, 95, 48, 0, Math.PI * 2); context.fill();
+    context.fillRect(250, 140, 140, 205);
+    return canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+  }).then((base64) => Buffer.from(base64, "base64"));
   const { browserHash } = JSON.parse(readFileSync(new URL("../node_modules/.vite/deps/_metadata.json", import.meta.url), "utf8"));
 
   await page.evaluate(async ({ version, publicOverlayId }) => {
     const requestedConstraints = [];
-    const cameraStream = (deviceId) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 640;
-      canvas.height = 360;
-      const context = canvas.getContext("2d");
-      context.fillStyle = "#00ff00";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      context.fillStyle = "#4aa8ff";
-      context.beginPath();
-      context.arc(320, 95, 48, 0, Math.PI * 2);
-      context.fill();
-      context.fillRect(250, 140, 140, 205);
-      const stream = canvas.captureStream(30);
-      const track = stream.getVideoTracks()[0];
-      Object.defineProperty(track, "getSettings", { configurable: true, value: () => ({ deviceId }) });
-      return stream;
-    };
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,
       value: {
         enumerateDevices: async () => [{ kind: "videoinput", deviceId: "obs-camera", label: "OBS Camera" }],
         getUserMedia: async (constraints) => {
           requestedConstraints.push(constraints);
-          if (constraints?.video?.deviceId?.exact === "browser-profile-device-id") {
-            throw new DOMException("Unknown browser-profile camera", "OverconstrainedError");
-          }
-          return cameraStream(constraints?.video?.deviceId?.exact || "obs-default-camera");
+          throw new DOMException("OBS Browser Source must not request a camera directly", "NotAllowedError");
         },
         addEventListener: () => undefined,
         removeEventListener: () => undefined,
       },
     });
 
-    await import("/src/index.css");
     const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
     const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
     const { MemoryRouter, Routes, Route } = await import(`/node_modules/.vite/deps/react-router-dom.js?v=${version}`);
@@ -141,14 +146,16 @@ try {
     console.error(errors);
     throw failure;
   });
+  await new Promise((resolve) => setTimeout(resolve, 400));
   assert.equal(await page.$(".better-obs-overlay--empty"), null, "The published Camera widget must not render the empty OBS shell");
   assert.equal(await page.$eval(".freeze-shatter-widget__renderer canvas", (canvas) => canvas.width), 1280);
   assert.equal(await page.$eval(".freeze-shatter-widget", (widget) => widget.dataset.ready), "true", "The Camera renderer initializes under a CSP that blocks unsafe-eval");
-  assert.ok(await page.evaluate(() => window.cameraObsAudit.requestedConstraints.some((item) => item?.video?.deviceId?.exact === "obs-camera")), "The OBS route resolves the saved camera label to the OBS browser profile device");
+  assert.deepEqual(await page.evaluate(() => window.cameraObsAudit.requestedConstraints), [], "OBS uses the local ScreenSplit camera relay instead of prompting CEF for camera access");
+  assert.ok(relayFrameRequests > 0, "The OBS widget must fetch camera frames from the local relay");
   assert.equal(await page.$(".freeze-shatter-widget__error"), null, "A ready camera does not retain the OBS permission notice");
   await page.screenshot({ path: ".codex-dev/camera-published-obs-route.png", omitBackground: true });
   assert.deepEqual(errors, []);
-  console.log("Published Camera widget rendered through the real Better OBS route with the OBS-local camera source.");
+  console.log("Published Camera widget rendered through the Better OBS route using a local ScreenSplit camera-relay feed, without getUserMedia in CEF.");
 } finally {
   await browser.close();
 }
