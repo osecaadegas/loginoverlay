@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'volcanic-widget-life-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Living lava edges for Volcanic',
+    summary: 'Subtle molten pulses and tiny edge embers bring the navbar and chat to life.',
+    changes: ['Edge effects stay inside each widget and clear of content.', 'Living lava edges and effect quality are configurable independently per widget.', 'Reduced motion and disabled theme effects suppress the animation; no additional canvas renderer is used.'],
+    action: 'Refresh the editor and OBS Browser Source. Select Volcanic on navbar or chat, then use Living lava edges in Volcanic environment. Save and publish configuration changes.',
+  },
+  {
     id: 'volcanic-theme-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Volcanic joins the overlay themes',
     summary: 'Obsidian panels, fine orange borders and a transparent basalt-and-lava environment.',

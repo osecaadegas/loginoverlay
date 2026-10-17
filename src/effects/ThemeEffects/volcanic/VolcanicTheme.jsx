@@ -2,6 +2,17 @@ import React from 'react';
 import { normalizeVolcanicSettings, VOLCANIC_SCENERY, VOLCANIC_VIEWPORT } from './volcanicTheme.js';
 import './VolcanicTheme.css';
 
+// Shared editor/OBS decoration without another renderer or frame loop.
+export function VolcanicWidgetLife({ config }) {
+  const settings = normalizeVolcanicSettings(config);
+  if (!settings.widgetLife) return null;
+  const count = settings.quality === 'low' ? 2 : settings.quality === 'ultra' ? 6 : 4;
+  return <div className="volcanic-widget-life" aria-hidden="true">
+    <span className="volcanic-widget-seam" />
+    {Array.from({ length: count }, (_, i) => <i key={i} style={{ '--spark-index': i }} />)}
+  </div>;
+}
+
 export function VolcanicEnvironment({ config, canvasAttrs, canvasStyle }) {
   const settings = normalizeVolcanicSettings(config);
   const viewport = VOLCANIC_VIEWPORT;

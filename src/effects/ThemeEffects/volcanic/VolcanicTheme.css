@@ -68,3 +68,13 @@
 .volcanic-embers i:nth-child(even) {left:auto;right:calc(1% + var(--ember-index)*.25%)}
 @keyframes volcanic-ember-drift {15%{opacity:.65}85%{opacity:.2}to{translate:7px -105px;opacity:0}}
 @media(prefers-reduced-motion:reduce) {.volcanic-embers {display:none}}
+
+/* Edge-only life stays within each widget and clear of its content. */
+.better-widget-colour-scope[data-colour-theme="volcanic"]:is([data-widget-type="navbar"],[data-widget-type="chat"]) {position:relative;display:block;width:100%;height:100%;min-width:0;min-height:0}
+.volcanic-widget-life {position:absolute;inset:0;z-index:3;overflow:hidden;border-radius:var(--volcanic-radius);pointer-events:none;contain:paint}
+.volcanic-widget-seam {position:absolute;inset:0;border:1px solid transparent;border-radius:inherit;background:conic-gradient(from 25deg,transparent 0 12%,var(--volcanic-accent) 17%,transparent 23% 54%,var(--volcanic-lava) 60%,var(--volcanic-accent) 64%,transparent 71%) border-box;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:volcanic-seam-breathe 6s ease-in-out infinite}
+.volcanic-widget-life i {position:absolute;left:3px;bottom:calc(8% + var(--spark-index)*13%);width:2px;height:3px;border-radius:50%;background:var(--volcanic-accent);opacity:0;animation:volcanic-widget-spark 5.7s ease-out infinite;animation-delay:calc(var(--spark-index)*-1.3s)}
+.volcanic-widget-life i:nth-child(even) {left:auto;right:3px}
+@keyframes volcanic-seam-breathe {0%,100%{opacity:.25}50%{opacity:.9}}
+@keyframes volcanic-widget-spark {12%{opacity:.75}70%{opacity:.25}100%{transform:translateY(-24px) scale(.5);opacity:0}}
+@media(prefers-reduced-motion:reduce) {.volcanic-widget-life {display:none}.volcanic-widget-life * {animation:none}}

@@ -7927,8 +7927,12 @@ function ThemedBetterWidgetControls({
           </div>
         </Section>
       </div>}
-      {!props.inheritedTheme && effectsThemeKey === 'volcanic' && (type === 'background' || (type === 'bonus_hunt' && c.orientation === 'mainstream')) && <div className="bp-controls" data-effects-theme="volcanic">
+      {!props.inheritedTheme && effectsThemeKey === 'volcanic' && (['background', 'navbar', 'chat'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'mainstream')) && <div className="bp-controls" data-effects-theme="volcanic">
         <Section title="Volcanic environment" icon={<Flame size={12} />} simple>
+          {['navbar', 'chat'].includes(type) && <>
+            <ToggleRow label="Living lava edges" checked={normalizeVolcanicSettings(c).widgetLife} onChange={widgetLife => onChange({ ...c, volcanic: { ...c.volcanic, widgetLife }, ...(widgetLife ? { themeEffects: { ...c.themeEffects, enabled: true } } : {}) })} hint="Slow molten highlights and tiny edge embers. Respects reduced motion." />
+            {normalizeVolcanicSettings(c).widgetLife && <SelectRow label="Edge effect quality" value={normalizeVolcanicSettings(c).quality} options={EFFECT_QUALITY_OPTIONS} onChange={quality => onChange({ ...c, themeEffects: { ...c.themeEffects, quality } })} />}
+          </>}
           {type === 'background' && <>
             <ToggleRow label="Basalt and lava scenery" checked={normalizeVolcanicSettings(c).scenery} onChange={scenery => onChange({ ...c, volcanic: { ...c.volcanic, scenery } })} />
             <ToggleRow label="Reference gameplay rim" checked={normalizeVolcanicSettings(c).referenceFrame} onChange={referenceFrame => onChange({ ...c, volcanic: { ...c.volcanic, referenceFrame } })} hint="Optional rim at the reference gameplay position. Disable for custom layouts." />

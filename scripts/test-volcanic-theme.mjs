@@ -5,6 +5,8 @@ import puppeteer from 'puppeteer';
 import { normalizeVolcanicSettings } from '../src/effects/ThemeEffects/volcanic/volcanicTheme.js';
 
 assert.equal(normalizeVolcanicSettings({}).motion, false);
+assert.equal(normalizeVolcanicSettings({}).widgetLife, true);
+assert.equal(normalizeVolcanicSettings({themeEffects:{enabled:false}}).widgetLife, false);
 assert.equal(normalizeVolcanicSettings({ volcanic: { motion: true }, themeEffects: { enabled: false } }).motion, false);
 const server = await createServer({ logLevel: 'silent', server: { host: '127.0.0.1', port: 0, hmr: false } });
 await server.listen();
@@ -122,6 +124,36 @@ try {
  await page.evaluate(()=>{const api=window.volcanic,c=api.config('current_slot');c.borderColor='#00AAFF';c.subElements={slotTitle:{textColor:'#9AB3FF',fontSize:20}};const instance=api.registry.createBetterInstance('current_slot',{width:980,height:194,config:c});api.render({instances:[instance]},'obs');});await settle();
  assert.equal(await page.$eval('.cg-widget',el=>getComputedStyle(el).borderColor),'rgb(0, 170, 255)');
  assert.equal(await page.$eval('[data-better-element=slotTitle]',el=>getComputedStyle(el).color),'rgb(154, 179, 255)','saved element overrides retain precedence');
+ // Verify actual animated edges, independent instances, settings, reload and OBS parity.
+ await page.evaluate(()=>window.volcanic.render()); await settle();
+ assert.equal(await page.$$eval('.volcanic-widget-life',els=>els.length),2,'navbar and chat gain life by default');
+ assert(await page.$$eval('.volcanic-widget-life',els=>els.every(el=>{const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return a.left>=b.left&&a.right<=b.right+1&&a.top>=b.top&&a.bottom<=b.bottom+1&&getComputedStyle(el).pointerEvents==='none';})),'edges bounded and noninteractive');
+ const opacity=await page.$eval('.volcanic-widget-seam',el=>getComputedStyle(el).opacity); await settle();
+ assert.notEqual(await page.$eval('.volcanic-widget-seam',el=>getComputedStyle(el).opacity),opacity,'molten seam really animates');
+ await page.screenshot({path:folder+'/living-edges.png'});
+ await page.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
+ assert.equal(await page.$eval('.volcanic-widget-life',el=>getComputedStyle(el).display),'none');
+ await page.emulateMediaFeatures([]);
+ for(const type of ['navbar','chat']) {
+  await page.evaluate(type=>window.volcanic.controls(type),type);await page.waitForSelector('[data-effects-theme=volcanic]');
+  for(const label of await page.$$('label.bp-text')) if(await label.evaluate(el=>el.querySelector('span')?.textContent==='Edge effect quality')) await (await label.$('select')).select('low');
+  assert.equal(await page.evaluate(()=>window.volcanic.controlConfig.themeEffects.quality),'low','edge quality control updates configuration');
+  const control=await page.$$('.bp-toggle');let clicked=false;
+  for(const el of control) if(await el.evaluate(el=>el.querySelector('strong')?.textContent==='Living lava edges')) {await el.click();clicked=true;break;}
+  assert(clicked,type+' life toggle is exposed');
+  const config=await page.evaluate(()=>window.volcanic.controlConfig);assert.equal(config.volcanic.widgetLife,false);
+  await page.evaluate(({type,config})=>{localStorage.setItem('volcanic-life-test',JSON.stringify({type,config}));const api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType===type).config=config;api.render(layout);},{type,config});await settle();
+  assert.equal(await page.$$eval('.volcanic-widget-life',els=>els.length),1,'one instance toggle leaves the other active');
+ }
+ await page.reload();await page.evaluate(initialize);
+ await page.evaluate(()=>{const {type,config}=JSON.parse(localStorage.getItem('volcanic-life-test')),api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType===type).config=config;api.layout=layout;api.obs();});await page.waitForSelector('.better-obs-overlay .volcanic-widget-life');await settle();
+ assert.equal(await page.$$eval('.volcanic-widget-life',els=>els.length),1,'saved disabled chat remains off in actual published route');
+ await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();for(const i of layout.instances)if(['navbar','chat'].includes(i.widgetType))i.config.themeEffects={enabled:false};api.render(layout);});await settle();
+ assert.equal(await page.$('.volcanic-widget-life'),null,'disabled effects suppress widget life');
+ await page.evaluate(()=>window.volcanic.single('chat',{themeEffects:{enabled:true,quality:'low'}}));await settle();
+ assert.equal(await page.$$eval('.volcanic-widget-life i',els=>els.length),2,'low quality caps edge sparks');
+ await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();for(const i of layout.instances)i.config=api.themes.applyWidgetColourTheme(i.widgetType,i.config,'candy');api.render(layout);});await settle();
+ assert.equal(await page.$('.volcanic-widget-life'),null,'switching theme removes edge effects');
  await page.evaluate(() => window.volcanic.controls('background')); await page.waitForSelector('[data-effects-theme=volcanic]');
  const toggle = async label => { for (const el of await page.$$('.bp-toggle')) if (await el.evaluate((el,label) => el.querySelector('strong')?.textContent === label, label)) { await el.click(); return; } throw new Error('Missing toggle '+label); };
  await toggle('Basalt and lava scenery'); await toggle('Reference gameplay rim'); await toggle('Idle gameplay background'); await toggle('Subtle ember motion');

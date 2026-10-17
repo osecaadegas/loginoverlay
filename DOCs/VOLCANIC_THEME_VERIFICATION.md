@@ -65,3 +65,12 @@ Checks executed successfully during implementation:
 The control-category check initially hit the Windows sandbox's Vite realpath permission restriction; rerunning with the required filesystem permission passed. No checks were disabled.
 
 Native OBS Studio, real third-party chat/casino integrations, authenticated production save/publish, long-session CPU/GPU/FPS measurements and hardware-specific behavior are not directly tested. No native OBS performance guarantee is claimed. The reference is recreated with a new scenery asset, not a pixel-identical copy.
+
+
+## Living widget edges
+
+Volcanic navbar and chat now share a small decorative DOM layer with a slowly pulsing molten border and edge-only sparks. It uses opacity/transform CSS animations, no timers, listeners, textures or additional canvas. Reduced motion hides this layer; disabling theme effects or Living lava edges removes it. Low/Balanced/Ultra use 2/4/6 sparks per supported widget. Controls are offered only on navbar and chat, and values remain in each instance's existing configuration.
+
+Modified files for this addition: the three files in src/effects/ThemeEffects/volcanic/, editor/betterWidgetRegistry.jsx, editor/BetterWidgetPackages.jsx, scripts/test-volcanic-theme.mjs, api/_lib/release-notes.js and this report. No files or migrations were created.
+
+The regression suite checks changing computed animation opacity, bounded noninteractive effects, reduced motion, independent widget toggles, quality control changes, saved-config reload into the actual published overlay component, disabling effects and theme-switch cleanup. Native OBS Studio remains unverified. The first browser launch was blocked by the sandbox; the rerun uses approved browser-launch permissions. Testing also caught and corrected the shared display-contents wrapper's missing animation bounds.

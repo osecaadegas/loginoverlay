@@ -1,5 +1,6 @@
 import OverlayAssetGate from './OverlayAssetGate';
 import { volcanicStyleVariables } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
+import { VolcanicWidgetLife } from '../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
 import '../../../effects/ThemeEffects/volcanic/VolcanicTheme.css';
 import { CandyModule } from '../../../effects/ThemeEffects/candy/CandyTheme.jsx';
 import { candyStyleVariables } from '../../../effects/ThemeEffects/candy/candyTheme.js';
@@ -1426,6 +1427,7 @@ export function renderBetterWidgetInstance({
       style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
       {colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
+      {colourThemeKey === 'volcanic' && ['navbar', 'chat'].includes(instance.widgetType) && <VolcanicWidgetLife config={widget.config} />}
     </div>
     </OverlayAssetGate>
   );

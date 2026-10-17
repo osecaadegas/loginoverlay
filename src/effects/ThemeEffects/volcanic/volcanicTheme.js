@@ -14,6 +14,7 @@ export function normalizeVolcanicSettings(config = {}) {
     referenceFrame: raw.referenceFrame === true,
     idleBackground: raw.idleBackground === true,
     motion: raw.motion === true && config.themeEffects?.enabled !== false,
+    widgetLife: raw.widgetLife !== false && config.themeEffects?.enabled !== false,
     quality: normalizeEffectQuality(config.themeEffects?.quality),
   };
 }
