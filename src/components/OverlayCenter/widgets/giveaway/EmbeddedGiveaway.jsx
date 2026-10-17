@@ -18,7 +18,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
-  const nativeWinner = hasWinner && ['orbital', 'arctic', 'candy'].includes(winnerTheme);
+  const nativeWinner = hasWinner && ['orbital', 'arctic', 'candy', 'volcanic'].includes(winnerTheme);
   const regularFrameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
   const winnerFrameHeight = bounded(layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
   const frameHeight = hasWinner ? winnerFrameHeight : regularFrameHeight;
@@ -49,7 +49,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
       width: "100%",
     }}>
-      <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} style={nativeWinner ? {
+      <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} style={nativeWinner || winnerTheme === 'volcanic' ? {
         position: 'absolute', inset: 0, width: '100%', height: '100%', containerType: 'size',
       } : {
         position: "absolute", width, height: canvasHeight, top: "50%", left: "50%",

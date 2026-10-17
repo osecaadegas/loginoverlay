@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'volcanic-theme-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Volcanic joins the overlay themes',
+    summary: 'Obsidian panels, fine orange borders and a transparent basalt-and-lava environment.',
+    changes: ['Volcanic is selectable through the existing widget colour-theme controls.', 'An optional reference-layout action arranges existing unique, visible, unlocked widgets without adding sources.', 'Giveaways stay inside the top of Volcanic chat and return their space to messages when inactive.', 'Background scenery, the reference gameplay rim, optional idle fill and restrained ember motion can be configured independently.', 'Prediction choices retain distinct option colours, and gameplay remains transparent by default.'],
+    action: 'Select Volcanic for your widgets. Use Volcanic reference layout if you want the reference arrangement; additional widgets retain their positions. Background controls manage the scenery and optional reference rim. Save and publish, then refresh your OBS Browser Source. No browser installer update is required.',
+  },
+  {
     id: 'candy-playngo-logo-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Readable Play’n GO logos in Candy',
     summary: 'Play’n GO keeps its internal artwork contrast instead of becoming a solid black badge.',

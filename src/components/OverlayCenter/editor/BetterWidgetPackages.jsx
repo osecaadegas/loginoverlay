@@ -2,6 +2,7 @@ import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { normalizeCandySettings } from '../../../effects/ThemeEffects/candy/candyTheme.js';
+import { normalizeVolcanicSettings } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
 import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
@@ -217,7 +218,7 @@ const CURRENT_SLOT_DISPLAY_STYLES = new Set(
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
   gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
-  luxe: Crown, gladiator: Flame, old_rome: Coins, orbital: Orbit, candy: Heart,
+  luxe: Crown, gladiator: Flame, old_rome: Coins, orbital: Orbit, candy: Heart, volcanic: Flame,
 };
 
 const FILL_STYLES = [
@@ -3783,11 +3784,12 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             onChange={(giveawayInChat) => set({ giveawayInChat })}
           />
           {c.giveawayInChat && <>
-          <Segmented
+          {c.colourTheme !== 'volcanic' && <Segmented
             value={c.giveawayPosition}
             options={[{ key: "top", name: "Top" }, { key: "bottom", name: "Bottom" }]}
             onChange={(giveawayPosition) => set({ giveawayPosition })}
-          />
+          />}
+          {c.colourTheme === 'volcanic' && <p>Volcanic pins the giveaway immediately below the chat header.</p>}
           <p>Uses the Giveaway controls for entries, drawing and winners. A separate giveaway box is not needed in your overlay.</p>
           <ChatGiveawayAppearanceControls config={c} onChange={onChange} allWidgets={allWidgets} />
           </>}
@@ -5625,7 +5627,7 @@ function SimpleThemedControls({
           />
         </HuntSection>
 
-        <HuntSection
+        {!(c.colourTheme === 'volcanic' && c.volcanic?.compactHunt) && <><HuntSection
           title="Carousel Style"
           icon={<Layers size={13} />}
           category="layout"
@@ -5678,6 +5680,7 @@ function SimpleThemedControls({
           )}
         </HuntSection>
 
+        </>}
         {c.orientation !== "horizontal" && (
           <HuntSection
             title="Stats Layout"
@@ -7896,7 +7899,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && !['orbital', 'candy'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy', 'volcanic'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7922,6 +7925,18 @@ function ThemedBetterWidgetControls({
               );
             })}
           </div>
+        </Section>
+      </div>}
+      {!props.inheritedTheme && effectsThemeKey === 'volcanic' && (type === 'background' || (type === 'bonus_hunt' && c.orientation === 'mainstream')) && <div className="bp-controls" data-effects-theme="volcanic">
+        <Section title="Volcanic environment" icon={<Flame size={12} />} simple>
+          {type === 'background' && <>
+            <ToggleRow label="Basalt and lava scenery" checked={normalizeVolcanicSettings(c).scenery} onChange={scenery => onChange({ ...c, volcanic: { ...c.volcanic, scenery } })} />
+            <ToggleRow label="Reference gameplay rim" checked={normalizeVolcanicSettings(c).referenceFrame} onChange={referenceFrame => onChange({ ...c, volcanic: { ...c.volcanic, referenceFrame } })} hint="Optional rim at the reference gameplay position. Disable for custom layouts." />
+            {normalizeVolcanicSettings(c).referenceFrame && <ToggleRow label="Idle gameplay background" checked={normalizeVolcanicSettings(c).idleBackground} onChange={idleBackground => onChange({ ...c, volcanic: { ...c.volcanic, idleBackground } })} hint="Off keeps the opening transparent for gameplay beneath this overlay." />}
+            <ToggleRow label="Subtle ember motion" checked={normalizeVolcanicSettings(c).motion} onChange={motion => onChange({ ...c, volcanic: { ...c.volcanic, motion }, themeEffects: { ...c.themeEffects, enabled: motion } })} hint="A few embers near outer edges only. Respects reduced motion." />
+            {normalizeVolcanicSettings(c).motion && <SelectRow label="Effect quality" value={normalizeVolcanicSettings(c).quality} options={EFFECT_QUALITY_OPTIONS} onChange={quality => onChange({ ...c, themeEffects: { ...c.themeEffects, quality } })} />}
+          </>}
+          {type === 'bonus_hunt' && c.orientation === 'mainstream' && <ToggleRow label="Compact reference hunt" checked={c.volcanic?.compactHunt === true} onChange={compactHunt => onChange({ ...c, volcanic: { ...c.volcanic, compactHunt } })} hint="Stacked cards without a separate featured-slot monitor." />}
         </Section>
       </div>}
       {!props.inheritedTheme && effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">

@@ -1,6 +1,11 @@
 import { ORBITAL_TOKENS } from '../../../../effects/ThemeEffects/orbital/orbitalTheme.js';
+import { VOLCANIC_TOKENS } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 // Shared colour choices. Rendering options and live data are not part of a palette.
 export const WIDGET_COLOUR_THEMES = Object.freeze([
+  {
+    key: 'volcanic', name: 'Volcanic', icon: 'volcanic', swatches: ['#11161B', '#F36A0A', '#B92508'],
+    ...VOLCANIC_TOKENS, hue: 25,
+  },
   {
     key: 'candy', name: 'Candy', icon: 'candy', swatches: ['#FF39BE', '#21DDF3', '#A348E5'],
     background: '#FFF2FC', surface: '#FFE8FA', raised: '#FFF8FE', border: '#FF39BE',

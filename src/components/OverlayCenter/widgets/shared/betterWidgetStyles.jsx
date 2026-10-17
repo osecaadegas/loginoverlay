@@ -21,6 +21,7 @@ import {
 import SlotImage from "../SlotImage";
 import OrbitalEnvironment from '../../../../effects/ThemeEffects/orbital/OrbitalEnvironment';
 import { CandyEnvironment } from '../../../../effects/ThemeEffects/candy/CandyTheme.jsx';
+import { VolcanicEnvironment } from '../../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
 import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
 import { resolveGiveawaySpinDurationSeconds } from "../giveaway/giveawayTiming";
 import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
@@ -5110,7 +5111,7 @@ export function BetterBonusHuntStyle({
             : null}
         </div>
       ) : null}
-      <div className="better-hunt-main-carousel">{renderCarousel()}</div>
+      {!(c.colourTheme === 'volcanic' && c.volcanic?.compactHunt) && <div className="better-hunt-main-carousel">{renderCarousel()}</div>}
       {renderRequests()}
       <div className="better-hunt-main-list-wrap">{renderList()}</div>
       {renderBonusFooter()}
@@ -5606,6 +5607,7 @@ export function BetterChatHeader({
         {!showHeaderName && c.colourTheme === 'orbital' ? (
           <span className="orbital-comms-label"><MessageSquare size={13} aria-hidden="true" /> CHAT / ALERTS</span>
         ) : null}
+        {!showHeaderName && c.colourTheme === 'volcanic' ? <span className="volcanic-chat-label"><MessageSquare size={16} aria-hidden="true" /> CHAT</span> : null}
         {showHeaderName ? (
           <strong
             style={{
@@ -6172,7 +6174,7 @@ export function BetterRtpStatsStyle({
     };
   };
   const orbital = c.colourTheme === "orbital";
-  const candy = c.colourTheme === 'candy';
+  const fitToPanel = ['candy', 'volcanic'].includes(c.colourTheme);
   const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
   const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
   const bgMid = c.cBarMid || c.barBgMid || "#081735";
@@ -6247,13 +6249,13 @@ export function BetterRtpStatsStyle({
       {...rtpAttrs("container", {
         width: "100%",
         maxWidth: previewMode ? 1152 : "100%",
-        height: candy ? '100%' : previewMode ? barHeight : "100%",
-        minHeight: candy ? 0 : barHeight,
+        height: fitToPanel ? '100%' : previewMode ? barHeight : "100%",
+        minHeight: fitToPanel ? 0 : barHeight,
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
         gap: orbital ? 10 : 16,
-        padding: candy ? `min(${paddingY}px, max(0px, calc((100cqh - 26px) / 2))) ${paddingX}px` : `${paddingY}px ${paddingX}px`,
+        padding: fitToPanel ? `min(${paddingY}px, max(0px, calc((100cqh - 26px) / 2))) ${paddingX}px` : `${paddingY}px ${paddingX}px`,
         borderRadius: radius,
         background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 46%, ${bgTo} 100%)`,
         border: `${borderWidth}px solid ${borderColor}`,
@@ -6272,8 +6274,8 @@ export function BetterRtpStatsStyle({
           {...rtpAttrs("provider", {
             display: "flex",
             alignItems: "center",
-            height: candy ? '100%' : undefined,
-            minHeight: candy ? 0 : undefined,
+            height: fitToPanel ? '100%' : undefined,
+            minHeight: fitToPanel ? 0 : undefined,
             gap: 12,
             minWidth: 0,
             flexShrink: 0,
@@ -6445,7 +6447,7 @@ export function BetterRtpStatsStyle({
             flexShrink: 0,
             marginLeft: "auto",
             maxWidth: "min(300px, 30vw)",
-            padding: candy ? '3px 12px' : "7px 14px",
+            padding: fitToPanel ? '3px 12px' : "7px 14px",
             border: `1px solid ${alphaColor(c.cRim || accent, 0.55)}`,
             borderRadius: c.colourTheme === 'candy' ? 28 : Math.max(4, numberValue(c.radius, 10) - 4),
             background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,
@@ -6784,6 +6786,10 @@ function betterBackgroundTextureStyle({
 
 export function BetterBackgroundStyle({ config }) {
   const c = config || {};
+  if (getWidgetEffectsThemeKey('background', c) === 'volcanic') {
+    return <VolcanicEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
+      canvasStyle={subElementStyle(c, 'canvas', { width: '100%', height: '100%', position: 'relative', overflow: 'hidden', borderRadius: cssPx(c.borderRadius ?? 0, '0px'), opacity: clampNumber(c.opacity ?? 100, 0, 100, 100) / 100 })} />;
+  }
   if (getWidgetEffectsThemeKey('background', c) === 'candy') {
     return <CandyEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
       canvasStyle={subElementStyle(c, 'canvas', { width: '100%', height: '100%', position: 'relative', overflow: 'hidden', borderRadius: cssPx(c.borderRadius ?? 0, '0px'), opacity: clampNumber(c.opacity ?? 100, 0, 100, 100) / 100 })} />;

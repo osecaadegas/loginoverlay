@@ -1493,7 +1493,7 @@ function ChatWidget({
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;
-  const giveawayPosition = c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const giveawayPosition = c.colourTheme === 'volcanic' ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
   const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded

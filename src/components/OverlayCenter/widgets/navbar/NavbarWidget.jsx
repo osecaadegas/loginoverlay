@@ -2051,7 +2051,10 @@ function NavbarWidget({
             sponsorAccentColor,
             ctaColor,
             ctaColorRGB,
-          }), ...orbitalInstrument,
+          }), ...(c.colourTheme === 'volcanic' ? {
+            background: c.bgColor || '#090B0E', borderColor: sponsorBorderColor || c.borderColor,
+            borderRadius: sponsorRadius ?? 10, boxShadow: sponsorShadow ?? 'none',
+          } : {}), ...orbitalInstrument,
             ...(isOrbitalNavbar ? { border: '1px solid #3f829e', color: 'var(--orbital-light)', padding: '8px 18px' } : {}),
           },
         )}

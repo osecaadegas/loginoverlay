@@ -160,6 +160,12 @@ export function buildWidgetColourThemePatch(type, config, key) {
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'rubik'; patch.bodyFont = 'rubik'; }
   }
+  if (theme.key === 'volcanic') {
+    patch.fontFamily = "'Inter', Arial, sans-serif";
+    if (type === 'chat') patch.font = patch.fontFamily;
+    if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
+    if (type === 'giveaway') { patch.titleFont = 'inter'; patch.bodyFont = 'inter'; }
+  }
   return patch;
 }
 
@@ -184,7 +190,7 @@ function syncElementOverrides(config, type, theme) {
     for (const [propertyId, token] of Object.entries(properties)) {
       // Prediction ranges are semantic colours, including users' per-element
       // overrides. Orbital changes the tile material, not those colours.
-      if (theme.key === 'orbital' && type === 'bets' && (
+      if (['orbital', 'volcanic'].includes(theme.key) && type === 'bets' && (
         (elementId === 'individualBetCard' && propertyId === 'accentColor') ||
         (elementId === 'cardNumberBadge' && ['background', 'borderColor', 'textColor'].includes(propertyId)) ||
         (elementId === 'progressBar' && propertyId === 'fillColor')
