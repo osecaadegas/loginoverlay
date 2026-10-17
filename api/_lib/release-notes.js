@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'premium-theme-gallery-2026-10-18', date: '2026-10-18', category: 'overlays',
+    title: 'Illustrated Premium theme gallery',
+    summary: 'Arctic and Old Rome join Candy and Orbital with image-backed theme cards at the top of the selector.',
+    changes: ['Image-backed themes are automatically grouped first under Premium, with colour palettes below.', 'Arctic and Old Rome use lightweight previews of their existing scenery.', 'Theme selection, saved theme identifiers and existing asset access rules are preserved.'],
+    action: 'Refresh the editor to see the new theme gallery. This release also includes the previously prepared Volcanic living edges, portrait result artwork, orange RTP rim and textured navbar/chat surfaces. Save and publish overlay configuration changes, then refresh your OBS Browser Source.',
+  },
+  {
     id: 'volcanic-surfaces-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Portrait slot artwork and textured Volcanic panels',
     summary: 'Best/worst artwork keeps a portrait shape, RTP has a continuous orange rim, and navbar/chat gain warm basalt surfaces.',

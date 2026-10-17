@@ -59,6 +59,7 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
   },
   {
     key: "arctic", name: "Arctic", icon: "arctic", swatches: ["#071a28", "#4aaed0", "#d8f8ff"],
+    thumbnail: '/theme-effects/ice/preview.jpg',
     background: "#030b14", surface: "#071a28", raised: "#0d2b3d", border: "#4b91ad",
     accent: "#d8f8ff", secondary: "#63cceb", text: "#f3fbff", muted: "#aac9d6", hue: 195,
   },
@@ -79,6 +80,7 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
   },
   {
     key: "old_rome", name: "Old Rome", icon: "old_rome", swatches: ["#f1e1bb", "#ad8645", "#5a3520"],
+    thumbnail: '/theme-effects/greek-premium/background/preview.jpg',
     background: "#e7d3a3", surface: "#f1e1bb", raised: "#faedcf", border: "#ad8645",
     accent: "#76500d", secondary: "#5a3520", text: "#2c1b12", muted: "#624b36", hue: 38,
   },
@@ -88,6 +90,15 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     thumbnail: '/theme-effects/orbital/preview.webp', ...ORBITAL_TOKENS, hue: 196,
   },
 ].map((theme) => Object.freeze({ ...theme, swatches: Object.freeze(theme.swatches) })));
+
+// Gallery organisation is visual metadata; existing asset access remains authoritative.
+export function getWidgetColourThemeGroups(canUse = () => true) {
+  const available = WIDGET_COLOUR_THEMES.filter(theme => canUse(theme.key));
+  return [
+    { key: 'premium', name: 'Premium', themes: available.filter(theme => theme.thumbnail) },
+    { key: 'palettes', name: 'Colour palettes', themes: available.filter(theme => !theme.thumbnail) },
+  ].filter(group => group.themes.length > 0);
+}
 
 // Retired selector choices still render saved overlay builds without recolouring them.
 const LEGACY_WIDGET_COLOUR_THEMES = Object.freeze([

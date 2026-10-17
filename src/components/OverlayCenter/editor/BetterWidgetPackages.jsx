@@ -70,7 +70,7 @@ import {
   switchChatStyle,
 } from "../widgets/chat/chatStyles";
 import BetsWidget from "../widgets/bets/BetsWidget";
-import { WIDGET_COLOUR_THEMES, getWidgetColourTheme } from "../widgets/shared/colourThemePalettes";
+import { getWidgetColourTheme, getWidgetColourThemeGroups } from "../widgets/shared/colourThemePalettes";
 import { applyWidgetColourTheme, getSelectedWidgetColourTheme } from "./widgetColourThemes";
 import {
   getThemeEffectDefinition,
@@ -7904,15 +7904,18 @@ function ThemedBetterWidgetControls({
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
           {access.loading && <p role="status">Loading themes…</p>}
-          <div className="bp-theme-grid" role="group" aria-label="Colour theme">
-            {WIDGET_COLOUR_THEMES.filter(theme => access.canUse("theme", theme.key)).map((theme) => {
+          <div role="group" aria-label="Colour theme">
+          {getWidgetColourThemeGroups(key => access.canUse('theme', key)).map(group => <div key={group.key} className="bp-theme-group" data-theme-group={group.key}>
+            <div className="bp-theme-group-title">{group.key === 'premium' ? <Crown size={12} /> : <Palette size={12} />}{group.name}</div>
+            <div className="bp-theme-grid">
+            {group.themes.map((theme) => {
               const Icon = COLOUR_THEME_ICONS[theme.icon];
               return (
                 <button
                   key={theme.key}
                   type="button"
                   data-colour-theme-key={theme.key}
-                  className={selected === theme.key ? "is-active" : ""}
+                  className={[selected === theme.key ? 'is-active' : '', theme.thumbnail ? 'bp-theme-card--illustrated' : ''].filter(Boolean).join(' ')}
                   aria-pressed={selected === theme.key}
                   style={theme.thumbnail ? { backgroundImage: `linear-gradient(0deg, #020711 5%, transparent 100%), url(${theme.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
                   onClick={() => onChange(applyWidgetColourTheme(type, c, theme.key))}
@@ -7924,6 +7927,8 @@ function ThemedBetterWidgetControls({
                 </button>
               );
             })}
+            </div>
+          </div>)}
           </div>
         </Section>
       </div>}

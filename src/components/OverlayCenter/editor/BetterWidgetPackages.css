@@ -413,6 +413,11 @@
   gap: 8px;
 }
 
+.bp-theme-group + .bp-theme-group {margin-top:14px}
+.bp-theme-group-title {display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8}
+.bp-theme-group[data-theme-group="premium"] .bp-theme-group-title {color:#f4cf81}
+.bp-theme-grid .bp-theme-card--illustrated {min-height:74px;display:flex;flex-direction:column;justify-content:space-between;border-color:#e6bd602e;color:#fff;text-shadow:0 1px 4px #000,0 0 8px #000}
+
 .bp-theme-grid button,
 .bp-font-grid button,
 .bp-preset-row button,
