@@ -15,7 +15,7 @@
 .candy-capsules {position:absolute;z-index:5;pointer-events:none;right:7px;bottom:5px;width:70px;height:30px;border:2px solid #fff9;border-radius:30px;background:linear-gradient(90deg,#1bd9f3 47%,#fff 48% 57%,#ff39be 58%);box-shadow:inset 0 5px 5px #fffc,inset 0 -4px 5px #6a086355,1px 3px 3px #85176944;transform:rotate(-32deg)}
 [data-widget-type="navbar"] > .candy-module {border-radius:38px;padding:6px}
 [data-colour-theme="candy"][data-widget-type="navbar"] .candy-capsules {right:18%;bottom:18px}
-[data-colour-theme="candy"][data-widget-type="rtp_stats"] > .candy-module {border-radius:38px;padding:7px}
+[data-colour-theme="candy"][data-widget-type="rtp_stats"] > .candy-module {border-radius:38px;padding:4px 6px}
 [data-colour-theme="candy"] :is(.better-navbar-stage,.cg-widget,.rtp-stats-bar,.better-slideshow-frame,.ov-chat-widget,.better-bets-fit,.tw-root,.better-giveaway-widget,.better-shoutout-card,.slot-bingo-widget) {border-radius:19px;box-shadow:inset 0 2px 3px #fff, inset 0 -2px 3px #ce7bb54d;text-shadow:none;clip-path:none}
 [data-colour-theme="candy"] :is(.better-hunt-panel,.better-hunt-empty,.better-hunt-stat,.better-hunt-list,.better-hunt-requests,.better-hunt-total,.better-hunt-request,.better-hunt-card,.better-hunt-row) {text-shadow:none}
 [data-colour-theme="candy"] :is(.better-hunt-stat,.cg-stat,.better-gw-metric,.slot-bingo-widget__square,.tw-match,.bar-row) {border-radius:12px;box-shadow:inset 0 2px 3px #fff,0 1px 2px #a348e522}
@@ -84,3 +84,40 @@
 .candy-module[data-candy-motion="on"]::after,.candy-module[data-candy-motion="on"] .candy-structural-panel::after {animation:candy-glint 9s ease-in-out infinite alternate}
 @keyframes candy-glint {from {opacity:.6}to {opacity:1}}
 @media(prefers-reduced-motion:reduce) {.candy-environment-sweets i,.candy-module::after,.candy-module .candy-structural-panel::after {animation:none!important}}
+/* Pale Candy surfaces need their own text defaults across every Hunt variant.
+   Explicit inline element appearance still wins; artwork overlays keep white text. */
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root :is(.better-hunt-main-title,.better-hunt-image-stats-title h3,.better-hunt-image-row strong,.better-hunt-stat strong,.better-hunt-main-stat strong,.better-hunt-progress-summary strong,.better-hunt-result-slot) {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root :is(.better-hunt-image-stats-copy,.better-hunt-row--compact,.better-hunt-row--names,.better-hunt-mainstream .better-hunt-row--image) :is(.better-hunt-slot-marquee,.better-hunt-mini-stat,.better-hunt-mini-stat strong) {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root :is(.better-hunt-image-stats-copy,.better-hunt-row--compact,.better-hunt-row--names,.better-hunt-mainstream .better-hunt-row--image) :is(.better-hunt-mini-label,.better-hunt-row-main em,.better-hunt-stat-label) {color:var(--candy-muted);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-mainstream :is(.better-hunt-row--super,.better-hunt-row--extreme) .better-hunt-row-main .better-hunt-slot-marquee {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root :is(.better-hunt-main-status--opening,.better-hunt-tier--super) {color:#795200;background:#FFF3CE;border-color:#D8AB35;box-shadow:inset 0 1px 2px white}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-tier--extreme {color:#A01956;background:#FFE3EF;border-color:#E78BB0}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-row-id {color:var(--candy-text);background:var(--candy-raised);border-color:var(--candy-frame);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-active {background:linear-gradient(135deg,#FFF8FE,#FFE8FA);border-color:var(--candy-frame)}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-active-row strong {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-active-row span {color:var(--candy-muted)}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result {--candy-result-accent:#08786F;border-color:#79D1C8;background:linear-gradient(140deg,#F6FFFD,#DDF6F3);box-shadow:inset 3px 0 0 var(--candy-result-accent),inset 0 1px 2px white,0 2px 4px #572c7122}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result--worst {--candy-result-accent:#A12664;border-color:#E7A2C6;background:linear-gradient(140deg,#FFFAFD,#FFE2F1)}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result :is(.better-hunt-result-payout,.better-hunt-result-row) {background:#FFFFFFB8;border-color:#CBB0D966;box-shadow:inset 0 1px 1px white;border-radius:8px}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result :is(.better-hunt-result-head em,.better-hunt-result-payout>strong,.better-hunt-result-row>strong) {color:var(--candy-result-accent);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result :is(.better-hunt-result-payout>span,.better-hunt-result-row>span) {color:var(--candy-muted);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result-cycle {--bh-result-cycle-color:#08786F;background:#D3BDE1}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-result-flipper[data-face="worst"] .better-hunt-result-cycle {--bh-result-cycle-color:#A12664}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-gw-result-message {color:var(--candy-muted);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] :is(.better-gw-result-avatar i,.ov-chat-header,.candy-hunt-requests .better-hunt-requests-head,.candy-hunt-requests .better-hunt-requests-head h3) {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-gw-result-avatar i {background:#DDF7FF;border-color:#A348E5;box-shadow:0 1px 3px #572c7133}
+.better-widget-colour-scope[data-colour-theme="candy"] .slot-bingo-widget__title {background:none;background-clip:initial;color:var(--sb-text);filter:none;text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .slot-bingo-widget__square:is(.is-complete,.is-free) {color:var(--sb-text);background:linear-gradient(145deg,#F8F0FF,#E8D6FC);box-shadow:inset 0 2px 3px white,0 1px 3px #7C3DA933}
+.better-widget-colour-scope[data-colour-theme="candy"] .slot-bingo-widget__square.is-free {background:linear-gradient(145deg,#F4FDFF,#CDEFF8)}
+.better-widget-colour-scope[data-colour-theme="candy"] .slot-bingo-widget :is(.slot-bingo-widget__label,.slot-bingo-widget__multiplier,.slot-bingo-widget__status-icon) {color:var(--sb-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .slot-bingo-widget .slot-bingo-widget__multiplier {background:#FFFFFFB8;border-color:#C79AE5;box-shadow:inset 0 1px 2px white}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-bets-stage {--hard-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] :is(.better-gw-status-spin,.better-gw-status-win,.better-gw-avatar-name) {color:var(--candy-text);text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-name {color:var(--candy-text);text-shadow:none}
+/* The result drawer reserves room inside the Candy casing, including when
+   Always visible requests the legacy expanding drawer presentation. */
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-mainstream {height:100%;max-height:100%;display:flex;flex-direction:column}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-mainstream > * {flex:0 0 auto}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-mainstream > .better-hunt-main-list-wrap {flex:1 1 0;min-height:0;overflow:hidden}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-tier-stat--super .better-hunt-stat-label {color:#795200;text-shadow:none}
+.better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-tier-stat--extreme .better-hunt-stat-label {color:#A01956;text-shadow:none}

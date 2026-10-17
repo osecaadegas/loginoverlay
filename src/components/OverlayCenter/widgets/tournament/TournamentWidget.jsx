@@ -3078,11 +3078,11 @@ function TournamentWidget({ config, theme }) {
               style={{
                 fontSize: "clamp(11px, 1.5vw, 18px)",
                 fontWeight: 900,
-                color: "#fff",
+                color: c.colourTheme === 'candy' ? nameColor : "#fff",
                 textTransform: "uppercase",
                 letterSpacing: "2.5px",
                 fontFamily: gFont,
-                textShadow: `0 0 14px ${gCyan}35`,
+                textShadow: c.colourTheme === 'candy' ? 'none' : `0 0 14px ${gCyan}35`,
               }}
             >
               ⚔ {c.bracketName}

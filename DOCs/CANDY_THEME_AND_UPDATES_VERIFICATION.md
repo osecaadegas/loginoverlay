@@ -56,3 +56,15 @@ Generated local screenshots are in `.codex-dev/candy-verification/`, including `
 The background and detailed decorations are a recreation, not identical pixels from the reference. Gameplay, camera and Slot Window sources remain independent and unobstructed by the theme.
 
 Browser-source rendering was tested in Chromium with the application's OBS runtime flag. Native OBS Studio, a real authenticated production save/publish, real platform chat events and prolonged hardware performance were not exercised. No measured OBS FPS or GPU claim is made. Persistence checks use isolated serialized configurations, not production account writes. There is no standalone Daily Wheel widget registered in this editor; no fake wheel or new widget behavior was introduced.
+
+## Readability refinement — 17 October 2026
+
+The compact RTP failure came from its configured minimum height and vertical padding exceeding the inner Candy frame. The provider logo could also exceed that height independently. Candy now fits the bar and provider into the available space, keeps the items vertically centered and uses smaller best-win badge padding. The configured vertical padding still applies when sufficient space is available; element appearance overrides retain precedence.
+
+All Bonus Hunt orientations now have dark-purple heading/value defaults on pale surfaces, readable secondary labels and reduced text shadows. Best/worst cards use mint/pink surfaces with dark teal/berry values. The mainstream result drawer reserves space inside the frame instead of clipping its always-visible result card. Bingo uses clean text and lighter completed/free tiles; giveaway status/winner text, the tournament heading and Candy navbar palette defaults were also refined.
+
+Theme selection now recolours the actual Bonus Hunt renderer element IDs, including old saved white text overrides. Users who intentionally customized those colours can continue editing them; reselecting Candy refreshes the defaults without modifying production account records automatically.
+
+Follow-up files: `CandyTheme.css`, `candyTheme.js`, `betterWidgetStyles.jsx`, `widgetColourThemes.js`, `TournamentWidget.jsx`, `test-candy-theme.mjs`, this report and the server release catalog. No migration or new dependency.
+
+Additional browser assertions cover the editor's 52px minimum RTP height through 76px, vertical centering and complete containment of text/badges/provider logos, populated mainstream slot titles and values, both best/worst colour treatments, complete result-card containment and recolouring legacy saved text fields. Screenshots: `rtp-*-editor.png`, `rtp-*-obs.png`, `mainstream-contrast-editor.png`, `mainstream-contrast-obs.png`. Native OBS remains unverified.

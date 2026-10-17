@@ -87,6 +87,11 @@ const ELEMENT_COLOURS = {
     slotRow: { background: "raised", borderColor: "border" },
     carouselBackdrop: { background: "surface", borderColor: "border" },
     progressBarFill: { background: "accent" }, progressCount: { textColor: "text" },
+    // Actual renderer targets, including appearances saved before Candy existed.
+    headerTitle: { textColor: 'text' }, slotTitle: { textColor: 'text' },
+    statCell: { background: 'raised', borderColor: 'border' },
+    ...Object.fromEntries(['betValue', 'winValue', 'multiplierValue', 'rtpValue', 'maxWinValue', 'bestWinValue', 'bestMultiplierValue', 'resultSlotName', 'resultStatValue', 'resultPayout'].map(id => [id, { textColor: 'text' }])),
+    ...Object.fromEntries(['betLabel', 'winLabel', 'multiplierLabel', 'rtpLabel', 'maxWinLabel', 'providerName', 'resultStatLabel'].map(id => [id, { textColor: 'muted' }])),
   },
   giveaway: {
     container: { background: "surface", borderColor: "border" },

@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'candy-readability-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Clearer Candy readouts and result cards',
+    summary: 'Compact RTP bars fit their frames and pale panels use stronger text contrast.',
+    changes: ['RTP text, badges and provider logos fit and align vertically inside compact Candy frames.', 'Bonus Hunt headings, slot details and list values use dark-purple text on pale surfaces.', 'Best/worst cards use coordinated mint and pink surfaces with darker values.', 'Giveaway, Bingo and tournament text treatments have been refined for readability.'],
+    action: 'Refresh the editor and your OBS Browser Source. If an older custom appearance still uses white text, select Candy again to refresh its colour defaults, then save and publish. Custom element settings remain editable.',
+  },
+  {
     id: 'candy-theme-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Candy arrives in the Overlay Editor',
     summary: 'Glossy pink, cyan and purple frames with a candy-shop environment.',

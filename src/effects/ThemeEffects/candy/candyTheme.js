@@ -13,7 +13,7 @@ export function normalizeCandySettings(settings = {}) {
 
 export function candyWidgetPalette(type, theme) {
   if (theme?.key !== 'candy') return theme;
-  if (type === 'navbar') return { ...theme, surface: '#7CEEFF', background: '#34D8F1', raised: '#C4F8FF', border: '#21DDF3', text: '#FFFFFF', muted: '#FFFFFF', accent: '#FFFFFF', secondary: '#FF39BE' };
+  if (type === 'navbar') return { ...theme, surface: '#7CEEFF', background: '#34D8F1', raised: '#C4F8FF', border: '#21DDF3', secondary: '#FF39BE' };
   return ['chat', 'navbar', 'bets', 'connect_four'].includes(type)
     ? { ...theme, surface: '#DDF7FF', background: '#ECFBFF', raised: '#F4FDFF', border: '#21DDF3', secondary: '#FF39BE' }
     : theme;

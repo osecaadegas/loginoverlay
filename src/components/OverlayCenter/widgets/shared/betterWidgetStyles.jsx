@@ -5627,7 +5627,7 @@ export function BetterChatHeader({
             display: "inline-flex",
             alignItems: "center",
             gap: 7,
-            color: candy ? '#ffffff' : alphaColor(headerText, 0.72),
+            color: candy ? subValue(c, 'header', 'textColor', '#30136C') : alphaColor(headerText, 0.72),
             fontWeight: 900,
             fontSize: candy ? '1em' : "0.72em",
             textTransform: "uppercase",
@@ -6172,6 +6172,7 @@ export function BetterRtpStatsStyle({
     };
   };
   const orbital = c.colourTheme === "orbital";
+  const candy = c.colourTheme === 'candy';
   const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
   const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
   const bgMid = c.cBarMid || c.barBgMid || "#081735";
@@ -6246,13 +6247,13 @@ export function BetterRtpStatsStyle({
       {...rtpAttrs("container", {
         width: "100%",
         maxWidth: previewMode ? 1152 : "100%",
-        height: previewMode ? barHeight : "100%",
-        minHeight: barHeight,
+        height: candy ? '100%' : previewMode ? barHeight : "100%",
+        minHeight: candy ? 0 : barHeight,
         boxSizing: "border-box",
         display: "flex",
         alignItems: "center",
         gap: orbital ? 10 : 16,
-        padding: `${paddingY}px ${paddingX}px`,
+        padding: candy ? `min(${paddingY}px, max(0px, calc((100cqh - 26px) / 2))) ${paddingX}px` : `${paddingY}px ${paddingX}px`,
         borderRadius: radius,
         background: `linear-gradient(180deg, ${bgFrom} 0%, ${bgMid} 46%, ${bgTo} 100%)`,
         border: `${borderWidth}px solid ${borderColor}`,
@@ -6271,6 +6272,8 @@ export function BetterRtpStatsStyle({
           {...rtpAttrs("provider", {
             display: "flex",
             alignItems: "center",
+            height: candy ? '100%' : undefined,
+            minHeight: candy ? 0 : undefined,
             gap: 12,
             minWidth: 0,
             flexShrink: 0,
@@ -6442,7 +6445,7 @@ export function BetterRtpStatsStyle({
             flexShrink: 0,
             marginLeft: "auto",
             maxWidth: "min(300px, 30vw)",
-            padding: "7px 14px",
+            padding: candy ? '3px 12px' : "7px 14px",
             border: `1px solid ${alphaColor(c.cRim || accent, 0.55)}`,
             borderRadius: c.colourTheme === 'candy' ? 28 : Math.max(4, numberValue(c.radius, 10) - 4),
             background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,

@@ -44,7 +44,7 @@ try {
  root.render(h('div',{style:{position:'relative',width:1920,height:1080,transform:`scale(${innerWidth/1920})`,transformOrigin:'top left'}},...instances.map(instance=>h('div',{key:instance.instanceId,'data-fixture-widget':instance.widgetType,style:{position:'absolute',left:instance.x,top:instance.y,width:instance.width,height:instance.height,zIndex:instance.zIndex}},registry.renderBetterWidgetInstance({instance,layout:{instances},mode:populated?'mock':'live',runtime,accessVerified:true})))));
  },
  controls(type){const app=this;function Controls(){const [c,set]=React.useState(app.config(type));window.candy.controlConfig=c;return h('div',{style:{width:420}},h(BetterWidgetControls,{type,config:c,onChange:set}));}root.render(h(Controls,{key:type}));},
- renderConfig(instance,runtime='editor'){this.instances=[instance];root.render(h('div',{style:{width:instance.width,height:instance.height}},registry.renderBetterWidgetInstance({instance,layout:{instances:[instance]},mode:'live',runtime,accessVerified:true})));}
+ renderConfig(instance,runtime='editor',mode='live'){this.instances=[instance];root.render(h('div',{style:{width:instance.width,height:instance.height}},registry.renderBetterWidgetInstance({instance,layout:{instances:[instance]},mode,runtime,accessVerified:true})));}
  };window.candy.scene();
  };await page.evaluate(initialize,browserHash);
  const wait=()=>new Promise(r=>setTimeout(r,800));await page.waitForSelector('.candy-hunt-composition');await wait();
@@ -101,6 +101,27 @@ try {
   assert.equal(await page.$eval(selector,el=>getComputedStyle(el).objectFit),'contain');
   assert.equal(await page.$('.better-slideshow-frame__empty'),null,'guidance only appears when media is absent');
  }
+
+ for(const runtime of ['editor','obs']){
+  for(const height of [44,48,56,76]){
+   await page.evaluate(({height,runtime})=>{const config=window.candy.config('rtp_stats',{barHeight:58,barPadY:8,previewMode:true});window.candy.renderConfig(window.candy.registry.createBetterInstance('rtp_stats',{width:1114,height,config}),runtime,'mock');},{height,runtime});await wait();
+   const geometry=await page.evaluate(()=>{const root=document.querySelector('.rtp-stats-bar'),box=root.getBoundingClientRect(),frame=document.querySelector('.candy-module-content').getBoundingClientRect();const nodes=[...root.querySelectorAll(':scope > h1,:scope > div')];return {fits:box.top>=frame.top-.5&&box.bottom<=frame.bottom+.5,items:nodes.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,delta:Math.abs((r.top+r.bottom-box.top-box.bottom)/2)};}),box:{top:box.top,bottom:box.bottom}};});
+   assert(geometry.fits, runtime+' '+height+' RTP bar fits inside candy frame: '+JSON.stringify(geometry));
+   assert(geometry.items.length>=4,JSON.stringify(geometry));assert(geometry.items.every(r=>r.top>=geometry.box.top-.5&&r.bottom<=geometry.box.bottom+.5&&r.delta<=1),runtime+' '+height+' every RTP item is centered and unclipped: '+JSON.stringify(geometry));
+   await page.screenshot({path:'.codex-dev/candy-verification/rtp-'+height+'-'+runtime+'.png'});
+  }
+  await page.evaluate(runtime=>{const config=window.candy.config('bonus_hunt',{orientation:'mainstream',carouselMode:'imagestats',listMode:'image',sessionState:'ended',drawerAlwaysVisible:true,resultFlipSeconds:1,winEffects:false,showRequests:false,widgetWidth:370,panelWidth:370,widgetHeight:1044,panelHeight:1044,bonuses:[{id:'best',slotName:'Candy Stars',provider:'Provider',betSize:1,payout:100,opened:true,image:'/player.webp'},{id:'worst',slotName:'Gates of Hades',provider:'Provider',betSize:1,payout:1,opened:true,isSuperBonus:true,image:'/player.webp'}]});window.candy.renderConfig(window.candy.registry.createBetterInstance('bonus_hunt',{width:370,height:1044,config}),runtime);},runtime);await wait();await page.waitForSelector('.better-hunt-result--best');
+  const colors=await page.evaluate(()=>{const selectors=['.better-hunt-main-name','.better-hunt-image-stats-title h3','.better-hunt-image-row strong','.better-hunt-row-main .better-hunt-slot-marquee','.better-hunt-mini-stat','.better-hunt-result-slot'];return selectors.map(selector=>({selector,colors:[...document.querySelectorAll(selector)].map(el=>getComputedStyle(el).color)}));});
+  for(const item of colors){assert(item.colors.length,item.selector+' populated');assert(item.colors.every(color=>color==='rgb(48, 19, 108)'),runtime+' '+item.selector+' uses legible dark purple: '+JSON.stringify(item));}
+  assert.equal(await page.$eval('.better-hunt-result--best .better-hunt-result-payout>strong',el=>getComputedStyle(el).color),'rgb(8, 120, 111)');
+  assert.equal(await page.$eval('.better-hunt-result--worst .better-hunt-result-payout>strong',el=>getComputedStyle(el).color),'rgb(161, 38, 100)');
+  assert(await page.evaluate(()=>{const frame=document.querySelector('.candy-module-content').getBoundingClientRect(),result=document.querySelector('.better-hunt-result-flipper').getBoundingClientRect();return result.top>=frame.top&&result.bottom<=frame.bottom+1;}),'always-visible best/worst card fits inside the Candy frame');
+  await page.screenshot({path:'.codex-dev/candy-verification/mainstream-contrast-'+runtime+'.png'});
+ }
+
+ const oldAppearance=await page.evaluate(()=>{const original={...window.candy.config('bonus_hunt'),subElements:{headerTitle:{textColor:'#ffffff'},slotTitle:{textColor:'#ffffff'},betValue:{textColor:'#ffffff'},resultStatValue:{textColor:'#ffffff'}}};const recolored=window.candy.themes.applyWidgetColourTheme('bonus_hunt',original,'candy');return {original:original.subElements,updated:recolored.subElements};});
+ assert.equal(oldAppearance.original.headerTitle.textColor,'#ffffff');
+ for(const id of ['headerTitle','slotTitle','betValue','resultStatValue'])assert.equal(oldAppearance.updated[id].textColor,'#30136C',id+' old white appearance is refreshed by theme selection');
  const isolation=await page.evaluate(()=>{const config=window.candy.config('chat',{text:'#30136C'});const original=JSON.stringify(config);const copy=window.candy.themes.applyWidgetColourTheme('chat',config,'arctic');return {unchanged:original===JSON.stringify(config),arctic:copy.text!=='#30136C'};});assert(isolation.unchanged&&isolation.arctic);
  assert.deepEqual(errors,[]);console.log('Candy: 12 widget types, editor/OBS renderer, three resolutions, preset immutability, transparency controls: PASS');
 }finally{await browser.close();await server.close();}
