@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   buildSlotWindowSourceUrl,
+  fitSlotWindowSource,
   getSlotWindowPanelLabel,
   sanitizeSlotWindowConfig,
 } from "./slotWindowModel";
@@ -41,20 +42,50 @@ function outerMaskStyle(config) {
 export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
   const normalized = sanitizeSlotWindowConfig(config);
   const sourceUrl = buildSlotWindowSourceUrl(normalized);
+  const hostRef = useRef(null);
+  const iframeRef = useRef(null);
+  const [bounds, setBounds] = useState(null);
+  const [reported, setReported] = useState(null);
+  useEffect(() => {
+    const element = hostRef.current;
+    if (!element) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      setBounds({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [sourceUrl]);
+  useEffect(() => {
+    if (!sourceUrl) return undefined;
+    const origin = new URL(sourceUrl).origin;
+    const receive = event => {
+      if (event.origin !== origin || event.source !== iframeRef.current?.contentWindow || event.data?.type !== 'screensplit:source-size') return;
+      const { width, height } = event.data;
+      if (![width, height].every(value => Number.isInteger(value) && value > 0 && value <= 32768)) return;
+      setReported(current => current?.sourceUrl === sourceUrl && current.width === width && current.height === height ? current : { sourceUrl, width, height });
+    };
+    window.addEventListener('message', receive);
+    iframeRef.current?.contentWindow?.postMessage({ type: 'streamerscenter:request-source-size' }, origin);
+    return () => window.removeEventListener('message', receive);
+  }, [sourceUrl]);
+  const size = reported?.sourceUrl === sourceUrl ? reported : null;
+  const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height) : null;
   const showSetup = !sourceUrl && runtime !== "obs";
 
   if (!sourceUrl && !showSetup) return null;
 
   return (
     <section
+      ref={hostRef}
       className="slot-window-widget"
       data-element-id="root"
       data-connected={sourceUrl ? "true" : "false"}
       data-mask-shape={normalized.maskShape}
-      style={outerMaskStyle(normalized)}
+      style={fitted ? undefined : outerMaskStyle(normalized)}
     >
       {sourceUrl ? (
         <iframe
+          ref={iframeRef}
           key={sourceUrl}
           className="slot-window-widget__capture"
           data-element-id="capture"
@@ -64,7 +95,8 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
           sandbox="allow-scripts allow-same-origin"
           referrerPolicy="no-referrer"
           scrolling="no"
-          style={outerMaskStyle(normalized)}
+          onLoad={() => iframeRef.current?.contentWindow?.postMessage({ type: 'streamerscenter:request-source-size' }, new URL(sourceUrl).origin)}
+          style={{ ...outerMaskStyle(normalized), ...(fitted ? { inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: fitted.width, height: fitted.height } : {}) }}
         />
       ) : (
         <div className="slot-window-widget__setup" data-element-id="emptyState">

@@ -29,6 +29,10 @@ try {
     "/src/components/OverlayCenter/editor/sharedOverlayTemplates.js",
   );
 
+  assert.deepEqual(model.fitSlotWindowSource(1920,1080,240,160), {width:240,height:135});
+  assert.deepEqual(model.fitSlotWindowSource(1080,1920,240,160), {width:90,height:160});
+  assert.equal(model.fitSlotWindowSource(0,1080,240,160), null);
+  assert.equal(model.fitSlotWindowSource(1920,1080,0,160), null);
   assert.equal(model.normalizeSlotWindowSourceUrl(SOURCE), SOURCE);
   assert.equal(model.normalizeSlotWindowSourceUrl("https://evil.example/view/panel-2?token=" + TOKEN), "");
   assert.equal(model.normalizeSlotWindowSourceUrl("http://127.0.0.1:17899/view/panel-2?token=" + TOKEN), "");

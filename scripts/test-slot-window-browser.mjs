@@ -128,6 +128,23 @@ try {
     assert.ok(angledAlpha.slice(0, 4).every((alpha) => alpha === 0), `${runtime} angled cutouts are transparent`);
     assert.ok(angledAlpha[4] > 240, `${runtime} angled mask keeps the slot visible`);
   }
+  for (const [width,height] of [[1920,1080],[1080,1920],[1000,1000]]) {
+    for (const frame of page.frames().filter(frame => frame.url().startsWith('http://127.0.0.1:17832/'))) {
+      await frame.evaluate(({width,height}) => parent.postMessage({type:'screensplit:source-size',width,height}, '*'), {width,height});
+    }
+    await page.waitForFunction(({width,height}) => [...document.querySelectorAll('.slot-window-widget iframe')].every(frame => {
+      const rect=frame.getBoundingClientRect();return Math.abs(rect.width/rect.height-width/height)<0.001;
+    }), {}, {width,height});
+    for (const runtime of ['editor','obs']) {
+      const dimensions=await page.$eval('#rounded-'+runtime+' iframe',frame=>({width:frame.getBoundingClientRect().width,height:frame.getBoundingClientRect().height}));
+      assert.ok(dimensions.width<=240.1&&dimensions.height<=160.1, runtime+' fits the whole source inside the existing widget');
+    }
+  }
+  await page.$eval('#rounded-obs',element=>{element.style.width='400px';element.style.height='100px';});
+  await page.waitForFunction(()=>{const r=document.querySelector('#rounded-obs iframe').getBoundingClientRect();return Math.abs(r.width-100)<0.1&&Math.abs(r.height-100)<0.1;});
+  await page.evaluate(()=>window.postMessage({type:'screensplit:source-size',width:999,height:1},'*'));
+  await new Promise(resolve=>setTimeout(resolve,50));
+  assert.equal(Math.round(await page.$eval('#rounded-obs iframe',frame=>frame.getBoundingClientRect().width)),100,'Untrusted dimension messages cannot stretch the source');
   await page.screenshot({ path: ".codex-dev/slot-window-corner-masks.png", omitBackground: true });
   console.log("Slot Window corner masks passed independent-radius and transparent-cutout checks in editor and OBS runtimes.");
 } finally {

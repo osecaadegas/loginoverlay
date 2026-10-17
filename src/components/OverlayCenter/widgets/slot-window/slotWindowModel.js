@@ -116,3 +116,9 @@ export function getSlotWindowPanelLabel(config = {}) {
   const panel = new URL(sourceUrl).pathname.match(/panel-([1-8])$/)?.[1];
   return panel ? `ScreenSplit panel ${panel}` : "ScreenSplit connected";
 }
+
+export function fitSlotWindowSource(sourceWidth, sourceHeight, width, height) {
+  if (![sourceWidth, sourceHeight, width, height].every(value => Number.isFinite(value) && value > 0)) return null;
+  const scale = Math.min(width / sourceWidth, height / sourceHeight);
+  return { width: sourceWidth * scale, height: sourceHeight * scale };
+}
