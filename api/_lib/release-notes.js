@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'volcanic-surfaces-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Portrait slot artwork and textured Volcanic panels',
+    summary: 'Best/worst artwork keeps a portrait shape, RTP has a continuous orange rim, and navbar/chat gain warm basalt surfaces.',
+    changes: ['Best/worst artwork no longer stretches across short result cards.', 'The RTP bar retains an orange inner outline even with a zero-width outer border.', 'Static basalt grain and soft warm highlights can be toggled independently on navbar and chat.'],
+    action: 'Refresh the editor and OBS Browser Source. Find Textured basalt surface under Volcanic environment; save and publish configuration changes.',
+  },
+  {
     id: 'volcanic-widget-life-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Living lava edges for Volcanic',
     summary: 'Subtle molten pulses and tiny edge embers bring the navbar and chat to life.',

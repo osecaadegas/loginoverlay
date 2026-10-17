@@ -7930,6 +7930,7 @@ function ThemedBetterWidgetControls({
       {!props.inheritedTheme && effectsThemeKey === 'volcanic' && (['background', 'navbar', 'chat'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'mainstream')) && <div className="bp-controls" data-effects-theme="volcanic">
         <Section title="Volcanic environment" icon={<Flame size={12} />} simple>
           {['navbar', 'chat'].includes(type) && <>
+            {((type === 'navbar' && c.displayStyle === 'better_navbar') || (type === 'chat' && !['floating', 'stack'].includes(c.chatStyle))) && <ToggleRow label="Textured basalt surface" checked={normalizeVolcanicSettings(c).surfaceTexture} onChange={surfaceTexture => onChange({ ...c, volcanic: { ...c.volcanic, surfaceTexture } })} hint="Static stone grain and warm highlights behind content." />}
             <ToggleRow label="Living lava edges" checked={normalizeVolcanicSettings(c).widgetLife} onChange={widgetLife => onChange({ ...c, volcanic: { ...c.volcanic, widgetLife }, ...(widgetLife ? { themeEffects: { ...c.themeEffects, enabled: true } } : {}) })} hint="Slow molten highlights and tiny edge embers. Respects reduced motion." />
             {normalizeVolcanicSettings(c).widgetLife && <SelectRow label="Edge effect quality" value={normalizeVolcanicSettings(c).quality} options={EFFECT_QUALITY_OPTIONS} onChange={quality => onChange({ ...c, themeEffects: { ...c.themeEffects, quality } })} />}
           </>}

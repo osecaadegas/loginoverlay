@@ -6262,7 +6262,7 @@ export function BetterRtpStatsStyle({
         color: text,
         fontFamily: font,
         fontSize,
-        boxShadow: `inset 0 0 0 1px rgba(3,12,32,0.9), inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
+        boxShadow: `inset 0 0 0 1px ${c.colourTheme === 'volcanic' ? rim : 'rgba(3,12,32,0.9)'}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
         overflow: "hidden",
         position: "relative",
         flexShrink: 0,

@@ -91,6 +91,7 @@ try {
  await page.goto(base + '/__volcanic'); await page.evaluate(initialize);
  const settle = () => new Promise(resolve => setTimeout(resolve, 800));
  await page.waitForSelector('.volcanic-scenery'); await settle();
+ assert.equal(await page.evaluate(async()=>{const image=new Image();image.src='/theme-effects/volcanic/basalt-surface.svg';await image.decode();return image.naturalWidth;}),256,'basalt texture decodes in browser');
  const preset = await page.evaluate(() => { const api = window.volcanic, layout = api.layout, before = JSON.stringify(layout), after = api.applyVolcanicComposition(layout); const locked = { ...layout.instances[1], locked: true, x: 123 }; const duplicate = { ...layout.instances[1], instanceId: 'duplicate', x: 234 }; const protectedLayout = api.applyVolcanicComposition({ instances: [locked, duplicate] }); return { immutable: before === JSON.stringify(layout), stable: JSON.stringify(after.instances) === JSON.stringify(api.applyVolcanicComposition(after).instances), protected: protectedLayout.instances[0].x === 123 && protectedLayout.instances[1].x === 234 }; });
  assert(preset.immutable && preset.stable && preset.protected);
  for (const state of ['open', 'drawing', 'winner']) {
@@ -99,6 +100,11 @@ try {
   assert(geometry.pinned && geometry.contained && geometry.messages > 0 && geometry.theme === 'volcanic', JSON.stringify(geometry));
   assert(await page.evaluate(()=>[...document.querySelectorAll('[data-fixture-widget]')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=1920.5&&r.bottom<=1080.5;})),'all reference widget boundaries fit the canvas');
   const cards=await page.evaluate(()=>{const last=document.querySelector('.better-hunt-list-group:first-child .better-hunt-row--image:last-child'),list=document.querySelector('.better-hunt-main-list-wrap');return {last:last.getBoundingClientRect().toJSON(),list:list.getBoundingClientRect().toJSON(),children:[...document.querySelector('.better-hunt-mainstream').children].map(e=>[e.className,e.getBoundingClientRect().height])};});assert(cards.last.bottom<=cards.list.bottom+1,'all three slot cards fit: '+JSON.stringify(cards));
+  const surfaces=await page.evaluate(()=>({art:[...document.querySelectorAll('.better-hunt-result-art')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};}),chat:getComputedStyle(document.querySelector('.ov-chat-widget')).backgroundImage,navbar:[...document.querySelectorAll('[data-widget-type=navbar] [data-widget-element=container]')].map(el=>getComputedStyle(el).backgroundImage),rim:getComputedStyle(document.querySelector('.rtp-stats-bar')).boxShadow}));
+  assert(surfaces.art.length>0&&surfaces.art.every(r=>r.h>r.w&&r.w>0),'best/worst art always portrait: '+JSON.stringify(surfaces.art));
+  assert(surfaces.chat.includes('basalt-surface.svg')&&surfaces.navbar.some(bg=>bg.includes('basalt-surface.svg')),'both panels render basalt texture: '+JSON.stringify(surfaces));
+  assert(surfaces.rim.includes('243, 106, 10'),'RTP orange inner outline');
+  assert.equal(await page.$eval('.ov-chat-messages',el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','message area exposes the textured container');
   await page.screenshot({ path: `${folder}/reference-${state}.png` });
  }
  await page.evaluate(() => window.volcanic.render(window.volcanic.scene(false))); await settle();
@@ -107,6 +113,7 @@ try {
  for (const [width, height] of [[1920,1080],[2560,1440],[1366,768]]) {
   await page.setViewport({ width, height }); await page.evaluate(() => window.volcanic.render()); await settle();
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  assert(await page.$$eval('.better-hunt-result-art',els=>els.every(el=>{const r=el.getBoundingClientRect();return r.height>r.width&&r.width>0;})),'portrait art retained at '+width);
   await page.screenshot({ path: `${folder}/reference-${width}.png` });
  }
  await page.setViewport({ width:1920, height:1080 });
@@ -138,6 +145,10 @@ try {
   await page.evaluate(type=>window.volcanic.controls(type),type);await page.waitForSelector('[data-effects-theme=volcanic]');
   for(const label of await page.$$('label.bp-text')) if(await label.evaluate(el=>el.querySelector('span')?.textContent==='Edge effect quality')) await (await label.$('select')).select('low');
   assert.equal(await page.evaluate(()=>window.volcanic.controlConfig.themeEffects.quality),'low','edge quality control updates configuration');
+  let textureChanged=false;
+  for(const el of await page.$$('.bp-toggle')) if(await el.evaluate(el=>el.querySelector('strong')?.textContent==='Textured basalt surface')) {await el.click();textureChanged=true;break;}
+  assert(textureChanged,'texture control exists');
+  assert.equal(await page.evaluate(()=>window.volcanic.controlConfig.volcanic.surfaceTexture),false);
   const control=await page.$$('.bp-toggle');let clicked=false;
   for(const el of control) if(await el.evaluate(el=>el.querySelector('strong')?.textContent==='Living lava edges')) {await el.click();clicked=true;break;}
   assert(clicked,type+' life toggle is exposed');
@@ -148,12 +159,15 @@ try {
  await page.reload();await page.evaluate(initialize);
  await page.evaluate(()=>{const {type,config}=JSON.parse(localStorage.getItem('volcanic-life-test')),api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType===type).config=config;api.layout=layout;api.obs();});await page.waitForSelector('.better-obs-overlay .volcanic-widget-life');await settle();
  assert.equal(await page.$$eval('.volcanic-widget-life',els=>els.length),1,'saved disabled chat remains off in actual published route');
+ assert(!await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('basalt-surface.svg')),'texture-off persists through reload and published renderer');
  await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();for(const i of layout.instances)if(['navbar','chat'].includes(i.widgetType))i.config.themeEffects={enabled:false};api.render(layout);});await settle();
  assert.equal(await page.$('.volcanic-widget-life'),null,'disabled effects suppress widget life');
  await page.evaluate(()=>window.volcanic.single('chat',{themeEffects:{enabled:true,quality:'low'}}));await settle();
  assert.equal(await page.$$eval('.volcanic-widget-life i',els=>els.length),2,'low quality caps edge sparks');
  await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();for(const i of layout.instances)i.config=api.themes.applyWidgetColourTheme(i.widgetType,i.config,'candy');api.render(layout);});await settle();
  assert.equal(await page.$('.volcanic-widget-life'),null,'switching theme removes edge effects');
+ await page.evaluate(()=>window.volcanic.single('rtp_stats',{borderWidth:0}));await settle();
+ assert((await page.$eval('.rtp-stats-bar',el=>getComputedStyle(el).boxShadow)).includes('243, 106, 10'),'zero-width border still has orange decorative rim');
  await page.evaluate(() => window.volcanic.controls('background')); await page.waitForSelector('[data-effects-theme=volcanic]');
  const toggle = async label => { for (const el of await page.$$('.bp-toggle')) if (await el.evaluate((el,label) => el.querySelector('strong')?.textContent === label, label)) { await el.click(); return; } throw new Error('Missing toggle '+label); };
  await toggle('Basalt and lava scenery'); await toggle('Reference gameplay rim'); await toggle('Idle gameplay background'); await toggle('Subtle ember motion');
@@ -177,6 +191,8 @@ try {
  await page.waitForSelector('.better-obs-overlay .volcanic-scenery').catch(async error=>{console.error(await page.evaluate(()=>({html:document.getElementById('root').innerHTML.slice(0,2500),calls:window.obsDatabase.calls})),errors);throw error;}); await page.waitForSelector('.better-obs-overlay .ov-chat-giveaway .better-gw-result-card'); await settle();
  assert.equal(await page.$eval('.volcanic-viewport-rim',el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','actual published opening stays transparent');
  assert.equal(await page.$eval('.ov-chat-giveaway',el=>el.dataset.giveawayTheme),'volcanic');
+ assert(await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('basalt-surface.svg')),'published chat matches textured preview');
+ assert(await page.$$eval('.better-hunt-result-art',els=>els.every(el=>{const r=el.getBoundingClientRect();return r.height>r.width;})),'published result art stays portrait');
  const screenshot = await page.screenshot({ path:`${folder}/published-obs-route.png`,omitBackground:true });
  assert.equal(await page.evaluate(async image=>{const img=new Image();img.src=image;await img.decode();const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(900,400,1,1).data[3];},'data:image/png;base64,'+Buffer.from(screenshot).toString('base64')),0,'published gameplay opening is truly transparent');
  assert.equal(await page.$$eval('.theme-effects-layer__canvas',els=>els.length),0);

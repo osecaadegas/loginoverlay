@@ -15,8 +15,17 @@ export function normalizeVolcanicSettings(config = {}) {
     idleBackground: raw.idleBackground === true,
     motion: raw.motion === true && config.themeEffects?.enabled !== false,
     widgetLife: raw.widgetLife !== false && config.themeEffects?.enabled !== false,
+    surfaceTexture: raw.surfaceTexture !== false,
     quality: normalizeEffectQuality(config.themeEffects?.quality),
   };
+}
+export function volcanicSurfaceBackground(config, top, bottom = top) {
+  // Keep configured gradient/image backgrounds and use their colours underneath the grain.
+  if (top.includes('url(')) return top;
+  const base = top.includes('gradient(') ? top : `linear-gradient(180deg, ${top}, ${bottom})`;
+  if (!normalizeVolcanicSettings(config).surfaceTexture) return base;
+  const accent = config.glow || config.accentColor || VOLCANIC_TOKENS.accent;
+  return `radial-gradient(ellipse at 12% 0%, color-mix(in srgb, ${accent} 18%, transparent), transparent 65%), radial-gradient(ellipse at 95% 85%, color-mix(in srgb, ${accent} 16%, transparent), transparent 55%), url('/theme-effects/volcanic/basalt-surface.svg'), ${base}`;
 }
 export function volcanicStyleVariables(palette, config = {}) {
   return {

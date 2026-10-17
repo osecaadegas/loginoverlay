@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { volcanicSurfaceBackground } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import useTwitchChat from "../../../../hooks/useTwitchChat";
 import useKickChat from "../../../../hooks/useKickChat";
 import useTwitchChannel from "../../../../hooks/useTwitchChannel";
@@ -1449,6 +1450,9 @@ function ChatWidget({
     containerBorderWidth,
     containerBorderColor,
   });
+  if (c.colourTheme === 'volcanic' && !isTransparent) {
+    rootStyle.background = volcanicSurfaceBackground(c, rootStyle.background || bgColor);
+  }
 
   const messageRenderContext = {
     config: c,

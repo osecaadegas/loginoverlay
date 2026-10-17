@@ -74,3 +74,12 @@ Volcanic navbar and chat now share a small decorative DOM layer with a slowly pu
 Modified files for this addition: the three files in src/effects/ThemeEffects/volcanic/, editor/betterWidgetRegistry.jsx, editor/BetterWidgetPackages.jsx, scripts/test-volcanic-theme.mjs, api/_lib/release-notes.js and this report. No files or migrations were created.
 
 The regression suite checks changing computed animation opacity, bounded noninteractive effects, reduced motion, independent widget toggles, quality control changes, saved-config reload into the actual published overlay component, disabling effects and theme-switch cleanup. Native OBS Studio remains unverified. The first browser launch was blocked by the sandbox; the rerun uses approved browser-launch permissions. Testing also caught and corrected the shared display-contents wrapper's missing animation bounds.
+
+
+## Portrait results, RTP rim and basalt surfaces
+
+Best/worst result artwork now keeps a 2:3 portrait aspect ratio within the available card height, including the short reference drawer. The RTP surface draws a continuous inner rim in the configured rim colour even when its outer border width is zero; existing appearance shadow overrides retain precedence. Navbar and chat gain a shared static, tiled basalt-grain asset and warm radial highlights. Existing configured colours remain below the texture, custom image backgrounds remain intact, and the surface can be switched off per widget. Floating/stack chat styles remain transparent and unsupported navbar variants do not expose the texture control.
+
+Created: public/theme-effects/volcanic/basalt-surface.svg. Modified: src/effects/ThemeEffects/volcanic/volcanicTheme.js and VolcanicTheme.css; src/components/OverlayCenter/widgets/chat/ChatWidget.jsx, widgets/navbar/NavbarWidget.jsx and widgets/shared/betterWidgetStyles.jsx; src/components/OverlayCenter/editor/BetterWidgetPackages.jsx; scripts/test-volcanic-theme.mjs; api/_lib/release-notes.js; this report. No database migrations.
+
+Regression assertions cover both result faces' portrait dimensions, computed navbar/chat texture layers, configured orange inner rims, zero-width outer borders, texture controls and texture-off persistence through reload into the published overlay renderer. The existing suite also checks three resolutions, giveaway placement, media, effect cleanup and transparent gameplay. Native OBS Studio and authenticated production save/publish remain manual verification items.

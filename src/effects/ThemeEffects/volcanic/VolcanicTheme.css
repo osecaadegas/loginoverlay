@@ -16,7 +16,7 @@
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-mainstream .better-hunt-row--image {min-height:136px;grid-template-columns:94px minmax(0,1fr)}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-mainstream .better-hunt-row--image :is(.better-hunt-row-bg,.better-hunt-row-content) {height:122px}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-flipper {height:128px}
-.better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-face .better-hunt-result-art {min-height:0}
+.better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-face .better-hunt-result-art {min-height:0;width:auto;max-width:100%;aspect-ratio:2/3;justify-self:start}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-face :is(.better-hunt-result-payout,.better-hunt-result-row) {min-height:24px;padding:2px 6px}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-face :is(.better-hunt-result-payout,.better-hunt-result-row) > span {font-size:12px;text-shadow:none}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-face :is(.better-hunt-result-payout,.better-hunt-result-row) > strong {font-size:16px;text-shadow:none}
@@ -35,7 +35,7 @@
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-empty {background:var(--volcanic-bg);color:var(--volcanic-muted);text-shadow:none}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-slideshow-frame__inner {border-radius:10px;clip-path:none}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-slideshow-frame__empty {background:radial-gradient(ellipse at top,var(--volcanic-raised),var(--volcanic-bg));color:var(--volcanic-text);text-shadow:none}
-.better-widget-colour-scope[data-colour-theme="volcanic"] .ov-chat-messages {background:linear-gradient(150deg,#ffffff02,transparent),var(--volcanic-panel);scrollbar-width:thin}
+.better-widget-colour-scope[data-colour-theme="volcanic"] .ov-chat-messages {background:transparent;scrollbar-width:thin}
 .better-widget-colour-scope[data-colour-theme="volcanic"][data-widget-type="chat"] [data-better-element="header"] {border-bottom-color:var(--volcanic-border);text-shadow:none}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .ov-chat-giveaway .better-gw-result-stage {padding:4px 6px;place-items:start stretch}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .ov-chat-giveaway .better-giveaway-widget {padding:10px 12px;border-radius:9px;justify-content:center}
@@ -78,3 +78,5 @@
 @keyframes volcanic-seam-breathe {0%,100%{opacity:.25}50%{opacity:.9}}
 @keyframes volcanic-widget-spark {12%{opacity:.75}70%{opacity:.25}100%{transform:translateY(-24px) scale(.5);opacity:0}}
 @media(prefers-reduced-motion:reduce) {.volcanic-widget-life {display:none}.volcanic-widget-life * {animation:none}}
+
+.better-widget-colour-scope[data-colour-theme="volcanic"] .better-hunt-root .better-hunt-result-art {width:auto;max-width:100%;aspect-ratio:2/3;justify-self:start}

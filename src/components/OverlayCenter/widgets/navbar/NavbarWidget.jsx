@@ -1,3 +1,4 @@
+import { volcanicSurfaceBackground } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import React, { useEffect, useState, useRef } from "react";
 import {
   SiDiscord,
@@ -2709,7 +2710,7 @@ function NavbarWidget({
             alignItems: "center",
             border: `${Math.max(1, Number(borderWidth) || 1)}px solid ${alphaColor(packageBorder, 0.5)}`,
             borderRadius: `${packageRadius}px`,
-            background: `linear-gradient(180deg, ${packageBgTop}, ${packageBgBottom})`,
+            background: c.colourTheme === 'volcanic' ? volcanicSurfaceBackground(c, packageBgTop, packageBgBottom) : `linear-gradient(180deg, ${packageBgTop}, ${packageBgBottom})`,
             color: textColor,
             fontFamily: containerFontFamily,
             overflow: "hidden",
