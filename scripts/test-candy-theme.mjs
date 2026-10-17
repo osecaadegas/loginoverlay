@@ -118,6 +118,13 @@ try {
    await page.waitForSelector(selector);assert.equal(await page.$eval(selector,el=>getComputedStyle(el).filter),'brightness(0)',type+' provider uses black alpha silhouette in '+runtime);
    await page.screenshot({path:`.codex-dev/candy-verification/provider-${type}-${runtime}.png`});
   }
+  for(const type of ['current_slot','rtp_stats']) for(const [provider,file,filter] of [["Play'n GO",'playngo.png','none'],['Pragmatic Play','pragmatic_play.png','brightness(0)']]){
+   await page.evaluate(({runtime,type,provider,file})=>{const config=window.candy.config(type,{slot:{name:'Provider readability',provider,image:'/player.webp'},provider,providerLogoUrl:'/providers/'+file,previewMode:false});window.candy.renderConfig(window.candy.registry.createBetterInstance(type,{width:type==='current_slot'?695:1114,height:type==='current_slot'?187:76,config}),runtime,'live');},{runtime,type,provider,file});await wait();
+   const selector=type==='current_slot'?'.cg-provider-logo':'[data-better-element="provider"] img';
+   await page.waitForFunction(({selector,file})=>{const img=document.querySelector(selector);return img?.src.includes(file)&&img.complete&&img.naturalWidth>0;},{}, {selector,file});
+   assert.equal(await page.$eval(selector,el=>getComputedStyle(el).filter),filter,provider+' remains readable in '+type+'/'+runtime);
+   await page.screenshot({path:`.codex-dev/candy-verification/logo-${file}-${type}-${runtime}.png`});
+  }
   for(const height of [44,48,56,76]){
    await page.evaluate(({height,runtime})=>{const config=window.candy.config('rtp_stats',{barHeight:58,barPadY:8,previewMode:true});window.candy.renderConfig(window.candy.registry.createBetterInstance('rtp_stats',{width:1114,height,config}),runtime,'mock');},{height,runtime});await wait();
    const geometry=await page.evaluate(()=>{const root=document.querySelector('.rtp-stats-bar'),box=root.getBoundingClientRect(),frame=document.querySelector('.candy-module-content').getBoundingClientRect();const nodes=[...root.querySelectorAll(':scope > h1,:scope > div')];return {fits:box.top>=frame.top-.5&&box.bottom<=frame.bottom+.5,items:nodes.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,delta:Math.abs((r.top+r.bottom-box.top-box.bottom)/2)};}),box:{top:box.top,bottom:box.bottom}};});

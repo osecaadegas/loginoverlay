@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'candy-playngo-logo-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Readable Play’n GO logos in Candy',
+    summary: 'Play’n GO keeps its internal artwork contrast instead of becoming a solid black badge.',
+    changes: ['Candy Current Game and RTP displays preserve the original Play’n GO logo artwork.', 'Pragmatic Play and other provider logos retain the existing black treatment.'],
+    action: 'Refresh the editor and your OBS Browser Source. No configuration reset is needed.',
+  },
+  {
     id: 'chat-giveaway-theme-inheritance-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Giveaways in chat follow the chat theme',
     summary: 'Embedded giveaways no longer retain a different theme from the standalone giveaway source.',

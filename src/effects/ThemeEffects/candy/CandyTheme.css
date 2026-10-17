@@ -62,6 +62,11 @@
 [data-colour-theme="candy"][data-widget-type="rtp_stats"] [data-better-element="provider"] img,
 [data-colour-theme="candy"] .rtp-stats-provider-logo,
 [data-colour-theme="candy"] .cg-provider-logo {filter:brightness(0)}
+/* Play'n GO's opaque badge contains the lettering; flattening its alpha loses
+   the entire wordmark. Keep the original artwork's internal contrast. */
+[data-colour-theme="candy"][data-widget-type="rtp_stats"] [data-better-element="provider"] img[src*="/providers/playngo.png"],
+[data-colour-theme="candy"] .rtp-stats-provider-logo[src*="/providers/playngo.png"],
+[data-colour-theme="candy"] .cg-provider-logo[src*="/providers/playngo.png"] {filter:none}
 [data-colour-theme="candy"][data-widget-type="current_slot"] .cg-provider--logo {display:flex;align-items:center;min-height:calc(48 * var(--cg-px))}
 [data-colour-theme="candy"][data-widget-type="current_slot"] .cg-provider-logo {width:auto;max-width:100%;height:calc(48 * var(--cg-px));object-fit:contain}
 /* Use the real chat bay instead of centering a larger scaled giveaway canvas. */
