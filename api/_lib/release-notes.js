@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'volcanic-landscape-refinement-2026-10-18', date: '2026-10-18', category: 'overlays',
+    title: 'A cleaner Volcanic landscape and compact navbar',
+    summary: 'The central frame is removed, scenery becomes a continuous volcanic landscape, and navbar/chat use fine obsidian grain.',
+    changes: ['No central gameplay box is drawn, including for older layouts with the reference rim enabled.', 'A static 1920×1080 landscape replaces the rocky perimeter asset; an optional transparent opening remains available for an OBS source beneath it.', 'Navbar modules share compact default heights and smaller default avatars while retaining per-element appearance overrides.', 'Navbar and chat surfaces use subtle fine grain instead of the coarse cloudy texture.'],
+    action: 'Refresh the editor and OBS Browser Source. Background → Transparent gameplay opening is available when gameplay sits beneath the overlay. Save and publish any configuration changes; no browser installer update is required.',
+  },
+  {
     id: 'premium-theme-gallery-2026-10-18', date: '2026-10-18', category: 'overlays',
     title: 'Illustrated Premium theme gallery',
     summary: 'Arctic and Old Rome join Candy and Orbital with image-backed theme cards at the top of the selector.',

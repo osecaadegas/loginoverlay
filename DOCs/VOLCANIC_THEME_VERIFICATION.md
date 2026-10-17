@@ -1,5 +1,26 @@
 # Volcanic theme — implementation and verification
 
+## Current refinement — 2026-10-18
+
+This section supersedes the historical reference-rim and coarse-surface instructions below.
+
+- The central frame is removed from both editor and published rendering. Old `referenceFrame`/`idleBackground` values remain stored but cannot draw the removed box.
+- Scenery now uses `public/theme-effects/volcanic/volcanic-landscape.webp`: a static 1920×1080 background, 242,896 bytes, with an open dark centre and peripheral lava/obsidian landscape. Turning scenery off leaves a transparent background. **Transparent gameplay opening** optionally cuts out the reference region without drawing a border; it is off by default so the scenery is continuous.
+- `public/theme-effects/volcanic/obsidian-grain.svg` replaces the coarse cloudy material in navbar/chat rendering. It uses subtle fine grain with restrained directional lighting, and retains the existing surface toggle, colours and custom image backgrounds.
+- Navbar identity, balance, ticker, clock and responsible-play modules share compact default heights, while explicit element overrides still take precedence. The preset uses a 56px bar. Existing 70px bars retain their saved height but use 40px module defaults. Default avatars are smaller. Navbar edge motion is attached inside the actual bar, so it follows that surface rather than the surrounding widget bounds.
+
+Created: the two assets above. Modified: this report; `api/_lib/release-notes.js`; `scripts/test-volcanic-theme.mjs`; `src/components/OverlayCenter/editor/BetterWidgetPackages.jsx`, `betterWidgetRegistry.jsx`, `volcanicComposition.js`; `src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx`; and the three source files in `src/effects/ThemeEffects/volcanic/`. No database migrations. Old asset files are retained for compatibility with explicit saved URLs.
+
+Checks passed: `test:volcanic`, `test:widget-colour-themes` (221 combinations), `test:widget-control-categories`, `test:theme-gallery`, `test:updates`, `validate:widgets`, and the production build. Existing missing-font and bundle-size warnings remain.
+
+Regression coverage includes all five navbar module heights with a controlled cached ticker fixture, old 70px layouts, explicit height overrides, edge containment, old rim flags, scenery visibility, fine-grain decoding, the new opening toggle and reload, plus opaque/default and transparent/optional pixel checks through the real published-overlay component. Published fixtures remount the route for each configuration, matching a Browser Source reload. Native OBS Studio and authenticated production account save/publish are not directly tested.
+
+Background created with the built-in image-generation tool, then encoded as WebP for the project. Final prompt:
+
+> Use case: stylized-concept. Asset type: production 16:9 1920x1080 streaming background, scenery ONLY, no UI. Create a premium cinematic volcanic environment: charcoal-black obsidian terrain, sharp fine basalt rock detail, restrained orange molten fissures running mostly along the lower edge and outermost left/right edges, dark volcanic mountains on the distant horizon, subtle local orange reflected light, cool charcoal atmosphere. Composition must leave the entire large central area (x 25%-77%, y 8%-76%) very dark and visually quiet for gameplay placed above it. Sidebars will cover x 0%-25% and x 78%-100%; navigation covers top 8%; concentrate scenery interest in the open lower middle and far perimeter. Make the scene feel continuous, dimensional and photographic, not a flat texture. Absolutely NO rectangular frame, NO border around the center, NO boxes, NO inset panels, NO interface, NO text, NO logos, NO symbols, NO giant volcano, NO huge flames or smoke clouds, NO brown muddy blur. Crisp obsidian detail and sparse luminous lava seams, subdued elegant darkness, professional streaming background. The image must look good behind independent thin orange-outline widgets.
+
+## Historical implementation notes
+
 ## Using the theme
 
 Choose **Volcanic** in the existing widget colour-theme selector. Selecting it changes appearance without moving or resizing widgets. The theme uses existing live data, widget logic, instance configuration, access checks, editor persistence and publication routes.

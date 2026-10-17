@@ -54,15 +54,10 @@
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-gw-name svg {color:var(--volcanic-accent)}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .rtp-stats-item--bestwin {border:1px solid var(--volcanic-border);border-radius:8px;background:var(--volcanic-bg);box-shadow:none}
 .better-widget-colour-scope[data-colour-theme="volcanic"] .better-bets-stage {--hard-shadow:none}
-.better-widget-colour-scope[data-colour-theme="volcanic"] .better-navbar-zone > :is([data-widget-element="displayName"],[data-widget-element="balance"]),
-.better-widget-colour-scope[data-colour-theme="volcanic"] .better-navbar-zone :is([data-widget-element="clock"],[data-widget-element="crypto"]) {border:1px solid var(--volcanic-border);border-radius:9px;padding:4px 12px;background:linear-gradient(180deg,var(--volcanic-raised),var(--volcanic-bg))}
 .volcanic-environment {pointer-events:none;isolation:isolate;background:transparent}
 .volcanic-scenery {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
-.volcanic-environment[data-reference-frame="on"] > .volcanic-scenery {clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,25.833333% 9.259259%,25.833333% 73.148148%,75.833333% 73.148148%,75.833333% 9.259259%,25.833333% 9.259259%)}
+.volcanic-environment[data-gameplay-cutout="on"] > .volcanic-scenery {clip-path:polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,25.833333% 9.259259%,25.833333% 73.148148%,75.833333% 73.148148%,75.833333% 9.259259%,25.833333% 9.259259%)}
 .volcanic-chat-label {display:inline-flex;align-items:center;gap:8px;color:var(--volcanic-text);font-size:14px;font-weight:800;letter-spacing:.06em}
-.volcanic-viewport-rim {position:absolute;border:1px solid var(--volcanic-border);border-radius:12px;box-shadow:inset 0 0 0 3px #090b0ec4,inset 0 -1px 0 var(--volcanic-accent);overflow:hidden;background:transparent;pointer-events:none}
-.volcanic-viewport-rim[data-idle="on"] {background:radial-gradient(ellipse at top,#1a2026,#090b0e 72%)}
-.volcanic-viewport-rim img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 0,18px 18px,18px calc(100% - 18px),calc(100% - 18px) calc(100% - 18px),calc(100% - 18px) 18px,18px 18px);pointer-events:none}
 .volcanic-embers {position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .volcanic-embers i {position:absolute;left:calc(1% + var(--ember-index)*2.7%);bottom:5px;width:2px;height:3px;border-radius:50%;background:#ff950f;opacity:0;animation:volcanic-ember-drift 7s linear infinite;animation-delay:calc(var(--ember-index)*-.9s)}
 .volcanic-embers i:nth-child(even) {left:auto;right:calc(1% + var(--ember-index)*.25%)}

@@ -1,4 +1,5 @@
 import { volcanicSurfaceBackground } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
+import { VolcanicWidgetLife } from '../../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import {
   SiDiscord,
@@ -1178,6 +1179,7 @@ function NavbarWidget({
   const isOrbitalNavbar = isBetterNavbar && c.colourTheme === "orbital";
   const isArcticNavbar = isBetterNavbar && c.colourTheme === "arctic";
   const isCandyNavbar = isBetterNavbar && c.colourTheme === 'candy';
+  const isVolcanicNavbar = isBetterNavbar && c.colourTheme === 'volcanic';
   // Theme defaults are applied before subElementStyle/withElementOffset, so
   // saved per-element appearance and offsets retain precedence.
   const orbitalInstrument = isOrbitalNavbar ? {
@@ -1190,8 +1192,15 @@ function NavbarWidget({
     boxSizing: 'border-box', borderRadius: 28, padding: '7px 18px',
     background: 'linear-gradient(180deg,#c6faff,#21ddf3 45%,#12badf)',
     border: '2px solid #ffffffcc', boxShadow: 'inset 0 3px 3px white,inset 0 -4px 4px #007dae66,0 2px 3px #904d9755',
+  } : isVolcanicNavbar ? {
+    boxSizing: 'border-box', display: 'flex', alignItems: 'center',
+    height: Math.max(24, Math.min(40, (Number(c.barHeight) || 52) - 12)),
+    maxHeight: '100%', padding: '0 12px', borderRadius: 8,
+    border: `1px solid ${c.navbarBorderColor || c.borderColor || '#F36A0A'}`,
+    background: `linear-gradient(180deg, ${c.navbarTopColor || '#1A2026'}, ${c.navbarBottomColor || '#090B0E'})`,
+    boxShadow: 'inset 0 1px 0 #ffffff0a',
   } : {};
-  const orbitalPartStyle = (part, style) => isOrbitalNavbar || isCandyNavbar
+  const orbitalPartStyle = (part, style) => isOrbitalNavbar || isCandyNavbar || isVolcanicNavbar
     ? withElementOffset(c, part, { ...style, ...orbitalInstrument })
     : style;
   const isMetalSurface = isMetal || isStyleSeca || isBetterNavbar;
@@ -2227,7 +2236,7 @@ function NavbarWidget({
     ).toUpperCase();
     const packageAvatarSize =
       avatarImageSize ||
-      packageHeight * 0.66 * ((Number(c.avatarSize) || 100) / 100);
+      (isVolcanicNavbar ? Math.min(30, packageHeight * 0.5) : packageHeight * 0.66) * ((Number(c.avatarSize) || 100) / 100);
     const showPackageAvatarImage = c.showAvatar !== false && Boolean(avatarUrl);
     const siteText =
       c.siteUrl ||
@@ -2770,6 +2779,7 @@ function NavbarWidget({
             {renderBetterZone("right")}
           </div>
 
+          {isVolcanicNavbar && <VolcanicWidgetLife config={c} />}
           {containerGlow ? (
             <div
               aria-hidden="true"

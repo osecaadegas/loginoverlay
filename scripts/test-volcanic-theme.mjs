@@ -6,6 +6,7 @@ import { normalizeVolcanicSettings } from '../src/effects/ThemeEffects/volcanic/
 
 assert.equal(normalizeVolcanicSettings({}).motion, false);
 assert.equal(normalizeVolcanicSettings({}).widgetLife, true);
+assert.equal(normalizeVolcanicSettings({volcanic:{referenceFrame:true,idleBackground:true}}).transparentGameplay,false);
 assert.equal(normalizeVolcanicSettings({themeEffects:{enabled:false}}).widgetLife, false);
 assert.equal(normalizeVolcanicSettings({ volcanic: { motion: true }, themeEffects: { enabled: false } }).motion, false);
 const server = await createServer({ logLevel: 'silent', server: { host: '127.0.0.1', port: 0, hmr: false } });
@@ -28,6 +29,7 @@ try {
   return request.respond({ contentType: 'application/json', headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }, body: '[]' });
  });
  const initialize = async () => {
+  localStorage.setItem('streamers-center:navbar-crypto-prices',JSON.stringify({savedAt:Date.now(),prices:{btc:{price:65000,change:1.2}}}));
   const entry = await (await fetch('/src/main.jsx')).text();
   const reactUrl = entry.match(/"([^"\n]*\/react\.js[^"\n]*)"/)[1], version = reactUrl.split('?')[1];
   const React = (await import(reactUrl)).default;
@@ -53,7 +55,7 @@ try {
    scene(populated = true, state = 'open') {
     const giveaway = config('giveaway', { title: 'Community giveaway', prize: 'A reward for our viewers', keyword: 'join', participants: populated ? ['ViewerOne', 'ViewerTwo'] : [], isActive: populated && state === 'open', winner: populated && state === 'winner' ? 'ViewerTwo' : '', spinningWinner: populated && state === 'drawing' ? 'ViewerTwo' : '', durationSec: 1.2 });
     const extras = {
-     navbar: { displayName: 'STREAMER', streamerName:'STREAMER', motto: 'Your stream, your style', showCrypto: false, startBalance: 500 },
+     navbar: { displayName: 'STREAMER', streamerName:'STREAMER', motto: 'Your stream, your style', showCrypto: true, startBalance: 500, showCTA:true, ctaText:'BE GAMBLE AWARE!' },
      bonus_hunt: { winEffects: false, bonusOpening:populated, sessionState: 'opening', startMoney: 500, bonuses: populated ? ['Sweet Bonanza', 'Wanted Dead or a Wild', 'Gates of Olympus'].map((slotName, i) => ({ id: String(i), slotName, provider: i === 1 ? 'Hacksaw Gaming' : 'Pragmatic Play', image: '/player.webp', betSize: 1, payout: i === 0 ? 0 : 100 + i, opened: i > 0, isSuperBonus: i === 1 })) : [] },
      current_slot: { slot: populated ? { name: 'Sweet Bonanza', provider: 'Pragmatic Play', image: '/player.webp', rtp: 96.5, max_win_multiplier: 5000, volatility: 'High' } : null },
      bets: { gameStatus:populated?'open':'idle', question:'Place Your Bets', options:['0 – 99','100 – 199','200 – 499','500+'].map(label=>({label})), bets:{opt_0:20,opt_1:35,opt_2:30,opt_3:15} },
@@ -83,7 +85,8 @@ try {
     const { client, state } = createOverlayTestDatabase({ better_overlay_publications: [{ public_overlay_id: id, owner_user_id: owner, published_layout: layout, published_version: 1, revoked_at: null }], overlay_instances: [{ id: 'volcanic-live', user_id: owner, is_active: true }], overlay_widgets: widgets, overlay_themes: [] });
     window.obsDatabase=state;
     supabase.from = client.from; supabase.channel = client.channel; supabase.removeChannel = client.removeChannel;
-    root.render(h(router.MemoryRouter, { initialEntries: ['/obs/overlay/' + id] }, h(router.Routes, null, h(router.Route, { path: '/obs/overlay/:publicOverlayId', element: h(BetterObsOverlay) }))));
+    this.obsVersion = (this.obsVersion || 0) + 1;
+    root.render(h(router.MemoryRouter, { key: this.obsVersion, initialEntries: ['/obs/overlay/' + id] }, h(router.Routes, null, h(router.Route, { path: '/obs/overlay/:publicOverlayId', element: h(BetterObsOverlay) }))));
    },
   };
   window.volcanic.render();
@@ -91,7 +94,7 @@ try {
  await page.goto(base + '/__volcanic'); await page.evaluate(initialize);
  const settle = () => new Promise(resolve => setTimeout(resolve, 800));
  await page.waitForSelector('.volcanic-scenery'); await settle();
- assert.equal(await page.evaluate(async()=>{const image=new Image();image.src='/theme-effects/volcanic/basalt-surface.svg';await image.decode();return image.naturalWidth;}),256,'basalt texture decodes in browser');
+ assert.equal(await page.evaluate(async()=>{const image=new Image();image.src='/theme-effects/volcanic/obsidian-grain.svg';await image.decode();return image.naturalWidth;}),256,'basalt texture decodes in browser');
  const preset = await page.evaluate(() => { const api = window.volcanic, layout = api.layout, before = JSON.stringify(layout), after = api.applyVolcanicComposition(layout); const locked = { ...layout.instances[1], locked: true, x: 123 }; const duplicate = { ...layout.instances[1], instanceId: 'duplicate', x: 234 }; const protectedLayout = api.applyVolcanicComposition({ instances: [locked, duplicate] }); return { immutable: before === JSON.stringify(layout), stable: JSON.stringify(after.instances) === JSON.stringify(api.applyVolcanicComposition(after).instances), protected: protectedLayout.instances[0].x === 123 && protectedLayout.instances[1].x === 234 }; });
  assert(preset.immutable && preset.stable && preset.protected);
  for (const state of ['open', 'drawing', 'winner']) {
@@ -102,11 +105,22 @@ try {
   const cards=await page.evaluate(()=>{const last=document.querySelector('.better-hunt-list-group:first-child .better-hunt-row--image:last-child'),list=document.querySelector('.better-hunt-main-list-wrap');return {last:last.getBoundingClientRect().toJSON(),list:list.getBoundingClientRect().toJSON(),children:[...document.querySelector('.better-hunt-mainstream').children].map(e=>[e.className,e.getBoundingClientRect().height])};});assert(cards.last.bottom<=cards.list.bottom+1,'all three slot cards fit: '+JSON.stringify(cards));
   const surfaces=await page.evaluate(()=>({art:[...document.querySelectorAll('.better-hunt-result-art')].map(el=>{const r=el.getBoundingClientRect();return {w:r.width,h:r.height};}),chat:getComputedStyle(document.querySelector('.ov-chat-widget')).backgroundImage,navbar:[...document.querySelectorAll('[data-widget-type=navbar] [data-widget-element=container]')].map(el=>getComputedStyle(el).backgroundImage),rim:getComputedStyle(document.querySelector('.rtp-stats-bar')).boxShadow}));
   assert(surfaces.art.length>0&&surfaces.art.every(r=>r.h>r.w&&r.w>0),'best/worst art always portrait: '+JSON.stringify(surfaces.art));
-  assert(surfaces.chat.includes('basalt-surface.svg')&&surfaces.navbar.some(bg=>bg.includes('basalt-surface.svg')),'both panels render basalt texture: '+JSON.stringify(surfaces));
+  assert(surfaces.chat.includes('obsidian-grain.svg')&&surfaces.navbar.some(bg=>bg.includes('obsidian-grain.svg')),'both panels render basalt texture: '+JSON.stringify(surfaces));
   assert(surfaces.rim.includes('243, 106, 10'),'RTP orange inner outline');
+  const instruments=await page.evaluate(()=>['displayName','balance','clock','crypto','sponsor'].map(part=>{const el=document.querySelector('[data-widget-type=navbar] [data-widget-element="'+part+'"]');const r=el?.getBoundingClientRect();return {part,height:r?.height,width:r?.width};}));
+  assert(instruments.every(item=>item.height>=24&&item.height<=40&&item.width>0)&&Math.max(...instruments.map(item=>item.height))-Math.min(...instruments.map(item=>item.height))<1,'compact consistent navbar: '+JSON.stringify(instruments));
+  assert.equal(await page.$('.volcanic-viewport-rim'),null,'no central frame');
   assert.equal(await page.$eval('.ov-chat-messages',el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','message area exposes the textured container');
   await page.screenshot({ path: `${folder}/reference-${state}.png` });
  }
+ await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType==='navbar').config.barHeight=70;layout.instances.find(i=>i.widgetType==='background').config.volcanic={referenceFrame:true,idleBackground:true};api.render(layout);});await settle();
+ assert.equal(await page.$('.volcanic-viewport-rim'),null,'old saved flags do not draw a box');
+ const oldHeights=await page.evaluate(()=>['displayName','balance','clock','crypto','sponsor'].map(part=>document.querySelector('[data-widget-type=navbar] [data-widget-element="'+part+'"]')?.getBoundingClientRect().height));
+ assert(oldHeights.every(h=>h===40),'existing 70px bar also has consistent compact modules: '+JSON.stringify(oldHeights));
+ const edge=await page.evaluate(()=>{const layer=document.querySelector('[data-widget-type=navbar] .volcanic-widget-life'),surface=document.querySelector('[data-widget-type=navbar] [data-widget-element=container]');return {layer:layer.getBoundingClientRect().toJSON(),surface:surface.getBoundingClientRect().toJSON()};});
+ assert(edge.layer.top>=edge.surface.top&&edge.layer.bottom<=edge.surface.bottom&&edge.surface.height-edge.layer.height<=2.1,'navbar life follows actual bar inside its border: '+JSON.stringify(edge));
+ await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType==='navbar').config.subElements={balance:{height:32}};api.render(layout);});await settle();
+ assert.equal(await page.$eval('[data-widget-type=navbar] [data-widget-element=balance]',el=>el.getBoundingClientRect().height),32,'per-element height overrides remain functional');
  await page.evaluate(() => window.volcanic.render(window.volcanic.scene(false))); await settle();
  assert.equal(await page.$('.ov-chat-giveaway'), null, 'empty giveaway reclaims space');
  await page.screenshot({ path: `${folder}/reference-empty.png` });
@@ -159,7 +173,7 @@ try {
  await page.reload();await page.evaluate(initialize);
  await page.evaluate(()=>{const {type,config}=JSON.parse(localStorage.getItem('volcanic-life-test')),api=window.volcanic,layout=api.scene();layout.instances.find(i=>i.widgetType===type).config=config;api.layout=layout;api.obs();});await page.waitForSelector('.better-obs-overlay .volcanic-widget-life');await settle();
  assert.equal(await page.$$eval('.volcanic-widget-life',els=>els.length),1,'saved disabled chat remains off in actual published route');
- assert(!await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('basalt-surface.svg')),'texture-off persists through reload and published renderer');
+ assert(!await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('obsidian-grain.svg')),'texture-off persists through reload and published renderer');
  await page.evaluate(()=>{const api=window.volcanic,layout=api.scene();for(const i of layout.instances)if(['navbar','chat'].includes(i.widgetType))i.config.themeEffects={enabled:false};api.render(layout);});await settle();
  assert.equal(await page.$('.volcanic-widget-life'),null,'disabled effects suppress widget life');
  await page.evaluate(()=>window.volcanic.single('chat',{themeEffects:{enabled:true,quality:'low'}}));await settle();
@@ -170,14 +184,14 @@ try {
  assert((await page.$eval('.rtp-stats-bar',el=>getComputedStyle(el).boxShadow)).includes('243, 106, 10'),'zero-width border still has orange decorative rim');
  await page.evaluate(() => window.volcanic.controls('background')); await page.waitForSelector('[data-effects-theme=volcanic]');
  const toggle = async label => { for (const el of await page.$$('.bp-toggle')) if (await el.evaluate((el,label) => el.querySelector('strong')?.textContent === label, label)) { await el.click(); return; } throw new Error('Missing toggle '+label); };
- await toggle('Basalt and lava scenery'); await toggle('Reference gameplay rim'); await toggle('Idle gameplay background'); await toggle('Subtle ember motion');
+ await toggle('Basalt and lava scenery'); await toggle('Transparent gameplay opening'); await toggle('Subtle ember motion');
  for(const label of await page.$$('label.bp-text')) if(await label.evaluate(el=>el.querySelector('span')?.textContent==='Effect quality')) await (await label.$('select')).select('low');
  const saved = await page.evaluate(() => { localStorage.setItem('volcanic-control-test',JSON.stringify(window.volcanic.controlConfig)); return window.volcanic.controlConfig; });
- assert(saved.volcanic.scenery === false && saved.volcanic.referenceFrame && saved.volcanic.idleBackground && saved.volcanic.motion);
+ assert(saved.volcanic.scenery === false && saved.volcanic.transparentGameplay && saved.volcanic.motion);
  assert.equal(saved.themeEffects.quality,'low','quality control updates persisted configuration');
  await page.reload(); await page.evaluate(initialize);
  await page.evaluate(() => { const api=window.volcanic, c=JSON.parse(localStorage.getItem('volcanic-control-test')); const layout=api.scene(); layout.instances.find(i=>i.widgetType==='background').config=c; api.render(layout); }); await settle();
- assert.equal(await page.$('.volcanic-scenery'),null); assert(await page.$('.volcanic-viewport-rim[data-idle=on]'));
+ assert.equal(await page.$('.volcanic-scenery'),null); assert(await page.$('.volcanic-environment[data-gameplay-cutout=on]'));
  await page.evaluate(() => { const api=window.volcanic, layout=api.scene(); const bg=layout.instances.find(i=>i.widgetType==='background'); bg.config.volcanic.motion=true; bg.config.themeEffects={enabled:true,quality:'low'}; api.render(layout); }); await settle();
  assert.equal(await page.$$eval('.volcanic-embers i',els=>els.length),2);
  await page.emulateMediaFeatures([{ name:'prefers-reduced-motion',value:'reduce' }]);
@@ -189,10 +203,16 @@ try {
  assert.equal(await page.$('.volcanic-environment'),null,'theme switch removes scenery and ember nodes');
  await page.evaluate(() => { const api=window.volcanic, layout=api.scene(true,'winner'); localStorage.setItem('volcanic-published-layout',JSON.stringify(layout)); api.layout=layout; api.obs(); });
  await page.waitForSelector('.better-obs-overlay .volcanic-scenery').catch(async error=>{console.error(await page.evaluate(()=>({html:document.getElementById('root').innerHTML.slice(0,2500),calls:window.obsDatabase.calls})),errors);throw error;}); await page.waitForSelector('.better-obs-overlay .ov-chat-giveaway .better-gw-result-card'); await settle();
- assert.equal(await page.$eval('.volcanic-viewport-rim',el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)','actual published opening stays transparent');
+ assert.equal(await page.$('.volcanic-viewport-rim'),null,'published overlay has no central box');
  assert.equal(await page.$eval('.ov-chat-giveaway',el=>el.dataset.giveawayTheme),'volcanic');
- assert(await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('basalt-surface.svg')),'published chat matches textured preview');
+ assert(await page.$eval('.ov-chat-widget',el=>getComputedStyle(el).backgroundImage.includes('obsidian-grain.svg')),'published chat matches textured preview');
  assert(await page.$$eval('.better-hunt-result-art',els=>els.every(el=>{const r=el.getBoundingClientRect();return r.height>r.width;})),'published result art stays portrait');
+ const landscape=await page.screenshot({path:`${folder}/published-landscape.png`,omitBackground:true});
+ const alphaAtCenter=async screenshot=>page.evaluate(async image=>{const img=new Image();img.src=image;await img.decode();const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(900,400,1,1).data[3];},'data:image/png;base64,'+Buffer.from(screenshot).toString('base64'));
+ assert.equal(await alphaAtCenter(landscape),255,'full scenery fills center by default');
+ await page.evaluate(()=>{const api=window.volcanic,layout=api.scene(true,'winner');layout.instances.find(i=>i.widgetType==='background').config.volcanic={referenceFrame:true,idleBackground:true,transparentGameplay:true};api.layout=layout;api.obs();});await settle();
+ assert.equal(await page.$('.volcanic-viewport-rim'),null,'legacy rim and fill settings never resurrect the box');
+ await page.waitForSelector('.volcanic-environment[data-gameplay-cutout=on]');
  const screenshot = await page.screenshot({ path:`${folder}/published-obs-route.png`,omitBackground:true });
  assert.equal(await page.evaluate(async image=>{const img=new Image();img.src=image;await img.decode();const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(900,400,1,1).data[3];},'data:image/png;base64,'+Buffer.from(screenshot).toString('base64')),0,'published gameplay opening is truly transparent');
  assert.equal(await page.$$eval('.theme-effects-layer__canvas',els=>els.length),0);

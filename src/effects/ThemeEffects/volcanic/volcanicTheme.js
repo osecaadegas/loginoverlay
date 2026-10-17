@@ -5,14 +5,13 @@ export const VOLCANIC_TOKENS = Object.freeze({
   border: '#F36A0A', accent: '#FF950F', secondary: '#B92508',
   text: '#F5F5F2', muted: '#B4BAC0',
 });
-export const VOLCANIC_SCENERY = '/theme-effects/volcanic/basalt-perimeter.png';
+export const VOLCANIC_SCENERY = '/theme-effects/volcanic/volcanic-landscape.webp';
 export const VOLCANIC_VIEWPORT = Object.freeze({ x: 496, y: 100, width: 960, height: 690 });
 export function normalizeVolcanicSettings(config = {}) {
   const raw = config.volcanic || {};
   return {
     scenery: raw.scenery !== false,
-    referenceFrame: raw.referenceFrame === true,
-    idleBackground: raw.idleBackground === true,
+    transparentGameplay: raw.transparentGameplay === true,
     motion: raw.motion === true && config.themeEffects?.enabled !== false,
     widgetLife: raw.widgetLife !== false && config.themeEffects?.enabled !== false,
     surfaceTexture: raw.surfaceTexture !== false,
@@ -25,7 +24,7 @@ export function volcanicSurfaceBackground(config, top, bottom = top) {
   const base = top.includes('gradient(') ? top : `linear-gradient(180deg, ${top}, ${bottom})`;
   if (!normalizeVolcanicSettings(config).surfaceTexture) return base;
   const accent = config.glow || config.accentColor || VOLCANIC_TOKENS.accent;
-  return `radial-gradient(ellipse at 12% 0%, color-mix(in srgb, ${accent} 18%, transparent), transparent 65%), radial-gradient(ellipse at 95% 85%, color-mix(in srgb, ${accent} 16%, transparent), transparent 55%), url('/theme-effects/volcanic/basalt-surface.svg'), ${base}`;
+  return `linear-gradient(115deg, color-mix(in srgb, ${accent} 4%, transparent), transparent 38% 75%, color-mix(in srgb, ${accent} 3%, transparent)), url('/theme-effects/volcanic/obsidian-grain.svg'), ${base}`;
 }
 export function volcanicStyleVariables(palette, config = {}) {
   return {

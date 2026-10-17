@@ -19,9 +19,9 @@ export function applyVolcanicComposition(layout) {
     const type = instance.widgetType, geometry = VOLCANIC_COMPOSITION[type];
     if (!geometry || instance.visible === false || (instance.locked && type !== 'background') || counts.get(type) !== 1) return instance;
     const config = applyWidgetColourTheme(type, instance.config, 'volcanic');
-    if (type === 'background') config.volcanic = { ...config.volcanic, referenceFrame: true };
+    if (type === 'background') config.volcanic = { ...config.volcanic };
     if (type === 'bonus_hunt') Object.assign(config, { orientation: 'mainstream', statsLayout: 'grid', showRequests: false, carouselMode: 'imagestats', listMode: 'image', visibleRows: 3, fontSize: 16, volcanic: { ...config.volcanic, compactHunt: true }, widgetWidth: geometry.width, panelWidth: geometry.width, widgetHeight: geometry.height, panelHeight: geometry.height, drawerMode: 'contain' });
-    if (type === 'navbar') config.barHeight = 70;
+    if (type === 'navbar') config.barHeight = 56;
     if (type === 'bets') config.displayStyle = 'compact_scoreboard';
     if (type === 'bonus_hunt' && !config.mainstreamTitle) config.mainstreamTitle = 'Bonus Hunt';
     if (type === 'chat') Object.assign(config, { showHeader: true, showHeaderName: false, showLiveLabel: false });
