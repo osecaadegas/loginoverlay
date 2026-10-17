@@ -3361,6 +3361,7 @@ function PanelTabs({ tabs, active, onChange, flat = false }) {
 
 export function ChatGiveawayAppearanceControls({ config, onChange, allWidgets = [] }) {
   const source = allWidgets.find(item => item.widget_type === "giveaway")?.config || {};
+  const chatTheme = getWidgetColourTheme(String(config.colourTheme || '').replace(/^theme_/, ''));
   const appearance = resolveEmbeddedGiveawayConfig(config, source);
   const set = patch => onChange({ ...config, ...patch });
   return <div className="chat-giveaway-appearance-controls">
@@ -3369,10 +3370,10 @@ export function ChatGiveawayAppearanceControls({ config, onChange, allWidgets = 
     <SliderRow label="Space around giveaway" value={config.giveawayMargin ?? 4} min={0} max={30} unit="px" onChange={giveawayMargin => set({ giveawayMargin })} />
     <ToggleRow label="Custom giveaway appearance" checked={config.giveawayCustomAppearance === true}
       onChange={giveawayCustomAppearance => set({ giveawayCustomAppearance, giveawayAppearance: config.giveawayAppearance || pickGiveawayAppearance(appearance) })} />
-    <p className="bp-hint">When off, follows your Giveaway widget. Custom colours, shape and typography affect only this chat style. Entries and the winner stay connected to Giveaway controls.</p>
+    <p className="bp-hint">{chatTheme ? "Follows this chat's colour theme." : "When no chat colour theme is selected, follows your Giveaway widget."} Custom colours, shape and typography affect only this chat style. Entries and the winner stay connected to Giveaway controls.</p>
     {config.giveawayCustomAppearance && <EditorControlContext.Provider value={null}>
       <ControlCategoryContext.Provider value={null}>
-        <BetterWidgetControls type="giveaway" appearanceOnly config={appearance}
+        <BetterWidgetControls type="giveaway" appearanceOnly inheritedTheme={Boolean(chatTheme)} config={appearance}
           onChange={next => set({ giveawayAppearance: updateGiveawayAppearance(appearance, next) })} />
       </ControlCategoryContext.Provider>
     </EditorControlContext.Provider>}
@@ -7896,7 +7897,7 @@ function ThemedBetterWidgetControls({
   return (
     <>
       {type === "background" && !['orbital', 'candy'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
-      <div className="bp-controls bp-controls--colour-theme">
+      {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
           {access.loading && <p role="status">Loading themes…</p>}
@@ -7922,21 +7923,21 @@ function ThemedBetterWidgetControls({
             })}
           </div>
         </Section>
-      </div>
-      {effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">
+      </div>}
+      {!props.inheritedTheme && effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">
         <Section title="Candy environment" icon={<Heart size={12} />} simple>
           {type === 'background' && <ToggleRow label="Candy-shop background" checked={normalizeCandySettings(c.candy).background} onChange={background => onChange({ ...c, candy: { ...c.candy, background } })} hint="Turn off to keep the background transparent over your own scene." />}
           {(['background', 'chat', 'slideshow_frame', 'navbar'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'vertical')) && <ToggleRow label="Candy decorations" checked={normalizeCandySettings(c.candy).decorations} onChange={decorations => onChange({ ...c, candy: { ...c.candy, decorations } })} />}
           <ToggleRow label="Gentle candy motion" checked={normalizeCandySettings(c.candy).motion} onChange={motion => onChange({ ...c, candy: { ...c.candy, motion } })} hint="Optional. Respects reduced motion; no extra WebGL renderer." />
         </Section>
       </div>}
-      <ThemeEffectsControls
+      {!props.inheritedTheme && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
-      />
+      />}
       {type !== "background" && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );

@@ -189,6 +189,21 @@
   transform: rotate(194deg) scale(0.72);
 }
 
+/* Generic embedded winner colours come from the resolved chat appearance.
+   Specialized Candy/Arctic/Orbital materials retain their own scoped rules. */
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) .better-gw-result-card {
+  background:linear-gradient(165deg,var(--gw-result-raised),var(--gw-result-surface) 50%,var(--gw-result-background));
+  border-color:var(--gw-result-border);
+  color:var(--gw-result-text);
+  box-shadow:inset 0 1px 2px #ffffff26,0 3px 10px #0003;
+}
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) .better-gw-result-card::before,
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]) :is(.better-gw-result-frost,.better-gw-result-crystal) {display:none}
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) :is(.better-gw-result-name,.better-gw-result-avatar) {color:var(--gw-result-text);text-shadow:none}
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) :is(.better-gw-result-kicker,.better-gw-result-message) {color:var(--gw-result-muted);text-shadow:none}
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) .better-gw-result-prize {color:var(--gw-result-accent);text-shadow:none}
+.ov-chat-giveaway[data-giveaway-theme]:not([data-giveaway-theme="arctic"]):not([data-giveaway-theme="candy"]):not([data-giveaway-theme="orbital"]) :is(.better-gw-result-avatar,.better-gw-result-avatar i) {background:var(--gw-result-surface);border-color:var(--gw-result-border);color:var(--gw-result-text);box-shadow:inset 0 1px 2px #ffffff26}
+
 .better-widget-colour-scope[data-colour-theme="arctic"] .better-gw-result-card {
   background:
     linear-gradient(145deg, rgba(214, 246, 253, 0.14), transparent 35%),

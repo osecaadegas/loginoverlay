@@ -134,7 +134,7 @@ try {
       const giveawayWidget = { id: 'giveaway-source', widget_type: 'giveaway', is_visible: false, config: window.giveawayConfig };
       const instance = createBetterInstance('chat', { config });
       const content = registry
-        ? renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode, runtime: live ? 'obs' : 'editor', liveWidgets: [giveawayWidget] })
+        ? renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode, runtime: live ? 'obs' : 'editor', liveWidgets: [giveawayWidget], accessVerified: true })
         : h(ChatWidget, { key: `${style}-${live}-${legacy}`, config, allWidgets: [giveawayWidget], previewOnly: !live && !editorPreview, runtime: live ? 'obs' : 'editor', userId: 'owner-a', ...(legacy ? { overlayToken: 'b'.repeat(48) } : { publicOverlayId: `bo_${'a'.repeat(48)}` }) });
       root.render(h('div', { id: 'host', style: { width, height, margin: 12 } }, content));
     };

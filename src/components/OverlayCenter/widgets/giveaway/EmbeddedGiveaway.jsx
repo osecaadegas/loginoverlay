@@ -36,7 +36,14 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Height remains independently configurable and clips only when deliberately reduced.
   const scale = size.width > 0 ? size.width / width : 1;
   return (
-    <section ref={frameRef} className="ov-chat-giveaway" data-giveaway-state={hasWinner ? "winner" : "active"} aria-label="Giveaway" style={{
+    <section ref={frameRef} className="ov-chat-giveaway" data-giveaway-theme={winnerTheme || undefined} data-giveaway-state={hasWinner ? "winner" : "active"} aria-label="Giveaway" style={{
+      '--gw-result-surface': config.bgColor,
+      '--gw-result-raised': config.panelHi,
+      '--gw-result-background': config.panelLo,
+      '--gw-result-border': config.lineColor,
+      '--gw-result-text': config.textColor,
+      '--gw-result-muted': config.mutedColor,
+      '--gw-result-accent': config.accentColor,
       position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
       height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
       overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",

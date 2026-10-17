@@ -61,7 +61,8 @@
     "test:subscriber-reviews-browser": "node scripts/test-subscriber-reviews-browser.mjs",
     "test:overlay-access": "node scripts/test-overlay-access.mjs",
     "test:overlay-access-browser": "node scripts/test-overlay-access-browser.mjs",
-    "test:candy": "node scripts/test-candy-theme.mjs"
+    "test:candy": "node scripts/test-candy-theme.mjs",
+    "test:embedded-giveaway-themes": "node scripts/test-embedded-giveaway-themes.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

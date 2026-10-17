@@ -1487,7 +1487,9 @@ function ChatWidget({
   const giveawaySource = sampleGiveaway ? { config: sampleGiveaway } :
     giveawayWidget || allWidgets?.find((widget) => widget.widget_type === "giveaway");
   const giveawayAppearanceSource = allWidgets?.find((widget) => widget.widget_type === "giveaway")?.config || giveawayWidget?.config;
-  const giveawayConfig = giveawaySource?.config && resolveEmbeddedGiveawayConfig(c, giveawaySource.config, giveawayAppearanceSource || giveawaySource.config);
+  const giveawayConfig = useMemo(() => giveawaySource?.config &&
+    resolveEmbeddedGiveawayConfig(c, giveawaySource.config, giveawayAppearanceSource || giveawaySource.config),
+  [c, giveawaySource?.config, giveawayAppearanceSource]);
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;

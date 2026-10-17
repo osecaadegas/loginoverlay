@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'chat-giveaway-theme-inheritance-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Giveaways in chat follow the chat theme',
+    summary: 'Embedded giveaways no longer retain a different theme from the standalone giveaway source.',
+    changes: ['Open, drawing and winner states derive their colour theme from the containing chat.', 'Old custom appearance snapshots are reconciled when the chat changes theme; compatible custom colours and geometry remain editable.', 'Generic winner cards use the resolved theme colours instead of fixed blue/ice styling.', 'The nested theme/effects selectors are hidden where those choices are inherited from chat; standalone giveaways remain independent.'],
+    action: 'Refresh the editor and your OBS Browser Source. Save and publish when changing the chat theme. No overlay reset is required.',
+  },
+  {
     id: 'candy-chat-space-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'More room for Candy chat',
     summary: 'Smaller decorations and a higher giveaway card leave more space for messages.',
