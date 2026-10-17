@@ -32,6 +32,9 @@ try {
   await page.setRequestInterception(true);
   page.on("request", async (request) => {
     const url = new URL(request.url());
+    if (url.hostname === '127.0.0.1' && url.pathname === '/camera/status') return request.respond({
+      status: 200, headers: {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}, body: JSON.stringify({active:false}),
+    });
     if (url.pathname === "/__freeze-shatter-test") {
       return request.respond({
         contentType: "text/html",
@@ -261,37 +264,11 @@ try {
     "Community copies reset the machine-specific camera label",
   );
 
+  const requestsBeforeObs = await page.evaluate(() => window.freezeAudit.cameraConstraints().length);
   await page.evaluate(() => window.freezeAudit.renderObs());
-  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget__error")?.textContent.includes("Enable camera in OBS"), { timeout: 5000 });
-  await page.waitForSelector('#stage[data-runtime="obs"] .freeze-shatter-widget[data-ready="true"]', { timeout: 15000 });
-  assert.equal(await page.$("#stage .freeze-shatter-widget__error"), null, "The OBS camera prompt clears as soon as the camera stream is ready");
-  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state !== "visible", { timeout: 5000 }).catch(async (failure) => {
-    console.error("OBS trigger diagnostics", await page.evaluate(() => ({
-      state: document.querySelector(".freeze-shatter-widget")?.dataset.state,
-      triggerMode: document.querySelector(".freeze-shatter-widget")?.dataset.triggerMode,
-      error: document.querySelector(".freeze-shatter-widget__error")?.textContent,
-      config: window.freezeAudit.config,
-    })));
-    throw failure;
-  });
-  await new Promise((resolve) => setTimeout(resolve, 230));
-  await page.screenshot({ path: ".codex-dev/freeze-shatter-obs.png" });
-  await page.waitForFunction(() => document.querySelector(".freeze-shatter-widget")?.dataset.state === "shattering");
-  await page.screenshot({ path: ".codex-dev/freeze-shatter-obs-shards.png" });
-  assert.equal(await page.$eval("#stage .freeze-shatter-widget", (widget) => widget.dataset.runtime), "obs");
-  assert.equal(await page.$("#stage .freeze-shatter-widget__error"), null, "OBS output has no stale camera or setup notification");
-  assert.ok(
-    await page.evaluate(() => window.freezeAudit.cameraConstraints().some((constraints) =>
-      constraints?.video?.deviceId?.exact === "stale-browser-camera",
-    )),
-    "OBS first tries the saved browser camera identifier",
-  );
-  assert.ok(
-    await page.evaluate(() => window.freezeAudit.cameraConstraints().some((constraints) =>
-      constraints?.video && !constraints.video.deviceId,
-    )),
-    "OBS falls back to a camera identifier available in its own browser profile",
-  );
+  await page.waitForFunction(() => document.querySelector('.freeze-shatter-widget__error')?.textContent.includes('Start local camera relay'), {timeout:15000});
+  assert.equal(await page.evaluate(() => window.freezeAudit.cameraConstraints().length), requestsBeforeObs, 'OBS must use the local relay instead of attempting direct physical camera access');
+  assert.equal(await page.$eval('.freeze-shatter-widget', widget => widget.dataset.ready), 'false', 'An inactive relay must not be marked ready');
   assert.deepEqual(errors, []);
   console.log("Freeze & Shatter widget passed registry, controls, WebGL preview, transition, sharing, and OBS-renderer checks.");
 } finally {

@@ -165,7 +165,11 @@ export class WebcamTransitionRenderer {
   };
 
   private tick = (ticker: Ticker) => {
-    if (this.bridgeCanvas && this.sourceTexture) this.sourceTexture.source.update();
+    // Relay frames drive the idle webcam. Keep the 60 FPS ticker for transitions/scrubbing.
+    if (this.bridgeCanvas && this.state === 'VISIBLE' && !this.busy && !this.isScrubbing) {
+      this.app.stop();
+      return;
+    }
     this.iceFilter.resources.iceUniforms.uniforms.uTime = performance.now() / 1000;
     this.frameCount++;
     const now = performance.now();
@@ -310,8 +314,14 @@ export class WebcamTransitionRenderer {
           canvas.width = bitmap.width; canvas.height = bitmap.height;
           this.layoutCamera();
         }
-        canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
-        bitmap.close();
+        try {
+          canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+          // Upload only new relay frames, rather than the same canvas on every display tick.
+          this.sourceTexture?.source.update();
+          if (!this.app.ticker.started && this.state === 'VISIBLE' && this.config.enabled) this.app.render();
+        } finally {
+          bitmap.close();
+        }
         failures = 0;
       } catch {
         failures += 1;

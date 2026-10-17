@@ -21,7 +21,10 @@ try {
   await page.setRequestInterception(true);
   page.on("request", async (request) => {
     const url = new URL(request.url());
-    if (url.pathname === "/__money-explosion-test") return request.respond({ contentType: "text/html", headers: { "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws: wss:;" }, body: `<html><body style="margin:0;background:#07111e;color:white"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>` });
+    if (url.hostname === '127.0.0.1' && url.pathname === '/camera/status') return request.respond({
+      status: 200, headers: {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}, body: JSON.stringify({active:false}),
+    });
+    if (url.pathname === "/__money-explosion-test") return request.respond({ contentType: "text/html", headers: { "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' http://127.0.0.1:* http://localhost:* ws: wss:;" }, body: `<html><body style="margin:0;background:#07111e;color:white"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>` });
     if (url.origin === new URL(base).origin) return request.continue(); return request.abort();
   });
   await page.goto(`${base}/__money-explosion-test`, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -68,9 +71,11 @@ try {
   assert.equal(sanitized.banknoteCount, 400); assert.equal(sanitized.gravity, 0.1); assert.equal(sanitized.maxBanknoteSize, 80); assert.equal(sanitized.customFrontTexture, "");
   assert.equal(await page.evaluate(() => window.moneyAudit.shareable.instances.find((instance) => instance.widgetType === "camera")?.config.moneyConfig.source), "default");
   assert.equal(await page.evaluate(() => window.moneyAudit.shareable.instances.find((instance) => instance.widgetType === "camera")?.config.moneyConfig.sourceLabel), "");
-  await page.evaluate(() => window.moneyAudit.setObs()); await page.waitForFunction(() => document.querySelector(".money-explosion-widget__error")?.textContent.includes("Enable camera in OBS"), { timeout: 5000 }); await page.waitForSelector('#stage[data-runtime="obs"] .money-explosion-widget[data-ready="true"]', { timeout: 15000 });
-  await page.waitForFunction(() => document.querySelector(".money-explosion-widget")?.dataset.state !== "visible", { timeout: 4000 }); await page.screenshot({ path: ".codex-dev/money-explosion-obs.png" });
-  assert.equal(await page.$(".money-explosion-widget__error"), null); assert.ok(await page.evaluate(() => window.moneyAudit.constraints().some((value) => value?.video?.deviceId?.exact === "stale-money-camera"))); assert.ok(await page.evaluate(() => window.moneyAudit.constraints().some((value) => value?.video && !value.video.deviceId)));
+  const requestsBeforeObs = await page.evaluate(() => window.moneyAudit.constraints().length);
+  await page.evaluate(() => window.moneyAudit.setObs());
+  await page.waitForFunction(() => document.querySelector('.money-explosion-widget__error')?.textContent.includes('Start local camera relay'), {timeout:15000});
+  assert.equal(await page.evaluate(() => window.moneyAudit.constraints().length), requestsBeforeObs, 'OBS must use the local relay instead of attempting direct physical camera access');
+  assert.equal(await page.$eval('.money-explosion-widget', widget => widget.dataset.ready), 'false', 'An inactive relay must not be marked ready');
   assert.deepEqual(errors, []);
   console.log("Money Explosion passed registry, settings, silhouette animation, clean reconstruction, sharing, and OBS-renderer checks.");
 } finally { await browser.close(); }

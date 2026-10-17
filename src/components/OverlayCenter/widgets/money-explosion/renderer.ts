@@ -104,7 +104,11 @@ export class MoneyExplosionRenderer {
   private onContextLost = (event: Event) => { event.preventDefault(); this.animation?.kill(); this.animation = undefined; this.audio.stop(); this.app.stop(); this.callbacks.onError('The GPU context was lost. Waiting for your graphics device to recover.'); };
   private onContextRestored = () => { this.captureReady = false; this.resetMoneyTransition(); this.callbacks.onReady(); };
   private tick = (ticker: Ticker) => {
-    if (this.bridgeCanvas && this.sourceTexture) this.sourceTexture.source.update();
+    // Relay frames drive the idle webcam. Keep the 60 FPS ticker for transitions/scrubbing.
+    if (this.bridgeCanvas && this.state === 'VISIBLE' && !this.busy) {
+      this.app.stop();
+      return;
+    }
     this.frameCount++; const now = performance.now();
     if (now - this.metricsAt < 1200) return;
     this.fps = Math.min(60, Math.round(this.frameCount * 1000 / (now - this.metricsAt))); this.reportMetrics();
@@ -205,8 +209,14 @@ export class MoneyExplosionRenderer {
           canvas.width = bitmap.width; canvas.height = bitmap.height;
           this.layoutCamera();
         }
-        canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
-        bitmap.close();
+        try {
+          canvas.getContext('2d', { alpha: false })?.drawImage(bitmap, 0, 0);
+          // Upload only new relay frames, rather than the same canvas on every display tick.
+          this.sourceTexture?.source.update();
+          if (!this.app.ticker.started && this.state === 'VISIBLE' && this.config.enabled) this.app.render();
+        } finally {
+          bitmap.close();
+        }
         failures = 0;
       } catch {
         failures += 1;

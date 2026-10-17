@@ -3,10 +3,14 @@ import { readFileSync } from "node:fs";
 import puppeteer from "puppeteer";
 
 const base = process.env.TEST_BASE_URL || "http://127.0.0.1:3010";
+const style = process.env.CAMERA_STYLE || 'ice_shatter';
+const widgetClass = style === 'money_explosion' ? 'money-explosion-widget' : 'freeze-shatter-widget';
+const selector = value => value.replaceAll('freeze-shatter-widget', widgetClass);
 const publicOverlayId = `bo_${"e".repeat(48)}`;
 const browser = await puppeteer.launch({ headless: true });
 let relayFrameBody = Buffer.alloc(0);
 let relayFrameRequests = 0;
+let relayFrameDelayMs = 0;
 
 try {
   const page = await browser.newPage();
@@ -51,6 +55,7 @@ try {
       }
       if (url.pathname === "/camera/frame") {
         relayFrameRequests += 1;
+        if (relayFrameDelayMs) await new Promise(resolve => setTimeout(resolve, relayFrameDelayMs));
         return request.respond({ status: 200, headers: { ...corsHeaders, "Content-Type": "image/jpeg", "Cache-Control": "no-store" }, body: relayFrameBody });
       }
     }
@@ -67,7 +72,20 @@ try {
   }).then((base64) => Buffer.from(base64, "base64"));
   const { browserHash } = JSON.parse(readFileSync(new URL("../node_modules/.vite/deps/_metadata.json", import.meta.url), "utf8"));
 
-  await page.evaluate(async ({ version, publicOverlayId }) => {
+  await page.evaluate(async ({ version, publicOverlayId, style }) => {
+    const { CanvasSource, Application } = await import('/node_modules/.vite/deps/pixi__js.js?v=' + version);
+    const originalRender = Application.prototype.render;
+    window.relayRenders = 0;
+    Application.prototype.render = function (...args) {
+      window.relayRenders++;
+      return originalRender.apply(this, args);
+    };
+    const originalUpdate = CanvasSource.prototype.update;
+    window.relayCanvasUploads = 0;
+    CanvasSource.prototype.update = function (...args) {
+      window.relayCanvasUploads++;
+      return originalUpdate.apply(this, args);
+    };
     const requestedConstraints = [];
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,
@@ -96,8 +114,8 @@ try {
       width: 640,
       height: 360,
       config: {
-        displayStyle: "ice_shatter",
-        iceConfig: {
+        displayStyle: style,
+        [style === "money_explosion" ? "moneyConfig" : "iceConfig"]: {
           enabled: true,
           source: "browser-profile-device-id",
           sourceLabel: "OBS Camera",
@@ -135,9 +153,9 @@ try {
         ),
       ),
     );
-  }, { version: browserHash, publicOverlayId });
+  }, { version: browserHash, publicOverlayId, style });
 
-  await page.waitForSelector('.better-obs-overlay--single .freeze-shatter-widget[data-runtime="obs"][data-ready="true"]', { timeout: 15000 }).catch(async (failure) => {
+  await page.waitForSelector(selector('.better-obs-overlay--single .freeze-shatter-widget[data-runtime="obs"][data-ready="true"]'), { timeout: 15000 }).catch(async (failure) => {
     console.error("Camera OBS route diagnostics", await page.evaluate(() => ({
       body: document.body.innerText,
       html: document.getElementById("root")?.innerHTML.slice(0, 3000),
@@ -148,11 +166,30 @@ try {
   });
   await new Promise((resolve) => setTimeout(resolve, 400));
   assert.equal(await page.$(".better-obs-overlay--empty"), null, "The published Camera widget must not render the empty OBS shell");
-  assert.equal(await page.$eval(".freeze-shatter-widget__renderer canvas", (canvas) => canvas.width), 1280);
-  assert.equal(await page.$eval(".freeze-shatter-widget", (widget) => widget.dataset.ready), "true", "The Camera renderer initializes under a CSP that blocks unsafe-eval");
+  assert.equal(await page.$eval(selector(`.freeze-shatter-widget__renderer canvas`), (canvas) => canvas.width), 1280);
+  assert.equal(await page.$eval(selector(`.freeze-shatter-widget`), (widget) => widget.dataset.ready), "true", "The Camera renderer initializes under a CSP that blocks unsafe-eval");
   assert.deepEqual(await page.evaluate(() => window.cameraObsAudit.requestedConstraints), [], "OBS uses the local ScreenSplit camera relay instead of prompting CEF for camera access");
   assert.ok(relayFrameRequests > 0, "The OBS widget must fetch camera frames from the local relay");
-  assert.equal(await page.$(".freeze-shatter-widget__error"), null, "A ready camera does not retain the OBS permission notice");
+  assert.equal(await page.$(selector(`.freeze-shatter-widget__error`)), null, "A ready camera does not retain the OBS permission notice");
+  assert.ok(await page.evaluate(() => window.relayCanvasUploads) > 0, 'New camera frames must reach the GPU');
+  relayFrameDelayMs = 1200;
+  await new Promise(resolve => setTimeout(resolve, 150));
+  const before = await page.evaluate(() => window.relayCanvasUploads);
+  const rendersBefore = await page.evaluate(() => window.relayRenders);
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const uploadsWhileWaiting = await page.evaluate(() => window.relayCanvasUploads) - before;
+  assert.ok(uploadsWhileWaiting <= 1, 'Waiting for a camera frame must not reupload unchanged pixels on every render tick');
+  const idleRenders = await page.evaluate(() => window.relayRenders) - rendersBefore;
+  assert.ok(idleRenders <= 1, 'An idle relay camera must not continuously redraw while waiting for a new frame');
+  console.log(style + ': uploads while waiting=' + uploadsWhileWaiting + ', renders while waiting=' + idleRenders);
+  relayFrameDelayMs = 0;
+  await new Promise(resolve => setTimeout(resolve, 1400));
+  await page.evaluate(style => window.StreamersCenter[style === 'money_explosion' ? 'moneyExplosion' : 'freezeAndShatter'](), style);
+  await page.waitForFunction(cls => document.querySelector('.' + cls)?.dataset.state === 'hidden', {timeout:15000}, widgetClass);
+  await page.evaluate(style => window.StreamersCenter[style === 'money_explosion' ? 'moneyReconstruction' : 'reconstructWebcam'](), style);
+  await page.waitForFunction(cls => document.querySelector('.' + cls)?.dataset.state === 'visible', {timeout:15000}, widgetClass);
+  assert.equal(await page.$('.' + widgetClass + '__error'), null, 'Effects and reconstruction still work after idle rendering stops');
+  console.log(style + ': steady relay frames upload once, and forward/reverse transitions complete');
   await page.screenshot({ path: ".codex-dev/camera-published-obs-route.png", omitBackground: true });
   assert.deepEqual(errors, []);
   console.log("Published Camera widget rendered through the Better OBS route using a local ScreenSplit camera-relay feed, without getUserMedia in CEF.");
