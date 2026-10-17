@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Grid3X3 } from "lucide-react";
+import { BellRing, Grid3X3 } from "lucide-react";
 import "./TopNavigation.css";
+import { useAdmin } from "../../hooks/useAdmin";
 
 const AUDIENCE_OPTIONS = [
   { audience: "player", label: "Gamblers", defaultTo: "/player" },
@@ -72,6 +73,7 @@ function getActiveAudience(pathname) {
 
 export default function TopNavigation() {
   const location = useLocation();
+  const { isPremium, loading } = useAdmin();
   const activeAudience = getActiveAudience(location.pathname);
 
   return (
@@ -86,6 +88,7 @@ export default function TopNavigation() {
       </div>
 
       <div className="topnav-actions">
+        {!loading && isPremium && <NavLink to="/updates" aria-label="Updates" title="Updates" className={({ isActive }) => `topnav-account${isActive ? " topnav-account--active" : ""}`}><BellRing size={17} /><span>Updates</span></NavLink>}
         <NavLink
           to="/apps"
           aria-label="Apps"

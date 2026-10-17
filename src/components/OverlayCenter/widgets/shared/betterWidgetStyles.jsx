@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import SlotImage from "../SlotImage";
 import OrbitalEnvironment from '../../../../effects/ThemeEffects/orbital/OrbitalEnvironment';
+import { CandyEnvironment } from '../../../../effects/ThemeEffects/candy/CandyTheme.jsx';
 import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
 import { resolveGiveawaySpinDurationSeconds } from "../giveaway/giveawayTiming";
 import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
@@ -457,6 +458,7 @@ function betterChatRole(msg = {}, roleEffects = {}) {
 }
 
 const GIVEAWAY_FONT_STACKS = {
+  rubik: "'Rubik', Arial, sans-serif",
   orbitron: "'Orbitron', sans-serif",
   rajdhani: "'Rajdhani', sans-serif",
   chakra: "'Chakra Petch', sans-serif",
@@ -5236,7 +5238,16 @@ export function BetterBonusHuntStyle({
   };
 
   const content =
-    orientation === "horizontal" ? (
+    orientation === "vertical" && getWidgetEffectsThemeKey('bonus_hunt', c) === 'candy' ? (
+      <section className={`better-hunt-panel candy-hunt-composition${c.showRequests === false ? ' candy-hunt-composition--no-requests' : ''}${panelShakeClass}`}>
+        <div className="candy-hunt-summary candy-structural-panel">
+          {renderHeader()}{renderStatBoxes()}{renderCarousel()}{renderBonusFooter()}
+        </div>
+        {c.showRequests !== false && <div className="candy-hunt-requests candy-structural-panel">{renderRequests()}</div>}
+        <div className="candy-hunt-history candy-structural-panel">{renderList()}</div>
+        {previewWin ? <BetterHuntWinOverlay key={previewWin.id} win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
+      </section>
+    ) : orientation === "horizontal" ? (
       renderHorizontalStrip()
     ) : orientation === "mainstream" ? (
       renderMainstreamPanel()
@@ -5540,6 +5551,7 @@ export function BetterChatHeader({
 }) {
   const c = config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
+  const candy = c.colourTheme === 'candy';
   const viewerCount = Number(c.viewerCount) || 0;
   const isLive = Boolean(
     c.live || c.twitchEnabled || c.youtubeEnabled || c.kickEnabled,
@@ -5559,7 +5571,7 @@ export function BetterChatHeader({
         gap: 10,
         padding: "10px 12px",
         borderBottom: `1px solid ${alphaColor(c.borderColor || "#2f63c9", 0.55)}`,
-        background: `linear-gradient(180deg, ${c.bubble || "#0d2049"}, ${c.cardLo || "#0a1836"})`,
+        background: candy ? `linear-gradient(180deg, #8bf3ff, ${c.borderColor || '#21DDF3'})` : `linear-gradient(180deg, ${c.bubble || "#0d2049"}, ${c.cardLo || "#0a1836"})`,
         ...(broadcast && {
           flex: "0 0 auto",
           minWidth: 0,
@@ -5615,9 +5627,9 @@ export function BetterChatHeader({
             display: "inline-flex",
             alignItems: "center",
             gap: 7,
-            color: alphaColor(headerText, 0.72),
+            color: candy ? '#ffffff' : alphaColor(headerText, 0.72),
             fontWeight: 900,
-            fontSize: "0.72em",
+            fontSize: candy ? '1em' : "0.72em",
             textTransform: "uppercase",
             letterSpacing: broadcast ? 0 : "0.16em",
             whiteSpace: "nowrap",
@@ -6432,7 +6444,7 @@ export function BetterRtpStatsStyle({
             maxWidth: "min(300px, 30vw)",
             padding: "7px 14px",
             border: `1px solid ${alphaColor(c.cRim || accent, 0.55)}`,
-            borderRadius: Math.max(4, numberValue(c.radius, 10) - 4),
+            borderRadius: c.colourTheme === 'candy' ? 28 : Math.max(4, numberValue(c.radius, 10) - 4),
             background: `linear-gradient(180deg, ${alphaColor(bgFrom, 0.85)}, ${alphaColor(bgTo, 0.9)})`,
             boxShadow: `inset 0 0 12px ${alphaColor(c.cRim || accent, 0.26)}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.14)}`,
             minWidth: 0,
@@ -6769,6 +6781,10 @@ function betterBackgroundTextureStyle({
 
 export function BetterBackgroundStyle({ config }) {
   const c = config || {};
+  if (getWidgetEffectsThemeKey('background', c) === 'candy') {
+    return <CandyEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
+      canvasStyle={subElementStyle(c, 'canvas', { width: '100%', height: '100%', position: 'relative', overflow: 'hidden', borderRadius: cssPx(c.borderRadius ?? 0, '0px'), opacity: clampNumber(c.opacity ?? 100, 0, 100, 100) / 100 })} />;
+  }
   if (getWidgetEffectsThemeKey('background', c) === 'orbital') {
     return <OrbitalEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
       canvasStyle={subElementStyle(c, 'canvas', {

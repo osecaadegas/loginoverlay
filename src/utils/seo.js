@@ -284,6 +284,7 @@ const SEO_BY_PATH = {
 };
 
 const NOINDEX_PREFIXES = [
+  '/updates',
   '/admin',
   '/analytics',
   '/developer',

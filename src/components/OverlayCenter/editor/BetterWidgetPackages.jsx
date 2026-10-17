@@ -1,6 +1,7 @@
 import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
+import { normalizeCandySettings } from '../../../effects/ThemeEffects/candy/candyTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
 import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
@@ -216,7 +217,7 @@ const CURRENT_SLOT_DISPLAY_STYLES = new Set(
 const COLOUR_THEME_ICONS = {
   neon: Zap, metallic: Layers, sunset: Sunset, cyberpunk: Zap, crimson: Flame, emerald: Waves,
   gold: Coins, violet: Sparkles, rose: Heart, arctic: Snowflake, lime: Leaf,
-  luxe: Crown, gladiator: Flame, old_rome: Coins, orbital: Orbit,
+  luxe: Crown, gladiator: Flame, old_rome: Coins, orbital: Orbit, candy: Heart,
 };
 
 const FILL_STYLES = [
@@ -569,6 +570,7 @@ const GIVEAWAY_SURFACES = [
 ];
 
 const GIVEAWAY_FONTS = [
+  { key: 'rubik', label: 'Rubik', stack: "'Rubik', Arial, sans-serif" },
   { key: "orbitron", label: "Orbitron", stack: "'Orbitron', sans-serif" },
   { key: "rajdhani", label: "Rajdhani", stack: "'Rajdhani', sans-serif" },
   { key: "chakra", label: "Chakra Petch", stack: "'Chakra Petch', sans-serif" },
@@ -7893,7 +7895,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && effectsThemeKey !== 'orbital' && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7921,6 +7923,13 @@ function ThemedBetterWidgetControls({
           </div>
         </Section>
       </div>
+      {effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">
+        <Section title="Candy environment" icon={<Heart size={12} />} simple>
+          {type === 'background' && <ToggleRow label="Candy-shop background" checked={normalizeCandySettings(c.candy).background} onChange={background => onChange({ ...c, candy: { ...c.candy, background } })} hint="Turn off to keep the background transparent over your own scene." />}
+          {(['background', 'chat', 'slideshow_frame', 'navbar'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'vertical')) && <ToggleRow label="Candy decorations" checked={normalizeCandySettings(c.candy).decorations} onChange={decorations => onChange({ ...c, candy: { ...c.candy, decorations } })} />}
+          <ToggleRow label="Gentle candy motion" checked={normalizeCandySettings(c.candy).motion} onChange={motion => onChange({ ...c, candy: { ...c.candy, motion } })} hint="Optional. Respects reduced motion; no extra WebGL renderer." />
+        </Section>
+      </div>}
       <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}

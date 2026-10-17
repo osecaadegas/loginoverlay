@@ -70,3 +70,14 @@ At completion, report:
 - migrations added
 - checks executed
 - remaining limitations or manual configuration
+
+## Product release notes
+
+Every user-facing website, overlay or ScreenSplit Browser update must include a factual entry in `api/_lib/release-notes.js` in the same release. This catalog powers the Premium-only `/updates` page through the authenticated `/api/updates` endpoint.
+
+- Use a unique ID, actual release date, category (website, overlays or browser), concise title, summary and concrete changes.
+- Add installation/refresh instructions and the exact browser version when needed.
+- Record only implemented, verified behavior; state relevant limitations and never claim untested OBS or performance results.
+- Preserve historical entries and keep the newest releases first.
+- Keep the catalog server-only; do not import it into frontend or public assets. Preserve server-side Premium authorization and private/no-store response headers.
+- Run `npm.cmd run test:updates` when changing the catalog, route or access checks. For nested ScreenSplit work, update this parent catalog alongside the website installer link when shipping the release.

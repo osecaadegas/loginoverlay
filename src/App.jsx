@@ -32,6 +32,7 @@ import { applyRouteSeo } from "./utils/seo";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 
 /* -- Lazy-loaded heavy routes (code-split) -- */
+const UpdatesPage = lazy(() => import("./components/UpdatesPage/UpdatesPage"));
 const AdminPanel = lazy(() => import("./components/AdminPanel/AdminPanel"));
 const AdminAffiliatesPage = lazy(
   () => import("./components/AdminAffiliates/AdminAffiliatesPage"),
@@ -186,6 +187,7 @@ function App() {
                     <Route path="/chat-games" element={<ToolLandingPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/apps" element={<AppsPage />} />
+                    <Route path="/updates" element={<ProtectedAdminRoute allowPremium><UpdatesPage /></ProtectedAdminRoute>} />
 
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/premium" element={<PricingPage />} />

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "npx vite build",
     "validate:widgets": "node scripts/validate-widgets.mjs",
+    "test:updates": "node scripts/test-updates.mjs",
+    "test:updates-browser": "node scripts/test-updates-browser.mjs",
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
     "test:widget-control-categories": "node scripts/test-widget-control-categories.mjs",
     "test:overlay-editor-audit": "node scripts/test-overlay-editor-control-audit.mjs",
@@ -58,7 +60,8 @@
     "test:subscriber-reviews": "node scripts/test-subscriber-reviews.mjs",
     "test:subscriber-reviews-browser": "node scripts/test-subscriber-reviews-browser.mjs",
     "test:overlay-access": "node scripts/test-overlay-access.mjs",
-    "test:overlay-access-browser": "node scripts/test-overlay-access-browser.mjs"
+    "test:overlay-access-browser": "node scripts/test-overlay-access-browser.mjs",
+    "test:candy": "node scripts/test-candy-theme.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

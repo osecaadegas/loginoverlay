@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
+import { applyCandyComposition } from './candyComposition';
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
@@ -1705,6 +1706,13 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {layout.instances.some(instance => instance.config?.colourTheme === 'candy') && (
+            <button type="button" disabled={Boolean(operation) || previewing}
+              title="Apply the 1920 × 1080 Candy reference arrangement to unique, visible, unlocked widgets. Undo is available."
+              onClick={() => commitLayout(applyCandyComposition)}>
+              <Scan size={16} /><span>Candy reference layout</span>
+            </button>
+          )}
           {layout.instances.some(isOrbitalCompositionWidget) && (
             <button
               type="button"

@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
+  BellRing,
   CreditCard,
   Crown,
   Database,
@@ -32,6 +33,7 @@ export default function AppsPage() {
   const hasOverlayAccess = isAdmin || isModerator || isPremium;
 
   const tiles = [
+    ...(isPremium ? [{ to: "/updates", label: "Updates", desc: "Website, overlays & browser releases", icon: BellRing, tone: "cyan", art: "updates" }] : []),
     ...(hasOverlayAccess
       ? [
           {

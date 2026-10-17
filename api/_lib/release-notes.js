@@ -1,0 +1,38 @@
+// Server-only release history. Add entries here as part of each user-facing release.
+export const releaseNotes = [
+  {
+    id: 'candy-theme-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'Candy arrives in the Overlay Editor',
+    summary: 'Glossy pink, cyan and purple frames with a candy-shop environment.',
+    changes: ['Candy is available in the existing widget colour-theme selector.', 'The reference layout groups Bonus Hunt, requests and slot history into separate panels.', 'Background, supported candy decorations and optional gentle motion can be configured independently.', 'Existing widget data, media and editor positioning remain available.'],
+    action: 'Choose Candy under Colour Theme, then use Candy reference layout in the editor toolbar to arrange the reference widgets. Additional widgets keep their existing positions. Configure the Candy environment controls on each widget, save and publish to update your browser source.',
+  },
+  {
+    id: 'updates-page-2026-10-17', date: '2026-10-17', category: 'website',
+    title: 'Your product updates, in one place',
+    summary: 'A dedicated updates page for Premium members.',
+    changes: ['Browse website, overlay and ScreenSplit Browser releases.', 'Filter by product or search the release history.', 'Find any installation or refresh steps alongside each update.'],
+  },
+  {
+    id: 'slot-window-0-1-16', date: '2026-10-17', category: 'overlays', version: 'Browser 0.1.16',
+    title: 'Slot Window keeps the game in proportion',
+    summary: 'Captured slots fit the widget without stretching or automatic cropping.',
+    changes: ['Source dimensions are reported by ScreenSplit and followed when the widget resizes.', 'Unused space stays transparent.', 'Independent corner masks remain available in the editor and browser-source output.'],
+    action: 'Install ScreenSplit Browser 0.1.16 or later, restart it, then refresh the OBS Browser Source.',
+    link: { label: 'Download Browser 0.1.16', url: 'https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.16/StreamersCenterBrowserSetup-0.1.16.exe' },
+  },
+  {
+    id: 'camera-performance-0-1-15', date: '2026-10-17', category: 'browser', version: '0.1.15',
+    title: 'Less repeated work in the camera relay',
+    summary: 'The relay and camera effects process fresh frames instead of repeatedly processing the same image.',
+    changes: ['ScreenSplit reuses its capture canvas and avoids repeated connection-status updates.', 'Idle overlay cameras render when a new relay frame arrives.', 'Ice Shatter and Money Explosion retain their animation settings and reconstruction.'],
+    action: 'Install ScreenSplit Browser 0.1.15 or later and refresh the OBS Browser Source. Actual resource savings depend on your streaming setup.',
+  },
+  {
+    id: 'camera-sources-0-1-14', date: '2026-10-17', category: 'browser', version: '0.1.14',
+    title: 'Choose your camera relay source',
+    summary: 'Select a physical or virtual camera directly in ScreenSplit.',
+    changes: ['Camera source selection includes virtual cameras such as NVIDIA Broadcast.', 'Camera relay controls appear above the browser screens.'],
+    action: 'Open Camera relay in ScreenSplit, start the relay, then select your camera source. Keep ScreenSplit running while using the OBS widget.',
+  },
+];

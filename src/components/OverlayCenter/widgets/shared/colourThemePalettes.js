@@ -2,6 +2,12 @@ import { ORBITAL_TOKENS } from '../../../../effects/ThemeEffects/orbital/orbital
 // Shared colour choices. Rendering options and live data are not part of a palette.
 export const WIDGET_COLOUR_THEMES = Object.freeze([
   {
+    key: 'candy', name: 'Candy', icon: 'candy', swatches: ['#FF39BE', '#21DDF3', '#A348E5'],
+    background: '#FFF2FC', surface: '#FFE8FA', raised: '#FFF8FE', border: '#FF39BE',
+    accent: '#A01992', secondary: '#A348E5', text: '#30136C', muted: '#694291', hue: 318,
+    thumbnail: '/theme-effects/candy/candy-shop.png',
+  },
+  {
     key: "neon", name: "Neon", icon: "neon", swatches: ["#071a44", "#0a84ff", "#59d6ff"],
     background: "#081228", surface: "#0a1734", raised: "#0d2049", border: "#2f63c9",
     accent: "#45c8ff", secondary: "#1e5ad6", text: "#eef6ff", muted: "#9dbdf2", hue: 205,

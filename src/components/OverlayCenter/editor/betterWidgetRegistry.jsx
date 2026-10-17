@@ -1,4 +1,6 @@
 import OverlayAssetGate from './OverlayAssetGate';
+import { CandyModule } from '../../../effects/ThemeEffects/candy/CandyTheme.jsx';
+import { candyStyleVariables } from '../../../effects/ThemeEffects/candy/candyTheme.js';
 import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { orbitalStyleVariables } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { getWidgetColourThemeTokens } from './widgetColourThemes.js';
@@ -1419,9 +1421,9 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
-      <WidgetComponent {...commonProps} />
+      {colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
     </div>
     </OverlayAssetGate>
   );

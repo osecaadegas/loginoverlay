@@ -1176,6 +1176,7 @@ function NavbarWidget({
   const isBetterNavbar = c.displayStyle === "better_navbar";
   const isOrbitalNavbar = isBetterNavbar && c.colourTheme === "orbital";
   const isArcticNavbar = isBetterNavbar && c.colourTheme === "arctic";
+  const isCandyNavbar = isBetterNavbar && c.colourTheme === 'candy';
   // Theme defaults are applied before subElementStyle/withElementOffset, so
   // saved per-element appearance and offsets retain precedence.
   const orbitalInstrument = isOrbitalNavbar ? {
@@ -1184,8 +1185,12 @@ function NavbarWidget({
     boxShadow: 'inset 0 2px 5px #000b,inset 0 -1px 0 #52788e,0 0 0 1px #243e51',
     borderRadius: 6,
     padding: '7px 14px',
+  } : isCandyNavbar ? {
+    boxSizing: 'border-box', borderRadius: 28, padding: '7px 18px',
+    background: 'linear-gradient(180deg,#c6faff,#21ddf3 45%,#12badf)',
+    border: '2px solid #ffffffcc', boxShadow: 'inset 0 3px 3px white,inset 0 -4px 4px #007dae66,0 2px 3px #904d9755',
   } : {};
-  const orbitalPartStyle = (part, style) => isOrbitalNavbar
+  const orbitalPartStyle = (part, style) => isOrbitalNavbar || isCandyNavbar
     ? withElementOffset(c, part, { ...style, ...orbitalInstrument })
     : style;
   const isMetalSurface = isMetal || isStyleSeca || isBetterNavbar;
@@ -1777,6 +1782,7 @@ function NavbarWidget({
             accentColor,
             accentColorRGB,
           }), ...orbitalInstrument,
+            ...(isCandyNavbar ? { background: 'linear-gradient(#ffb4e8,#ff39be 46%,#ec0e96)', color: '#fff', fontSize: 24, padding: '5px 24px', letterSpacing: '.06em', fontWeight: 800 } : {}),
             ...(isOrbitalNavbar ? { padding: '9px 26px', border: '1px solid #496c82', fontVariantNumeric: 'tabular-nums', letterSpacing: '.14em' } : {}),
           },
         )}
@@ -2342,6 +2348,7 @@ function NavbarWidget({
             zIndex: 1,
             flexShrink: 1,
             ...orbitalInstrument,
+            ...(isCandyNavbar ? { background: 'linear-gradient(#ffb4e8,#ff39be 46%,#ec0e96)' } : {}),
           })}
         >
           {showPackageAvatarImage ? (

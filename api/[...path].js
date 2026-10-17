@@ -15,7 +15,10 @@ import serviceReadinessHandler from "./_lib/routes/service-readiness.js";
 import streamerDataHandler from "./_lib/streamer-data.js";
 import slotPersonalBestHandler from "./_lib/routes/slot-personal-best.js";
 
+import updatesHandler from "./_lib/routes/updates.js";
+
 const ROUTES = {
+  updates: updatesHandler,
   affiliate: affiliateHandler,
   analytics: analyticsHandler,
   "auto-draw-winners": autoDrawWinnersHandler,
