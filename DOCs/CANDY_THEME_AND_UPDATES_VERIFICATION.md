@@ -68,3 +68,13 @@ Theme selection now recolours the actual Bonus Hunt renderer element IDs, includ
 Follow-up files: `CandyTheme.css`, `candyTheme.js`, `betterWidgetStyles.jsx`, `widgetColourThemes.js`, `TournamentWidget.jsx`, `test-candy-theme.mjs`, this report and the server release catalog. No migration or new dependency.
 
 Additional browser assertions cover the editor's 52px minimum RTP height through 76px, vertical centering and complete containment of text/badges/provider logos, populated mainstream slot titles and values, both best/worst colour treatments, complete result-card containment and recolouring legacy saved text fields. Screenshots: `rtp-*-editor.png`, `rtp-*-obs.png`, `mainstream-contrast-editor.png`, `mainstream-contrast-obs.png`. Native OBS remains unverified.
+
+## Chat space and provider logos — 17 October 2026
+
+Candy provider artwork now renders as black ink using the image alpha channel on Current Game and the RTP bar. Current Game reuses the existing provider artwork lookup and error fallback; Arctic retains its original provider colours.
+
+The chat jar and its reserved footer are exactly half the earlier size (`34cqw`, clamped to 45–135px, previously `68cqw`, 90–270px). Embedded Candy winner cards use the real chat bay, align immediately below the header and default to 120px instead of 180px. Explicit winner-height and giveaway-margin configuration remains supported. Message space expands with the freed height, without changing the user's widget position or dimensions.
+
+Modified files: `src/effects/ThemeEffects/candy/CandyTheme.css`, `src/components/OverlayCenter/widgets/current-slot/CurrentSlotWidget.jsx`, `src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.jsx`, `scripts/test-candy-theme.mjs`, `api/_lib/release-notes.js` and this report. No new files, dependencies or database migrations. Browser regression coverage includes winner-card containment/top spacing, message height, half-size jar geometry, decorations on/off and black provider logos in both editor and OBS rendering paths. Native OBS is not tested.
+
+Checks passed: `npm.cmd run test:candy`, `npm.cmd run test:updates`, `npm.cmd run test:preview-data-parity`, `npm.cmd run validate:widgets`, `npm.cmd run build` and `git diff --check`. Build retains the existing custom-font resolution and chunk-size warnings. The broader `npm.cmd run test:current-game` was also attempted against the local Vite app, but timed out at `scripts/test-current-game-browser.mjs:122` waiting for its `200x` personal-record fixture; it is not counted as a pass. The dedicated Candy checks verified real Current Game and RTP provider images independently.

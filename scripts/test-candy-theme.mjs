@@ -44,7 +44,7 @@ try {
  root.render(h('div',{style:{position:'relative',width:1920,height:1080,transform:`scale(${innerWidth/1920})`,transformOrigin:'top left'}},...instances.map(instance=>h('div',{key:instance.instanceId,'data-fixture-widget':instance.widgetType,style:{position:'absolute',left:instance.x,top:instance.y,width:instance.width,height:instance.height,zIndex:instance.zIndex}},registry.renderBetterWidgetInstance({instance,layout:{instances},mode:populated?'mock':'live',runtime,accessVerified:true})))));
  },
  controls(type){const app=this;function Controls(){const [c,set]=React.useState(app.config(type));window.candy.controlConfig=c;return h('div',{style:{width:420}},h(BetterWidgetControls,{type,config:c,onChange:set}));}root.render(h(Controls,{key:type}));},
- renderConfig(instance,runtime='editor',mode='live'){this.instances=[instance];root.render(h('div',{style:{width:instance.width,height:instance.height}},registry.renderBetterWidgetInstance({instance,layout:{instances:[instance]},mode,runtime,accessVerified:true})));}
+ renderConfig(instance,runtime='editor',mode='live',companions=[]){this.instances=[instance,...companions];root.render(h('div',{style:{width:instance.width,height:instance.height}},registry.renderBetterWidgetInstance({instance,layout:{instances:this.instances},mode,runtime,accessVerified:true})));}
  };window.candy.scene();
  };await page.evaluate(initialize,browserHash);
  const wait=()=>new Promise(r=>setTimeout(r,800));await page.waitForSelector('.candy-hunt-composition');await wait();
@@ -103,6 +103,21 @@ try {
  }
 
  for(const runtime of ['editor','obs']){
+  for(const decorations of [true,false]){
+   await page.evaluate(({runtime,decorations})=>{const giveaway=window.candy.registry.createBetterInstance('giveaway',{config:window.candy.config('giveaway',{winner:{name:'CommunityWinner',avatarUrl:'/player.webp'},prize:'Community prize'})});const chat=window.candy.registry.createBetterInstance('chat',{width:378,height:659,config:window.candy.config('chat',{giveawayInChat:true,showHeader:true,candy:{decorations}})});window.candy.renderConfig(chat,runtime,'live',[giveaway]);},{runtime,decorations});await wait();
+   const geometry=await page.evaluate(()=>{const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height,width:r.width};};return {inner:rect('.candy-module-content'),header:rect('.ov-chat-widget > [data-better-element=header]'),card:rect('.better-gw-result-card'),bay:rect('.ov-chat-giveaway'),messages:rect('.ov-chat-messages'),jar:document.querySelector('.candy-decoration--jar')?rect('.candy-decoration--jar'):null};});
+   assert(geometry.card.top-geometry.header.bottom<20,'winner starts just below the chat header: '+JSON.stringify(geometry));
+   assert(geometry.card.bottom<=geometry.bay.bottom+1,'winner fully fits compact bay: '+JSON.stringify(geometry));
+   assert(geometry.messages.height>300,'Candy chat regains message space: '+JSON.stringify(geometry));
+   if(decorations){assert(Math.abs(geometry.jar.width-geometry.inner.width*.34)<2,'jar uses half its previous 68% width');assert(geometry.messages.bottom<=geometry.jar.top+1,'messages stay above decoration');}else assert.equal(geometry.jar,null);
+   await page.screenshot({path:`.codex-dev/candy-verification/chat-space-${runtime}-${decorations}.png`});
+  }
+  for(const type of ['current_slot','rtp_stats']){
+   await page.evaluate(({runtime,type})=>{const config=window.candy.config(type,{slot:{name:'Current game',provider:'Pragmatic Play',image:'/player.webp'},provider:'Pragmatic Play',providerLogoUrl:'/player.webp',previewMode:true});window.candy.renderConfig(window.candy.registry.createBetterInstance(type,{width:type==='current_slot'?695:1114,height:type==='current_slot'?187:76,config}),runtime,'mock');},{runtime,type});await wait();
+   const selector=type==='current_slot'?'.cg-provider-logo':'[data-better-element="provider"] img';
+   await page.waitForSelector(selector);assert.equal(await page.$eval(selector,el=>getComputedStyle(el).filter),'brightness(0)',type+' provider uses black alpha silhouette in '+runtime);
+   await page.screenshot({path:`.codex-dev/candy-verification/provider-${type}-${runtime}.png`});
+  }
   for(const height of [44,48,56,76]){
    await page.evaluate(({height,runtime})=>{const config=window.candy.config('rtp_stats',{barHeight:58,barPadY:8,previewMode:true});window.candy.renderConfig(window.candy.registry.createBetterInstance('rtp_stats',{width:1114,height,config}),runtime,'mock');},{height,runtime});await wait();
    const geometry=await page.evaluate(()=>{const root=document.querySelector('.rtp-stats-bar'),box=root.getBoundingClientRect(),frame=document.querySelector('.candy-module-content').getBoundingClientRect();const nodes=[...root.querySelectorAll(':scope > h1,:scope > div')];return {fits:box.top>=frame.top-.5&&box.bottom<=frame.bottom+.5,items:nodes.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,delta:Math.abs((r.top+r.bottom-box.top-box.bottom)/2)};}),box:{top:box.top,bottom:box.bottom}};});

@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'candy-chat-space-2026-10-17', date: '2026-10-17', category: 'overlays',
+    title: 'More room for Candy chat',
+    summary: 'Smaller decorations and a higher giveaway card leave more space for messages.',
+    changes: ['The Candy chat jar is half its previous size, with a matching reduction in reserved space.', 'Embedded winner cards align near the top and use a more compact default height; custom height and spacing settings remain available.', 'Provider logos use black ink on Candy current-game and RTP surfaces.'],
+    action: 'Refresh the editor and your OBS Browser Source. These presentation changes apply to Candy only.',
+  },
+  {
     id: 'candy-readability-2026-10-17', date: '2026-10-17', category: 'overlays',
     title: 'Clearer Candy readouts and result cards',
     summary: 'Compact RTP bars fit their frames and pale panels use stronger text contrast.',

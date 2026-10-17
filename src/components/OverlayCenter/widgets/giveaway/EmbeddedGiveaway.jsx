@@ -15,12 +15,12 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const width = bounded(config.width, 240, 1600, 420);
   const height = bounded(config.height, 140, 900, 270);
   const hasWinner = Boolean(config.winner);
-  // The detailed Orbital and Arctic winner cards use the real chat bay so
+  // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
-  const nativeWinner = hasWinner && ['orbital', 'arctic'].includes(winnerTheme);
+  const nativeWinner = hasWinner && ['orbital', 'arctic', 'candy'].includes(winnerTheme);
   const regularFrameHeight = bounded(layout.giveawayHeight, 80, 600, 250);
-  const winnerFrameHeight = bounded(layout.giveawayWinnerHeight, 110, 320, 180);
+  const winnerFrameHeight = bounded(layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
   const frameHeight = hasWinner ? winnerFrameHeight : regularFrameHeight;
   const canvasHeight = hasWinner ? 190 : height;
   const margin = bounded(layout.giveawayMargin, 0, 30, 4);

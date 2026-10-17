@@ -32,11 +32,11 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
     ? c.__previewPersonalBest
     : liveBest;
   const art = c.artworkBySlot?.[slot.id] || {};
-  const isArctic = String(c.colourTheme || '').replace(/^theme_/, '') === 'arctic';
+  const hasProviderArtwork = ['arctic', 'candy'].includes(String(c.colourTheme || '').replace(/^theme_/, ''));
   const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', art.coverUrl || slot.image || ''));
   const backdrop = safeArtworkUrl(subValue(c, 'backdrop', 'imageUrl', art.backgroundUrl || slot.image || ''));
   const logo = safeArtworkUrl(subValue(c, 'titleImage', 'imageUrl', art.titleUrl || ''));
-  const providerLogo = isArctic ? safeArtworkUrl(getProviderImage(slot.provider) || '') : '';
+  const providerLogo = hasProviderArtwork ? safeArtworkUrl(getProviderImage(slot.provider) || '') : '';
   const [failed, setFailed] = useState({});
   const showProviderLogo = providerLogo && !failed[providerLogo];
   const part = elementId => ({ ...appearanceAttrs({ config: c, widgetId, widgetType: 'current_slot', elementId }), style: subElementStyle(c, elementId, {}) });
