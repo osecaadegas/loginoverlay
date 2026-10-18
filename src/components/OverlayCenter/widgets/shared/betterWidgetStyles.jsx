@@ -47,6 +47,7 @@ import {
 } from "../bonus-hunt/shared/betterHuntSizing";
 import { normalizeGiveawaySubtitle } from "../giveaway/giveawayText";
 import { giveawayFontStack } from '../giveaway/giveawayFonts.js';
+import NewHorizontalHunt from '../bonus-hunt/NewHorizontalHunt';
 
 function attrs(widgetType, config, elementId, stateId) {
   const style = subElementStyle(config, elementId, undefined, stateId);
@@ -1389,6 +1390,10 @@ function bonusMaxWinValue(bonus) {
     ],
     0,
   );
+}
+
+function hasBonusMetric(bonus, keys) {
+  return keys.some(key => bonus?.[key] !== null && bonus?.[key] !== undefined && bonus?.[key] !== '' && Number.isFinite(Number(bonus[key])));
 }
 
 function bonusMultiplierValue(bonus) {
@@ -3185,7 +3190,7 @@ export function BetterBonusHuntStyle({
   const rotatingIndex = useBetterHuntCarousel(
     rows.length,
     Number(c.carouselMs) || 3200,
-    c.animations !== false && sessionState === "hunt",
+    c.orientation!=='new_horizontal' && c.animations !== false && sessionState === "hunt",
     initialIndex,
   );
   const lockedIndex =
@@ -3212,7 +3217,7 @@ export function BetterBonusHuntStyle({
     overlayToken,
   });
   const listPersonalBests = useSlotPersonalBests({
-    enabled: !previewOnly && c.listMode === "image",
+    enabled: !previewOnly && c.orientation !== "new_horizontal" && c.listMode === "image",
     userId,
     // Use the exact identities used to render cards; a bonus row's ID is
     // not a catalogue slot ID, and legacy provider fields need the same mapping.
@@ -3252,7 +3257,7 @@ export function BetterBonusHuntStyle({
     skin !== "modern"
       ? BETTER_HUNT_THEMES[skin]
       : BETTER_HUNT_THEMES[c.colour] || BETTER_HUNT_THEMES.ocean);
-  const orientation = ["horizontal", "mainstream"].includes(c.orientation)
+  const orientation = ["horizontal", "mainstream", "new_horizontal"].includes(c.orientation)
     ? c.orientation
     : "vertical";
   const listMode = ["compact", "image", "names"].includes(c.listMode)
@@ -3376,7 +3381,7 @@ export function BetterBonusHuntStyle({
   const requestActiveIndex = useBetterHuntCarousel(
     requestRows.length,
     Number(c.carouselMs) || 3200,
-    c.animations !== false && requestView === "carousel",
+    c.orientation!=='new_horizontal' && c.animations !== false && requestView === "carousel",
   );
   const totalBetFromStats = firstMetric(
     [stats?.totalBetAll, stats?.totalBet, c.totalBet],
@@ -3574,6 +3579,7 @@ export function BetterBonusHuntStyle({
     (title && title !== "Bonus" ? title : "Bonus");
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
+    if(orientation==='new_horizontal') return undefined;
     const trigger = (detail = {}) => {
       if (
         detail.instanceId &&
@@ -3611,12 +3617,12 @@ export function BetterBonusHuntStyle({
     }
     return () =>
       window.removeEventListener("better-bonus-hunt-preview-win", handler);
-  }, [activeSlotLabel, c.__betterInstanceId]);
+  }, [activeSlotLabel, c.__betterInstanceId, orientation]);
   useEffect(() => {
     const { snapshot, win } = getAutomaticBetterHuntWin(
       automaticWinSnapshotRef.current,
       rows,
-      c.winEffects !== false,
+      c.winEffects !== false && orientation!=='new_horizontal',
     );
     automaticWinSnapshotRef.current = snapshot;
     if (!win) return;
@@ -3626,12 +3632,12 @@ export function BetterBonusHuntStyle({
       tier: betterHuntWinTier(win.mult, win.max),
       slot: win.slot,
     });
-  }, [c.winEffects, rows]);
+  }, [c.winEffects, rows, orientation]);
   const panelShakeClass =
     previewWin && ["epic", "insane", "max"].includes(previewWin.tier)
       ? " better-hunt-panel--shake"
       : "";
-  const rootStyle = subElementStyle(c, c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? null : 'container', {
+  const rootStyle = subElementStyle(c, orientation==='new_horizontal'||(c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal') ? null : 'container', {
     "--bh-panel-hi": theme.panelHi,
     "--bh-panel-mid": theme.panelMid,
     "--bh-panel-lo": theme.panelLo,
@@ -5223,7 +5229,11 @@ export function BetterBonusHuntStyle({
   };
 
   const content =
-    c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? (
+    orientation==='new_horizontal' ? <NewHorizontalHunt config={c} font={font} state={sessionState==='ended'||(rows.length>0&&opened.length===rows.length)?'ended':sessionState}
+      opened={opened.length} totalPayout={formatMoney(totalPay,money)} startBE={totalBet>0?formatMultiplier(breakEven,0):'—'} average={totalBetOpened>0?formatMultiplier(avgMulti,0):'—'}
+      superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount}
+      cards={rows.map((bonus,index)=>({id:String(bonus.id||`bonus-${index}`),number:index+1,name:bonusSlotName(bonus,index),image:bonusImage(bonus),opened:bonusOpened(bonus),tier:bonusTier(bonus),bet:hasBonusMetric(bonus,['betSize','bet_size','bet','stake','amount'])?formatMoney(bonusBet(bonus),money):'—',payout:hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result'])?formatMoney(bonusPayout(bonus),money):'—',multiplier:hasBonusMetric(bonus,['_multi','multiplier','multi','x','bonusMultiplier'])||(bonusBet(bonus)>0&&hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result']))?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))}/>
+    : c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? (
       <SolverdeHuntDock config={c} opened={opened.length} total={rows.length} activeIndex={activeIndex}
         start={startKnown ? formatMoney(startValue, money) : '—'} actual={Number.isFinite(currentHuntBalance) ? formatMoney(currentHuntBalance, money) : '—'} breakEven={displayBreakEven > 0 ? formatMultiplier(displayBreakEven) : '—'}
         part={id => ({ ...attrs('bonus_hunt', c, id), style: subElementStyle(c, id, {}) })}
@@ -5280,12 +5290,12 @@ export function BetterBonusHuntStyle({
       data-skin={skin}
       data-stats-layout={statsLayout}
       data-obs-scaled={obsRenderScale !== 1 ? "true" : "false"}
-      {...(c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? {} : attrs("bonus_hunt", c, "container"))}
+      {...(orientation==='new_horizontal'||(c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal') ? {} : attrs("bonus_hunt", c, "container"))}
       style={rootStyle}
     >
       <BetterStyleSheet />
       <div className="better-hunt-shell">{content}</div>
-      {renderRequestAction()}
+      {orientation!=='new_horizontal'&&renderRequestAction()}
     </div>
   );
 }

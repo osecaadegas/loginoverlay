@@ -1,5 +1,6 @@
 import { SOLVERDE_VARIANTS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { COMPACT_CURRENT_SLOT_STYLE } from '../../widgets/current-slot/currentSlotModel.js';
+import { NEW_HORIZONTAL_APPEARANCE } from '../../widgets/bonus-hunt/shared/newHorizontalHunt.js';
 import {
   getEditorReadyWidgetStyle,
   shouldExposeEditorReadyStyle,
@@ -3440,6 +3441,7 @@ export const widgetAppearanceRegistry = Object.freeze({
     }),
     styles: Object.freeze([
       freezeStyle(SOLVERDE_VARIANTS.bonus_hunt),
+      freezeStyle(NEW_HORIZONTAL_APPEARANCE),
       freezeStyle({
         id: "better_bonus_hunt",
         label: "Better Hunt",

@@ -5,6 +5,7 @@ import { normalizeCandySettings } from '../../../effects/ThemeEffects/candy/cand
 import { normalizeVolcanicSettings } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { normalizeSolverdeSettings, getSolverdeVariant } from '../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
+import NewHorizontalControls from '../widgets/bonus-hunt/NewHorizontalControls';
 import { CURRENT_SLOT_DEFAULTS, COMPACT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -1669,7 +1670,9 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       : {}),
   };
   const solverdeVariant = getSolverdeVariant(type, merged);
-  if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
+  if(type==='bonus_hunt'&&merged.orientation==='new_horizontal') merged.__appearanceStyleId='new_horizontal';
+  else if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
+  else if (merged.__appearanceStyleId==='new_horizontal') delete merged.__appearanceStyleId;
   else if (String(merged.__appearanceStyleId || '').startsWith('solverde_')) delete merged.__appearanceStyleId;
   if (type === "camera") return sanitizeCameraConfig(merged);
   if (type === "slot_window") return sanitizeSlotWindowConfig(merged);
@@ -3988,12 +3991,14 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
 }
 
 export function getBetterBonusOrientationWidth(orientation) {
+  if (orientation === 'new_horizontal') return 730;
   if (orientation === "horizontal") return 1080;
   if (orientation === "mainstream") return 372;
   return 402;
 }
 
 export function getBetterBonusOrientationHeight(orientation) {
+  if (orientation === 'new_horizontal') return 150;
   return orientation === "horizontal" ? BETTER_HUNT_HORIZONTAL_HEIGHT : 884;
 }
 
@@ -4049,7 +4054,7 @@ function SimpleThemedControls({
     }
     if (typeof onWidgetChange === "function") {
       const minimumHeight =
-        next.orientation === "horizontal" ? getHorizontalHuntMinHeight(next) : 320;
+        next.orientation === 'new_horizontal'?150:next.orientation === "horizontal" ? getHorizontalHuntMinHeight(next) : 320;
       const widgetPatch = {
         width: clampNumber(nextWidth, 320, 1280, nextWidth),
         config: next,
@@ -4086,6 +4091,7 @@ function SimpleThemedControls({
     tab === "__all" || tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
 
   if (type === 'current_slot') return <CurrentSlotAppearanceControls config={c} onChange={onChange} onWidgetChange={onWidgetChange} />;
+  if(type==='bonus_hunt'&&c.orientation==='new_horizontal') return <NewHorizontalControls config={c} onChange={onChange} onOrientation={orientation=>setBonusSize({orientation,widgetWidth:getBetterBonusOrientationWidth(orientation),widgetHeight:getBetterBonusOrientationHeight(orientation),panelWidth:getBetterBonusOrientationWidth(orientation),panelHeight:getBetterBonusOrientationHeight(orientation)})}/>;
   if (type === "navbar") {
     return (
       <div className="bp-controls">
@@ -5506,6 +5512,7 @@ function SimpleThemedControls({
                 label: "Mainstream",
                 hint: "Streamer opening layout",
               },
+              {key:'new_horizontal',label:'New Horizontal',hint:'Five cards with a central hunt summary'},
             ]}
             onChange={(orientation) => {
               const width = getBetterBonusOrientationWidth(orientation);
@@ -7953,14 +7960,14 @@ function ThemedBetterWidgetControls({
           {type === 'bonus_hunt' && c.orientation === 'mainstream' && <ToggleRow label="Compact reference hunt" checked={c.volcanic?.compactHunt === true} onChange={compactHunt => onChange({ ...c, volcanic: { ...c.volcanic, compactHunt } })} hint="Stacked cards without a separate featured-slot monitor." />}
         </Section>
       </div>}
-      {!props.inheritedTheme && effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && effectsThemeKey === 'candy' && <div className="bp-controls" data-effects-theme="candy">
         <Section title="Candy environment" icon={<Heart size={12} />} simple>
           {type === 'background' && <ToggleRow label="Candy-shop background" checked={normalizeCandySettings(c.candy).background} onChange={background => onChange({ ...c, candy: { ...c.candy, background } })} hint="Turn off to keep the background transparent over your own scene." />}
           {(['background', 'chat', 'slideshow_frame', 'navbar'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'vertical')) && <ToggleRow label="Candy decorations" checked={normalizeCandySettings(c.candy).decorations} onChange={decorations => onChange({ ...c, candy: { ...c.candy, decorations } })} />}
           <ToggleRow label="Gentle candy motion" checked={normalizeCandySettings(c.candy).motion} onChange={motion => onChange({ ...c, candy: { ...c.candy, motion } })} hint="Optional. Respects reduced motion; no extra WebGL renderer." />
         </Section>
       </div>}
-      {!props.inheritedTheme && effectsThemeKey === 'solverde' && <div className="bp-controls" data-effects-theme="solverde"><Section title="Solverde layout" icon={<Crown size={12}/>} simple>
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && effectsThemeKey === 'solverde' && <div className="bp-controls" data-effects-theme="solverde"><Section title="Solverde layout" icon={<Crown size={12}/>} simple>
         {['background','navbar'].includes(type) && <ToggleRow label="Sunburst decorations" checked={normalizeSolverdeSettings(c).decorations} onChange={decorations=>onChange({...c,solverde:{...c.solverde,decorations}})} />}
         {type === 'background' && <><ToggleRow label="Reference gameplay frame" checked={normalizeSolverdeSettings(c).gameplayFrame} onChange={gameplayFrame=>onChange({...c,solverde:{...c.solverde,gameplayFrame}})} hint="Fixed at the reference layout position. Transparent by default." />{normalizeSolverdeSettings(c).gameplayFrame && <ToggleRow label="Idle gameplay fill" checked={normalizeSolverdeSettings(c).idleBackground} onChange={idleBackground=>onChange({...c,solverde:{...c.solverde,idleBackground}})} hint="Leave off for an OBS source beneath the opening." />}</>}
         {type === 'bonus_hunt' && <><ToggleRow label="Horizontal hunt dock" checked={normalizeSolverdeSettings(c).huntDock} onChange={huntDock=>onChange({...c,orientation:huntDock?'horizontal':c.orientation,solverde:{...c.solverde,huntDock}})} />{normalizeSolverdeSettings(c).huntDock && <><TextRow label="Dock heading" value={c.solverde?.dockTitle || 'BONUS HUNT'} onChange={dockTitle=>onChange({...c,solverde:{...c.solverde,dockTitle}})} /><NumberRow label="Visible cards" min={2} max={4} value={normalizeSolverdeSettings(c).dockCards} onChange={dockCards=>onChange({...c,solverde:{...c.solverde,dockCards}})} /></>}</>}
@@ -7973,14 +7980,14 @@ function ThemedBetterWidgetControls({
         {type === 'bets' && c.solverde?.predictions && <TextRow label="Prediction heading" value={c.solverde?.predictionHeading || c.question || 'QUAL SERÁ O MULTIPLICADOR?'} onChange={predictionHeading=>onChange({...c,solverde:{...c.solverde,predictionHeading}})} />}
         {['bonus_hunt','bets'].includes(type) && getSolverdeVariant(type,c) && <><SelectRow label="Text font" value={c.fontFamily} options={[{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Georgia, serif',name:'Georgia'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily})} /><NumberRow label="Text size" min={10} max={22} value={Number(c.fontSize)||14} onChange={fontSize=>onChange({...c,fontSize})} /></>}
       </Section></div>}
-      {!props.inheritedTheme && effectsThemeKey !== 'solverde' && <ThemeEffectsControls
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && effectsThemeKey !== 'solverde' && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />}
-      {type !== "background" && !(getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type !== "background" && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }

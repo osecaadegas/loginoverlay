@@ -464,6 +464,7 @@ const LIVE_DATA_KEYS = Object.freeze({
   bonus_hunt: [
     "bonuses",
     "huntActive",
+    "huntNumber",
     "bonusOpening",
     "sessionState",
     "previewSlotName",
@@ -988,6 +989,7 @@ function normalizeZIndexes(instances) {
 
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
+  if(instance.widgetType==='bonus_hunt'&&instance.config?.orientation==='new_horizontal') return {...constraints,minWidth:365,minHeight:75,maxWidth:1920,maxHeight:1080};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='portrait_compact') return {...constraints,minWidth:100,minHeight:200,maxWidth:720,maxHeight:1800};
   if (instance.config?.colourTheme === 'solverde') {
     if (instance.widgetType === 'bonus_hunt' && instance.config.solverde?.huntDock) return { ...constraints, minWidth: 850, minHeight: 200, maxWidth: 1920, maxHeight: 420 };

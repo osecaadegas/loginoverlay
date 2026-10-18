@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'bonus-hunt-new-horizontal-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'New Horizontal Bonus Hunt layout',
+    summary:'A compact five-card hunt tracker with a central live summary.',
+    changes:['New Horizontal joins the existing Bonus Hunt layouts at a natural size of 730 × 150.','Two opened cards, the current bonus and two upcoming cards follow real hunt order without duplicating slots at the boundaries.','Payout, opening progress, Super/Extreme counts, starting break-even and weighted average use the existing hunt calculations.','Fonts, colours, border, opacity and card advancement motion remain configurable.'],
+    action:'Choose Bonus Hunt → Orientation → New Horizontal, then save and publish. Refresh the OBS Browser Source. No installer update or database migration is required.',
+  },
+  {
     id:'current-slot-portrait-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Compact Portrait orientation for Current Slot',
     summary:'An edge-to-edge cover and four compact statistic rows in a 145 × 370 card.',
