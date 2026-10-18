@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
+import { createServer } from 'vite';
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 import {
   countCompletedSlotBingoSquares,
@@ -20,7 +21,7 @@ assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true
 assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
-assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],
@@ -51,7 +52,9 @@ const contrast = (a, b) => {
 assert(contrast(gladiator.text, gladiator.background) >= 4.5, 'Gladiator ivory text is readable on its dark background');
 assert(contrast('#21130c', gladiator.raised) >= 4.5, 'Gladiator dark text is readable on antique gold');
 
-const baseUrl = process.env.TEST_BASE_URL || 'http://127.0.0.1:3010';
+const server = process.env.TEST_BASE_URL ? null : await createServer({logLevel:'silent',server:{host:'127.0.0.1',port:0,hmr:false}});
+if(server) await server.listen();
+const baseUrl = process.env.TEST_BASE_URL || server.resolvedUrls.local[0].replace(/\/$/,'');
 const browser = await puppeteer.launch({ headless: true });
 try {
   const page = await browser.newPage();
@@ -72,10 +75,11 @@ try {
   });
   await page.setViewport({ width: 1600, height: 1100 });
   await page.goto(`${baseUrl}/__widget-colour-themes`, { waitUntil: 'networkidle0' });
-  const { browserHash } = JSON.parse(readFileSync(new URL('../node_modules/.vite/deps/_metadata.json', import.meta.url), 'utf8'));
-  await page.evaluate(async version => {
-    const { default: React } = await import(`/node_modules/.vite/deps/react.js?v=${version}`);
-    const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?v=${version}`);
+  await page.evaluate(async () => {
+    const entry=await (await fetch('/src/main.jsx')).text();
+    const reactUrl=entry.match(/"([^"\n]*\/react\.js[^"\n]*)"/)[1],version=reactUrl.split('?')[1];
+    const { default: React } = await import(reactUrl);
+    const { default: ReactDOM } = await import(`/node_modules/.vite/deps/react-dom_client.js?${version}`);
     const { BetterWidgetControls, ensureBetterWidgetConfig } = await import('/src/components/OverlayCenter/editor/BetterWidgetPackages.jsx');
     const { supabase } = await import('/src/config/supabaseClient.js');
     const originalRpc = supabase.rpc.bind(supabase);
@@ -138,7 +142,7 @@ try {
         });
       },
     };
-  }, browserHash);
+  });
   const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve)))));
   const mount = async (type, config, options) => {
     await page.evaluate(({ type, config, options }) => window.themeTest.mount(type, config, options), { type, config, options });
@@ -277,4 +281,5 @@ try {
   console.log(`All widget colour themes passed: ${types.length * themes.length} palette combinations, readable new palettes, isolated configuration, responsive controls, reload and editor/OBS parity.`);
 } finally {
   await browser.close();
+  await server?.close();
 }

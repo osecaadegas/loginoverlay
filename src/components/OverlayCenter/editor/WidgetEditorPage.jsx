@@ -45,6 +45,7 @@ import { useNavigate } from "react-router-dom";
 import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
 import { applyCandyComposition } from './candyComposition';
 import { applyVolcanicComposition } from './volcanicComposition';
+import { applySolverdeComposition } from './solverdeComposition';
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
@@ -1707,6 +1708,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {layout.instances.some(instance => instance.config?.colourTheme === 'solverde') && <button type="button" disabled={Boolean(operation) || previewing} title="Apply the Solverde 1920 × 1080 reference layout. Existing RTP strips are hidden because the current-slot footer replaces them. Undo is available." onClick={()=>commitLayout(applySolverdeComposition)}><Scan size={16}/><span>Solverde reference layout</span></button>}
           {layout.instances.some(instance => instance.config?.colourTheme === 'volcanic') && (
             <button type="button" disabled={Boolean(operation) || previewing}
               title="Apply the Volcanic reference arrangement to unique, visible, unlocked widgets. Undo is available."

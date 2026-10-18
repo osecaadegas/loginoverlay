@@ -1,3 +1,4 @@
+import { SOLVERDE_VARIANTS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import {
   getEditorReadyWidgetStyle,
   shouldExposeEditorReadyStyle,
@@ -998,7 +999,7 @@ export const widgetAppearanceRegistry = Object.freeze({
   current_slot: makeBasicWidgetCapability({
     id: 'current_slot', label: 'Current Game', category: 'casino', defaultStyleId: 'immersive_current',
     defaultAppearance: { primaryColor: '#28edac', accentColor: '#28edac' },
-    styles: [makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
+    styles: [freezeStyle(SOLVERDE_VARIANTS.current_slot),makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
       recommended: true, capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
       elementIds: ["container","identity","coverFrame","slotImage","backdrop","titleImage","slotTitle","provider","badge","info","infoTitle","records","recordsTitle","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestWin","bestWinLabel","bestWinValue","bestMulti","bestMultiLabel","bestMultiValue","averageWin","averageWinLabel","averageWinValue"],
     }), makeRuntimeStyle('portrait_card', 'Portrait Card', 'Tall, artwork-led game card with compact broadcast statistics.', {
@@ -2068,6 +2069,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       textSize: "standard",
     }),
     styles: Object.freeze([
+      freezeStyle(SOLVERDE_VARIANTS.bets),
       freezeStyle({
         id: "v1_list",
         label: "List",
@@ -3436,6 +3438,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       textSize: "standard",
     }),
     styles: Object.freeze([
+      freezeStyle(SOLVERDE_VARIANTS.bonus_hunt),
       freezeStyle({
         id: "better_bonus_hunt",
         label: "Better Hunt",
@@ -4792,13 +4795,14 @@ function getEditorReadyControlMap(style) {
 export function getWidgetAppearanceV2Elements(widgetType, styleId = null) {
   const capability = getWidgetAppearanceCapability(widgetType);
   if (!capability) return [];
-  const styleElements = capability.styles?.find((style) => style.id === styleId)?.elements || {};
+  const selectedStyle = capability.styles?.find((style) => style.id === styleId);
+  const styleElements = selectedStyle?.elements || {};
   const editorReadyStyle = styleId
     ? getEditorReadyWidgetStyle(widgetType, styleId)
     : null;
   const editorReadyControls = getEditorReadyControlMap(editorReadyStyle);
   const editorReadyElements = editorReadyStyle?.elements || {};
-  return Object.entries(capability.elements || {}).map(([id, element]) => ({
+  return Object.entries(selectedStyle?.strictElementIds ? styleElements : capability.elements || {}).map(([id, element]) => ({
     id,
     ...element,
     ...styleElements[id],
@@ -4960,9 +4964,12 @@ function validateRegistryStyle(errors, registryId, entry, style) {
   for (const elementId of style.elementIds || []) {
     pushRegistryError(
       errors,
-      !entry.elements?.[elementId],
+      !(style.elements?.[elementId] || entry.elements?.[elementId]),
       `${registryId}.${style.id}: unknown style element ${elementId}`,
     );
+  }
+  for (const [elementId, element] of Object.entries(style.elements || {})) {
+    validateRegistryElement(errors, `${registryId}.${styleId}`, elementId, { ...entry.elements?.[elementId], ...element });
   }
 }
 

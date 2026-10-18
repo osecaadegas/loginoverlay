@@ -1,7 +1,9 @@
 import { ORBITAL_TOKENS } from '../../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { VOLCANIC_TOKENS } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
+import { SOLVERDE_TOKENS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 // Shared colour choices. Rendering options and live data are not part of a palette.
 export const WIDGET_COLOUR_THEMES = Object.freeze([
+  { key: 'solverde', name: 'Solverde', icon: 'luxe', swatches: ['#06231C', '#EEE7D6', '#00DB80'], ...SOLVERDE_TOKENS, thumbnail: '/theme-effects/solverde/brand-slide.svg', hue: 155 },
   {
     key: 'volcanic', name: 'Volcanic', icon: 'volcanic', swatches: ['#11161B', '#F36A0A', '#B92508'],
     ...VOLCANIC_TOKENS, hue: 25,

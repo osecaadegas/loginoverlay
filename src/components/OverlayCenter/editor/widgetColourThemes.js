@@ -1,5 +1,9 @@
 import { getWidgetColourTheme } from "../widgets/shared/colourThemePalettes";
 import { candyWidgetPalette } from '../../../effects/ThemeEffects/candy/candyTheme.js';
+function widgetPalette(type, palette) {
+  const resolved = candyWidgetPalette(type, palette);
+  return type === 'giveaway' && resolved?.key === 'solverde' ? { ...resolved, background:'#EEE7D6', surface:'#EEE7D6', raised:'#F6F0E3', text:'#06231C', muted:'#315C47', accent:'#087C40' } : resolved;
+}
 import {
   getScopedAppearanceConfigValue,
   setScopedAppearanceConfigValue,
@@ -141,7 +145,7 @@ const ELEMENT_COLOURS = {
 };
 
 export function buildWidgetColourThemePatch(type, config, key) {
-  const theme = candyWidgetPalette(type, getWidgetColourTheme(key));
+  const theme = widgetPalette(type, getWidgetColourTheme(key));
   if (!theme || !Object.hasOwn(COLOUR_KEYS, type)) return null;
   const patch = Object.fromEntries(Object.entries(COLOUR_KEYS[type])
     .map(([property, token]) => [property, theme[token]]));
@@ -160,19 +164,20 @@ export function buildWidgetColourThemePatch(type, config, key) {
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'rubik'; patch.bodyFont = 'rubik'; }
   }
-  if (theme.key === 'volcanic') {
+  if (['volcanic', 'solverde'].includes(theme.key)) {
     patch.fontFamily = "'Inter', Arial, sans-serif";
     if (type === 'chat') patch.font = patch.fontFamily;
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'inter'; patch.bodyFont = 'inter'; }
   }
+  if (theme.key === 'solverde' && type === 'giveaway') patch.titleFont = 'serif';
   return patch;
 }
 
 // Material tokens follow the widget's existing Simple/Advanced colour fields.
 // Element-level inline styles still win over these inherited defaults.
 export function getWidgetColourThemeTokens(type, config, key) {
-  const palette = { ...candyWidgetPalette(type, getWidgetColourTheme(key)) };
+  const palette = { ...widgetPalette(type, getWidgetColourTheme(key)) };
   const assigned = new Set();
   for (const [property, token] of Object.entries(COLOUR_KEYS[type] || {})) {
     if (!assigned.has(token) && typeof config[property] === 'string' && config[property]) {
@@ -180,6 +185,7 @@ export function getWidgetColourThemeTokens(type, config, key) {
       assigned.add(token);
     }
   }
+  if(type === 'current_slot' && config.colourTheme === 'solverde' && config.solverde?.footer && config.backgroundColor) palette.background=config.backgroundColor;
   return palette;
 }
 
@@ -195,7 +201,7 @@ function syncElementOverrides(config, type, theme) {
         (elementId === 'cardNumberBadge' && ['background', 'borderColor', 'textColor'].includes(propertyId)) ||
         (elementId === 'progressBar' && propertyId === 'fillColor')
       )) continue;
-      const value = theme[token];
+      const value = theme.key === 'solverde' && type === 'chat' && elementId === 'header' && propertyId === 'textColor' ? theme.text : theme[token];
       for (const bucket of ["subElements", "elements", "__appearanceExplicitSubElements"]) {
         const element = next[bucket]?.[elementId];
         if (element && Object.hasOwn(element, propertyId)) {
@@ -220,7 +226,7 @@ function syncElementOverrides(config, type, theme) {
 export function applyWidgetColourTheme(type, config = {}, key) {
   const patch = buildWidgetColourThemePatch(type, config, key);
   if (!patch) return config;
-  return syncElementOverrides({ ...config, ...patch, colourTheme: key }, type, candyWidgetPalette(type, getWidgetColourTheme(key)));
+  return syncElementOverrides({ ...config, ...patch, colourTheme: key }, type, widgetPalette(type, getWidgetColourTheme(key)));
 }
 
 export function getSelectedWidgetColourTheme(type, config = {}) {

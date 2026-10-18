@@ -1,3 +1,4 @@
+import { SOLVERDE_SLIDE } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ConnectFourWidget from "../connect-four/ConnectFourWidget";
 import {
@@ -64,7 +65,8 @@ function getMediaItems(config = {}) {
   if (Array.isArray(config.mediaUrls) && config.mediaUrls.length) {
     return config.mediaUrls.map(normalizeMediaItem).filter((item) => item.url);
   }
-  return parseMediaText(config.mediaText);
+  const items = parseMediaText(config.mediaText);
+  return items.length || config.colourTheme !== 'solverde' || config.solverde?.defaultBrandSlide === false ? items : [{ id:'solverde-brand',url:SOLVERDE_SLIDE,type:'image',label:'Solverde' }];
 }
 
 export default function SlideshowFrameWidget({
@@ -75,7 +77,7 @@ export default function SlideshowFrameWidget({
   const c = config || {};
   const mediaItems = useMemo(
     () => getMediaItems(c),
-    [c.mediaItems, c.mediaText, c.mediaUrls],
+    [c.mediaItems, c.mediaText, c.mediaUrls, c.colourTheme, c.solverde?.defaultBrandSlide],
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [outgoingSlide, setOutgoingSlide] = useState(null);

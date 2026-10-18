@@ -181,7 +181,7 @@ function scaledFontSize(baseFontSize, scale, minimum = 0) {
 function getExplicitAppearanceConfig(config = {}) {
   const withContext = {
     ...config,
-    __appearanceStyleId: config.displayStyle || "v1_list",
+    __appearanceStyleId: config.__appearanceStyleId || config.displayStyle || "v1_list",
     __appearanceWidgetType: "bets",
   };
   return Object.hasOwn(config, "__appearanceExplicitSubElements")
@@ -1355,7 +1355,7 @@ function BetsWidget({ config, allWidgets }) {
 
   const statusLabel = resolveBetsStatusLabel(status, countdown);
 
-  if (layout === "better_bets") {
+  if (layout === "better_bets" || (c.colourTheme === 'solverde' && c.solverde?.predictions)) {
     return (
       <div className="bets-victory-host bets-victory-host--better">
         <BetterBetsStyle

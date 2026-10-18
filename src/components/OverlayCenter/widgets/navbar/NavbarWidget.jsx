@@ -1,5 +1,7 @@
 import { volcanicSurfaceBackground } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { VolcanicWidgetLife } from '../../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
+import { SOLVERDE_LOGO } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
+import { SolverdeSun } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import {
   SiDiscord,
@@ -1180,6 +1182,7 @@ function NavbarWidget({
   const isArcticNavbar = isBetterNavbar && c.colourTheme === "arctic";
   const isCandyNavbar = isBetterNavbar && c.colourTheme === 'candy';
   const isVolcanicNavbar = isBetterNavbar && c.colourTheme === 'volcanic';
+  const isSolverdeNavbar = isBetterNavbar && c.colourTheme === 'solverde';
   // Theme defaults are applied before subElementStyle/withElementOffset, so
   // saved per-element appearance and offsets retain precedence.
   const orbitalInstrument = isOrbitalNavbar ? {
@@ -1199,8 +1202,8 @@ function NavbarWidget({
     border: `1px solid ${c.navbarBorderColor || c.borderColor || '#F36A0A'}`,
     background: `linear-gradient(180deg, ${c.navbarTopColor || '#1A2026'}, ${c.navbarBottomColor || '#090B0E'})`,
     boxShadow: 'inset 0 1px 0 #ffffff0a',
-  } : {};
-  const orbitalPartStyle = (part, style) => isOrbitalNavbar || isCandyNavbar || isVolcanicNavbar
+  } : isSolverdeNavbar ? { boxSizing:'border-box',height:42,display:'flex',alignItems:'center',background:'transparent',border:0,borderRadius:0,boxShadow:'none',padding:'0 10px',color:c.textColor||'#F6F4EC' } : {};
+  const orbitalPartStyle = (part, style) => isOrbitalNavbar || isCandyNavbar || isVolcanicNavbar || isSolverdeNavbar
     ? withElementOffset(c, part, { ...style, ...orbitalInstrument })
     : style;
   const isMetalSurface = isMetal || isStyleSeca || isBetterNavbar;
@@ -2445,6 +2448,7 @@ function NavbarWidget({
               </span>
             )}
           </div>
+          {isSolverdeNavbar && c.solverde?.showLive !== false && <span className="solverde-live">LIVE</span>}
         </div>
       );
     };
@@ -2666,7 +2670,7 @@ function NavbarWidget({
             zIndex: 1,
           }}
         >
-          {children}
+          {zone === 'center' && isSolverdeNavbar ? <img className="solverde-masthead-logo" src={subValue(c,'badgeImage','imageUrl',SOLVERDE_LOGO)} alt="Solverde.pt" {...partAttrs('badgeImage')} style={withElementOffset(c,'badgeImage',{})} /> : children}
         </div>
       );
     };
@@ -2779,6 +2783,7 @@ function NavbarWidget({
             {renderBetterZone("right")}
           </div>
 
+          {isSolverdeNavbar && c.solverde?.decorations !== false && <SolverdeSun className="solverde-masthead-sun" />}
           {isVolcanicNavbar && <VolcanicWidgetLife config={c} />}
           {containerGlow ? (
             <div

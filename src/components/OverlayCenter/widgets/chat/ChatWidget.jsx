@@ -1386,7 +1386,7 @@ function ChatWidget({
     height: "100%",
     background: bgColor,
     border: isBetterChat && !isBroadcast
-      ? `1px solid ${c.glow || containerBorderColor}`
+      ? `1px solid ${c.colourTheme === 'solverde' ? c.borderColor || containerBorderColor : c.glow || containerBorderColor}`
       : containerBorder,
     borderRadius: isTransparent ? 0 : `${containerRadius}px`,
     fontFamily,
@@ -1497,7 +1497,7 @@ function ChatWidget({
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;
-  const giveawayPosition = c.colourTheme === 'volcanic' ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const giveawayPosition = ['volcanic','solverde'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
   const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded

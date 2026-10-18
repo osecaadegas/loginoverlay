@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'solverde-theme-2026-10-18', date: '2026-10-18', category: 'overlays',
+    title: 'Solverde broadcast theme and horizontal hunt dock',
+    summary: 'Emerald surfaces, ivory highlights and fine champagne outlines with an optional reference composition.',
+    changes: ['Solverde joins the Premium theme gallery; selecting a colour theme retains widget geometry.', 'An explicit, undoable reference layout arranges existing widgets with a transparent gameplay opening, integrated current-slot footer, horizontal hunt dock and prediction rows.', 'The dock follows live hunt progress and keeps the active slot visible in longer hunts.', 'Chat pins its themed giveaway beneath the heading; a replaceable ivory brand slide appears only when no slideshow media is configured.', 'Background decorations, the gameplay rim and optional idle fill are configurable. No new per-widget effects canvas is used.'],
+    action: 'Select Solverde in Colour theme. To use the reference arrangement, add the desired widgets and choose Solverde reference layout; extra and locked widgets retain their positions, and the duplicate RTP strip is hidden. Save and publish, then refresh OBS. No browser installer update is required. The published browser route was tested; native OBS capture and streaming performance were not measured.',
+  },
+  {
     id: 'volcanic-landscape-refinement-2026-10-18', date: '2026-10-18', category: 'overlays',
     title: 'A cleaner Volcanic landscape and compact navbar',
     summary: 'The central frame is removed, scenery becomes a continuous volcanic landscape, and navbar/chat use fine obsidian grain.',

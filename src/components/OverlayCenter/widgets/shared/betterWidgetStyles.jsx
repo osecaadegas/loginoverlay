@@ -22,6 +22,7 @@ import SlotImage from "../SlotImage";
 import OrbitalEnvironment from '../../../../effects/ThemeEffects/orbital/OrbitalEnvironment';
 import { CandyEnvironment } from '../../../../effects/ThemeEffects/candy/CandyTheme.jsx';
 import { VolcanicEnvironment } from '../../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
+import { SolverdeEnvironment, SolverdeHuntDock, SolverdePredictions } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
 import { emitIceEvent } from "../../../../effects/ThemeEffects/emitIceEvent";
 import { resolveGiveawaySpinDurationSeconds } from "../giveaway/giveawayTiming";
 import { getWidgetEffectsThemeKey } from "../../../../effects/ThemeEffects/themeEffectsConfig";
@@ -45,6 +46,7 @@ import {
   getHorizontalRequestRows,
 } from "../bonus-hunt/shared/betterHuntSizing";
 import { normalizeGiveawaySubtitle } from "../giveaway/giveawayText";
+import { giveawayFontStack } from '../giveaway/giveawayFonts.js';
 
 function attrs(widgetType, config, elementId, stateId) {
   const style = subElementStyle(config, elementId, undefined, stateId);
@@ -456,26 +458,6 @@ function betterChatRole(msg = {}, roleEffects = {}) {
     ...definition,
     color: roleEffects[definition.colorKey] || definition.color,
   };
-}
-
-const GIVEAWAY_FONT_STACKS = {
-  rubik: "'Rubik', Arial, sans-serif",
-  orbitron: "'Orbitron', sans-serif",
-  rajdhani: "'Rajdhani', sans-serif",
-  chakra: "'Chakra Petch', sans-serif",
-  audiowide: "'Audiowide', cursive",
-  bebas: "'Bebas Neue', sans-serif",
-  inter: "system-ui, -apple-system, 'Segoe UI', sans-serif",
-  mono: "ui-monospace, 'Courier New', monospace",
-  serif: "Georgia, 'Times New Roman', serif",
-};
-
-function giveawayFontStack(key, fallback = "rajdhani") {
-  return (
-    GIVEAWAY_FONT_STACKS[key] ||
-    GIVEAWAY_FONT_STACKS[fallback] ||
-    GIVEAWAY_FONT_STACKS.rajdhani
-  );
 }
 
 function stripBang(value) {
@@ -2753,6 +2735,7 @@ export function BetterBetsStyle({ config, countdown }) {
     return pcts.indexOf(highest);
   })();
   const theme = normalizeBetterBetsTheme(c.theme || c.betTheme);
+  if (c.colourTheme === 'solverde' && c.solverde?.predictions) return <SolverdePredictions config={c} options={visibleOptions.map(betOptionLabel)} percentages={pcts} status={status} part={id => ({ ...attrs('bets', c, id), style: subElementStyle(c, id, {}) })} />;
   const fillStyle = normalizeBetterBetsFillStyle(c.fillStyle || c.betFillStyle);
   const layoutMode = normalizeBetterBetsLayoutMode(
     c.layoutMode || c.betLayoutMode,
@@ -3450,6 +3433,7 @@ export function BetterBonusHuntStyle({
     0,
   );
   const totalProfit = totalPay - Math.max(startValue - stopValue, 0);
+  const currentHuntBalance = firstMetric([stats?.currentBalance, stats?.balance, c.currentBalance, c.balance], stopKnown ? stopValue + totalPay : Number.NaN);
   const superCount = rows.filter(
     (bonus) => bonusTier(bonus) === "super",
   ).length;
@@ -3647,7 +3631,7 @@ export function BetterBonusHuntStyle({
     previewWin && ["epic", "insane", "max"].includes(previewWin.tier)
       ? " better-hunt-panel--shake"
       : "";
-  const rootStyle = subElementStyle(c, "container", {
+  const rootStyle = subElementStyle(c, c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? null : 'container', {
     "--bh-panel-hi": theme.panelHi,
     "--bh-panel-mid": theme.panelMid,
     "--bh-panel-lo": theme.panelLo,
@@ -5239,7 +5223,12 @@ export function BetterBonusHuntStyle({
   };
 
   const content =
-    orientation === "vertical" && getWidgetEffectsThemeKey('bonus_hunt', c) === 'candy' ? (
+    c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? (
+      <SolverdeHuntDock config={c} opened={opened.length} total={rows.length} activeIndex={activeIndex}
+        start={startKnown ? formatMoney(startValue, money) : '—'} actual={Number.isFinite(currentHuntBalance) ? formatMoney(currentHuntBalance, money) : '—'} breakEven={displayBreakEven > 0 ? formatMultiplier(displayBreakEven) : '—'}
+        part={id => ({ ...attrs('bonus_hunt', c, id), style: subElementStyle(c, id, {}) })}
+        cards={rows.map((bonus,index) => ({id:bonus.id || index,name:bonusSlotName(bonus,index),provider:bonusProvider(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,index)} fit="cover" />,bet:formatMoney(bonusBet(bonus),money),multiplier:bonusOpened(bonus)?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))} />
+    ) : orientation === "vertical" && getWidgetEffectsThemeKey('bonus_hunt', c) === 'candy' ? (
       <section className={`better-hunt-panel candy-hunt-composition${c.showRequests === false ? ' candy-hunt-composition--no-requests' : ''}${panelShakeClass}`}>
         <div className="candy-hunt-summary candy-structural-panel">
           {renderHeader()}{renderStatBoxes()}{renderCarousel()}{renderBonusFooter()}
@@ -5281,6 +5270,7 @@ export function BetterBonusHuntStyle({
     <div
       ref={rootRef}
       className="better-hunt-root"
+      data-solverde-dock={c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? 'true' : undefined}
       data-anim={c.animations === false ? "off" : "on"}
       data-finish={c.finish || "flat"}
       data-drawer-mode={drawerMode}
@@ -5290,7 +5280,7 @@ export function BetterBonusHuntStyle({
       data-skin={skin}
       data-stats-layout={statsLayout}
       data-obs-scaled={obsRenderScale !== 1 ? "true" : "false"}
-      {...attrs("bonus_hunt", c, "container")}
+      {...(c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? {} : attrs("bonus_hunt", c, "container"))}
       style={rootStyle}
     >
       <BetterStyleSheet />
@@ -5562,6 +5552,7 @@ export function BetterChatHeader({
   const showRightText = Boolean(c.showViewerCount || showLiveLabel);
   return (
     <div
+      className={c.colourTheme === 'solverde' ? 'solverde-chat-header' : undefined}
       {...attrs("chat", c, "header")}
       style={subElementStyle(c, "header", {
         position: "relative",
@@ -5573,6 +5564,7 @@ export function BetterChatHeader({
         padding: "10px 12px",
         borderBottom: `1px solid ${alphaColor(c.borderColor || "#2f63c9", 0.55)}`,
         background: candy ? `linear-gradient(180deg, #8bf3ff, ${c.borderColor || '#21DDF3'})` : `linear-gradient(180deg, ${c.bubble || "#0d2049"}, ${c.cardLo || "#0a1836"})`,
+        ...(c.colourTheme === 'solverde' ? { color:c.text || headerText } : {}),
         ...(broadcast && {
           flex: "0 0 auto",
           minWidth: 0,
@@ -5611,7 +5603,7 @@ export function BetterChatHeader({
         {showHeaderName ? (
           <strong
             style={{
-              color: broadcast ? "inherit" : headerText,
+              color: broadcast || c.colourTheme === 'solverde' ? "inherit" : headerText,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -5619,7 +5611,7 @@ export function BetterChatHeader({
               letterSpacing: broadcast ? 0 : "0.12em",
             }}
           >
-            {chatHeaderName}
+            {c.colourTheme === 'solverde' ? c.solverde?.communityHeading || 'COMUNIDADE' : chatHeaderName}
           </strong>
         ) : null}
       </span>
@@ -5766,6 +5758,10 @@ export function BetterChatMessage({
       background: "linear-gradient(110deg,#143047c9,#030d19eb 65%)",
       borderColor: "#618ca02e",
       boxShadow: "inset 2px 0 0 #578ba16b,inset 0 1px 0 #c3e8fc0c",
+    }),
+    ...(c.colourTheme === 'solverde' && !emphasized && {
+      background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none',
+      padding: '8px 0',
     }),
   });
   return (
@@ -6786,6 +6782,7 @@ function betterBackgroundTextureStyle({
 
 export function BetterBackgroundStyle({ config }) {
   const c = config || {};
+  if (getWidgetEffectsThemeKey('background', c) === 'solverde') return <SolverdeEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})} />;
   if (getWidgetEffectsThemeKey('background', c) === 'volcanic') {
     return <VolcanicEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}
       canvasStyle={subElementStyle(c, 'canvas', { width: '100%', height: '100%', position: 'relative', overflow: 'hidden', borderRadius: cssPx(c.borderRadius ?? 0, '0px'), opacity: clampNumber(c.opacity ?? 100, 0, 100, 100) / 100 })} />;

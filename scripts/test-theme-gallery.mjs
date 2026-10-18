@@ -74,5 +74,5 @@ try {
     await gallery.screenshot({ path: `${folder}/theme-gallery-${width}.png` });
   }
   assert.deepEqual(errors, []);
-  console.log('Theme gallery: automatic grouping, access filtering, four real images, selection/reload and 320/240px layouts PASS');
+  console.log('Theme gallery: automatic grouping, access filtering, all premium images, selection/reload and 320/240px layouts PASS');
 } finally { await browser.close(); await server.close(); }

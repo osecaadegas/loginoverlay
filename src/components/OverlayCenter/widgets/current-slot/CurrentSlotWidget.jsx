@@ -44,6 +44,13 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
   const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
   const rootStyle = { '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, '--cg-portrait-accent': c.portraitAccentColor, '--cg-portrait-panel': c.portraitPanelColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) };
+  if (c.colourTheme === 'solverde' && c.solverde?.footer) return <div className="cg-viewport cg-viewport--solverde"><section className="cg-widget cg-widget--solverde" {...part('container')} style={rootStyle}>
+    {c.showArtwork && cover && !failed[cover] ? <img className="solverde-footer-art" src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')} /> : <div />}
+    <div className="solverde-footer-name"><strong {...part('slotTitle')}>{slot.name || 'Seleciona um slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>
+    {row('rtp','RTP',slot.rtp > 0 ? `${number(slot.rtp)}%` : '—')}
+    {row('potential','POTENCIAL',slot.max_win_multiplier > 0 ? `${number(slot.max_win_multiplier)}x` : '—')}
+    {c.showPersonalRecords && row('bestWin','MELHOR WIN',money(best?.best_win))}
+  </section></div>;
   if (isPortraitCard) return <div className="cg-viewport cg-viewport--portrait"><section className="cg-widget cg-widget--portrait" data-records={c.showPersonalRecords ? 'visible' : 'hidden'} data-style="portrait-card" {...part('container')} style={rootStyle} aria-label={slot.name ? `Current game: ${slot.name}` : 'Choose a current game'}>
     <div className="cg-portrait-art" {...part('coverFrame')}>
       {c.showArtwork && cover && !failed[cover]

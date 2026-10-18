@@ -92,7 +92,11 @@ try {
     assert.equal(style.bg, expected.bgColor, theme + '/' + mode + '/' + state + ' visible resolved palette');
     if (mode === 'sample') assert.match(style.name, /Giveaway #1/);
     else assert.match(style.name, state === 'winner' ? /ViewerTwo/ : state === 'drawing' ? /Drawing/ : /Connected giveaway/);
-    if (mode === 'sample' || state !== 'winner') {
+    if (theme === 'solverde' && await page.$('#chat-a .solverde-giveaway-notice')) {
+      const actual = await page.$eval('#chat-a .solverde-giveaway-notice', el => getComputedStyle(el).backgroundColor);
+      const wanted = await page.evaluate(value => { const el=document.createElement('span');el.style.backgroundColor=value;document.body.append(el);const color=getComputedStyle(el).backgroundColor;el.remove();return color; }, expected.bgColor);
+      assert.equal(actual,wanted,'native Solverde notice uses the resolved giveaway surface');
+    } else if (mode === 'sample' || state !== 'winner') {
       assert.equal(await page.$eval('#chat-a .better-giveaway-widget', el => getComputedStyle(el).getPropertyValue('--w-bg').trim()), expected.bgColor, 'actual open/drawing renderer receives chat surface');
     }
     if (mode !== 'sample' && state === 'winner' && !['arctic', 'orbital', 'candy'].includes(theme)) {

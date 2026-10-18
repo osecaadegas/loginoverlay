@@ -3,6 +3,7 @@ import CurrentSlotWidget from '../widgets/current-slot/CurrentSlotWidget';
 import { ORBITAL_ENVIRONMENTS } from '../../../effects/ThemeEffects/orbital/orbitalTheme.js';
 import { normalizeCandySettings } from '../../../effects/ThemeEffects/candy/candyTheme.js';
 import { normalizeVolcanicSettings } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
+import { normalizeSolverdeSettings, getSolverdeVariant } from '../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
 import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
@@ -1666,6 +1667,9 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       ? { [meta.styleKey]: meta.styleId }
       : {}),
   };
+  const solverdeVariant = getSolverdeVariant(type, merged);
+  if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
+  else if (String(merged.__appearanceStyleId || '').startsWith('solverde_')) delete merged.__appearanceStyleId;
   if (type === "camera") return sanitizeCameraConfig(merged);
   if (type === "slot_window") return sanitizeSlotWindowConfig(merged);
   if (type === "freeze_shatter" || type === "money_explosion") return migrateCameraConfig(merged, type);
@@ -3784,7 +3788,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             onChange={(giveawayInChat) => set({ giveawayInChat })}
           />
           {c.giveawayInChat && <>
-          {c.colourTheme !== 'volcanic' && <Segmented
+          {!['volcanic','solverde'].includes(c.colourTheme) && <Segmented
             value={c.giveawayPosition}
             options={[{ key: "top", name: "Top" }, { key: "bottom", name: "Bottom" }]}
             onChange={(giveawayPosition) => set({ giveawayPosition })}
@@ -7899,7 +7903,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && !['orbital', 'candy', 'volcanic'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy', 'volcanic','solverde'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7955,14 +7959,27 @@ function ThemedBetterWidgetControls({
           <ToggleRow label="Gentle candy motion" checked={normalizeCandySettings(c.candy).motion} onChange={motion => onChange({ ...c, candy: { ...c.candy, motion } })} hint="Optional. Respects reduced motion; no extra WebGL renderer." />
         </Section>
       </div>}
-      {!props.inheritedTheme && <ThemeEffectsControls
+      {!props.inheritedTheme && effectsThemeKey === 'solverde' && <div className="bp-controls" data-effects-theme="solverde"><Section title="Solverde layout" icon={<Crown size={12}/>} simple>
+        {['background','navbar'].includes(type) && <ToggleRow label="Sunburst decorations" checked={normalizeSolverdeSettings(c).decorations} onChange={decorations=>onChange({...c,solverde:{...c.solverde,decorations}})} />}
+        {type === 'background' && <><ToggleRow label="Reference gameplay frame" checked={normalizeSolverdeSettings(c).gameplayFrame} onChange={gameplayFrame=>onChange({...c,solverde:{...c.solverde,gameplayFrame}})} hint="Fixed at the reference layout position. Transparent by default." />{normalizeSolverdeSettings(c).gameplayFrame && <ToggleRow label="Idle gameplay fill" checked={normalizeSolverdeSettings(c).idleBackground} onChange={idleBackground=>onChange({...c,solverde:{...c.solverde,idleBackground}})} hint="Leave off for an OBS source beneath the opening." />}</>}
+        {type === 'bonus_hunt' && <><ToggleRow label="Horizontal hunt dock" checked={normalizeSolverdeSettings(c).huntDock} onChange={huntDock=>onChange({...c,orientation:huntDock?'horizontal':c.orientation,solverde:{...c.solverde,huntDock}})} />{normalizeSolverdeSettings(c).huntDock && <><TextRow label="Dock heading" value={c.solverde?.dockTitle || 'BONUS HUNT'} onChange={dockTitle=>onChange({...c,solverde:{...c.solverde,dockTitle}})} /><NumberRow label="Visible cards" min={2} max={4} value={normalizeSolverdeSettings(c).dockCards} onChange={dockCards=>onChange({...c,solverde:{...c.solverde,dockCards}})} /></>}</>}
+        {type === 'bonus_hunt' && c.solverde?.huntDock && <ToggleRow label="Cycle slots while collecting" checked={c.animations !== false} onChange={animations=>onChange({...c,animations})} hint="Opening and ended hunts follow the real active slot." />}
+        {type === 'current_slot' && <ToggleRow label="Integrated slot footer" checked={normalizeSolverdeSettings(c).footer} onChange={footer=>onChange({...c,solverde:{...c.solverde,footer}})} />}
+        {type === 'chat' && <TextRow label="Community heading" value={c.solverde?.communityHeading || 'COMUNIDADE'} onChange={communityHeading=>onChange({...c,solverde:{...c.solverde,communityHeading}})} />}
+        {type === 'slideshow_frame' && <ToggleRow label="Default Solverde slide" checked={normalizeSolverdeSettings(c).defaultBrandSlide} onChange={defaultBrandSlide=>onChange({...c,solverde:{...c.solverde,defaultBrandSlide}})} hint="Used only when no image or video is configured." />}
+        {type === 'bets' && <ToggleRow label="Reference prediction rows" checked={normalizeSolverdeSettings(c).predictions} onChange={predictions=>onChange({...c,solverde:{...c.solverde,predictions}})} />}
+        {type === 'navbar' && <ToggleRow label="Live indicator" checked={c.solverde?.showLive !== false} onChange={showLive=>onChange({...c,solverde:{...c.solverde,showLive}})} />}
+        {type === 'bets' && c.solverde?.predictions && <TextRow label="Prediction heading" value={c.solverde?.predictionHeading || c.question || 'QUAL SERÁ O MULTIPLICADOR?'} onChange={predictionHeading=>onChange({...c,solverde:{...c.solverde,predictionHeading}})} />}
+        {['bonus_hunt','bets'].includes(type) && getSolverdeVariant(type,c) && <><SelectRow label="Text font" value={c.fontFamily} options={[{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Georgia, serif',name:'Georgia'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily})} /><NumberRow label="Text size" min={10} max={22} value={Number(c.fontSize)||14} onChange={fontSize=>onChange({...c,fontSize})} /></>}
+      </Section></div>}
+      {!props.inheritedTheme && effectsThemeKey !== 'solverde' && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />}
-      {type !== "background" && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type !== "background" && !(getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }

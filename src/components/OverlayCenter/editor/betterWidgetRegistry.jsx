@@ -1,5 +1,7 @@
 import OverlayAssetGate from './OverlayAssetGate';
 import { volcanicStyleVariables } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
+import { solverdeStyleVariables } from '../../../effects/ThemeEffects/solverde/solverdeTheme.js';
+import '../../../effects/ThemeEffects/solverde/SolverdeTheme.css';
 import { VolcanicWidgetLife } from '../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
 import '../../../effects/ThemeEffects/volcanic/VolcanicTheme.css';
 import { CandyModule } from '../../../effects/ThemeEffects/candy/CandyTheme.jsx';
@@ -986,6 +988,11 @@ function normalizeZIndexes(instances) {
 
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
+  if (instance.config?.colourTheme === 'solverde') {
+    if (instance.widgetType === 'bonus_hunt' && instance.config.solverde?.huntDock) return { ...constraints, minWidth: 850, minHeight: 200, maxWidth: 1920, maxHeight: 420 };
+    if (instance.widgetType === 'current_slot' && instance.config.solverde?.footer) return { ...constraints, minWidth: 680, minHeight: 70, maxHeight: 200 };
+    if (instance.widgetType === 'bets' && instance.config.solverde?.predictions) return { ...constraints, minWidth: 340, minHeight: 180 };
+  }
   if (
     instance.widgetType === "current_slot" &&
     instance.config?.displayStyle === "portrait_card"
@@ -1424,7 +1431,7 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
       {colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
       {colourThemeKey === 'volcanic' && (instance.widgetType === 'chat' || (instance.widgetType === 'navbar' && widget.config.displayStyle !== 'better_navbar')) && <VolcanicWidgetLife config={widget.config} />}
