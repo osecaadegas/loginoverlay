@@ -1,3 +1,4 @@
+import {GALACTIC_HUNT_STYLES,GALACTIC_CURRENT_STYLES} from '../../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
 import {STARTER_HUNT_STYLE,STARTER_CURRENT_STYLE} from '../../../../effects/ThemeEffects/starter-studio/starterStudioTheme.js';
 import { STREET_ART_RTP_STYLE, STREET_ART_HUNT_STYLE } from '../../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import {IMAGE_CARDS_STYLE,EMBEDDED_IMAGE_CARD_ELEMENTS} from '../../widgets/slot-requests/imageCardsModel';
@@ -1004,7 +1005,7 @@ export const widgetAppearanceRegistry = Object.freeze({
   current_slot: makeBasicWidgetCapability({
     id: 'current_slot', label: 'Current Game', category: 'casino', defaultStyleId: 'immersive_current',
     defaultAppearance: { primaryColor: '#28edac', accentColor: '#28edac' },
-    styles: [freezeStyle(STARTER_CURRENT_STYLE),makeRuntimeStyle('street_art_card','Street Art cover','Wide cover with a compact best multiplier and RTP footer.',{
+    styles: [...GALACTIC_CURRENT_STYLES.map(freezeStyle),freezeStyle(STARTER_CURRENT_STYLE),makeRuntimeStyle('street_art_card','Street Art cover','Wide cover with a compact best multiplier and RTP footer.',{
       capabilities:{colours:true,fonts:true,fontSizes:true,borders:true,images:true,imageFit:true},
       elementIds:['container','badge','coverFrame','slotImage','fallback','slotTitle','provider','info','bestMulti','bestMultiLabel','bestMultiValue','rtp','rtpLabel','rtpValue'],
     }),freezeStyle(SOLVERDE_VARIANTS.current_slot),makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
@@ -3445,7 +3446,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: "standard",
     }),
-    styles: Object.freeze([freezeStyle(STARTER_HUNT_STYLE),freezeStyle(STREET_ART_HUNT_STYLE),
+    styles: Object.freeze([...GALACTIC_HUNT_STYLES.map(freezeStyle),freezeStyle(STARTER_HUNT_STYLE),freezeStyle(STREET_ART_HUNT_STYLE),
       freezeStyle({id:'better_bonus_hunt_image_cards',label:'Better Hunt with Image Cards',hiddenInQuickEditor:true,elementIds:[...BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS,...Object.keys(EMBEDDED_IMAGE_CARD_ELEMENTS)],elements:EMBEDDED_IMAGE_CARD_ELEMENTS,capabilities:{...BASE_QUICK_CAPABILITIES,...IMAGE_QUICK_CAPABILITIES}}),
       freezeStyle(SOLVERDE_VARIANTS.bonus_hunt),
       freezeStyle(NEW_HORIZONTAL_APPEARANCE),

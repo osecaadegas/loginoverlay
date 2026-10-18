@@ -21,6 +21,9 @@ try {
     const url = new URL(request.url());
     const json = (body, status=200) => request.respond({ status, contentType:'application/json', headers:{'access-control-allow-origin':'*'}, body:JSON.stringify(body) });
     if (request.method() === 'OPTIONS') return request.respond({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':request.headers()['access-control-request-headers'] || '*'}});
+    // This rendering fixture has no restricted assets. Exercise the real gate
+    // with its allowed response rather than aborting its permission lookup.
+    if (url.pathname === '/rest/v1/rpc/get_overlay_asset_access') return json([]);
     if (url.pathname === '/__current-game-test') return request.respond({contentType:'text/html',body:`<html><body style="margin:0;padding:20px;background:#071019;font-family:Arial"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`});
     if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') ? [slot] : { ...slot, name: url.searchParams.get('name')?.replace(/^eq\./, '') || slot.name });
     if (url.pathname === '/rest/v1/user_slot_records') return json([legacy]);

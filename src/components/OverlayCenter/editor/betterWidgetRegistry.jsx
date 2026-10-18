@@ -1,3 +1,5 @@
+import {GalacticCommandModule} from '../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
+import {galacticVariables} from '../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
 import {StarterStudioModule} from '../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import {starterStudioVariables} from '../../../effects/ThemeEffects/starter-studio/starterStudioTheme.js';
 import { StreetArtModule } from '../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
@@ -407,6 +409,7 @@ const MOCK_DATA_KEYS = Object.freeze({
     "participants",
     "entriesCount",
     "winner",
+    "winnerSelectedAt",
     "spinningWinner",
     "isActive",
   ],
@@ -502,6 +505,7 @@ const LIVE_DATA_KEYS = Object.freeze({
     "keyword",
     "isActive",
     "winner",
+    "winnerSelectedAt",
     "spinningWinner",
     "participants",
     "entriesCount",
@@ -1000,6 +1004,10 @@ function normalizeZIndexes(instances) {
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
   if(instance.widgetType==='bonus_hunt'&&instance.config?.orientation==='new_horizontal') return {...constraints,minWidth:365,minHeight:75,maxWidth:1920,maxHeight:1080};
+  const commandSize=instance.widgetType==='current_slot'?({galactic_scanner:[260,220],galactic_max:[220,100],galactic_rail:[680,54],galactic_info:[680,180]})[instance.config?.displayStyle]:null;
+  if(commandSize)return {...constraints,minWidth:commandSize[0],minHeight:commandSize[1],maxWidth:1920,maxHeight:1080};
+  if(instance.config?.colourTheme==='galactic_command'&&instance.widgetType==='bonus_hunt'&&instance.config?.galactic?.role)return {...constraints,minWidth:260,minHeight:instance.config.galactic.role==='stats'?200:160,maxWidth:1920,maxHeight:1080};
+  if(instance.config?.colourTheme==='galactic_command'&&instance.widgetType==='giveaway'&&instance.config?.galactic?.latestWin)return {...constraints,minWidth:260,minHeight:180,maxWidth:1920,maxHeight:1080};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='starter_studio_card')return {...constraints,minWidth:320,minHeight:200,maxWidth:1600,maxHeight:1080};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='street_art_card') return {...constraints,minWidth:240,minHeight:170,maxWidth:1200,maxHeight:1000};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='portrait_compact') return {...constraints,minWidth:100,minHeight:200,maxWidth:720,maxHeight:1800};
@@ -1446,9 +1454,9 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey==='starter_studio'?starterStudioVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey==='galactic_command'?galacticVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey==='starter_studio'?starterStudioVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
-      {colourThemeKey==='starter_studio'?<StarterStudioModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></StarterStudioModule>:colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
+      {colourThemeKey==='galactic_command'?<GalacticCommandModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></GalacticCommandModule>:colourThemeKey==='starter_studio'?<StarterStudioModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></StarterStudioModule>:colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
       {colourThemeKey === 'volcanic' && (instance.widgetType === 'chat' || (instance.widgetType === 'navbar' && widget.config.displayStyle !== 'better_navbar')) && <VolcanicWidgetLife config={widget.config} />}
     </div>
     </OverlayAssetGate>

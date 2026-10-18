@@ -178,6 +178,7 @@ export function buildWidgetColourThemePatch(type, config, key) {
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'inter'; patch.bodyFont = 'inter'; }
   }
+  if(theme.key==='galactic_command'){patch.fontFamily="'Rajdhani', sans-serif";if(type==='chat')patch.font=patch.fontFamily;if(type==='rtp_stats'){patch.fontBody=patch.fontFamily;patch.fontTitle=patch.fontFamily;}}
   if(theme.key==='starter_studio'){patch.fontFamily="'Barlow Condensed', Arial, sans-serif";if(type==='chat')patch.font=patch.fontFamily;}
   if (theme.key === 'solverde' && type === 'giveaway') patch.titleFont = 'serif';
   return patch;

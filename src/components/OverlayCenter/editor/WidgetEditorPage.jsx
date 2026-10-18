@@ -1,3 +1,4 @@
+import {applyGalacticCommandComposition} from './galacticCommandComposition.js';
 import {applyStarterStudioComposition} from './starterStudioComposition.js';
 import React, {
   useCallback,
@@ -1710,6 +1711,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {layout.instances.some(i=>i.config?.colourTheme==='galactic_command')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Galactic Command 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyGalacticCommandComposition)}><Scan size={16}/><span>Galactic Command reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='starter_studio')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Starter Studio 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyStarterStudioComposition)}><Scan size={16}/><span>Starter Studio reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='street_art') && <button type="button" disabled={Boolean(operation)||previewing} title="Apply the Street Art 1920 × 1080 reference preset. Existing data is preserved. Undo is available." onClick={()=>commitLayout(applyStreetArtComposition)}><Scan size={16}/><span>Street Art reference layout</span></button>}
           {layout.instances.some(instance => instance.config?.colourTheme === 'solverde') && <button type="button" disabled={Boolean(operation) || previewing} title="Apply the Solverde 1920 × 1080 reference layout. Uses the live RTP statistics bar below gameplay and hides the idle Current Slot widget. Undo is available." onClick={()=>commitLayout(applySolverdeComposition)}><Scan size={16}/><span>Solverde reference layout</span></button>}

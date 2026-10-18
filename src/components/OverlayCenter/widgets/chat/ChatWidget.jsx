@@ -1503,7 +1503,7 @@ function ChatWidget({
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;
-  const giveawayPosition = ['volcanic','solverde','street_art','starter_studio'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const giveawayPosition = ['volcanic','solverde','street_art','starter_studio','galactic_command'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
   const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded
@@ -1518,7 +1518,7 @@ function ChatWidget({
   const shoutoutUsesGiveawaySlot = Boolean(giveawayVisible);
   const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
   const requestedGiveawayMargin = Number(c.giveawayMargin);
-  const embeddedShoutoutHeight = premiumPalette&&!['solverde','street_art','starter_studio'].includes(c.colourTheme)&&!shoutoutHasMedia?100:shoutoutHeight;
+  const embeddedShoutoutHeight = premiumPalette&&!['solverde','street_art','starter_studio','galactic_command'].includes(c.colourTheme)&&!shoutoutHasMedia?100:shoutoutHeight;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
       className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}

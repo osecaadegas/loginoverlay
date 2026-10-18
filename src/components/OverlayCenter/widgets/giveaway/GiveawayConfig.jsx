@@ -185,6 +185,7 @@ export default function GiveawayConfig({ config, onChange }) {
       onChangeRef.current({
         ...latest,
         winner: winnerName,
+        winnerSelectedAt: new Date().toISOString(),
         spinningWinner: "",
       });
     }, resolveGiveawayRevealDelayMs(c));

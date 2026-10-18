@@ -21,7 +21,7 @@ assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true
 assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
-assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['starter_studio','street_art', 'solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['galactic_command','starter_studio','street_art', 'solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],

@@ -1,3 +1,4 @@
+import {GalacticHunt} from '../../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
 import {StarterStudioHunt} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtEnvironment } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import OverflowMarquee from './OverflowMarquee';
@@ -3213,13 +3214,14 @@ export function BetterBonusHuntStyle({
     name: current ? bonusSlotName(current, activeIndex) : "",
     provider: current ? bonusProvider(current) : "",
   };
-  const showsPersonalBest = c.orientation === "horizontal" ||
+  const showsPersonalBest = (c.colourTheme==='galactic_command'&&c.galactic?.role==='result') || c.orientation === "horizontal" ||
     ["imagestats", "stats"].includes(c.carouselMode);
   const personalBest = useSlotPersonalBest({
     userId: !previewOnly && showsPersonalBest ? userId : undefined,
     slot: activeSlot,
     publicOverlayId,
     overlayToken,
+    shared: c.colourTheme==='galactic_command',
   });
   const listPersonalBests = useSlotPersonalBests({
     enabled: !previewOnly && c.orientation !== "new_horizontal" && c.listMode === "image",
@@ -5233,7 +5235,9 @@ export function BetterBonusHuntStyle({
     );
   };
 
+  const galacticCard=bonus=>bonus?{name:bonusSlotName(bonus,0),provider:bonusProvider(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,0)} fit="cover" style={subElementStyle(c,'slotImage',{})}/>,payout:bonusOpened(bonus)?formatMoney(bonusPayout(bonus),money):'—',multiplier:bonusOpened(bonus)?(bonusMultiplierValue(bonus)===0?'0x':formatMultiplier(bonusMultiplierValue(bonus))):'—',bet:formatMoney(bonusBet(bonus),money)}:null;
   const content =
+    c.colourTheme==='galactic_command'&&c.galactic?.role ? <GalacticHunt config={c} start={startKnown?formatMoney(startValue,money):'—'} stop={stopKnown?formatMoney(stopValue,money):'—'} be={totalBet>0?(displayBreakEven===0?'0x':formatMultiplier(displayBreakEven,0)):'—'} average={totalBetOpened>0?(avgMulti===0?'0x':formatMultiplier(avgMulti,0)):'—'} superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount} total={formatMoney(totalPay,money)} best={galacticCard(bestSlot)} current={galacticCard(current)} currentBest={displayBestWin?formatMoney(displayBestWin.best_win,money)+' / '+(displayBestWin.best_multiplier===0?'0x':formatMultiplier(displayBestWin.best_multiplier)):'—'} renderList={renderList}/> :
     c.colourTheme==='starter_studio'&&c.studio?.hunt ? <StarterStudioHunt config={c} start={startKnown?formatMoney(startValue,money):'—'} spent={startKnown&&stopKnown?formatMoney(Math.max(startValue-stopValue,0),money):'—'} returned={formatMoney(totalPay,money)} be={displayBreakEven===0?'0x':formatMultiplier(displayBreakEven,0)} average={avgMulti===0?'0x':formatMultiplier(avgMulti,0)} opened={opened.length} total={rows.length}>{renderList()}</StarterStudioHunt> :
     orientation==='new_horizontal' ? <NewHorizontalHunt config={c} font={font} state={sessionState==='ended'||(rows.length>0&&opened.length===rows.length)?'ended':sessionState}
       opened={opened.length} totalPayout={formatMoney(totalPay,money)} startBE={totalBet>0?formatMultiplier(breakEven,0):'—'} average={totalBetOpened>0?formatMultiplier(avgMulti,0):'—'}
@@ -5668,7 +5672,7 @@ export function BetterChatMessage({
 }) {
   const c = context.config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
-  const streetInline = (c.colourTheme==='street_art'&&c.streetArt?.compactChat)||(c.colourTheme==='starter_studio'&&c.studio?.compactChat);
+  const streetInline = (c.colourTheme==='street_art'&&c.streetArt?.compactChat)||(c.colourTheme==='starter_studio'&&c.studio?.compactChat)||(c.colourTheme==='galactic_command'&&c.galactic?.compactChat);
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";
   const messageType = betterChatMessageType(msg);
@@ -5787,7 +5791,7 @@ export function BetterChatMessage({
   return (
     <div
       ref={rootRef}
-      className={streetInline ? (c.colourTheme==='starter_studio'?"broadcast-chat-row studio-chat-inline":"broadcast-chat-row street-chat-inline") : broadcast ? "broadcast-chat-row" : undefined}
+      className={streetInline ? (['starter_studio','galactic_command'].includes(c.colourTheme)?"broadcast-chat-row studio-chat-inline":"broadcast-chat-row street-chat-inline") : broadcast ? "broadcast-chat-row" : undefined}
       aria-hidden={!visible}
       {...attrs("chat", c, rowPart)}
       style={{ ...messageStyle,...(streetInline?{display:"block"}:{}), visibility: visible ? "visible" : "hidden" }}

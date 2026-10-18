@@ -1,3 +1,4 @@
+import {GalacticNavbar} from '../../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
 import {StarterStudioNavbar} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { volcanicSurfaceBackground } from '../../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { VolcanicWidgetLife } from '../../../../effects/ThemeEffects/volcanic/VolcanicTheme.jsx';
@@ -2223,6 +2224,7 @@ function NavbarWidget({
     );
   };
 
+  if(c.colourTheme==='galactic_command')return <GalacticNavbar config={c} time={time} allWidgets={allWidgets}/>;
   if(c.colourTheme==='starter_studio'&&c.studio?.masthead)return <StarterStudioNavbar config={c} time={time}/>;
   if (isBetterNavbar) {
     const packageBlue = c.accentBlue || "#2563eb";

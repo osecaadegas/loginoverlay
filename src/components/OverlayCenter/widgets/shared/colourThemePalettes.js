@@ -1,3 +1,4 @@
+import {GALACTIC_TOKENS} from '../../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
 import {STARTER_STUDIO_TOKENS} from '../../../../effects/ThemeEffects/starter-studio/starterStudioTheme.js';
 import { STREET_ART_TOKENS } from '../../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import { ORBITAL_TOKENS } from '../../../../effects/ThemeEffects/orbital/orbitalTheme.js';
@@ -5,6 +6,7 @@ import { VOLCANIC_TOKENS } from '../../../../effects/ThemeEffects/volcanic/volca
 import { SOLVERDE_TOKENS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 // Shared colour choices. Rendering options and live data are not part of a palette.
 export const WIDGET_COLOUR_THEMES = Object.freeze([
+ {key:'galactic_command',name:'Galactic Command',icon:'orbital',swatches:['#06172B','#008CFF','#55DFFF'],...GALACTIC_TOKENS,thumbnail:'/theme-effects/galactic-command/preview.webp',hue:205},
  {key:'starter_studio',name:'Starter Studio',icon:'metallic',swatches:['#0B151B','#22D3C5','#EBC675'],...STARTER_STUDIO_TOKENS,hue:175},
   { key:'street_art',name:'Street Art',icon:'cyberpunk',swatches:['#00D5ED','#FF149A','#FFE600'],...STREET_ART_TOKENS,thumbnail:'/theme-effects/street-art/concrete.webp',hue:186 },
   { key: 'solverde', name: 'Solverde', icon: 'luxe', swatches: ['#06231C', '#EEE7D6', '#00DB80'], ...SOLVERDE_TOKENS, thumbnail: '/theme-effects/solverde/brand-slide.svg', hue: 155 },

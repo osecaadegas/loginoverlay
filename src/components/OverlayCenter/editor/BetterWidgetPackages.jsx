@@ -1677,11 +1677,12 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   };
   const solverdeVariant = getSolverdeVariant(type, merged);
   if(type==='bonus_hunt'&&merged.orientation==='new_horizontal') merged.__appearanceStyleId='new_horizontal';
+  else if(type==='bonus_hunt'&&merged.colourTheme==='galactic_command'&&merged.galactic?.role)merged.__appearanceStyleId='galactic_hunt_'+merged.galactic.role;
   else if(type==='bonus_hunt'&&merged.colourTheme==='starter_studio'&&merged.studio?.hunt)merged.__appearanceStyleId='starter_studio_hunt';
   else if(type==='bonus_hunt'&&merged.colourTheme==='street_art'&&merged.orientation==='mainstream'&&merged.streetArt?.compactHunt) merged.__appearanceStyleId='street_art_hunt';
   else if(type==='rtp_stats'&&merged.colourTheme==='street_art'&&merged.streetArt?.statStrip) merged.__appearanceStyleId='street_art_strip';
   else if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
-  else if(['starter_studio_hunt','street_art_strip','street_art_hunt'].includes(merged.__appearanceStyleId)) delete merged.__appearanceStyleId;
+  else if(['galactic_hunt_stats','galactic_hunt_result','galactic_hunt_summary','starter_studio_hunt','street_art_strip','street_art_hunt'].includes(merged.__appearanceStyleId)) delete merged.__appearanceStyleId;
   else if(type==='bonus_hunt'&&merged.requestView==='image_cards') merged.__appearanceStyleId='better_bonus_hunt_image_cards';
   else if(merged.__appearanceStyleId==='better_bonus_hunt_image_cards') delete merged.__appearanceStyleId;
   else if (merged.__appearanceStyleId==='new_horizontal') delete merged.__appearanceStyleId;
@@ -7883,14 +7884,14 @@ export function BetterWidgetControls({
 }) {
   const c = ensureBetterWidgetConfig(type, config);
   if (type === "slot_window") {
-    return <><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;
+    return <><GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;
   }
   if (type === "camera") {
     const style = c.displayStyle;
     const updateStyleConfig = (nextStyleConfig) => onChange(updateCameraStyleConfig(c, nextStyleConfig));
     return (
       <div className="bp-controls bp-controls--camera">
-        <StarterStudioControls type={type} config={c} onChange={onChange}/>{c.colourTheme==='starter_studio'&&<ToggleRow label="OBS camera source beneath overlay" checked={c.studio?.externalCamera!==false} onChange={externalCamera=>onChange({...c,studio:{...c.studio,externalCamera}})}/>}
+        <GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/>{c.colourTheme==='starter_studio'&&<ToggleRow label="OBS camera source beneath overlay" checked={c.studio?.externalCamera!==false} onChange={externalCamera=>onChange({...c,studio:{...c.studio,externalCamera}})}/>}
 
         {!(c.colourTheme==='starter_studio'&&c.studio?.externalCamera!==false)&&<>
         <Section title="Transition style" icon={<MonitorPlay size={12} />} defaultOpen>
@@ -7918,6 +7919,25 @@ export function BetterWidgetControls({
   return <ThemedBetterWidgetControls type={type} config={config} normalizedConfig={c} onChange={onChange} {...props} />;
 }
 
+
+function GalacticCommandControls({type,config:c,onChange}){
+ if(c.colourTheme!=='galactic_command')return null;
+ const set=patch=>onChange({...c,galactic:{...c.galactic,...patch}});
+ const headed=['bonus_hunt','slideshow_frame','chat','giveaway','slot_requests','tournament','bets','raid_shoutout'].includes(type)||(type==='current_slot'&&c.displayStyle==='galactic_scanner');
+ return <div className="bp-controls" data-effects-theme="galactic_command"><Section title="Galactic Command appearance" icon={<Palette size={12}/>} simple>
+ {type==='background'?<><ToggleRow label="Orbital scene background" checked={c.galactic?.background!==false} onChange={background=>set({background})}/><NumberRow label="Scene opacity (%)" min={0} max={100} value={c.opacity??100} onChange={opacity=>onChange({...c,opacity})}/></>:<>
+ <NumberRow label="Mechanical frame thickness" min={0} max={24} value={c.galactic?.borderWidth??12} onChange={borderWidth=>set({borderWidth})}/>
+ <NumberRow label="Blue glow intensity" min={0} max={30} value={c.galactic?.glow??8} onChange={glow=>set({glow})}/><ToggleRow label="Frame indicator lights" checked={c.galactic?.lights!==false} onChange={lights=>set({lights})}/>
+ <ColorRow label="Command border colour" value={c.galactic?.borderColor||'#008CFF'} onChange={borderColor=>set({borderColor})}/><ColorRow label="Command accent colour" value={c.galactic?.accent||'#55DFFF'} onChange={accent=>set({accent})}/>
+ {type==='slot_window'?<ToggleRow label="Transparent gameplay opening" checked={c.galactic?.transparent!==false} onChange={transparent=>set({transparent})}/>:<NumberRow label="Command panel opacity (%)" min={0} max={100} value={c.galactic?.panelOpacity??96} onChange={panelOpacity=>set({panelOpacity})}/>}
+ {headed&&<><ToggleRow label="Command header" checked={c.galactic?.showHeader!==false} onChange={showHeader=>set({showHeader})}/><TextRow label="Command heading" value={c.galactic?.heading||''} onChange={heading=>set({heading})}/><NumberRow label="Command heading size" min={10} max={40} value={c.galactic?.headerSize??17} onChange={headerSize=>set({headerSize})}/></>}
+ {type!=='slot_window'&&<SelectRow label="Command font" value={c.fontFamily||"'Rajdhani', sans-serif"} options={[{key:"'Rajdhani', sans-serif",name:'Rajdhani'},{key:"'Orbitron', sans-serif",name:'Orbitron'},{key:"'Inter', sans-serif",name:'Inter'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily,...(type==='chat'?{font:fontFamily}:{})})}/>}
+ {type==='bonus_hunt'&&<SelectRow label="Command hunt panel" value={c.galactic?.role||'standard'} options={[{key:'standard',name:'Full Bonus Hunt'},{key:'stats',name:'Session stats'},{key:'result',name:'Playing now'},{key:'summary',name:'Session summary'}]} onChange={role=>set({role:role==='standard'?undefined:role})}/>}
+ {type==='giveaway'&&<ToggleRow label="Latest giveaway winner panel" checked={c.galactic?.latestWin===true} onChange={latestWin=>set({latestWin})}/>}
+ {type==='navbar'&&<><TextRow label="Command subtitle" value={c.galactic?.subtitle||'GALACTIC COMMAND'} onChange={subtitle=>set({subtitle})}/><ToggleRow label="Streamer emblem" checked={c.showAvatar!==false} onChange={showAvatar=>onChange({...c,showAvatar})}/><ToggleRow label="Streamer identity" checked={c.showIdentity!==false} onChange={showIdentity=>onChange({...c,showIdentity})}/><ToggleRow label="Session balance" checked={c.galactic?.showBalance!==false} onChange={showBalance=>set({showBalance})}/><ToggleRow label="Session profit" checked={c.galactic?.showProfit!==false} onChange={showProfit=>set({showProfit})}/><ToggleRow label="Start balance" checked={c.showStartBalance!==false} onChange={showStartBalance=>onChange({...c,showStartBalance})}/><ToggleRow label="Clock" checked={c.showClock!==false} onChange={showClock=>onChange({...c,showClock})}/><ToggleRow label="Responsible play" checked={c.showCTA!==false} onChange={showCTA=>onChange({...c,showCTA})}/><TextRow label="Responsible play text" value={c.ctaText||'PLAY RESPONSIBLY'} onChange={ctaText=>onChange({...c,ctaText})}/></>}
+ </>}
+ </Section></div>;
+}
 
 function StarterStudioControls({type,config:c,onChange}){
  if(c.colourTheme!=='starter_studio')return null;
@@ -7956,7 +7976,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && !['orbital', 'candy', 'volcanic','solverde','street_art','starter_studio'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy', 'volcanic','solverde','street_art','starter_studio','galactic_command'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7990,7 +8010,7 @@ function ThemedBetterWidgetControls({
           </div>
         </Section>
       </div>}
-      <StarterStudioControls type={type} config={c} onChange={onChange}/>
+      <GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/>
       {!props.inheritedTheme && effectsThemeKey === 'street_art' && <div className="bp-controls" data-effects-theme="street_art"><Section title="Street Art materials" icon={<Palette size={12}/>} simple>
         {type==='background' && <>
           <ToggleRow label="Concrete scene background" checked={normalizeStreetArtSettings(c).background} onChange={background=>onChange({...c,streetArt:{...c.streetArt,background}})}/>
@@ -8061,14 +8081,14 @@ function ThemedBetterWidgetControls({
         {type === 'bets' && c.solverde?.predictions && <TextRow label="Prediction heading" value={c.solverde?.predictionHeading || c.question || 'QUAL SERÁ O MULTIPLICADOR?'} onChange={predictionHeading=>onChange({...c,solverde:{...c.solverde,predictionHeading}})} />}
         {['bonus_hunt','bets'].includes(type) && getSolverdeVariant(type,c) && <><SelectRow label="Text font" value={c.fontFamily} options={[{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Georgia, serif',name:'Georgia'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily})} /><NumberRow label="Text size" min={10} max={22} value={Number(c.fontSize)||14} onChange={fontSize=>onChange({...c,fontSize})} /></>}
       </Section></div>}
-      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && !['solverde','street_art','starter_studio'].includes(effectsThemeKey) && <ThemeEffectsControls
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && !['solverde','street_art','starter_studio','galactic_command'].includes(effectsThemeKey) && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />}
-      {type !== "background" && !(effectsThemeKey==='starter_studio'&&((type==='bonus_hunt'&&c.studio?.hunt)||(type==='navbar'&&c.studio?.masthead))) && !(effectsThemeKey==='street_art'&&((type==='rtp_stats'&&c.streetArt?.statStrip)||(type==='bonus_hunt'&&c.orientation==='mainstream'&&c.streetArt?.compactHunt))) && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type !== "background" && !(effectsThemeKey==='galactic_command'&&(type==='navbar'||(type==='bonus_hunt'&&c.galactic?.role))) && !(effectsThemeKey==='starter_studio'&&((type==='bonus_hunt'&&c.studio?.hunt)||(type==='navbar'&&c.studio?.masthead))) && !(effectsThemeKey==='street_art'&&((type==='rtp_stats'&&c.streetArt?.statStrip)||(type==='bonus_hunt'&&c.orientation==='mainstream'&&c.streetArt?.compactHunt))) && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }

@@ -2,13 +2,24 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { getSlotIdentity, readSlotPersonalBest, recordMatchesSlot } from '../../shared/slotPersonalBest.js';
 
-export default function useSlotPersonalBest({ userId, slot, publicOverlayId, overlayToken }) {
+// Command-deck variants share the same scoped transport. Other callers keep
+// their existing lifecycle. No result is retained after its last view unmounts.
+const sharedLookups = new Map();
+export default function useSlotPersonalBest({ userId, slot, publicOverlayId, overlayToken, shared = false }) {
   const { id, name, provider } = getSlotIdentity(slot);
   const scope = JSON.stringify([userId, id, name, provider, publicOverlayId, overlayToken]);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
     if ((!userId && !publicOverlayId && !overlayToken) || (!id && !name)) return undefined;
+    const existing = shared && sharedLookups.get(scope);
+    if (existing) {
+      existing.listeners.add(setResult);
+      setResult(existing.result);
+      return () => existing.release(setResult);
+    }
+    const entry = {listeners:new Set([setResult]),result:null,release:null};
+    if (shared) sharedLookups.set(scope,entry);
     const activeSlot = { id, name, provider };
     const isPublic = Boolean(publicOverlayId || overlayToken);
     let cancelled = false;
@@ -32,7 +43,8 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
         }
         if (!cancelled && revision === requestRevision) {
           clearTimeout(retryTimer);
-          setResult({ scope, best: best && recordMatchesSlot(best, activeSlot) ? best : null });
+          entry.result = { scope, best: best && recordMatchesSlot(best, activeSlot) ? best : null };
+          entry.listeners.forEach(listener => listener(entry.result));
         }
       } catch (error) {
         // Keep the same slot's last successful value during a temporary outage.
@@ -54,7 +66,7 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
         if (payload.eventType === 'DELETE' || recordMatchesSlot(payload.new, activeSlot)) refresh();
       }).on('postgres_changes', { event: '*', schema: 'public', table: 'user_slot_results', filter: `user_id=eq.${userId}` }, refresh).subscribe();
 
-    return () => {
+    const dispose = () => {
       window.removeEventListener('slot-result-saved', refresh);
       cancelled = true;
       controller.abort();
@@ -62,7 +74,15 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
       if (timer) clearInterval(timer);
       if (channel) supabase.removeChannel(channel);
     };
-  }, [userId, id, name, provider, publicOverlayId, overlayToken, scope]);
+    entry.release = listener => {
+      entry.listeners.delete(listener);
+      if (!entry.listeners.size) {
+        dispose();
+        if (sharedLookups.get(scope) === entry) sharedLookups.delete(scope);
+      }
+    };
+    return () => entry.release(setResult);
+  }, [userId, id, name, provider, publicOverlayId, overlayToken, scope, shared]);
 
   return result?.scope === scope ? result.best : null;
 }

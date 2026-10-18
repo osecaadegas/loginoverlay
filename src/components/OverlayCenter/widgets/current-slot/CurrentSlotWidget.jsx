@@ -1,3 +1,5 @@
+import {galacticVariables} from '../../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
+import {GalacticCurrent} from '../../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
 import { useEffect, useState } from 'react';
 import { Award, Info, Play, Coins, Settings, ChartNoAxesColumnIncreasing, Trophy } from 'lucide-react';
 import { supabase } from '../../../../config/supabaseClient';
@@ -8,33 +10,45 @@ import { currentSlotConfig, currentSlotIdentity, safeArtworkUrl, resolveCurrentS
 import CompactSlotPortrait from './CompactSlotPortrait';
 import './CurrentSlotWidget.css';
 
+const pendingCatalogueLookups = new Map();
+async function lookupCurrentSlot(selected,key,shared){
+  if(shared&&pendingCatalogueLookups.has(key))return pendingCatalogueLookups.get(key);
+  const read=async()=>{
+    let query=supabase.from('slots').select('id,name,provider,image,rtp,volatility,max_win_multiplier');
+    query=selected.id?query.eq('id',selected.id):query.eq('name',selected.name);
+    if(selected.provider)query=query.eq('provider',selected.provider);
+    return await query.limit(1).maybeSingle();
+  };
+  const promise=read();
+  if(shared){pendingCatalogueLookups.set(key,promise);promise.finally(()=>{if(pendingCatalogueLookups.get(key)===promise)pendingCatalogueLookups.delete(key);}).catch(()=>{});}
+  return promise;
+}
+
 export default function CurrentSlotWidget({ config, userId, widgetId, publicOverlayId, overlayToken, previewOnly = false }) {
   const c = currentSlotConfig(config);
   const isPortraitCard = c.displayStyle === 'portrait_card';
   const selected = currentSlotIdentity(c);
   const key = `${selected.id || ''}|${selected.name}|${selected.provider}`;
+  const shared = c.colourTheme==='galactic_command';
   const [catalog, setCatalog] = useState(null);
   useEffect(() => {
     let cancelled = false;
     if (previewOnly) return undefined;
     if (!selected.id && !selected.name) return undefined;
     (async () => {
-      let query = supabase.from('slots').select('id,name,provider,image,rtp,volatility,max_win_multiplier');
-      query = selected.id ? query.eq('id', selected.id) : query.eq('name', selected.name);
-      if (selected.provider) query = query.eq('provider', selected.provider);
-      const { data, error } = await query.limit(1).maybeSingle();
+      const { data, error } = await lookupCurrentSlot(selected,key,shared);
       if (!cancelled && !error) setCatalog({ key, data });
     })().catch(() => {});
     return () => { cancelled = true; };
-  }, [key, previewOnly]);
+  }, [key, previewOnly,shared]);
   const slot = resolveCurrentSlotMetadata(selected,catalog?.key===key?catalog.data:null);
-  const liveBest = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken });
+  const liveBest = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken,shared });
   const best = previewOnly && c.__previewPersonalBest
     ? c.__previewPersonalBest
     : liveBest;
   const art = c.artworkBySlot?.[slot.id] || {};
   const hasProviderArtwork = ['arctic', 'candy'].includes(String(c.colourTheme || '').replace(/^theme_/, ''));
-  const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', art.coverUrl || slot.image || ''));
+  const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', (['galactic_scanner','galactic_info'].includes(c.displayStyle)?art.portraitCoverUrl:'') || art.coverUrl || slot.image || ''));
   const backdrop = safeArtworkUrl(subValue(c, 'backdrop', 'imageUrl', art.backgroundUrl || slot.image || ''));
   const logo = safeArtworkUrl(subValue(c, 'titleImage', 'imageUrl', art.titleUrl || ''));
   const providerLogo = hasProviderArtwork ? safeArtworkUrl(getProviderImage(slot.provider) || '') : '';
@@ -43,9 +57,10 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const part = elementId => ({ ...appearanceAttrs({ config: c, widgetId, widgetType: 'current_slot', elementId }), style: subElementStyle(c, elementId, {}) });
   const number = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
-  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)} style={{...(id==='bestWin'?{color:c.textColor}:id==='bestMulti'?{color:c.displayStyle==='starter_studio_card'?c.textColor:c.accentColor}:{}),...part(`${id}Value`).style}}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
+  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)} style={{...(id==='bestWin'?{color:c.textColor}:id==='bestMulti'?{color:c.displayStyle==='starter_studio_card'?c.textColor:c.colourTheme==='galactic_command'?'var(--gc-gold)':c.accentColor}:{}),...part(`${id}Value`).style}}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
   const portraitLayout=isPortraitCard?{width:'calc(225 * var(--cg-px))',height:'calc(400 * var(--cg-px))',gridTemplateColumns:'minmax(0,1fr)',gridTemplateRows:'minmax(0,1fr) calc(119 * var(--cg-px))',padding:'calc(5 * var(--cg-px))'}:{};
   const rootStyle = { ...portraitLayout, '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, '--cg-portrait-accent': c.portraitAccentColor, '--cg-portrait-panel': c.portraitPanelColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) };
+  if(c.displayStyle?.startsWith('galactic_'))return <div className="gc-current-shell" style={{...rootStyle,...galacticVariables({background:c.backgroundColor,surface:c.panelColor,raised:c.badgeColor,border:c.borderColor,accent:c.accentColor,text:c.textColor,muted:c.mutedColor},c)}}><GalacticCurrent config={c} slot={slot} best={best} cover={cover} failed={failed} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} row={row} money={money} number={number}/></div>;
   if(c.displayStyle==='starter_studio_card'){
     const betSource=c.betSize??c.bet??c.stake??slot.betSize??slot.bet??slot.stake;
     const bet=betSource!==''&&betSource!=null&&Number.isFinite(Number(betSource))?Number(betSource):null;
