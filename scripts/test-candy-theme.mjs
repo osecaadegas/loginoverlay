@@ -56,7 +56,7 @@ try {
  await page.screenshot({path:`.codex-dev/candy-verification/populated-${runtime}.png`});
  assert.equal(await page.$$eval('.candy-decoration',els=>els.length),2);
  assert.equal(await page.$$eval('.theme-effects-layer__canvas',els=>els.length),0,'no extra WebGL canvas');
- assert(await page.evaluate(()=>{const chat=document.querySelector('.ov-chat-widget').getBoundingClientRect(),jar=document.querySelector('.candy-decoration--jar').getBoundingClientRect();return chat.bottom<=jar.top+1;}),'chat content stops above the jar decoration');
+ assert(await page.evaluate(()=>{const chat=document.querySelector('.ov-chat-widget').getBoundingClientRect(),jar=document.querySelector('.candy-decoration--jar').getBoundingClientRect();return chat.bottom>jar.top;}),'chat content extends over the jar decoration');
  const sizes=await page.$$eval('[data-fixture-widget]',els=>els.map(el=>{const r=el.getBoundingClientRect();return [r.left,r.top,r.right,r.bottom]}));assert(sizes.every(([l,t,r,b])=>l>=0&&t>=0&&r<=1920&&b<=1080),'reference widgets contained');
  }
  for(const runtime of ['editor','obs']) for(const showRequests of [true,false]){
@@ -132,7 +132,7 @@ try {
    assert(geometry.card.top-geometry.header.bottom<20,'winner starts just below the chat header: '+JSON.stringify(geometry));
    assert(geometry.card.bottom<=geometry.bay.bottom+1,'winner fully fits compact bay: '+JSON.stringify(geometry));
    assert(geometry.messages.height>300,'Candy chat regains message space: '+JSON.stringify(geometry));
-   if(decorations){assert(Math.abs(geometry.jar.width-geometry.inner.width*.34)<2,'jar uses half its previous 68% width');assert(geometry.messages.bottom<=geometry.jar.top+1,'messages stay above decoration');}else assert.equal(geometry.jar,null);
+   if(decorations){assert(Math.abs(geometry.jar.width-geometry.inner.width*.34)<2,'jar uses half its previous 68% width');assert(geometry.messages.bottom>geometry.jar.top,'messages extend over decoration');}else assert.equal(geometry.jar,null);
    await page.screenshot({path:`.codex-dev/candy-verification/chat-space-${runtime}-${decorations}.png`});
    if(decorations)await (await page.$('.candy-module')).screenshot({path:'.codex-dev/candy-verification/chat-jar-detail-'+runtime+'.png'});
   }

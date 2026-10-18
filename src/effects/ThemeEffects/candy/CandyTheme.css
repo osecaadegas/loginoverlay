@@ -57,7 +57,7 @@
 [data-colour-theme="candy"] .candy-hunt-history .better-hunt-list-inner {height:100%;min-height:100%}
 .candy-hunt-history .better-hunt-empty {background:#8f39c877;border-color:#e6bdff;min-height:88px}
 [data-colour-theme="candy"][data-widget-type="chat"] .candy-module-content {padding-bottom:0}
-[data-colour-theme="candy"][data-widget-type="chat"] [data-candy-decorations="on"] .candy-module-content {display:flex;flex-direction:column;padding-bottom:clamp(45px,34cqw,135px)}
+[data-colour-theme="candy"][data-widget-type="chat"] [data-candy-decorations="on"] .candy-module-content {display:flex;flex-direction:column;padding-bottom:0;z-index:6}
 [data-colour-theme="candy"][data-widget-type="chat"] [data-candy-decorations="on"] .ov-chat-widget {flex:1 1 0;min-height:0}
 [data-colour-theme="candy"] .candy-hunt-history .better-hunt-list {overflow-y:auto;scrollbar-width:thin}
 [data-colour-theme="candy"] .ov-chat-messages {background:repeating-linear-gradient(135deg,#ffffff25 0 3px,transparent 3px 7px),var(--candy-surface);box-shadow:inset 0 3px 5px #9971c322;border-radius:20px;scrollbar-width:thin}
@@ -143,3 +143,5 @@
 .better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-mainstream > .better-hunt-main-list-wrap {flex:1 1 0;min-height:0;overflow:hidden}
 .better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-tier-stat--super .better-hunt-stat-label {color:#795200;text-shadow:none}
 .better-widget-colour-scope[data-colour-theme="candy"] .better-hunt-root .better-hunt-main-tier-stat--extreme .better-hunt-stat-label {color:#A01956;text-shadow:none}
+
+[data-colour-theme="candy"][data-widget-type="chat"] [data-candy-decorations="on"] :is(.candy-module-content,.ov-chat-widget,.ov-chat-messages){background:transparent!important}

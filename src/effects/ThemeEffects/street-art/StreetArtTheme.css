@@ -125,7 +125,7 @@
 .better-editor-canvas-instance__content:has(> .better-widget-colour-scope[data-colour-theme="street_art"] > .street-module[data-street-props="on"]),
 .better-obs-instance:has(> .better-widget-colour-scope[data-colour-theme="street_art"] > .street-module[data-street-props="on"]){overflow:visible}
 .street-module--chat[data-street-props=on]{--street-prop-bay:clamp(60px,25cqh,140px)}
-.street-module--chat[data-street-props=on]>.street-module-content{margin-bottom:var(--street-prop-bay)}
+.street-module--chat[data-street-props=on]>.street-module-content{margin-bottom:0;z-index:5}
 .street-chat-props{position:absolute;bottom:-6px;left:5%;right:2%;height:var(--street-prop-bay);pointer-events:none;z-index:4}
 .street-chat-props .street-prop--cluster{top:auto;bottom:0;right:0;width:76%;height:100%;max-height:none;object-position:bottom right}
 .street-chat-props .street-prop--extra-can{left:8%;bottom:0;width:20%;height:85%;max-height:none;object-position:bottom;transform:rotate(-9deg)}
@@ -136,3 +136,5 @@
 .street-rtp-provider{flex:0 1 42%;min-width:0;display:flex;align-items:center;gap:4px;font-size:10px;overflow:hidden}
 .street-rtp-provider img{display:block;width:100%;height:30px;object-fit:contain}
 .street-rtp-identity>strong{flex:1;min-width:0;font-size:clamp(10px,1.5cqw,16px);line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.street-module--chat[data-street-props=on] .ov-chat-widget{background:transparent!important}
