@@ -1,3 +1,5 @@
+import {StarterStudioModule} from '../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
+import {starterStudioVariables} from '../../../effects/ThemeEffects/starter-studio/starterStudioTheme.js';
 import { StreetArtModule } from '../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import { streetArtStyleVariables } from '../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import SlotRequestsWidget from '../widgets/slot-requests/SlotRequestsWidget';
@@ -409,6 +411,7 @@ const MOCK_DATA_KEYS = Object.freeze({
     "isActive",
   ],
   navbar: [
+    "live",
     "streamerName",
     "motto",
     "startValue",
@@ -451,7 +454,7 @@ const MOCK_DATA_KEYS = Object.freeze({
 
 const LIVE_DATA_KEYS = Object.freeze({
   slot_requests:["commandTrigger","showSlotRequests"],
-  current_slot: ['slot', 'slotId', 'slotName', 'provider', 'imageUrl', 'artworkBySlot', 'currency'],
+  current_slot: ['betSize','bet','stake','slot', 'slotId', 'slotName', 'provider', 'imageUrl', 'artworkBySlot', 'currency'],
   slot_bingo: [
     "title", "boardRows", "showProgress",
     "showMultipliers", "showCompletionIcons", "squares",
@@ -997,6 +1000,7 @@ function normalizeZIndexes(instances) {
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
   if(instance.widgetType==='bonus_hunt'&&instance.config?.orientation==='new_horizontal') return {...constraints,minWidth:365,minHeight:75,maxWidth:1920,maxHeight:1080};
+  if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='starter_studio_card')return {...constraints,minWidth:320,minHeight:200,maxWidth:1600,maxHeight:1080};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='street_art_card') return {...constraints,minWidth:240,minHeight:170,maxWidth:1200,maxHeight:1000};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='portrait_compact') return {...constraints,minWidth:100,minHeight:200,maxWidth:720,maxHeight:1800};
   if (instance.config?.colourTheme === 'solverde') {
@@ -1442,9 +1446,9 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey==='starter_studio'?starterStudioVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
-      {colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
+      {colourThemeKey==='starter_studio'?<StarterStudioModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></StarterStudioModule>:colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
       {colourThemeKey === 'volcanic' && (instance.widgetType === 'chat' || (instance.widgetType === 'navbar' && widget.config.displayStyle !== 'better_navbar')) && <VolcanicWidgetLife config={widget.config} />}
     </div>
     </OverlayAssetGate>

@@ -1,3 +1,4 @@
+import {StarterGiveawayNotice} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtGiveawayNotice } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { SolverdeGiveawayNotice } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
@@ -20,9 +21,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
-  const nativeWinner = hasWinner && ['orbital', 'arctic', 'candy', 'volcanic', 'solverde','old_rome','street_art'].includes(winnerTheme);
-  const premium=['orbital','arctic','candy','volcanic','solverde','old_rome','street_art'].includes(winnerTheme);
-  const regularFrameHeight = bounded(premium&&(!layout.giveawayHeight||layout.giveawayHeight===250)?96:layout.giveawayHeight, winnerTheme === 'street_art' ? 44 : 80, 600, 250);
+  const nativeWinner = hasWinner && ['orbital', 'arctic', 'candy', 'volcanic', 'solverde','old_rome','street_art','starter_studio'].includes(winnerTheme);
+  const premium=['orbital','arctic','candy','volcanic','solverde','old_rome','street_art','starter_studio'].includes(winnerTheme);
+  const regularFrameHeight = bounded(premium&&(!layout.giveawayHeight||layout.giveawayHeight===250)?96:layout.giveawayHeight, ['street_art','starter_studio'].includes(winnerTheme) ? 44 : 80, 600, 250);
   const winnerFrameHeight = bounded(premium&&(!layout.giveawayWinnerHeight||layout.giveawayWinnerHeight===180)?116:layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
   const frameHeight = hasWinner ? winnerFrameHeight : premium && config.spinningWinner ? Math.max(190,regularFrameHeight) : regularFrameHeight;
   const canvasHeight = hasWinner ? 190 : height;
@@ -57,7 +58,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       } : {
         position: "absolute", width, height: canvasHeight, top: "50%", left: "50%",
         transform: `translate(-50%, -50%) scale(${scale})`, transformOrigin: "center",
-      }}>{premium && !hasWinner && !config.spinningWinner ? winnerTheme === 'street_art' ? <StreetArtGiveawayNotice config={config}/> : <SolverdeGiveawayNotice config={config} /> : children}</div>
+      }}>{premium && !hasWinner && !config.spinningWinner ? winnerTheme==='starter_studio'?<StarterGiveawayNotice config={config}/>:winnerTheme === 'street_art' ? <StreetArtGiveawayNotice config={config}/> : <SolverdeGiveawayNotice config={config} /> : children}</div>
     </section>
   );
 }

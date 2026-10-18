@@ -1,3 +1,4 @@
+import {StarterStudioHunt} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtEnvironment } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import OverflowMarquee from './OverflowMarquee';
 import ImageCards from '../slot-requests/ImageCards';
@@ -4617,7 +4618,7 @@ export function BetterBonusHuntStyle({
                   Multi
                 </span>
                 <span {...attrs("bonus_hunt", c, "multiplierValue")}>
-                  {multi > 0 ? formatMultiplier(multi) : "-"}
+                  {c.colourTheme==='starter_studio'&&openedState&&multi===0?'0x':multi>0?formatMultiplier(multi):"-"}
                 </span>
               </span>
               <span className="better-hunt-mini-stat">
@@ -4721,7 +4722,7 @@ export function BetterBonusHuntStyle({
               Multi
             </span>
             <span {...attrs("bonus_hunt", c, "multiplierValue")}>
-              {multi > 0 ? formatMultiplier(multi) : "-"}
+              {c.colourTheme==='starter_studio'&&openedState&&multi===0?'0x':multi>0?formatMultiplier(multi):"-"}
             </span>
           </span>
           <span className="better-hunt-mini-stat">
@@ -5233,6 +5234,7 @@ export function BetterBonusHuntStyle({
   };
 
   const content =
+    c.colourTheme==='starter_studio'&&c.studio?.hunt ? <StarterStudioHunt config={c} start={startKnown?formatMoney(startValue,money):'—'} spent={startKnown&&stopKnown?formatMoney(Math.max(startValue-stopValue,0),money):'—'} returned={formatMoney(totalPay,money)} be={displayBreakEven===0?'0x':formatMultiplier(displayBreakEven,0)} average={avgMulti===0?'0x':formatMultiplier(avgMulti,0)} opened={opened.length} total={rows.length}>{renderList()}</StarterStudioHunt> :
     orientation==='new_horizontal' ? <NewHorizontalHunt config={c} font={font} state={sessionState==='ended'||(rows.length>0&&opened.length===rows.length)?'ended':sessionState}
       opened={opened.length} totalPayout={formatMoney(totalPay,money)} startBE={totalBet>0?formatMultiplier(breakEven,0):'—'} average={totalBetOpened>0?formatMultiplier(avgMulti,0):'—'}
       superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount}
@@ -5666,7 +5668,7 @@ export function BetterChatMessage({
 }) {
   const c = context.config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
-  const streetInline = c.colourTheme==='street_art' && c.streetArt?.compactChat;
+  const streetInline = (c.colourTheme==='street_art'&&c.streetArt?.compactChat)||(c.colourTheme==='starter_studio'&&c.studio?.compactChat);
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";
   const messageType = betterChatMessageType(msg);
@@ -5785,7 +5787,7 @@ export function BetterChatMessage({
   return (
     <div
       ref={rootRef}
-      className={streetInline ? "broadcast-chat-row street-chat-inline" : broadcast ? "broadcast-chat-row" : undefined}
+      className={streetInline ? (c.colourTheme==='starter_studio'?"broadcast-chat-row studio-chat-inline":"broadcast-chat-row street-chat-inline") : broadcast ? "broadcast-chat-row" : undefined}
       aria-hidden={!visible}
       {...attrs("chat", c, rowPart)}
       style={{ ...messageStyle,...(streetInline?{display:"block"}:{}), visibility: visible ? "visible" : "hidden" }}

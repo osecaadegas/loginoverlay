@@ -1677,10 +1677,11 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   };
   const solverdeVariant = getSolverdeVariant(type, merged);
   if(type==='bonus_hunt'&&merged.orientation==='new_horizontal') merged.__appearanceStyleId='new_horizontal';
+  else if(type==='bonus_hunt'&&merged.colourTheme==='starter_studio'&&merged.studio?.hunt)merged.__appearanceStyleId='starter_studio_hunt';
   else if(type==='bonus_hunt'&&merged.colourTheme==='street_art'&&merged.orientation==='mainstream'&&merged.streetArt?.compactHunt) merged.__appearanceStyleId='street_art_hunt';
   else if(type==='rtp_stats'&&merged.colourTheme==='street_art'&&merged.streetArt?.statStrip) merged.__appearanceStyleId='street_art_strip';
   else if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
-  else if(['street_art_strip','street_art_hunt'].includes(merged.__appearanceStyleId)) delete merged.__appearanceStyleId;
+  else if(['starter_studio_hunt','street_art_strip','street_art_hunt'].includes(merged.__appearanceStyleId)) delete merged.__appearanceStyleId;
   else if(type==='bonus_hunt'&&merged.requestView==='image_cards') merged.__appearanceStyleId='better_bonus_hunt_image_cards';
   else if(merged.__appearanceStyleId==='better_bonus_hunt_image_cards') delete merged.__appearanceStyleId;
   else if (merged.__appearanceStyleId==='new_horizontal') delete merged.__appearanceStyleId;
@@ -3617,7 +3618,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             ))}
           </div>
         </Section>
-        <Section title="Display" icon={<Eye size={13} />} category="layout">
+        {c.colourTheme!=='starter_studio'&&<Section title="Display" icon={<Eye size={13} />} category="layout">
           {c.chatStyle === "community_chat" && <p>💎 counts Bits in recent chat messages. Viewer count below is set manually.</p>}
           {c.chatStyle === "community_chat" && <>
             <ToggleRow
@@ -3655,7 +3656,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             step={10}
             onChange={(viewerCount) => set({ viewerCount })}
           />}
-        </Section>
+        </Section>}
         <Section
           title="Emotes"
           icon={<Sparkles size={13} />}
@@ -7882,13 +7883,16 @@ export function BetterWidgetControls({
 }) {
   const c = ensureBetterWidgetConfig(type, config);
   if (type === "slot_window") {
-    return <SlotWindowControls config={c} onChange={onChange} />;
+    return <><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;
   }
   if (type === "camera") {
     const style = c.displayStyle;
     const updateStyleConfig = (nextStyleConfig) => onChange(updateCameraStyleConfig(c, nextStyleConfig));
     return (
       <div className="bp-controls bp-controls--camera">
+        <StarterStudioControls type={type} config={c} onChange={onChange}/>{c.colourTheme==='starter_studio'&&<ToggleRow label="OBS camera source beneath overlay" checked={c.studio?.externalCamera!==false} onChange={externalCamera=>onChange({...c,studio:{...c.studio,externalCamera}})}/>}
+
+        {!(c.colourTheme==='starter_studio'&&c.studio?.externalCamera!==false)&&<>
         <Section title="Transition style" icon={<MonitorPlay size={12} />} defaultOpen>
           <label className="bp-field">
             <span>Camera effect</span>
@@ -7901,6 +7905,7 @@ export function BetterWidgetControls({
         {style === "money_explosion"
           ? <MoneyExplosionControls config={c.moneyConfig} onChange={updateStyleConfig} widget={props.widget} />
           : <FreezeShatterControls config={c.iceConfig} onChange={updateStyleConfig} widget={props.widget} />}
+        </>}
       </div>
     );
   }
@@ -7911,6 +7916,32 @@ export function BetterWidgetControls({
     return <FreezeShatterControls config={c} onChange={onChange} widget={props.widget} />;
   }
   return <ThemedBetterWidgetControls type={type} config={config} normalizedConfig={c} onChange={onChange} {...props} />;
+}
+
+
+function StarterStudioControls({type,config:c,onChange}){
+ if(c.colourTheme!=='starter_studio')return null;
+ const set=patch=>onChange({...c,studio:{...c.studio,...patch}});
+ const headers=['bonus_hunt','slot_requests','slideshow_frame','chat','tournament','giveaway','bets','raid_shoutout'];
+ return <div className="bp-controls" data-effects-theme="starter_studio"><Section title="Starter Studio appearance" icon={<Palette size={12}/>} simple>
+ {type==='background'?<><ToggleRow label="Studio scene background" checked={c.studio?.background!==false} onChange={background=>set({background})}/><NumberRow label="Studio scene opacity (%)" min={0} max={100} value={c.opacity??100} onChange={opacity=>onChange({...c,opacity})}/><ColorRow label="Studio scene colour" value={c.color1||'#050C10'} onChange={color1=>onChange({...c,color1})}/></>:<>
+ {type!=='navbar'&&<>
+ <ToggleRow label="Teal corner accent" checked={c.studio?.cornerAccent!==false} onChange={cornerAccent=>set({cornerAccent})}/>
+ <NumberRow label="Studio corner radius" min={0} max={60} value={c.studio?.radius??12} onChange={radius=>set({radius})}/>
+ <NumberRow label="Studio border thickness" min={0} max={8} value={c.studio?.borderWidth??1} onChange={borderWidth=>set({borderWidth})}/>
+ <ColorRow label="Studio border colour" value={c.studio?.borderColor||'#405B68'} onChange={borderColor=>set({borderColor})}/>
+ </>}
+ <ColorRow label="Studio teal" value={c.studio?.primary||'#22D3C5'} onChange={primary=>set({primary})}/>{type!=='slot_window'&&<ColorRow label="Studio gold" value={c.studio?.accent||'#EBC675'} onChange={accent=>set({accent})}/>}
+ {!['camera','slot_window','navbar'].includes(type)&&<NumberRow label="Studio panel opacity (%)" min={0} max={100} value={c.studio?.panelOpacity??100} onChange={panelOpacity=>set({panelOpacity})}/>}
+ {headers.includes(type)&&<><ToggleRow label="Studio header" checked={c.studio?.showHeader!==false} onChange={showHeader=>set({showHeader})}/><TextRow label="Studio heading" value={c.studio?.heading||''} onChange={heading=>set({heading})}/><NumberRow label="Studio heading size" min={12} max={48} value={c.studio?.headerSize??24} onChange={headerSize=>set({headerSize})}/></>}
+ {!['camera','slot_window'].includes(type)&&<SelectRow label="Studio font" value={c.fontFamily||"'Barlow Condensed', Arial, sans-serif"} options={[{key:"'Barlow Condensed', Arial, sans-serif",name:'Barlow Condensed'},{key:"'Rajdhani', sans-serif",name:'Rajdhani'},{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily,...(type==='chat'?{font:fontFamily}:{})})}/>}
+ {type==='bonus_hunt'&&<ToggleRow label="Starter hunt presentation" checked={c.studio?.hunt===true} onChange={hunt=>set({hunt})}/>}
+ {type==='navbar'&&<ToggleRow label="Starter masthead" checked={c.studio?.masthead===true} onChange={masthead=>set({masthead})}/>}
+ {type==='bonus_hunt'&&c.studio?.hunt&&<><ToggleRow label="Financial summary" checked={c.studio?.showFinancials!==false} onChange={showFinancials=>set({showFinancials})}/><ToggleRow label="Performance summary" checked={c.studio?.showPerformance!==false} onChange={showPerformance=>set({showPerformance})}/><NumberRow label="Visible bonus rows" min={3} max={8} value={c.visibleRows||4} onChange={visibleRows=>onChange({...c,visibleRows})}/></>}
+ {type==='camera'&&<TextRow label="Webcam streamer handle" value={c.studio?.handle||''} onChange={handle=>set({handle})}/>}
+ {type==='navbar'&&c.studio?.masthead&&<><ToggleRow label="Streamer identity" checked={c.showIdentity!==false} onChange={showIdentity=>onChange({...c,showIdentity})}/><ToggleRow label="Live indicator" checked={c.studio?.showLive!==false} onChange={showLive=>set({showLive})}/><ToggleRow label="Clock" checked={c.showClock!==false} onChange={showClock=>onChange({...c,showClock})}/><ToggleRow label="Responsible play" checked={c.showCTA!==false} onChange={showCTA=>onChange({...c,showCTA})}/><TextRow label="Responsible play text" value={c.ctaText||'18+ PLAY RESPONSIBLY'} onChange={ctaText=>onChange({...c,ctaText})}/></>}
+ </>}
+ </Section></div>;
 }
 
 function ThemedBetterWidgetControls({
@@ -7925,7 +7956,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && !['orbital', 'candy', 'volcanic','solverde','street_art'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy', 'volcanic','solverde','street_art','starter_studio'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7959,6 +7990,7 @@ function ThemedBetterWidgetControls({
           </div>
         </Section>
       </div>}
+      <StarterStudioControls type={type} config={c} onChange={onChange}/>
       {!props.inheritedTheme && effectsThemeKey === 'street_art' && <div className="bp-controls" data-effects-theme="street_art"><Section title="Street Art materials" icon={<Palette size={12}/>} simple>
         {type==='background' && <>
           <ToggleRow label="Concrete scene background" checked={normalizeStreetArtSettings(c).background} onChange={background=>onChange({...c,streetArt:{...c.streetArt,background}})}/>
@@ -8029,14 +8061,14 @@ function ThemedBetterWidgetControls({
         {type === 'bets' && c.solverde?.predictions && <TextRow label="Prediction heading" value={c.solverde?.predictionHeading || c.question || 'QUAL SERÁ O MULTIPLICADOR?'} onChange={predictionHeading=>onChange({...c,solverde:{...c.solverde,predictionHeading}})} />}
         {['bonus_hunt','bets'].includes(type) && getSolverdeVariant(type,c) && <><SelectRow label="Text font" value={c.fontFamily} options={[{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Georgia, serif',name:'Georgia'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily})} /><NumberRow label="Text size" min={10} max={22} value={Number(c.fontSize)||14} onChange={fontSize=>onChange({...c,fontSize})} /></>}
       </Section></div>}
-      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && !['solverde','street_art'].includes(effectsThemeKey) && <ThemeEffectsControls
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && !['solverde','street_art','starter_studio'].includes(effectsThemeKey) && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />}
-      {type !== "background" && !(effectsThemeKey==='street_art'&&((type==='rtp_stats'&&c.streetArt?.statStrip)||(type==='bonus_hunt'&&c.orientation==='mainstream'&&c.streetArt?.compactHunt))) && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type !== "background" && !(effectsThemeKey==='starter_studio'&&((type==='bonus_hunt'&&c.studio?.hunt)||(type==='navbar'&&c.studio?.masthead))) && !(effectsThemeKey==='street_art'&&((type==='rtp_stats'&&c.streetArt?.statStrip)||(type==='bonus_hunt'&&c.orientation==='mainstream'&&c.streetArt?.compactHunt))) && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }

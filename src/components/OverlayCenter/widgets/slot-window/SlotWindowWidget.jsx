@@ -70,7 +70,7 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
   }, [sourceUrl]);
   const size = reported?.sourceUrl === sourceUrl ? reported : null;
   const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height) : null;
-  const showSetup = !sourceUrl && runtime !== "obs";
+  const showSetup = !sourceUrl && runtime !== "obs" && normalized.colourTheme!=='starter_studio';
 
   if (!sourceUrl && !showSetup) return null;
 

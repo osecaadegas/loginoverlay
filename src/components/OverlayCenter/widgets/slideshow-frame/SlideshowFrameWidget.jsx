@@ -294,8 +294,7 @@ export default function SlideshowFrameWidget({
             </>
           ) : (
             <div className="better-slideshow-frame__empty">
-              <strong>Slideshow Frame</strong>
-              <span>Add image or video links</span>
+              {c.colourTheme==='starter_studio'?(runtime!=='obs'&&<strong className="studio-empty-logo">SC</strong>):<><strong>Slideshow Frame</strong><span>Add image or video links</span></>}
             </div>
           )}
         </div>
@@ -315,6 +314,7 @@ export default function SlideshowFrameWidget({
           </div>
         ) : null}
       </div>
+      {c.colourTheme==='starter_studio'&&!connectFourActive&&mediaItems.length>1&&<div className="studio-slide-dots" aria-label="Slides">{mediaItems.map((item,index)=><i key={item.id} data-active={index===activeIndex%mediaItems.length}/>)}</div>}
       {!connectFourActive && c.showCounter === true && mediaItems.length > 1 ? (
         <div className="better-slideshow-frame__counter">
           {activeIndex + 1}/{mediaItems.length}

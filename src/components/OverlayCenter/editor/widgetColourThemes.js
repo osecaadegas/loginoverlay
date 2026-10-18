@@ -11,6 +11,7 @@ import {
 } from "../appearance/v2/appearanceRouting";
 
 const COLOUR_KEYS = {
+ camera:{},slot_window:{},
   slot_requests:{backgroundColor:'background',cardColor:'surface',borderColor:'accent',textColor:'text',mutedColor:'muted'},
   current_slot: { panelColor: 'surface', badgeColor: 'raised', coverColor: 'background', backgroundColor: 'background', accentColor: 'accent', borderColor: 'border', textColor: 'text', mutedColor: 'muted', portraitPanelColor:'surface', portraitAccentColor:'accent' },
   slot_bingo: {
@@ -177,6 +178,7 @@ export function buildWidgetColourThemePatch(type, config, key) {
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'inter'; patch.bodyFont = 'inter'; }
   }
+  if(theme.key==='starter_studio'){patch.fontFamily="'Barlow Condensed', Arial, sans-serif";if(type==='chat')patch.font=patch.fontFamily;}
   if (theme.key === 'solverde' && type === 'giveaway') patch.titleFont = 'serif';
   return patch;
 }

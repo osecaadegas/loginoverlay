@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Award, Info, Play } from 'lucide-react';
+import { Award, Info, Play, Coins, Settings, ChartNoAxesColumnIncreasing, Trophy } from 'lucide-react';
 import { supabase } from '../../../../config/supabaseClient';
 import useSlotPersonalBest from '../../../../hooks/useSlotPersonalBest';
 import { getProviderImage } from '../../../../utils/gameProviders';
@@ -43,9 +43,19 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const part = elementId => ({ ...appearanceAttrs({ config: c, widgetId, widgetType: 'current_slot', elementId }), style: subElementStyle(c, elementId, {}) });
   const number = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
-  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)} style={{...(id==='bestWin'?{color:c.textColor}:id==='bestMulti'?{color:c.accentColor}:{}),...part(`${id}Value`).style}}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
+  const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)} style={{...(id==='bestWin'?{color:c.textColor}:id==='bestMulti'?{color:c.displayStyle==='starter_studio_card'?c.textColor:c.accentColor}:{}),...part(`${id}Value`).style}}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
   const portraitLayout=isPortraitCard?{width:'calc(225 * var(--cg-px))',height:'calc(400 * var(--cg-px))',gridTemplateColumns:'minmax(0,1fr)',gridTemplateRows:'minmax(0,1fr) calc(119 * var(--cg-px))',padding:'calc(5 * var(--cg-px))'}:{};
   const rootStyle = { ...portraitLayout, '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, '--cg-portrait-accent': c.portraitAccentColor, '--cg-portrait-panel': c.portraitPanelColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) };
+  if(c.displayStyle==='starter_studio_card'){
+    const betSource=c.betSize??c.bet??c.stake??slot.betSize??slot.bet??slot.stake;
+    const bet=betSource!==''&&betSource!=null&&Number.isFinite(Number(betSource))?Number(betSource):null;
+    return <section className="studio-current" {...part('container')} style={{...rootStyle,color:c.textColor,...(c.colourTheme!=='starter_studio'?{'--studio-gold':c.accentColor,'--studio-line':c.borderColor}:{})}}>
+      {c.showArtwork&&<div className="studio-current-art" {...part('coverFrame')}>{cover&&!failed[cover]?<img src={cover} alt={slot.name} {...part('slotImage')} onError={()=>setFailed(prev=>({...prev,[cover]:true}))}/>:<span>SC</span>}</div>}
+      <div className="studio-current-info" {...part('info')}><h2 {...part('slotTitle')}>{slot.name||'Select a slot'}</h2><p {...part('provider')}>{slot.provider||'—'}</p>
+        {[[Coins,'bet','BET',bet!=null?money(bet):'—'],[Settings,'rtp','RTP',slot.rtp!=null?number(slot.rtp)+'%':'—'],[ChartNoAxesColumnIncreasing,'volatility','VOLATILITY',slot.volatility??'—'],[Trophy,'bestMulti','BEST WIN',best?.best_multiplier!=null?number(best.best_multiplier)+'x':'—']].filter(([,id])=>c.statVisibility?.[id]!==false&&(id!=='bestMulti'||c.showPersonalRecords)).map(([Icon,id,label,value])=><div className="studio-current-row" key={id}><Icon/>{row(id,label,value)}</div>)}
+      </div>
+    </section>;
+  }
   if(c.displayStyle==='street_art_card') return <section className="street-current-card" {...part('container')} style={rootStyle} aria-label={slot.name || 'Current slot'}>
     <div className="street-current-art" {...part('coverFrame')}>{c.showArtwork && cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')}/> : <div className="street-current-fallback" {...part('fallback')}><strong {...part('slotTitle')}>{slot.name || 'Select a slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>}</div>
     <div className="street-current-stats" {...part('info')}>{c.showPersonalRecords && row('bestMulti','BEST WIN',best?.best_multiplier != null ? number(best.best_multiplier)+'x' : '—')}{c.statVisibility?.rtp!==false && row('rtp','RTP',slot.rtp != null ? number(slot.rtp)+'%' : '—')}</div>

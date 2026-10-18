@@ -37,6 +37,8 @@ export function sanitizeCameraConfig(input = {}) {
   const displayStyle = input?.displayStyle === "money_explosion" ? "money_explosion" : "ice_shatter";
   return {
     displayStyle,
+    ...(input?.colourTheme ? {colourTheme:input.colourTheme} : {}),
+    ...(input?.studio ? {studio:{...input.studio},fontFamily:input.fontFamily} : {}),
     iceConfig: sanitizeIceConfig({ ...DEFAULT_ICE_CONFIG, ...(input?.iceConfig || {}) }),
     moneyConfig: sanitizeMoneyExplosionConfig({ ...DEFAULT_MONEY_EXPLOSION_CONFIG, ...(input?.moneyConfig || {}) }),
   };
