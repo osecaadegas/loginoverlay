@@ -107,7 +107,7 @@ function TwitchGlyph() {
   );
 }
 
-function ShoutoutMedia({ alert, videoUrl, embedUrl, mediaFailed, onMediaEnded, onMediaFailed }) {
+function ShoutoutMedia({ alert, videoUrl, embedUrl, mediaFailed, onMediaEnded, onMediaFailed, showClipPlaceholder=false }) {
   if (videoUrl && !mediaFailed) {
     return (
       <AutoplayClipVideo
@@ -136,6 +136,7 @@ function ShoutoutMedia({ alert, videoUrl, embedUrl, mediaFailed, onMediaEnded, o
       <TwitchGlyph />
       <strong>{alert.displayName}</strong>
       <span>{alert.game}</span>
+      {showClipPlaceholder&&<small>No clip available</small>}
     </div>
   );
 }
@@ -248,6 +249,7 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
       <div className="better-shoutout-media" data-widget-element="clipFrame">
         <ShoutoutMedia
           alert={alert}
+          showClipPlaceholder={config.colourTheme==='solverde'}
           videoUrl={videoUrl}
           embedUrl={embedUrl}
           mediaFailed={mediaFailed}

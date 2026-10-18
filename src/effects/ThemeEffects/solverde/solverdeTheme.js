@@ -15,6 +15,10 @@ export const SOLVERDE_VARIANTS = Object.freeze({
     ...Object.fromEntries(['rtp','potential','bestWin'].flatMap(id=>[[id,surfaceElement(id)],[id+'Label',textElement(id+' label')],[id+'Value',textElement(id+' value')]])),
   }),
   bonus_hunt: variant('solverde_dock','Solverde horizontal hunt dock',{
+    ...Object.fromEntries(['Container','RequestCard'].map(id=>['requestImage'+id,surfaceElement('Requests '+id)])),
+    ...Object.fromEntries(['Header','Command','PlayerCount','SlotTitle','ViewerName','Position','EmptyState'].map(id=>['requestImage'+id,textElement('Requests '+id)])),
+    requestImageSlotImage:{label:'Request artwork',kind:'image',capabilities:['image','border']},
+    requestsSectionContainer:surfaceElement('Requests panel'),requestContainer:surfaceElement('Request surface'),requestsHeader:textElement('Requests heading'),
     container:surfaceElement('Hunt dock'),headerTitle:textElement('Dock heading'),progressCount:textElement('Opened count'),statCell:surfaceElement('Session figure'),statLabel:textElement('Session label'),statValue:textElement('Session value'),slotRow:surfaceElement('Slot card'),slotStatus:textElement('Bonus status'),slotTitle:textElement('Slot title'),providerText:textElement('Provider'),providerLogo:{label:'Provider logo',kind:'image',capabilities:['border'],controls:['radius','opacity']},superCount:textElement('Super progress'),extremeCount:textElement('Extreme progress'),payoutValue:textElement('Payout'),betValue:textElement('Bet'),multiplierValue:textElement('Multiplier'),
   }),
   bets: variant('solverde_predictions','Solverde prediction rows',{

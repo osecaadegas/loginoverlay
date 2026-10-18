@@ -5238,7 +5238,7 @@ export function BetterBonusHuntStyle({
       superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount}
       cards={rows.map((bonus,index)=>({id:String(bonus.id||`bonus-${index}`),number:index+1,name:bonusSlotName(bonus,index),image:bonusImage(bonus),opened:bonusOpened(bonus),tier:bonusTier(bonus),bet:hasBonusMetric(bonus,['betSize','bet_size','bet','stake','amount'])?formatMoney(bonusBet(bonus),money):'—',payout:hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result'])?formatMoney(bonusPayout(bonus),money):'—',multiplier:hasBonusMetric(bonus,['_multi','multiplier','multi','x','bonusMultiplier'])||(bonusBet(bonus)>0&&hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result']))?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))}/>
     : c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? (
-      <SolverdeHuntDock config={c} superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount} opened={opened.length} total={rows.length} activeIndex={firstUnopened}
+      <SolverdeHuntDock config={c} state={sessionState} requests={c.showRequests===false?null:renderRequests()} superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount} opened={opened.length} total={rows.length} activeIndex={firstUnopened}
         start={startKnown ? formatMoney(startValue, money) : '—'} actual={Number.isFinite(currentHuntBalance) ? formatMoney(currentHuntBalance, money) : '—'} breakEven={displayBreakEven > 0 ? formatMultiplier(displayBreakEven) : '—'}
         part={id => ({ ...attrs('bonus_hunt', c, id), style: subElementStyle(c, id, {}) })}
         cards={rows.map((bonus,index) => ({id:bonus.id || index,name:bonusSlotName(bonus,index),provider:bonusProvider(bonus),tier:bonusTier(bonus),payout:bonusOpened(bonus)?formatMoney(bonusPayout(bonus),money):'—',opened:bonusOpened(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,index)} fit="cover" />,bet:formatMoney(bonusBet(bonus),money),multiplier:bonusOpened(bonus)?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))} />
@@ -6190,7 +6190,7 @@ export function BetterRtpStatsStyle({
     };
   };
   const orbital = c.colourTheme === "orbital";
-  const fitToPanel = ['candy', 'volcanic'].includes(c.colourTheme);
+  const fitToPanel = ['candy', 'volcanic','solverde'].includes(c.colourTheme);
   const accent = c.cBolt || c.rtpIconColor || c.accentColor || "#f7a41d";
   const bgFrom = c.cBarTop || c.barBgFrom || "#0c2150";
   const bgMid = c.cBarMid || c.barBgMid || "#081735";
@@ -6269,7 +6269,7 @@ export function BetterRtpStatsStyle({
       className="oc-widget-inner rtp-stats-bar rtp-stats-bar--better"
       {...rtpAttrs("container", {
         width: "100%",
-        maxWidth: previewMode ? 1152 : "100%",
+        maxWidth: fitToPanel ? "100%" : previewMode ? 1152 : "100%",
         height: fitToPanel ? '100%' : previewMode ? barHeight : "100%",
         minHeight: fitToPanel ? 0 : barHeight,
         boxSizing: "border-box",

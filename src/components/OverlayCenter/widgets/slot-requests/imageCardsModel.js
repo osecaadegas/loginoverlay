@@ -12,7 +12,7 @@ export function imageCardsSettings(config={}) {
  // Old embedded defaults are inherited values, not a deliberate colour override.
  if(palette)for(const key of Object.keys(colours))if(nested[key]===IMAGE_CARDS_DEFAULTS[key])delete nested[key];
  const embedded=config.requestView==='image_cards';
- const c={...IMAGE_CARDS_DEFAULTS,...config,...(embedded?{rowHeight:90,artworkWidth:68,artworkHeight:70,titleSize:19,usernameSize:16,visibleRequests:2,...colours}:{}),...nested};
+ const c={...IMAGE_CARDS_DEFAULTS,...config,...(embedded?{rowHeight:90,artworkWidth:68,artworkHeight:70,titleSize:19,usernameSize:16,visibleRequests:2,...(config.colourTheme==='solverde'&&config.solverde?.huntDock?{rowHeight:70,artworkWidth:56,artworkHeight:60,titleSize:16,usernameSize:13,cardGap:5}:{}),...colours}:{}),...nested};
  const scale=c.displayStyle==='better_bonus_hunt'?1:Math.max(1,Number(config.__obsRenderScale)||1);
  const number=(key,min,max)=>{const factor=key==='visibleRequests'?1:scale;return Math.max(min*factor,Math.min(max*factor,Number(c[key])||IMAGE_CARDS_DEFAULTS[key]*factor))};
  return {...c,rowHeight:number('rowHeight',70,260),artworkWidth:number('artworkWidth',50,180),artworkHeight:number('artworkHeight',60,240),titleSize:number('titleSize',14,36),usernameSize:number('usernameSize',12,30),cardGap:Math.max(0,Math.min(30*scale,Number(c.cardGap)||0)),visibleRequests:Math.round(number('visibleRequests',1,10)),artworkFit:c.artworkFit==='contain'?'contain':'cover'};

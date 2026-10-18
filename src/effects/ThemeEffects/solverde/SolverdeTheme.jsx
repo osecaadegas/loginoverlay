@@ -26,21 +26,24 @@ function SolverdeProvider({provider,enabled,part}) {
  const url=enabled?getProviderImage(provider):'',[failed,setFailed]=useState('');
  return url&&failed!==url?<img className="solverde-provider-logo" src={url} alt={provider} {...part('providerLogo')} onError={()=>setFailed(url)}/>:<small {...part('providerText')}>{provider}</small>;
 }
-export function SolverdeHuntDock({ config, cards, activeIndex, opened, total, start, actual, breakEven, superOpened=0,superCount=0,extremeOpened=0,extremeCount=0,part }) {
-  const track=useRef(null),settings=normalizeSolverdeSettings(config),enabled=config.solverde?.autoCarousel!==false;
+export function SolverdeHuntDock({ config, cards, activeIndex, opened, total, start, actual, breakEven, superOpened=0,superCount=0,extremeOpened=0,extremeCount=0,part,state='hunt',requests=null }) {
+  const track=useRef(null),settings=normalizeSolverdeSettings(config),opening=state==='opening',enabled=!opening&&config.solverde?.autoCarousel!==false;
+  const heading=state==='opening'?(config.solverde?.openingTitle||'BONUS OPENING'):state==='ended'?(config.solverde?.endedTitle||'BONUS ENDED'):(config.solverde?.dockTitle||'BONUS HUNT');
   const clones=enabled&&cards.length>settings.dockCards?cards.slice(0,settings.dockCards):[];
-  useForwardCarousel(track,{count:cards.length,visible:settings.dockCards,axis:'x',enabled,interval:config.carouselMs,activeIndex});
-  return <section className="solverde-hunt-dock" aria-label="Bonus Hunt" {...part('container')} style={{ '--slv-dock-cards': settings.dockCards, fontFamily:config.fontFamily, fontSize:Number(config.fontSize)||14, ...part('container').style }}>
-    <div className="solverde-hunt-progress"><h2 {...part('headerTitle')}>{config.solverde?.dockTitle || 'BONUS HUNT'}</h2><span {...part('progressCount')}>{String(opened).padStart(2, '0')} / {total} ABERTOS</span>
+  useForwardCarousel(track,{count:cards.length,visible:settings.dockCards,axis:'x',enabled,interval:config.carouselMs,activeIndex,centerActive:opening});
+  return <section className="solverde-hunt-dock" aria-label={heading} data-session-state={state} {...part('container')} style={{ '--slv-dock-cards': settings.dockCards, fontFamily:config.fontFamily, fontSize:Number(config.fontSize)||14, ...part('container').style }}>
+    {requests ? <div className="solverde-hunt-requests" aria-label="Hunt requests">{requests}</div> : <div className="solverde-hunt-progress"><h2 {...part('headerTitle')}>{heading}</h2><span {...part('progressCount')}>{String(opened).padStart(2, '0')} / {total} ABERTOS</span>
       <div className="solverde-progress-ring" role="progressbar" aria-label="Bónus abertos" aria-valuemin={0} aria-valuemax={total || 1} aria-valuenow={opened} style={{ '--slv-progress': `${total ? opened / total * 100 : 0}%` }}><SolverdeSun /></div>
       <div className="solverde-hunt-tiers"><span {...part('superCount')}>♛ SUPER <b>{superOpened}/{superCount}</b></span><span {...part('extremeCount')}>ϟ EXTREME <b>{extremeOpened}/{extremeCount}</b></span></div>
-    </div>
+    </div>}
     <dl className="solverde-hunt-session">{[['START', start], ['ATUAL', actual], ['B.E.', breakEven]].map(([label, value]) => <div key={label} {...part('statCell')}><dt {...part('statLabel')}>{label}</dt><dd {...part('statValue')}>{value}</dd></div>)}</dl>
     <div className="solverde-dock-window"><div className="solverde-dock-track" ref={track} role="list">
+      {opening&&cards.length>0&&<i className="solverde-dock-spacer" aria-hidden="true"/>}
       {[...cards,...clones].map((card, index) => <article key={index>=cards.length?'clone-'+card.id:card.id} data-carousel-item data-carousel-clone={index>=cards.length?'true':undefined} aria-hidden={index>=cards.length?true:undefined} className="solverde-dock-card" role="listitem" data-active={index%Math.max(1,cards.length) === activeIndex} data-tier={card.tier} data-opened={card.opened?'true':'false'} {...part('slotRow')}>
         <div className="solverde-dock-art">{card.art}</div><div className="solverde-dock-name"><span className="solverde-dock-status" {...part('slotStatus')}>{card.tier==='super'?'♛ SUPER · ':card.tier==='extreme'?'ϟ EXTREME · ':''}{card.opened?'ABERTO':index%Math.max(1,cards.length)===activeIndex?'ATUAL':'POR ABRIR'}</span><strong {...part('slotTitle')}>{card.name}</strong><SolverdeProvider provider={card.provider} enabled={config.solverde?.providerLogos!==false} part={part}/></div>
         <div className="solverde-dock-values"><span>BET<strong {...part('betValue')}>{card.bet}</strong></span><span>PAYOUT<strong {...part('payoutValue')}>{card.payout}</strong></span><span>MULTI<strong {...part('multiplierValue')}>{card.multiplier}</strong></span></div>
       </article>)}
+      {opening&&cards.length>0&&<i className="solverde-dock-spacer" aria-hidden="true"/>}
       {!cards.length && <div className="solverde-dock-empty">À espera dos dados do hunt</div>}
     </div></div>
   </section>;

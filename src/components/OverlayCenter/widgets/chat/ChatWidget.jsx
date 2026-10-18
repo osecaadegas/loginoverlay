@@ -1518,7 +1518,7 @@ function ChatWidget({
   const shoutoutUsesGiveawaySlot = Boolean(giveawayVisible);
   const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
   const requestedGiveawayMargin = Number(c.giveawayMargin);
-  const embeddedShoutoutHeight = premiumPalette&&!shoutoutHasMedia?100:shoutoutHeight;
+  const embeddedShoutoutHeight = premiumPalette&&c.colourTheme!=='solverde'&&!shoutoutHasMedia?100:shoutoutHeight;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
       className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}
