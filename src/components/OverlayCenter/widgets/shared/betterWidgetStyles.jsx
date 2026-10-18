@@ -5078,7 +5078,7 @@ export function BetterBonusHuntStyle({
     );
   };
 
-  const renderMainstreamPanel = () => c.colourTheme === 'street_art' && c.streetArt?.compactHunt ? <section className="better-hunt-panel better-hunt-mainstream street-hunt-compact">{renderStatBoxes()}<div className="better-hunt-main-list-wrap">{renderList()}</div>{renderProgress()}</section> : (
+  const renderMainstreamPanel = () => c.colourTheme === 'street_art' && c.streetArt?.compactHunt ? <section className="better-hunt-panel better-hunt-mainstream street-hunt-compact">{renderStatBoxes()}<div className="better-hunt-main-list-wrap">{renderList()}</div>{renderProgress()}<div className="street-hunt-payout" {...attrs("bonus_hunt",c,"footerContainer")}><span {...attrs("bonus_hunt",c,"footerLabel")}>PAYOUT</span><strong {...attrs("bonus_hunt",c,"footerTotalValue")}>{formatMoney(totalPay,money)}</strong></div></section> : (
     <section
       className={`better-hunt-panel better-hunt-mainstream${c.showRequests === false ? " better-hunt-mainstream--no-requests" : ""}${panelShakeClass}`}
     >
@@ -6268,7 +6268,7 @@ export function BetterRtpStatsStyle({
   if(c.colourTheme==='street_art'&&c.streetArt?.statStrip){
     const records=displayBestWin?.best_win != null ? (currency||'')+Number(displayBestWin.best_win).toLocaleString(undefined,{maximumFractionDigits:2}) : '—';
     const items=[...statItems.map(item=>item[0]==='volatility'?[item[0],item[1],volatilityValue||'—',...item.slice(3)]:item),['bestWin','Best Win',<>{records}{displayBestWin?.best_multiplier != null && <small> / {formatMultiplier(displayBestWin.best_multiplier)}</small>}</>,showBestWin]].filter(([, , ,visible])=>visible);
-    return <div className="rtp-stats-bar street-rtp-strip" {...rtpAttrs('container',{fontFamily:font,background:bgMid})}>{items.map(([id,label,value])=>{const Icon=id==='bestWin'?Trophy:id==='rtpValue'?Info:id==='maxWin'?TrendingUp:Zap;return <div className="street-rtp-stat" key={id} {...rtpAttrs('statCard',{})}><Icon aria-hidden="true"/><span {...rtpAttrs('label',{})}>{label}</span><strong {...rtpAttrs(id,{})}>{value}</strong></div>})}</div>;
+    return <div className="rtp-stats-bar street-rtp-strip" {...rtpAttrs('container',{fontFamily:font,background:bgMid})}><div className="street-rtp-identity">{hasProvider&&<div className="street-rtp-provider" {...rtpAttrs('provider',{})}>{showProviderImage?<img src={providerLogo} alt={providerName} onError={event=>{event.currentTarget.hidden=true}} style={{objectFit:c.logoFit||'contain',height:logoHeight,maxHeight:'100%',maxWidth:logoMaxWidth,padding:`${logoPadY}px ${logoPadX}px`,transform:`translate(${logoOffsetX}px, ${logoOffsetY}px)`}}/>:null}{showProviderName&&<span>{providerName}</span>}</div>}<strong title={slotName} {...rtpAttrs('slotTitle',{})}>{slotName}</strong></div>{items.map(([id,label,value])=>{const Icon=id==='bestWin'?Trophy:id==='rtpValue'?Info:id==='maxWin'?TrendingUp:Zap;return <div className="street-rtp-stat" data-stat={id} key={id} {...rtpAttrs('statCard',{})}><Icon aria-hidden="true"/><span {...rtpAttrs('label',{})}>{label}</span><strong {...rtpAttrs(id,{})}>{value}</strong></div>})}</div>;
   }
   const bar = (
     <div

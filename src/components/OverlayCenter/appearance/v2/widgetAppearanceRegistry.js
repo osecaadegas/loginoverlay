@@ -1005,9 +1005,9 @@ export const widgetAppearanceRegistry = Object.freeze({
   current_slot: makeBasicWidgetCapability({
     id: 'current_slot', label: 'Current Game', category: 'casino', defaultStyleId: 'immersive_current',
     defaultAppearance: { primaryColor: '#28edac', accentColor: '#28edac' },
-    styles: [...GALACTIC_CURRENT_STYLES.map(freezeStyle),freezeStyle(STARTER_CURRENT_STYLE),makeRuntimeStyle('street_art_card','Street Art cover','Wide cover with a compact best multiplier and RTP footer.',{
+    styles: [...GALACTIC_CURRENT_STYLES.map(freezeStyle),freezeStyle(STARTER_CURRENT_STYLE),makeRuntimeStyle('street_art_card','Street Art cover','Slot artwork with six compact live game and personal record statistics.',{
       capabilities:{colours:true,fonts:true,fontSizes:true,borders:true,images:true,imageFit:true},
-      elementIds:['container','badge','coverFrame','slotImage','fallback','slotTitle','provider','info','bestMulti','bestMultiLabel','bestMultiValue','rtp','rtpLabel','rtpValue'],
+      elementIds:['container','badge','coverFrame','slotImage','fallback','slotTitle','provider','info',...['bet','rtp','volatility','potential','bestWin','bestMulti'].flatMap(id=>[id,id+'Label',id+'Value'])],
     }),freezeStyle(SOLVERDE_VARIANTS.current_slot),makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
       recommended: true, capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
       elementIds: ["container","identity","coverFrame","slotImage","backdrop","titleImage","slotTitle","provider","badge","info","infoTitle","records","recordsTitle","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestWin","bestWinLabel","bestWinValue","bestMulti","bestMultiLabel","bestMultiValue","averageWin","averageWinLabel","averageWinValue"],
@@ -1017,6 +1017,9 @@ export const widgetAppearanceRegistry = Object.freeze({
     }),freezeStyle(COMPACT_CURRENT_SLOT_STYLE)],
     responsive: { minWidth: 680, minHeight: 140, maxWidth: 1920, maxHeight: 600 },
     elements: {
+  "bet": {"label":"Bet row","kind":"container","capabilities":["surface","border","spacing"]},
+  "betLabel": {"label":"Bet label","kind":"text","capabilities":["typography"]},
+  "betValue": {"label":"Bet value","kind":"text","capabilities":["typography"]},
   "container": {
     "label": "Current Game frame",
     "kind": "container",

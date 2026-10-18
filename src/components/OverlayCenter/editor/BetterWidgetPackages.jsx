@@ -1683,6 +1683,10 @@ export function ensureBetterWidgetConfig(type, config = {}) {
       : {}),
   };
   const solverdeVariant = getSolverdeVariant(type, merged);
+  if(type==='rtp_stats'&&merged.colourTheme==='street_art'&&merged.streetArt?.statStrip&&merged.streetArt.rtpIdentityVersion!==1){
+    if(merged.providerMode==='name')merged.providerMode='image';
+    merged.streetArt={...merged.streetArt,rtpIdentityVersion:1};
+  }
   if(type==='bonus_hunt'&&merged.orientation==='new_horizontal') merged.__appearanceStyleId='new_horizontal';
   else if(type==='bonus_hunt'&&merged.colourTheme==='galactic_command'&&merged.galactic?.role)merged.__appearanceStyleId='galactic_hunt_'+merged.galactic.role;
   else if(type==='bonus_hunt'&&merged.colourTheme==='starter_studio'&&merged.studio?.hunt)merged.__appearanceStyleId='starter_studio_hunt';
@@ -4252,7 +4256,7 @@ function SimpleThemedControls({
                 key,
                 name: key,
               }))}
-              onChange={(providerMode) => set({ providerMode })}
+              onChange={(providerMode) => set({ providerMode, ...(c.colourTheme==='street_art'?{streetArt:{...c.streetArt,rtpIdentityVersion:1}}:{}) })}
             />
             {["image", "both"].includes(c.providerMode) && (
               <>

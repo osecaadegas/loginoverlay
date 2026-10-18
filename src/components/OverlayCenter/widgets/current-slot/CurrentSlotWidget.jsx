@@ -61,9 +61,9 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const portraitLayout=isPortraitCard?{width:'calc(225 * var(--cg-px))',height:'calc(400 * var(--cg-px))',gridTemplateColumns:'minmax(0,1fr)',gridTemplateRows:'minmax(0,1fr) calc(119 * var(--cg-px))',padding:'calc(5 * var(--cg-px))'}:{};
   const rootStyle = { ...portraitLayout, '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, '--cg-portrait-accent': c.portraitAccentColor, '--cg-portrait-panel': c.portraitPanelColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) };
   if(c.displayStyle?.startsWith('galactic_'))return <div className="gc-current-shell" style={{...rootStyle,...galacticVariables({background:c.backgroundColor,surface:c.panelColor,raised:c.badgeColor,border:c.borderColor,accent:c.accentColor,text:c.textColor,muted:c.mutedColor},c)}}><GalacticCurrent config={c} slot={slot} best={best} cover={cover} failed={failed} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} row={row} money={money} number={number}/></div>;
+  const betSource=c.betSize??c.bet??c.stake??slot.betSize??slot.bet??slot.stake;
+  const bet=betSource!==''&&betSource!=null&&Number.isFinite(Number(betSource))?Number(betSource):null;
   if(c.displayStyle==='starter_studio_card'){
-    const betSource=c.betSize??c.bet??c.stake??slot.betSize??slot.bet??slot.stake;
-    const bet=betSource!==''&&betSource!=null&&Number.isFinite(Number(betSource))?Number(betSource):null;
     return <section className="studio-current" {...part('container')} style={{...rootStyle,color:c.textColor,...(c.colourTheme!=='starter_studio'?{'--studio-gold':c.accentColor,'--studio-line':c.borderColor}:{})}}>
       {c.showArtwork&&<div className="studio-current-art" {...part('coverFrame')}>{cover&&!failed[cover]?<img src={cover} alt={slot.name} {...part('slotImage')} onError={()=>setFailed(prev=>({...prev,[cover]:true}))}/>:<span>SC</span>}</div>}
       <div className="studio-current-info" {...part('info')}><h2 {...part('slotTitle')}>{slot.name||'Select a slot'}</h2><p {...part('provider')}>{slot.provider||'—'}</p>
@@ -73,7 +73,14 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   }
   if(c.displayStyle==='street_art_card') return <section className="street-current-card" {...part('container')} style={rootStyle} aria-label={slot.name || 'Current slot'}>
     <div className="street-current-art" {...part('coverFrame')}>{c.showArtwork && cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')}/> : <div className="street-current-fallback" {...part('fallback')}><strong {...part('slotTitle')}>{slot.name || 'Select a slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>}</div>
-    <div className="street-current-stats" {...part('info')}>{c.showPersonalRecords && row('bestMulti','BEST WIN',best?.best_multiplier != null ? number(best.best_multiplier)+'x' : '—')}{c.statVisibility?.rtp!==false && row('rtp','RTP',slot.rtp != null ? number(slot.rtp)+'%' : '—')}</div>
+    <div className="street-current-stats" {...part('info')}>{[
+      ['bet','BET',money(bet)],
+      ['rtp','RTP',slot.rtp != null ? number(slot.rtp)+'%' : '—'],
+      ['volatility','VOLATILITY',slot.volatility??'—'],
+      ['potential','MAX WIN',slot.max_win_multiplier!=null?number(slot.max_win_multiplier)+'x':'—'],
+      ['bestWin','BEST PAYOUT',money(best?.best_win)],
+      ['bestMulti','BEST X',best?.best_multiplier!=null?number(best.best_multiplier)+'x':'—'],
+    ].filter(([id])=>c.statVisibility?.[id]!==false&&(!['bestWin','bestMulti'].includes(id)||c.showPersonalRecords)).map(([id,label,value])=><div className="street-current-stat" key={id} data-stat={id}>{row(id,label,value)}</div>)}</div>
   </section>;
   if(c.displayStyle==='portrait_compact') return <CompactSlotPortrait config={c} slot={slot} best={best} cover={safeArtworkUrl(subValue(c,'slotImage','imageUrl',art.portraitCoverUrl||art.coverUrl||slot.image||''))} failed={failed} onImageError={event=>setFailed(prev=>({...prev,[event.currentTarget.getAttribute('src')]:true}))} widgetId={widgetId}/>;
   if (c.colourTheme === 'solverde' && c.solverde?.footer) return <div className="cg-viewport cg-viewport--solverde"><section className="cg-widget cg-widget--solverde" {...part('container')} style={rootStyle}>
