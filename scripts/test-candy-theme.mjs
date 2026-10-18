@@ -59,6 +59,29 @@ try {
  assert(await page.evaluate(()=>{const chat=document.querySelector('.ov-chat-widget').getBoundingClientRect(),jar=document.querySelector('.candy-decoration--jar').getBoundingClientRect();return chat.bottom<=jar.top+1;}),'chat content stops above the jar decoration');
  const sizes=await page.$$eval('[data-fixture-widget]',els=>els.map(el=>{const r=el.getBoundingClientRect();return [r.left,r.top,r.right,r.bottom]}));assert(sizes.every(([l,t,r,b])=>l>=0&&t>=0&&r<=1920&&b<=1080),'reference widgets contained');
  }
+ for(const runtime of ['editor','obs']) for(const showRequests of [true,false]){
+  await page.evaluate(({runtime,showRequests})=>{
+   const bonuses=Array.from({length:10},(_,i)=>({id:'candy-row-'+i,slotName:i===0?'A very long current slot title with readable live stats':'Candy bonus '+(i+1),provider:'Pragmatic Play',betSize:1,payout:i<4?i*100:0,opened:i<4,image:i===8?'':'/player.webp'}));
+   const config=window.candy.config('bonus_hunt',{orientation:'vertical',showRequests,drawerMode:'contain',sessionState:'opening',animations:true,winEffects:false,bonuses,visibleRows:3});
+   window.candy.renderConfig(window.candy.registry.createBetterInstance('bonus_hunt',{width:380,height:913,config}),runtime);
+  },{runtime,showRequests});await wait();
+  const layout=await page.evaluate(()=>{
+   const history=document.querySelector('.candy-hunt-history'),list=history.querySelector('.better-hunt-list'),bear=document.querySelector('.candy-decoration--bear');
+   const h=history.getBoundingClientRect(),l=list.getBoundingClientRect(),b=bear.getBoundingClientRect(),style=getComputedStyle(history);
+   return {width:b.width,expected:Math.min(135,Math.max(45,380*.34)),pointer:getComputedStyle(bear).pointerEvents,padding:parseFloat(style.paddingBottom),bottomGap:h.bottom-l.bottom,available:h.height-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-6,listHeight:l.height,trackHeight:list.querySelector('.better-hunt-list-inner').getBoundingClientRect().height,ringHeight:document.querySelector('.candy-hunt-summary .better-hunt-ring').getBoundingClientRect().height,behind:l.bottom>b.top,rows:list.dataset.rowCount,loop:list.dataset.loop};
+  });
+  assert(Math.abs(layout.width-layout.expected)<1,'bear is half its original size: '+JSON.stringify(layout));
+  assert.equal(layout.pointer,'none');assert.equal(layout.padding,15,'no reserved bear bay');
+  assert(Math.abs(layout.available-layout.listHeight)<2,'list fills entire history interior: '+JSON.stringify(layout));
+  assert(Math.abs(layout.trackHeight-layout.listHeight)<2,'animated track fills the viewport without clipping above the bear');
+  assert(layout.ringHeight>55,'current bonus remains readable when result drawer opens: '+JSON.stringify({layout,parts:await page.$$eval('.candy-hunt-summary > *,.candy-hunt-summary .better-hunt-footer > *,.candy-hunt-summary .better-hunt-result',els=>els.map(el=>({class:el.className,height:el.getBoundingClientRect().height,min:getComputedStyle(el).minHeight,style:el.getAttribute('style')})))}));
+  assert(layout.behind,'slot list continues behind the bear');assert.equal(layout.rows,'10');assert.equal(layout.loop,'infinite');
+  await (await page.$('.candy-module--composite')).screenshot({path:'.codex-dev/candy-verification/hunt-detail-'+runtime+'-'+showRequests+'.png'});
+  await page.screenshot({path:'.codex-dev/candy-verification/hunt-full-history-'+runtime+'-'+showRequests+'.png'});
+ }
+ await page.evaluate(()=>window.candy.scene({single:'chat'}));await wait();
+ const jar=await page.$eval('.candy-decoration--jar',async el=>{const style=getComputedStyle(el),img=new Image();img.src=style.backgroundImage.match(/url\(["']?(.*?)["']?\)/)[1];await img.decode();return {url:img.src,width:img.naturalWidth,height:img.naturalHeight,fit:style.backgroundSize};});
+ assert(jar.url.endsWith('/candy-jar.webp')&&jar.width>=1000&&jar.height>=1000,'standalone high-resolution jar asset');assert.equal(jar.fit,'contain');
  for(const type of ['current_slot','slot_bingo','connect_four','tournament','bonus_hunt','giveaway','navbar','chat','rtp_stats','slideshow_frame','bets','raid_shoutout']){
  await page.evaluate(type=>window.candy.scene({single:type,populated:true}),type);await wait();
  assert(await page.$('.candy-module'),type+' receives material');
@@ -111,6 +134,7 @@ try {
    assert(geometry.messages.height>300,'Candy chat regains message space: '+JSON.stringify(geometry));
    if(decorations){assert(Math.abs(geometry.jar.width-geometry.inner.width*.34)<2,'jar uses half its previous 68% width');assert(geometry.messages.bottom<=geometry.jar.top+1,'messages stay above decoration');}else assert.equal(geometry.jar,null);
    await page.screenshot({path:`.codex-dev/candy-verification/chat-space-${runtime}-${decorations}.png`});
+   if(decorations)await (await page.$('.candy-module')).screenshot({path:'.codex-dev/candy-verification/chat-jar-detail-'+runtime+'.png'});
   }
   for(const type of ['current_slot','rtp_stats']){
    await page.evaluate(({runtime,type})=>{const config=window.candy.config(type,{slot:{name:'Current game',provider:'Pragmatic Play',image:'/player.webp'},provider:'Pragmatic Play',providerLogoUrl:'/player.webp',previewMode:true});window.candy.renderConfig(window.candy.registry.createBetterInstance(type,{width:type==='current_slot'?695:1114,height:type==='current_slot'?187:76,config}),runtime,'mock');},{runtime,type});await wait();

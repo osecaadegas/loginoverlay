@@ -4743,12 +4743,12 @@ export function BetterBonusHuntStyle({
     );
   };
 
-  const renderList = () => {
+  const renderList = ({ fill = false } = {}) => {
     const listStyle = {
       "--bh-list-duration": listDuration,
       "--bh-list-height": `${listHeight}px`,
       height: drawerMode === "contain" ? undefined : panelHeight > 0 ? "100%" : listHeight,
-      maxHeight: `${listHeight}px`,
+      maxHeight: fill ? "100%" : `${listHeight}px`,
     };
     return (
       <div
@@ -5254,7 +5254,7 @@ export function BetterBonusHuntStyle({
           {renderHeader()}{renderStatBoxes()}{renderCarousel()}{renderBonusFooter()}
         </div>
         {c.showRequests !== false && <div className="candy-hunt-requests candy-structural-panel">{renderRequests()}</div>}
-        <div className="candy-hunt-history candy-structural-panel">{renderList()}</div>
+        <div className="candy-hunt-history candy-structural-panel">{renderList({ fill: true })}</div>
         {previewWin ? <BetterHuntWinOverlay key={previewWin.id} win={previewWin} onDone={() => setPreviewWin(null)} /> : null}
       </section>
     ) : orientation === "horizontal" ? (
