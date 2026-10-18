@@ -14,7 +14,7 @@ import { CURRENT_SLOT_DEFAULTS, COMPACT_SLOT_DEFAULTS } from '../widgets/current
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getUserRoles } from "../../../utils/adminUtils";
-import { BACKGROUND_SOURCE_OPTIONS, isExternalBackgroundSource, normalizeChromaKeyColor, downloadChromaKeyImage, updateBackgroundSource } from "../widgets/background/backgroundSource";
+import { BACKGROUND_SOURCE_OPTIONS, isExternalBackgroundSource, normalizeChromaKeyColor, downloadChromaKeyImage, updateBackgroundSource, normalizeBackgroundFrame } from "../widgets/background/backgroundSource";
 import { subValue } from "../widgets/shared/appearanceStyles";
 import BackgroundLibraryPicker from "./BackgroundLibraryPicker";
 import { EditorControlContext, matchesControlTab, useEditorControlScope, useEditorControlSection } from "./EditorControlScope";
@@ -4540,6 +4540,8 @@ function SimpleThemedControls({
   if (type === "background") {
     const sourceMode = subValue(c, "source", "bgMode", c.bgMode || "texture");
     const chromaKeyColor = normalizeChromaKeyColor(subValue(c, "source", "chromaKeyColor", c.chromaKeyColor));
+    const frame=normalizeBackgroundFrame(c.gameplayFrame);
+    const setFrame=patch=>set({gameplayFrame:{...frame,...patch}});
     const isTextureSource = sourceMode === "texture";
     const externalBackground = isExternalBackgroundSource(sourceMode);
     const isMediaSource = sourceMode === "image" || sourceMode === "video";
@@ -4641,6 +4643,16 @@ function SimpleThemedControls({
         )}
         {matchesControlTab(current, "source") && (
           <>
+            <Section title="Gameplay chroma-key frame" icon={<Layers size={13} />}>
+              <ToggleRow label="Enable gameplay frame" checked={frame.enabled} onChange={enabled=>setFrame({enabled})}/>
+              {frame.enabled&&<>
+                <ToggleRow label="Use selected background source" checked={frame.useSelectedSource} onChange={useSelectedSource=>setFrame({useSelectedSource})} hint="Use the texture, image or video selected below. Turn off to keep the theme scenery."/>
+                <ToggleRow label="Chroma-key fill" checked={frame.keyEnabled} onChange={keyEnabled=>setFrame({keyEnabled})}/>
+                {frame.keyEnabled&&<ColorRow label="Frame key colour" value={frame.keyColor} onChange={keyColor=>setFrame({keyColor})}/>}
+                {[['x','Frame X',0,1920],['y','Frame Y',0,1080],['width','Frame width',40,1920],['height','Frame height',40,1080],['radius','Frame corner radius',0,100],['borderWidth','Frame border thickness',0,12]].map(([key,label,min,max])=><SliderRow key={key} label={label} value={frame[key]} min={min} max={max} unit="px" onChange={value=>setFrame({[key]:value})}/>)}
+                <ColorRow label="Frame border colour" value={frame.borderColor} onChange={borderColor=>setFrame({borderColor})}/>
+              </>}
+            </Section>
             <Section title="Background source" icon={<ImagePlus size={13} />}>
               <SelectRow
                 label="Background source"

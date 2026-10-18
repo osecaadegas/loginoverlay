@@ -42,7 +42,7 @@ import {
   resolveCurrentHuntBestWin,
 } from "../../../../utils/slotPersonalBestDisplay";
 import "../background/BackgroundWidget.css";
-import { isExternalBackgroundSource, normalizeChromaKeyColor } from "../background/backgroundSource";
+import { isExternalBackgroundSource, normalizeChromaKeyColor, normalizeBackgroundFrame } from "../background/backgroundSource";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
 import { getHuntColourTheme, WIDGET_COLOUR_THEMES } from "./colourThemePalettes";
@@ -6812,6 +6812,16 @@ function betterBackgroundTextureStyle({
 }
 
 export function BetterBackgroundStyle({ config }) {
+  const c=config||{},frame=normalizeBackgroundFrame(c.gameplayFrame);
+  if(!frame.enabled)return <BetterBackgroundScene config={c}/>;
+  const scene={...c,streetArt:{...c.streetArt,gameplayFrame:false},solverde:{...c.solverde,gameplayFrame:false}};
+  return <div className="background-gameplay-frame-stage" style={{position:'relative',width:'100%',height:'100%',overflow:'hidden'}}>
+    {frame.useSelectedSource?<LegacyBetterBackgroundStyle config={scene}/>:<BetterBackgroundScene config={scene}/>}
+    <div aria-label="Gameplay chroma-key frame" data-background-gameplay-frame data-key-enabled={frame.keyEnabled} style={{position:'absolute',zIndex:20,pointerEvents:'none',boxSizing:'border-box',left:frame.x/19.2+'%',top:frame.y/10.8+'%',width:frame.width/19.2+'%',height:frame.height/10.8+'%',borderRadius:frame.radius,border:frame.borderWidth+'px solid '+frame.borderColor,background:frame.keyEnabled?frame.keyColor:'transparent'}}/>
+  </div>;
+}
+
+function BetterBackgroundScene({ config }) {
   const c = config || {};
   if (getWidgetEffectsThemeKey('background',c) === 'street_art') return <StreetArtEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})}/>;
   if (getWidgetEffectsThemeKey('background', c) === 'solverde') return <SolverdeEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})} />;

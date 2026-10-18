@@ -40,3 +40,10 @@ export function downloadChromaKeyImage(color) {
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
+
+// Coordinates use the editor's existing 1920 × 1080 reference canvas.
+export function normalizeBackgroundFrame(value = {}) {
+  const limit=(v,min,max,fallback)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):Math.max(min,Math.min(max,fallback));
+  const width=limit(value.width,40,1920,1022),height=limit(value.height,40,1080,790);
+  return {enabled:value.enabled===true,useSelectedSource:value.useSelectedSource!==false,keyEnabled:value.keyEnabled!==false,keyColor:normalizeChromaKeyColor(value.keyColor),width,height,x:limit(value.x,0,1920-width,458),y:limit(value.y,0,1080-height,106),radius:limit(value.radius,0,100,18),borderWidth:limit(value.borderWidth,0,12,2),borderColor:/^#[0-9a-f]{6}$/i.test(value.borderColor||'')?value.borderColor:'#55dfff'};
+}
