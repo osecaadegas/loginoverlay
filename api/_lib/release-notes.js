@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'current-slot-portrait-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Compact Portrait orientation for Current Slot',
+    summary:'An edge-to-edge cover and four compact statistic rows in a 145 × 370 card.',
+    changes:['Portrait joins Immersive and the existing Portrait Card layout.','MAX WIN, RTP, VOL and BEST use current-slot metadata and the existing personal-best multiplier with its associated bet.','Portrait artwork overrides, clean-artwork lettering, crop, row visibility, border and opacity controls are available.','Explicit current-slot metadata takes precedence over catalogue defaults, including configured RTP and numeric zero.'],
+    action:'Select Current Slot → Orientation / layout → Portrait. Save and publish, then refresh the OBS Browser Source. Existing layouts remain available; no database migration or installer update is needed.',
+  },
+  {
     id: 'solverde-theme-2026-10-18', date: '2026-10-18', category: 'overlays',
     title: 'Solverde broadcast theme and horizontal hunt dock',
     summary: 'Emerald surfaces, ivory highlights and fine champagne outlines with an optional reference composition.',

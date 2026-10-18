@@ -149,6 +149,7 @@ export function buildWidgetColourThemePatch(type, config, key) {
   if (!theme || !Object.hasOwn(COLOUR_KEYS, type)) return null;
   const patch = Object.fromEntries(Object.entries(COLOUR_KEYS[type])
     .map(([property, token]) => [property, theme[token]]));
+  if(type==='current_slot'&&config.displayStyle==='portrait_compact') patch.portraitPanelColor=theme.surface;
   if (type === "bets") patch.theme = theme.key;
   if (type === "bonus_hunt") patch.colour = `theme_${theme.key}`;
   if (type === "giveaway") patch.hue = theme.hue;

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Award, Info, Play } from 'lucide-react';
 import { supabase } from '../../../../config/supabaseClient';
 import useSlotPersonalBest from '../../../../hooks/useSlotPersonalBest';
 import { getProviderImage } from '../../../../utils/gameProviders';
 import { appearanceAttrs, subElementStyle, subValue } from '../shared/appearanceStyles';
-import { currentSlotConfig, currentSlotIdentity, safeArtworkUrl } from './currentSlotModel';
+import { currentSlotConfig, currentSlotIdentity, safeArtworkUrl, resolveCurrentSlotMetadata } from './currentSlotModel';
+import CompactSlotPortrait from './CompactSlotPortrait';
 import './CurrentSlotWidget.css';
 
 export default function CurrentSlotWidget({ config, userId, widgetId, publicOverlayId, overlayToken, previewOnly = false }) {
@@ -26,7 +27,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
     })().catch(() => {});
     return () => { cancelled = true; };
   }, [key, previewOnly]);
-  const slot = useMemo(() => ({ ...selected, ...(catalog?.key === key ? catalog.data : {}) }), [key, catalog, selected.image, selected.rtp, selected.volatility, selected.max_win_multiplier]);
+  const slot = resolveCurrentSlotMetadata(selected,catalog?.key===key?catalog.data:null);
   const liveBest = useSlotPersonalBest({ userId: previewOnly ? null : userId, slot, publicOverlayId: previewOnly ? undefined : publicOverlayId, overlayToken: previewOnly ? undefined : overlayToken });
   const best = previewOnly && c.__previewPersonalBest
     ? c.__previewPersonalBest
@@ -44,6 +45,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   const money = value => value == null ? '—' : `${c.currency} ${number(value)}`;
   const row = (id, label, value, bet) => <div className="cg-stat" {...part(id)}><span {...part(`${id}Label`)}>{label}</span><strong {...part(`${id}Value`)}>{bet > 0 && <small className="cg-record-bet">({money(bet)}) </small>}{value}</strong></div>;
   const rootStyle = { '--cg-panel': c.panelColor, '--cg-badge': c.badgeColor, '--cg-cover': c.coverColor, '--cg-accent': c.accentColor, '--cg-bg': c.backgroundColor, '--cg-text': c.textColor, '--cg-muted': c.mutedColor, '--cg-border': c.borderColor, '--cg-portrait-accent': c.portraitAccentColor, '--cg-portrait-panel': c.portraitPanelColor, fontFamily: c.fontFamily, ...subElementStyle(c, 'container', {}) };
+  if(c.displayStyle==='portrait_compact') return <CompactSlotPortrait config={c} slot={slot} best={best} cover={safeArtworkUrl(subValue(c,'slotImage','imageUrl',art.portraitCoverUrl||art.coverUrl||slot.image||''))} failed={failed} onImageError={event=>setFailed(prev=>({...prev,[event.currentTarget.getAttribute('src')]:true}))} widgetId={widgetId}/>;
   if (c.colourTheme === 'solverde' && c.solverde?.footer) return <div className="cg-viewport cg-viewport--solverde"><section className="cg-widget cg-widget--solverde" {...part('container')} style={rootStyle}>
     {c.showArtwork && cover && !failed[cover] ? <img className="solverde-footer-art" src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')} /> : <div />}
     <div className="solverde-footer-name"><strong {...part('slotTitle')}>{slot.name || 'Seleciona um slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>

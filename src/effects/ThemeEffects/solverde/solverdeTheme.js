@@ -22,6 +22,7 @@ export const SOLVERDE_VARIANTS = Object.freeze({
   }),
 });
 export function getSolverdeVariant(type, config = {}) {
+  if(type==='current_slot'&&config.displayStyle==='portrait_compact') return null;
   if (config.colourTheme !== 'solverde') return null;
   return ((type==='bonus_hunt'&&config.orientation==='horizontal'&&config.solverde?.huntDock)||(type==='current_slot'&&config.solverde?.footer)||(type==='bets'&&config.solverde?.predictions)) ? SOLVERDE_VARIANTS[type] : null;
 }

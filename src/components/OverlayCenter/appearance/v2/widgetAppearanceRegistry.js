@@ -1,4 +1,5 @@
 import { SOLVERDE_VARIANTS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
+import { COMPACT_CURRENT_SLOT_STYLE } from '../../widgets/current-slot/currentSlotModel.js';
 import {
   getEditorReadyWidgetStyle,
   shouldExposeEditorReadyStyle,
@@ -1005,7 +1006,7 @@ export const widgetAppearanceRegistry = Object.freeze({
     }), makeRuntimeStyle('portrait_card', 'Portrait Card', 'Tall, artwork-led game card with compact broadcast statistics.', {
       capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
       elementIds: ["container","coverFrame","slotImage","fallback","info","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestMulti","bestMultiLabel","bestMultiValue"],
-    })],
+    }),freezeStyle(COMPACT_CURRENT_SLOT_STYLE)],
     responsive: { minWidth: 680, minHeight: 140, maxWidth: 1920, maxHeight: 600 },
     elements: {
   "container": {

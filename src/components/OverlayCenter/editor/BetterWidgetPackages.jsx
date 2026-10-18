@@ -5,7 +5,7 @@ import { normalizeCandySettings } from '../../../effects/ThemeEffects/candy/cand
 import { normalizeVolcanicSettings } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { normalizeSolverdeSettings, getSolverdeVariant } from '../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { CurrentSlotAppearanceControls } from '../widgets/current-slot/CurrentSlotAppearanceControls';
-import { CURRENT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
+import { CURRENT_SLOT_DEFAULTS, COMPACT_SLOT_DEFAULTS } from '../widgets/current-slot/currentSlotModel';
 import { SAMPLE_CHAT_MESSAGES, withChatPreviewSamples } from "../widgets/chat/chatPreviewSamples";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getUserRoles } from "../../../utils/adminUtils";
@@ -1656,6 +1656,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   const defaults = DEFAULT_BETTER_CONFIG[type] || {};
   const merged = {
     ...defaults,
+    ...(type==='current_slot'&&config.displayStyle==='portrait_compact'?COMPACT_SLOT_DEFAULTS:{}),
     ...(type === "chat" ? chatStyleDefaults(config.chatStyle) : {}),
     ...config,
     ...(meta &&
@@ -4084,7 +4085,7 @@ function SimpleThemedControls({
   const activeTab = (tabs) =>
     tab === "__all" || tabs.some(([key]) => key === tab) ? tab : tabs[0]?.[0];
 
-  if (type === 'current_slot') return <CurrentSlotAppearanceControls config={c} onChange={onChange} />;
+  if (type === 'current_slot') return <CurrentSlotAppearanceControls config={c} onChange={onChange} onWidgetChange={onWidgetChange} />;
   if (type === "navbar") {
     return (
       <div className="bp-controls">

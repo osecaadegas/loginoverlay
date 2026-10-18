@@ -57,6 +57,7 @@ registerWidget({
 registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', description: 'Current slot, catalog stats and shared personal records.', category: 'better', component: CurrentSlotWidget, configPanel: CurrentSlotConfig, styleConfigKey: 'displayStyle', styles: [
   { id: 'immersive_current', label: 'Immersive', defaultSize: { width: 1100, height: 240 } },
   { id: 'portrait_card', label: 'Portrait Card', defaultSize: { width: 225, height: 400 } },
+  { id: 'portrait_compact', label: 'Portrait', defaultSize: { width: 145, height: 370 } },
 ], defaults: { ...CURRENT_SLOT_DEFAULTS } });
 
 registerWidget({

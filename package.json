@@ -65,7 +65,8 @@
     "test:embedded-giveaway-themes": "node scripts/test-embedded-giveaway-themes.mjs",
     "test:volcanic": "node scripts/test-volcanic-theme.mjs",
     "test:theme-gallery": "node scripts/test-theme-gallery.mjs",
-    "test:solverde": "node scripts/test-solverde-theme.mjs"
+    "test:solverde": "node scripts/test-solverde-theme.mjs",
+    "test:current-slot-compact": "node scripts/test-current-slot-compact.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
