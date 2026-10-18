@@ -1,0 +1,28 @@
+.ov-chat-widget[data-premium-chat=true] .ov-chat-messages{scrollbar-width:none}
+.ov-chat-widget[data-premium-chat=true] .ov-chat-messages::-webkit-scrollbar{display:none}
+.ov-chat-widget[data-premium-chat=true] .ov-chat-shoutout{box-sizing:border-box;padding:0 10px;background:none}
+.ov-chat-widget[data-premium-chat=true] .ov-chat-shoutout .better-shoutout-card{display:flex;flex-direction:column;box-shadow:inset 0 1px 0 #ffffff12;border-color:var(--chat-theme-border);background:var(--chat-theme-surface);clip-path:none;border-radius:12px}
+.ov-chat-widget[data-premium-chat=true] .ov-chat-shoutout .better-shoutout-card::before{background:linear-gradient(120deg,#ffffff06,transparent)}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-header{position:relative;flex:none;padding:7px 10px;min-height:48px;background:none;border-bottom:1px solid color-mix(in srgb,var(--chat-theme-border) 25%,transparent);gap:8px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-heading strong{text-transform:none;font-size:14px;letter-spacing:0;line-height:1.25}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-heading span{font-size:11px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-avatar-wrap{width:34px;height:34px;flex:0 0 34px}.ov-chat-widget[data-premium-chat=true] .better-shoutout-avatar{width:34px;height:34px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-timer{width:28px;height:28px;flex:0 0 28px;font-size:9px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-media{position:relative;inset:auto;flex:1;min-height:0;height:auto;overflow:hidden}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-media-empty{position:relative;inset:auto;display:flex;align-items:center;justify-content:flex-start;padding:8px 12px;gap:8px;background:transparent;height:100%;color:var(--chat-theme-text)}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-media-empty strong{display:none}.ov-chat-widget[data-premium-chat=true] .better-shoutout-media-empty svg{width:18px;height:18px}.ov-chat-widget[data-premium-chat=true] .better-shoutout-media-empty span{color:var(--chat-theme-muted);font-size:12px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-footer{position:relative;inset:auto;flex:none;padding:4px 10px;font-size:10px;background:none;color:var(--chat-theme-muted);border-top:1px solid color-mix(in srgb,var(--chat-theme-border) 25%,transparent)}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-views{font-size:9px;padding:3px 5px}
+.premium-giveaway-notice{min-width:0;overflow:hidden;gap:12px;padding:10px 14px;border-radius:12px;container-type:inline-size}.premium-giveaway-notice>svg{width:36px;height:36px;flex-basis:36px}.premium-giveaway-notice>div{min-width:0}.premium-giveaway-notice strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.premium-giveaway-notice p{line-height:1.3;overflow-wrap:anywhere}.premium-giveaway-notice small{display:block;margin-top:3px;font-size:11px;opacity:.75}
+.ov-chat-widget[data-premium-chat=true] .ov-chat-giveaway{box-sizing:border-box;width:calc(100% - 20px)!important;margin-left:10px!important;margin-right:10px!important;flex-shrink:1}
+.ov-chat-widget[data-premium-chat=true] .better-gw-result-stage{padding:0;place-items:stretch}
+.ov-chat-widget[data-premium-chat=true] .better-gw-result-card{box-sizing:border-box;width:100%;height:100%;max-width:none;grid-template-columns:48px minmax(0,1fr);gap:10px;padding:10px;border-radius:12px}
+.ov-chat-widget[data-premium-chat=true] .better-gw-result-avatar{width:48px}.ov-chat-widget[data-premium-chat=true] .better-gw-result-name{font-size:clamp(15px,4.8cqw,23px);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0}.ov-chat-widget[data-premium-chat=true] .better-gw-result-message{font-size:12px;line-height:1.3}
+
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-avatar-wrap{display:grid}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-media{background:transparent}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-media-empty{min-height:0;padding:4px 12px;text-align:left}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-footer{display:flex;min-height:22px}
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-heading span{display:block}
+
+.ov-chat-widget[data-premium-chat=true] .better-shoutout-avatar-wrap{width:36px;height:36px;flex-basis:36px;padding:1px}

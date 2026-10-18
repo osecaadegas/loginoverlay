@@ -176,6 +176,7 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
       className={`better-shoutout-card is-${config.frameStyle || "neon"} is-${phase} anim-${config.animation || "slide-left"}`}
       style={style}
       data-widget-element="container"
+      data-has-media={Boolean(videoUrl||embedUrl||alert.clipThumbnailUrl)}
       aria-label={`Twitch shoutout for ${alert.displayName}`}
     >
       {config.showCornerDots !== false ? (
@@ -267,7 +268,7 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
             className="better-shoutout-live"
             data-widget-element="liveBadge"
           >
-            <i /> Live clip
+            <i /> {videoUrl||embedUrl||alert.clipThumbnailUrl?'Live clip':'Canal'}
           </span>
         </footer>
       ) : null}
@@ -282,6 +283,7 @@ export default function RaidShoutoutWidget({
   publicOverlayId,
   overlayToken,
   onActiveChange,
+  onMediaAvailabilityChange,
   allWidgets = [],
   allowFallbackPreview = true,
 }) {
@@ -341,7 +343,8 @@ export default function RaidShoutoutWidget({
 
   useEffect(() => {
     onActiveChange?.(Boolean(activeAlert));
-  }, [activeAlert, onActiveChange]);
+    onMediaAvailabilityChange?.(Boolean(activeAlert&&(activeAlert.clipId||activeAlert.clipVideoUrl||activeAlert.clipThumbnailUrl)));
+  }, [activeAlert, onActiveChange,onMediaAvailabilityChange]);
 
   const enqueue = useCallback((alert) => {
     setQueue((current) => {

@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'solverde-viewer-readability-and-request-motion-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Clearer Solverde hunts, themed chat cards and scrolling requests',
+    summary:'Solverde loops forward, shows payout and bonus categories, and uses larger provider logos. Chat and request queues are easier to follow.',
+    changes:['Solverde advances right to left through a seamless tail reset, preserving the real current bonus and queue order.','Hunt cards add payout alongside bet and multiplier; Super and Extreme progress uses the existing hunt categories. Provider logos are larger and unboxed.','The gameplay scenery cutout has rounded corners matching the frame, while the gameplay opening remains transparent.','All chat layouts receive compact message cards and themed headers, text, giveaways and shoutouts across Solverde, Volcanic, Candy, Orbital, Arctic and Old Rome. Shoutouts without media use a compact channel card.','Image Cards and List request queues scroll automatically without visible scrollbars; overflowing List titles use a marquee. Hover/focus pauses the native queue carousel, and reduced motion disables automatic movement.'],
+    action:'Refresh the editor and OBS Browser Source, then save and publish any configuration changes. Existing queue data, commands, giveaway states and shoutout clips stay connected. No installer or database migration is needed.',
+  },
+  {
     id:'compact-requests-themed-current-game-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Compact themed requests and improved Solverde layout',
     summary:'Requests use less space, Current Game portraits follow the selected palette and Solverde uses the live RTP bar.',

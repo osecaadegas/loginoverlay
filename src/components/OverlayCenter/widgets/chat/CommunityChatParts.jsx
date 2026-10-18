@@ -42,7 +42,7 @@ export function CommunityChatMessage({ msg, nameColor, context, rootRef, visible
   const avatar = msg.raidAvatar || msg.avatarUrl || msg.avatar || msg.profileImageUrl;
   const badge = msg.isBroadcaster ? "👑" : msg.isMod ? "⚔️" : msg.isVip ? "💎" : msg.isSub ? "⭐" : "";
   const content = raid ? `raided with ${Math.max(0, Number(msg.raidViewers) || 0)} viewers!` : context.renderMessageContent(msg);
-  return <div ref={rootRef} className="community-chat-row" aria-hidden={!visible} {...attrs(c, part)} style={subElementStyle(c, part, {
+  return <div ref={rootRef} className="community-chat-row" aria-hidden={!visible} {...attrs(c, part)} style={(highlighted?context.highlightedMessageStyle:context.messagePartStyle)({
     position: "relative", flex: "0 0 auto", minWidth: 0, overflowWrap: "anywhere",
     margin: `${Number(context.msgSpacing) || 0}px 0`, padding: highlighted ? "10px" : "0 8px",
     background: highlighted ? `linear-gradient(110deg, ${c.bubble}, ${c.glow})` : "transparent",

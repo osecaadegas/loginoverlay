@@ -92,7 +92,7 @@ try {
     assert.equal(style.bg, expected.bgColor, theme + '/' + mode + '/' + state + ' visible resolved palette');
     if (mode === 'sample') assert.match(style.name, /Giveaway #1/);
     else assert.match(style.name, state === 'winner' ? /ViewerTwo/ : state === 'drawing' ? /Drawing/ : /Connected giveaway/);
-    if (theme === 'solverde' && await page.$('#chat-a .solverde-giveaway-notice')) {
+    if (await page.$('#chat-a .premium-giveaway-notice')) {
       const actual = await page.$eval('#chat-a .solverde-giveaway-notice', el => getComputedStyle(el).backgroundColor);
       const wanted = await page.evaluate(value => { const el=document.createElement('span');el.style.backgroundColor=value;document.body.append(el);const color=getComputedStyle(el).backgroundColor;el.remove();return color; }, expected.bgColor);
       assert.equal(actual,wanted,'native Solverde notice uses the resolved giveaway surface');

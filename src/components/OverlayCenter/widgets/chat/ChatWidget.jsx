@@ -45,6 +45,9 @@ import {
   triggerShoutoutChatCommand,
 } from "../../../../services/shoutoutCommandService";
 
+import {premiumChatPalette,premiumMessageSurface} from './premiumChatPresentation';
+import './PremiumChat.css';
+
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
   twitch: { label: "Twitch", icon: "T", color: "#64748b" },
@@ -821,6 +824,8 @@ function ChatWidget({
     () => ({ ...chatStyleDefaults(config?.chatStyle), ...config }),
     [config],
   );
+  const premiumPalette=premiumChatPalette(c);
+  const [shoutoutHasMedia,setShoutoutHasMedia]=useState(true);
   const partAttrs = (elementId) => ({
     "data-appearance-part": elementId,
     ...appearanceAttrs({
@@ -941,7 +946,7 @@ function ChatWidget({
         c,
         "message",
         "textColor",
-        (isBetterChat ? c.text : c.textColor) ||
+        premiumPalette?.text || (isBetterChat ? c.text : c.textColor) ||
           c.textColor ||
           defaultTextColor,
       ),
@@ -1005,7 +1010,7 @@ function ChatWidget({
     c,
     "messageList",
     "gap",
-    subValue(c, "message", "gap", c.msgSpacing ?? 2),
+    subValue(c, "message", "gap", premiumPalette?Math.min(3,Math.max(0,Number(c.msgSpacing??2)||0)):c.msgSpacing ?? 2),
   );
   const borderRadius = subValue(
     c,
@@ -1129,7 +1134,7 @@ function ChatWidget({
         c,
         "container",
         "background",
-        c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic,
+        c.bgColor || (premiumPalette&&!['floating','stack'].includes(chatStyle)?premiumPalette.surface:bgDefaults[chatStyle]) || bgDefaults.classic,
       ),
       styleSecaSurfaceGradient(),
     );
@@ -1348,15 +1353,15 @@ function ChatWidget({
   const filterStyle = buildChatFilterStyle(brightness, contrast, saturation);
 
   const headerPartStyle = (fallback = {}) =>
-    subElementStyle(c, "header", fallback);
+    subElementStyle(c, "header", {...fallback,...(premiumPalette?{background:premiumPalette.surface,color:premiumPalette.text,borderColor:premiumPalette.border,textShadow:"none"}:{})});
   const messageListStyle = (fallback = {}) =>
-    subElementStyle(c, "messageList", fallback);
+    subElementStyle(c, "messageList", {...fallback,...(premiumPalette?{gap:0,padding:"6px 10px",justifyContent:isBetterChat&&betterChatFlow==="bottom-to-top"?"flex-end":"flex-start"}:{})});
   const messagePartStyle = (fallback = {}) =>
-    subElementStyle(c, "message", fallback);
+    subElementStyle(c, "message", {...fallback,...premiumMessageSurface(premiumPalette,msgSpacing)});
   const highlightedMessageStyle = (fallback = {}) =>
-    subElementStyle(c, "highlightedMessage", fallback);
+    subElementStyle(c, "highlightedMessage", {...fallback,...premiumMessageSurface(premiumPalette,msgSpacing,true)});
   const messageTextStyle = (fallback = {}) =>
-    subElementStyle(c, "messageText", fallback);
+    subElementStyle(c, "messageText", {...fallback,...(premiumPalette?{color:premiumPalette.text,textShadow:"none",opacity:1}:{})});
   const usernameStyle = (fallback = {}) =>
     subElementStyle(c, "username", fallback);
   const avatarStyle = (fallback = {}) => subElementStyle(c, "avatar", fallback);
@@ -1382,6 +1387,7 @@ function ChatWidget({
   });
   const style = subElementStyle(c, "container", {
     position: "relative",
+    "--chat-theme-surface":premiumPalette?.surface,"--chat-theme-border":premiumPalette?.border,"--chat-theme-text":premiumPalette?.text,"--chat-theme-muted":premiumPalette?.muted,
     width: "100%",
     height: "100%",
     background: bgColor,
@@ -1512,7 +1518,7 @@ function ChatWidget({
   const shoutoutUsesGiveawaySlot = Boolean(giveawayVisible);
   const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
   const requestedGiveawayMargin = Number(c.giveawayMargin);
-  const embeddedShoutoutHeight = shoutoutHeight;
+  const embeddedShoutoutHeight = premiumPalette&&!shoutoutHasMedia?100:shoutoutHeight;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
       className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}
@@ -1536,16 +1542,18 @@ function ChatWidget({
     >
       <RaidShoutoutWidget
         config={{
-          frameStyle: "neon",
+          colourTheme:c.colourTheme,
+          fontFamily:c.font||c.fontFamily,
+          frameStyle: premiumPalette?"minimal":"neon",
           animation: "slide-left",
           displayDuration: c.shoutoutDuration || 45,
           chatCommandEnabled: false,
           dismissOnClipEnd: c.shoutoutDismissOnClipEnd === true,
-          accentColor: c.roleEffects?.raidColor || "#ff2d8d",
-          secondaryColor: c.glow || "#45c8ff",
+          accentColor: premiumPalette?.accent || c.roleEffects?.raidColor || "#ff2d8d",
+          secondaryColor: premiumPalette?.border || c.glow || "#45c8ff",
           backgroundColor: c.panel || "#081228",
           textColor: c.text || "#ffffff",
-          mutedColor: "#9dbdf2",
+          mutedColor: premiumPalette?.muted || "#9dbdf2",
           borderRadius: Math.max(8, Number(borderRadius) || 12),
           borderWidth: 1,
           glowIntensity: Math.min(
@@ -1557,8 +1565,8 @@ function ChatWidget({
           showViews: true,
           showClipTitle: true,
           showStreamerInfo: true,
-          showCornerDots: true,
-          showScanline: true,
+          showCornerDots: !premiumPalette,
+          showScanline: !premiumPalette,
           __previewAlert: c.__previewShoutoutAlert,
         }}
         userId={userId}
@@ -1566,6 +1574,7 @@ function ChatWidget({
         publicOverlayId={publicOverlayId}
         overlayToken={overlayToken}
         onActiveChange={setShoutoutActive}
+        onMediaAvailabilityChange={setShoutoutHasMedia}
         allowFallbackPreview={false}
       />
     </div>
@@ -1576,6 +1585,7 @@ function ChatWidget({
   return (
     <div
       className={`ov-chat-widget${modeClass}`}
+      data-premium-chat={premiumPalette?"true":undefined}
       {...partAttrs("container")}
       style={rootStyle}
     >

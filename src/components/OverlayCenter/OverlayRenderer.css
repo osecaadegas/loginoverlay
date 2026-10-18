@@ -7195,7 +7195,7 @@
 }
 
 /* -- Typewriter Mode ï¿½ terminal / hacker look -- */
-.ov-chat-widget--typewriter {
+.ov-chat-widget--typewriter:not([data-premium-chat=true]) {
   border: 1px solid rgba(74, 222, 128, 0.15) !important;
   box-shadow:
     0 0 20px rgba(74, 222, 128, 0.06),
@@ -7238,7 +7238,7 @@
 /* ------------------------------------------------------
    Cards Mode ï¿½ dark card per message with Twitch badges
    ------------------------------------------------------ */
-.ov-chat-widget--cards {
+.ov-chat-widget--cards:not([data-premium-chat=true]) {
   background: rgba(18, 10, 35, 0.95) !important;
   border: 2px solid rgba(120, 60, 200, 0.35) !important;
   box-shadow:

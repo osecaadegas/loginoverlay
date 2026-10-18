@@ -6,3 +6,16 @@
 @container(max-width:340px){.sr-image-title{font-size:min(var(--sr-title),6cqw)}.sr-image-viewer{font-size:min(var(--sr-user),5cqw)}}
 
 .sr-image-cards[data-narrow=true] .sr-image-title{font-size:min(var(--sr-title),6cqw)}.sr-image-cards[data-narrow=true] .sr-image-viewer{font-size:min(var(--sr-user),5cqw)}
+
+/* Queue motion is local; the header stays pinned and wheel scrolling still works. */
+.sr-image-list{position:relative;scrollbar-width:none;scroll-snap-type:none}.sr-image-list::-webkit-scrollbar{display:none}
+.sr-image-cards--compact .sr-image-title{display:block;white-space:nowrap;overflow:hidden;padding-right:calc(32px * var(--sr-scale,1))}
+.sr-title-marquee{display:flex;width:100%;max-width:100%;white-space:nowrap;overflow:hidden;gap:24px}.sr-title-marquee>span{flex:none}
+.sr-title-marquee[data-moving=true]>span{animation:sr-title-marquee var(--sr-marquee-duration) linear infinite}
+@keyframes sr-title-marquee{0%,12%{transform:translateX(0)}100%{transform:translateX(calc(-1 * var(--sr-marquee-distance)))}}
+@media(prefers-reduced-motion:reduce){.sr-title-marquee[data-moving=true]>span{animation:none}}
+
+.better-hunt-request-copy strong{display:block;min-width:0}
+.better-hunt-request-copy .sr-title-marquee,.better-hunt-request-copy .sr-title-marquee>span{font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit;text-shadow:inherit}
+.better-hunt-request-copy strong{color:var(--bh-steel-hi);text-shadow:none}.better-hunt-request-copy>span{color:var(--bh-steel-dim);text-shadow:none}.better-hunt-request-user{color:var(--bh-ice)}
+.better-hunt-request--image .better-hunt-request-copy strong{color:#fff}.better-hunt-request--image .better-hunt-request-copy>span{color:#e2e8f0}
