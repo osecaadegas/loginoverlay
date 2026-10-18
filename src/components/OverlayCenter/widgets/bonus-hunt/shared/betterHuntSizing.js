@@ -4,6 +4,7 @@ const REQUEST_ROWS = { compact: 3, image: 2, names: 4 };
 const REQUEST_PITCH = { compact: 44, image: 56, names: 30 };
 
 export function getHorizontalRequestRows(config = {}) {
+  if(config.requestView === 'image_cards') return Math.max(1,Math.min(10,Number(config.requestImageCards?.visibleRequests)||3));
   const fallback = REQUEST_ROWS[config.listMode] || REQUEST_ROWS.compact;
   const value = Number(config.requestVisibleRows ?? fallback);
   return Math.round(
@@ -12,6 +13,7 @@ export function getHorizontalRequestRows(config = {}) {
 }
 
 export function getHorizontalRequestPitch(config = {}) {
+  if(config.requestView === 'image_cards') return Math.max(90,Math.min(260,Number(config.requestImageCards?.rowHeight)||140))+Math.max(0,Math.min(30,Number(config.requestImageCards?.cardGap??8)));
   const scale = Math.max(1, Math.min(1.35, Number(config.uiScale) || 1));
   return Math.ceil(
     (REQUEST_PITCH[config.listMode] || REQUEST_PITCH.compact) *

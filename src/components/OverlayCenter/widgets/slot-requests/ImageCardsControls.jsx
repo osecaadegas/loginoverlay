@@ -1,0 +1,14 @@
+import {imageCardsSettings} from './imageCardsModel';
+export default function ImageCardsControls({config,onChange,embedded=false}) {
+ const c=imageCardsSettings(config),set=patch=>onChange(embedded?{...config,requestImageCards:{...config.requestImageCards,...patch}}:{...config,...patch});
+ return <div className="bp-controls sr-image-controls">
+  {!embedded&&<label className="bp-text">Layout<select aria-label="Slot Requests layout" value={config.displayStyle||'image_cards'} onChange={e=>set({displayStyle:e.target.value})}><option value="v1_minimal">List</option><option value="image_cards">Image Cards</option></select></label>}
+  {[['rowHeight','Row height',90,260],['artworkWidth','Artwork width',50,180],['artworkHeight','Artwork height',60,240],['titleSize','Slot title font size',14,36],['usernameSize','Username font size',12,30],['cardGap','Card spacing',0,30],['visibleRequests','Visible requests',1,10]].filter(([id])=>embedded||config.displayStyle!=='v1_minimal'||['cardGap','visibleRequests'].includes(id)).map(([id,label,min,max])=><label className="bp-text" key={id}>{label}<input aria-label={label} type="number" value={c[id]} min={min} max={max} onChange={e=>set({[id]:Math.max(min,Math.min(max,e.target.valueAsNumber||min))})}/></label>)}
+  <label className="bp-text">Artwork fit<select aria-label="Artwork fit" value={c.artworkFit} onChange={e=>set({artworkFit:e.target.value})}><option value="cover">Cover</option><option value="contain">Contain</option></select></label>
+  <label className="bp-text">Font<select aria-label="Requests font" value={c.fontFamily} onChange={e=>set({fontFamily:e.target.value})}>{[c.fontFamily,"'Inter', Arial, sans-serif","Arial, sans-serif","'Rajdhani', sans-serif"].filter((f,i,a)=>a.indexOf(f)===i).map(font=><option key={font} value={font}>{font.split(',')[0].replaceAll("'",'')}</option>)}</select></label>
+  {['showAvatars','showPositions'].map((id,i)=><label className="bp-text" key={id}><input type="checkbox" checked={c[id]!==false} onChange={e=>set({[id]:e.target.checked})}/>{i?'Show queue positions':'Show avatars'}</label>)}
+  {[['backgroundColor','Background'],['cardColor','Card background'],['borderColor','Border and accent'],['textColor','Slot title colour'],['mutedColor','Username colour']].map(([id,label])=><label className="bp-text" key={id}>{label}<input aria-label={id} type="color" value={c[id]} onChange={e=>set({[id]:e.target.value})}/></label>)}
+  {[['borderRadius','Corner radius',0,40],['borderWidth','Border width',0,5],['opacity','Opacity (%)',0,100]].map(([id,label,min,max])=><label className="bp-text" key={id}>{label}<input aria-label={label} type="number" value={c[id]} min={min} max={max} onChange={e=>set({[id]:Math.max(min,Math.min(max,e.target.valueAsNumber||0))})}/></label>)}
+  <p className="bp-hint">Uses your existing request queue and command. Manage requests in Bonus Hunt; the header stays visible while the list scrolls.</p>
+ </div>;
+}

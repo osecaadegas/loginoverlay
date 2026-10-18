@@ -67,7 +67,8 @@
     "test:theme-gallery": "node scripts/test-theme-gallery.mjs",
     "test:solverde": "node scripts/test-solverde-theme.mjs",
     "test:current-slot-compact": "node scripts/test-current-slot-compact.mjs",
-    "test:new-horizontal": "node scripts/test-new-horizontal-hunt.mjs"
+    "test:new-horizontal": "node scripts/test-new-horizontal-hunt.mjs",
+    "test:request-image-cards": "node scripts/test-request-image-cards.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

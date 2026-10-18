@@ -1,3 +1,6 @@
+import SlotRequestsWidget from './slot-requests/SlotRequestsWidget';
+import ImageCardsControls from './slot-requests/ImageCardsControls';
+import {IMAGE_CARDS_DEFAULTS} from './slot-requests/imageCardsModel';
 /**
  * Better Editor live data-source widgets.
  *
@@ -614,3 +617,5 @@ registerWidget({
     },
   },
 });
+
+registerWidget({type:'slot_requests',label:'Slot Requests',icon:'↝',description:'Live slot request queue with large image cards.',category:'better',component:SlotRequestsWidget,configPanel:ImageCardsControls,styleConfigKey:'displayStyle',styles:[{id:'v1_minimal',label:'List',defaultSize:{width:440,height:300}},{id:'image_cards',label:'Image Cards',defaultSize:{width:440,height:520}}],defaults:{...IMAGE_CARDS_DEFAULTS,maxDisplay:50}});

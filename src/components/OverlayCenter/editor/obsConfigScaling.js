@@ -8,7 +8,7 @@ const ROOT_PIXEL_CONFIG_KEYS = new Set([
   "padding", "prizeSize", "radius", "reelHeight", "slotImageRadius",
   "slotNameSize", "statRadius", "subSize", "subtitleSize", "swordSize",
   "tileGap", "tileRadius", "timestampSize", "titleSize", "usernameSize",
-  "valueSize",
+  "valueSize", "rowHeight", "artworkWidth", "artworkHeight",
 ]);
 
 // Advanced appearance values live inside element-scoped buckets rather than

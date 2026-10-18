@@ -153,7 +153,8 @@ try {
   };
   const types = await page.evaluate(() => window.themeTest.types);
   const themes = await page.evaluate(() => window.themeTest.themes);
-  assert.equal(types.length, 13);
+  assert.equal(types.length, 14);
+  assert(types.includes('slot_requests'), 'Slot Requests participates in the palette regression matrix');
   const unit = await page.evaluate(() => {
     const t = window.themeTest, failures = [];
     const freeze = obj => { if (obj && typeof obj === 'object') { Object.freeze(obj); Object.values(obj).forEach(freeze); } return obj; };

@@ -51,6 +51,11 @@ try {
       );
       continue;
     }
+    if(widgetDefinition.type === 'slot_requests') {
+      assert.ok(['Slot Requests layout','Row height','Artwork width','Artwork height','Artwork fit','Slot title font size','Username font size','Card spacing','Visible requests','Show avatars','Show queue positions'].every(label=>markup.includes(label)), 'Slot Requests exposes its supported queue/card controls');
+      assert.ok(!markup.includes('Effect quality'), 'Slot Requests has no unsupported effects controls');
+      continue;
+    }
     if (widgetDefinition.type === "slot_window") {
       assert.ok(
         markup.includes("ScreenSplit source") &&

@@ -1,3 +1,4 @@
+import SlotRequestsWidget from '../widgets/slot-requests/SlotRequestsWidget';
 import OverlayAssetGate from './OverlayAssetGate';
 import { volcanicStyleVariables } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
 import { solverdeStyleVariables } from '../../../effects/ThemeEffects/solverde/solverdeTheme.js';
@@ -447,6 +448,7 @@ const MOCK_DATA_KEYS = Object.freeze({
 });
 
 const LIVE_DATA_KEYS = Object.freeze({
+  slot_requests:["commandTrigger","showSlotRequests"],
   current_slot: ['slot', 'slotId', 'slotName', 'provider', 'imageUrl', 'artworkBySlot', 'currency'],
   slot_bingo: [
     "title", "boardRows", "showProgress",
@@ -646,6 +648,7 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
 const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
+  slot_requests: SlotRequestsWidget,
   slot_window: SlotWindowWidget,
   camera: CameraWidget,
   current_slot: CurrentSlotWidget,
@@ -664,6 +667,7 @@ const COMPONENTS = {
 };
 
 const CONTROL_SCHEMAS = {
+  slot_requests:["layout","artwork","typography","colours"],
   slot_window: ["source", "mask", "crop", "performance"],
   camera: ["style", "trigger", "camera", "chroma", "effect", "motion", "audio", "performance"],
   current_slot: ['display', 'colours'],
@@ -713,6 +717,7 @@ const CONTROL_SCHEMAS = {
 };
 
 const SIZE_CONSTRAINTS = {
+  slot_requests:{minWidth:240,minHeight:160,maxWidth:900,maxHeight:1080},
   slot_window: {
     minWidth: 240,
     minHeight: 135,
@@ -920,7 +925,7 @@ export function findBetterLiveSourceWidget(widgetType, liveWidgets = []) {
 function resolveBetterLiveSourceWidget(widgetType, context = {}) {
   if (context?.liveWidget?.widget_type === widgetType)
     return context.liveWidget;
-  return findBetterLiveSourceWidget(widgetType, context?.liveWidgets);
+  return findBetterLiveSourceWidget(widgetType, context?.liveWidgets) || (widgetType === "slot_requests" ? findBetterLiveSourceWidget("bonus_hunt",context?.liveWidgets) : null);
 }
 
 function mergeBetterLiveDataConfig(widgetType, baseConfig, liveWidget) {

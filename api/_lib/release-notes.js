@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'slot-requests-image-cards-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Image Cards layout for Slot Requests',
+    summary:'Large slot artwork, top-aligned titles and readable requester names in a mint-framed queue.',
+    changes:['Slot Requests is available as an independent widget with Image Cards and List layouts.','Image Cards is also available in Bonus Hunt → Chat Requests; List and 3D remain available.','Row height, artwork dimensions/fit, title and username sizes, spacing, visible rows, avatars and queue badges are configurable.','The existing request hook, catalogue image resolver and queue management remain in use; no new queue polling mechanism is added.'],
+    action:'Add Slot Requests and select Image Cards, or select Image Cards under Bonus Hunt → Chat Requests. Save and publish, then refresh OBS. Missing avatars use a themed placeholder. No installer or database migration is needed.',
+  },
+  {
     id:'solverde-dock-readability-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Solverde hunt cards and predictions refined',
     summary:'Hunt details remain visible in the compact dock and prediction fills stay inside their rows.',

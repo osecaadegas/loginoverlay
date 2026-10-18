@@ -1,3 +1,4 @@
+import ImageCards from '../slot-requests/ImageCards';
 import React, {
   useEffect,
   useLayoutEffect,
@@ -3377,7 +3378,7 @@ export function BetterBonusHuntStyle({
       found.length ? found : normalizeBetterHuntRequests(c[key]),
     [],
   );
-  const requestView = c.requestView === "carousel" ? "carousel" : "list";
+  const requestView = ["carousel","image_cards"].includes(c.requestView) ? c.requestView : "list";
   const requestActiveIndex = useBetterHuntCarousel(
     requestRows.length,
     Number(c.carouselMs) || 3200,
@@ -3809,7 +3810,7 @@ export function BetterBonusHuntStyle({
   const seenRequestActionsRef = useRef(new Set());
   const [requestActionQueue, setRequestActionQueue] = useState([]);
   const [requestActionVisual, setRequestActionVisual] = useState(null);
-  const requestActionAnimationsEnabled = c.requestActionAnimations === true;
+  const requestActionAnimationsEnabled = c.requestActionAnimations === true && requestView !== 'image_cards';
 
   const measureRequestRect = (rootNode, node) => {
     if (!rootNode || !node) return null;
@@ -4018,6 +4019,7 @@ export function BetterBonusHuntStyle({
   };
   const renderRequests = () => {
     if (c.showRequests === false) return null;
+    if(requestView==='image_cards') return <ImageCards config={c} requests={requestRows} widgetType="bonus_hunt"/>;
     const rowsShown =
       orientation === "horizontal"
         ? getHorizontalRequestRows(c)

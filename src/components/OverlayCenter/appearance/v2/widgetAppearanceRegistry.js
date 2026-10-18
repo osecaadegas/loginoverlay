@@ -1,3 +1,4 @@
+import {IMAGE_CARDS_STYLE,EMBEDDED_IMAGE_CARD_ELEMENTS} from '../../widgets/slot-requests/imageCardsModel';
 import { SOLVERDE_VARIANTS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { COMPACT_CURRENT_SLOT_STYLE } from '../../widgets/current-slot/currentSlotModel.js';
 import { NEW_HORIZONTAL_APPEARANCE } from '../../widgets/bonus-hunt/shared/newHorizontalHunt.js';
@@ -3440,6 +3441,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       textSize: "standard",
     }),
     styles: Object.freeze([
+      freezeStyle({id:'better_bonus_hunt_image_cards',label:'Better Hunt with Image Cards',hiddenInQuickEditor:true,elementIds:[...BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS,...Object.keys(EMBEDDED_IMAGE_CARD_ELEMENTS)],elements:EMBEDDED_IMAGE_CARD_ELEMENTS,capabilities:{...BASE_QUICK_CAPABILITIES,...IMAGE_QUICK_CAPABILITIES}}),
       freezeStyle(SOLVERDE_VARIANTS.bonus_hunt),
       freezeStyle(NEW_HORIZONTAL_APPEARANCE),
       freezeStyle({
@@ -3666,6 +3668,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       maxHeight: 1080,
     }),
     elements: Object.freeze({
+      ...EMBEDDED_IMAGE_CARD_ELEMENTS,
       container: Object.freeze({
         label: "Entire widget",
         kind: "surface",
@@ -3989,6 +3992,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       textSize: "standard",
     }),
     styles: Object.freeze([
+      freezeStyle({...IMAGE_CARDS_STYLE,elementIds:Object.keys(IMAGE_CARDS_STYLE.elements)}),
       freezeStyle({
         id: "v1_minimal",
         label: "Modern Minimal",
