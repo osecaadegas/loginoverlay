@@ -61,13 +61,13 @@
 .street-giveaway-notice span{font-size:.85em;overflow:hidden;text-overflow:ellipsis}
 .street-giveaway-notice b{margin-left:auto;font-size:.8em;flex-shrink:0}
 .street-module--slideshow_frame .better-slideshow-frame{height:100%!important;background:transparent!important;border:0!important;border-radius:9px!important;box-shadow:none!important;padding:5px!important}
-.street-module--slot_requests .sr-image-cards{height:100%!important;grid-template-rows:22px minmax(0,1fr)!important;border:0!important;background:transparent!important;border-radius:0!important}
-.street-module--slot_requests .sr-image-header{display:flex;min-height:0;height:22px;padding:0 8px;border:0;background:transparent;gap:6px}
+.street-module--slot_requests .sr-image-cards{height:100%!important;grid-template-rows:calc(22px * var(--sr-scale,1)) minmax(0,1fr)!important;border:0!important;background:transparent!important;border-radius:0!important}
+.street-module--slot_requests .sr-image-header{display:flex;min-height:0;height:calc(22px * var(--sr-scale,1));padding:0 calc(8px * var(--sr-scale,1));border:0;background:transparent;gap:calc(6px * var(--sr-scale,1))}
 .street-module--slot_requests .sr-image-header>svg,.street-module--slot_requests .sr-image-header>strong{display:none}
-.street-module--slot_requests .sr-image-command{font-size:10px}
-.street-module--slot_requests .sr-image-players{font-size:9px}
-.street-module--slot_requests .sr-image-players b{font-size:13px;min-width:20px;height:20px;border-radius:4px}
-.street-module--slot_requests .sr-image-list{padding:5px!important}
+.street-module--slot_requests .sr-image-command{font-size:calc(10px * var(--sr-scale,1))}
+.street-module--slot_requests .sr-image-players{font-size:calc(9px * var(--sr-scale,1))}
+.street-module--slot_requests .sr-image-players b{font-size:calc(13px * var(--sr-scale,1));min-width:calc(20px * var(--sr-scale,1));height:calc(20px * var(--sr-scale,1));border-radius:calc(4px * var(--sr-scale,1))}
+.street-module--slot_requests .sr-image-list{padding:calc(5px * var(--sr-scale,1))!important}
 .street-module--slot_requests .sr-image-card{background:color-mix(in srgb,var(--street-panel) 85%,#000)!important;border-color:#ffffff38!important}
 .street-module--bonus_hunt .better-hunt-root{height:100%!important;min-height:0!important}
 .street-module--bonus_hunt .better-hunt-shell{padding:0!important}

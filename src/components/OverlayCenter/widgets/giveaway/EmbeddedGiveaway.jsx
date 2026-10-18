@@ -2,6 +2,7 @@ import {GalacticGiveawayNotice} from '../../../../effects/ThemeEffects/galactic-
 import {StarterGiveawayNotice} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtGiveawayNotice } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import React, { useLayoutEffect, useRef, useState } from "react";
+import './EmbeddedGiveaway.css';
 import { SolverdeGiveawayNotice } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
 
 export function giveawayParticipantName(value) {
@@ -19,6 +20,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const width = bounded(config.width, 240, 1600, 420);
   const height = bounded(config.height, 140, 900, 270);
   const hasWinner = Boolean(config.winner);
+  const drawing = !hasWinner && Boolean(config.spinningWinner);
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
@@ -26,7 +28,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const premium=['orbital','arctic','candy','volcanic','solverde','old_rome','street_art','starter_studio','galactic_command'].includes(winnerTheme);
   const regularFrameHeight = bounded(premium&&(!layout.giveawayHeight||layout.giveawayHeight===250)?96:layout.giveawayHeight, ['street_art','starter_studio','galactic_command'].includes(winnerTheme) ? 44 : 80, 600, 250);
   const winnerFrameHeight = bounded(premium&&(!layout.giveawayWinnerHeight||layout.giveawayWinnerHeight===180)?116:layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
-  const frameHeight = hasWinner ? winnerFrameHeight : premium && config.spinningWinner ? Math.max(190,regularFrameHeight) : regularFrameHeight;
+  const frameHeight = hasWinner ? winnerFrameHeight : drawing ? Math.max(190,regularFrameHeight) : regularFrameHeight;
   const canvasHeight = hasWinner ? 190 : height;
   const margin = bounded(layout.giveawayMargin, 0, 30, 4);
   useLayoutEffect(() => {
@@ -41,7 +43,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Height remains independently configurable and clips only when deliberately reduced.
   const scale = size.width > 0 ? Math.min(size.width / width,size.height/canvasHeight) : 1;
   return (
-    <section ref={frameRef} className="ov-chat-giveaway" data-giveaway-theme={winnerTheme || undefined} data-giveaway-state={hasWinner ? "winner" : "active"} aria-label="Giveaway" style={{
+    <section ref={frameRef} className="ov-chat-giveaway" data-giveaway-theme={winnerTheme || undefined} data-giveaway-state={hasWinner ? "winner" : drawing ? "drawing" : "active"} aria-label="Giveaway" style={{
       '--gw-result-surface': config.bgColor,
       '--gw-result-raised': config.panelHi,
       '--gw-result-background': config.panelLo,
@@ -49,12 +51,13 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       '--gw-result-text': config.textColor,
       '--gw-result-muted': config.mutedColor,
       '--gw-result-accent': config.accentColor,
+      '--gw-embedded-reel': config.reelColor || config.panelLo || config.bgColor,
       position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
       height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
       overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
       width: "100%",
     }}>
-      <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} style={nativeWinner || (premium&&!config.spinningWinner) || ['volcanic','solverde'].includes(winnerTheme) ? {
+      <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} style={drawing || nativeWinner || (premium&&!config.spinningWinner) || ['volcanic','solverde'].includes(winnerTheme) ? {
         position: 'absolute', inset: 0, width: '100%', height: '100%', containerType: 'size',
       } : {
         position: "absolute", width, height: canvasHeight, top: "50%", left: "50%",

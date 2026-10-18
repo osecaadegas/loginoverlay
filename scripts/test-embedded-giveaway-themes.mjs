@@ -58,9 +58,9 @@ try {
         }
         return count;
       },
-      render(theme, state = 'open', mode = 'editor', restore = false) {
+      render(theme, state = 'open', mode = 'editor', restore = false, size = {}) {
         const source = registry.createBetterInstance('giveaway', { instanceId: 'source', width: 420, height: 270, config: themed('giveaway', theme === 'candy' ? 'gladiator' : 'candy', live(state)) });
-        const chat = registry.createBetterInstance('chat', { instanceId: 'chat-a', width: 378, height: 659, config: themed('chat', theme, { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false }) });
+        const chat = registry.createBetterInstance('chat', { instanceId: 'chat-a', width: size.width || 378, height: size.height || 659, config: themed('chat', theme, { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false }) });
         const second = registry.createBetterInstance('chat', { instanceId: 'chat-b', width: 378, height: 659, config: themed('chat', 'arctic', { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false }) });
         const instances = restore ? JSON.parse(localStorage.getItem('giveaway-theme-layout')) : [chat, second, source];
         localStorage.setItem('giveaway-theme-layout', JSON.stringify(instances));
@@ -92,16 +92,29 @@ try {
     assert.equal(style.bg, expected.bgColor, theme + '/' + mode + '/' + state + ' visible resolved palette');
     if (mode === 'sample') assert.match(style.name, /Giveaway #1/);
     else assert.match(style.name, state === 'winner' ? /ViewerTwo/ : state === 'drawing' ? /Drawing/ : /Connected giveaway/);
-    if (await page.$('#chat-a .street-giveaway-notice')) {
-      const actual=await page.$eval('#chat-a .street-giveaway-notice',el=>getComputedStyle(el).backgroundColor);
+    if (await page.$('#chat-a :is(.street-giveaway-notice,.studio-giveaway-notice,.gc-giveaway-notice)')) {
+      const actual=await page.$eval('#chat-a :is(.street-giveaway-notice,.studio-giveaway-notice,.gc-giveaway-notice)',el=>getComputedStyle(el).backgroundColor);
       const wanted=await page.evaluate(value=>{const el=document.createElement('span');el.style.backgroundColor=value;document.body.append(el);const colour=getComputedStyle(el).backgroundColor;el.remove();return colour},expected.bgColor);
-      assert.equal(actual,wanted,'Street Art notice follows the owning chat surface');
+      assert.equal(actual,wanted,'native notice follows the owning chat surface');
     } else if (await page.$('#chat-a .premium-giveaway-notice')) {
       const actual = await page.$eval('#chat-a .solverde-giveaway-notice', el => getComputedStyle(el).backgroundColor);
       const wanted = await page.evaluate(value => { const el=document.createElement('span');el.style.backgroundColor=value;document.body.append(el);const color=getComputedStyle(el).backgroundColor;el.remove();return color; }, expected.bgColor);
       assert.equal(actual,wanted,'native Solverde notice uses the resolved giveaway surface');
     } else if (mode === 'sample' || state !== 'winner') {
+      assert(await page.$('#chat-a .better-giveaway-widget'),JSON.stringify({theme,state,mode,html:await page.$eval('#chat-a .ov-chat-giveaway',e=>e.innerHTML.slice(0,500))}));
       assert.equal(await page.$eval('#chat-a .better-giveaway-widget', el => getComputedStyle(el).getPropertyValue('--w-bg').trim()), expected.bgColor, 'actual open/drawing renderer receives chat surface');
+    }
+    if(mode !== 'sample' && state === 'drawing') {
+      await page.waitForSelector('#chat-a [data-giveaway-state=drawing] .better-gw-roulette-stage.is-measured');
+      const bounds=await page.evaluate(()=>{
+        const rect=selector=>{const r=document.querySelector('#chat-a '+selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,height:r.height}};
+        return {bay:rect('.ov-chat-giveaway'),viewport:rect('.better-gw-roulette-viewport'),status:rect('.better-gw-roulette-status'),messages:rect('.ov-chat-messages'),header:rect('.better-gw-header'),avatar:rect('.better-gw-avatar-bubble'),name:rect('.better-gw-avatar-name')};
+      });
+      for(const key of ['viewport','status','header'])assert(bounds[key].top>=bounds.bay.top-1&&bounds[key].bottom<=bounds.bay.bottom+1,theme+'/'+mode+' '+key+' inside reserved giveaway bay: '+JSON.stringify(bounds));
+      assert(bounds.viewport.height>=70,theme+' usable roulette viewport');
+      assert(bounds.name.bottom<=bounds.viewport.bottom+1&&bounds.avatar.top>=bounds.viewport.top-1,theme+' complete participant avatars and names');
+      assert(bounds.messages.top>=bounds.bay.bottom-1,theme+' messages start beneath drawing');
+      if(mode==='obs')await page.screenshot({path:'.codex-dev/giveaway-theme-verification/drawing-'+theme+'.png'});
     }
     if (mode !== 'sample' && state === 'winner' && !['arctic', 'orbital', 'candy'].includes(theme)) {
       const actual = await page.$eval('#chat-a .better-gw-result-name', el => getComputedStyle(el).color);
@@ -111,6 +124,13 @@ try {
     }
     if (mode === 'obs' && ['candy', 'arctic', 'old_rome', 'orbital'].includes(theme)) await page.screenshot({ path: `.codex-dev/giveaway-theme-verification/${theme}-${state}.png` });
     renders++;
+  }
+  for(const theme of keys){
+    await page.evaluate(theme=>window.giveawayThemes.render(theme,'drawing','obs',false,{width:280,height:440}),theme);
+    await page.waitForFunction(theme=>document.querySelector('#chat-a [data-giveaway-state=drawing]')?.dataset.giveawayTheme===theme,{},theme);
+    await new Promise(r=>setTimeout(r,120));
+    const fits=await page.evaluate(()=>{const bay=document.querySelector('#chat-a .ov-chat-giveaway').getBoundingClientRect(),status=document.querySelector('#chat-a .better-gw-roulette-status').getBoundingClientRect(),viewport=document.querySelector('#chat-a .better-gw-roulette-viewport').getBoundingClientRect(),name=document.querySelector('#chat-a .better-gw-avatar-name').getBoundingClientRect();return {bay:bay.height,viewport:viewport.height,status:status.bottom<=bay.bottom+1,name:name.bottom<=viewport.bottom+1};});
+    assert(fits.viewport>=30&&fits.status&&fits.name,theme+' narrow chat retains complete reel: '+JSON.stringify(fits));
   }
   await page.evaluate(() => window.giveawayThemes.render('candy', 'winner', 'obs'));
   await page.reload(); await page.evaluate(initialize);

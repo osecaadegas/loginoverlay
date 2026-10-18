@@ -1,0 +1,20 @@
+/* A drawing uses the actual reserved chat bay, never the standalone canvas.
+   Keep the live reel and participant names inside it at every theme/size. */
+.ov-chat-giveaway[data-giveaway-state="drawing"] .ov-chat-giveaway-canvas .better-giveaway-stage .better-giveaway-widget {
+  width:100%;height:100%;min-height:0;clip-path:none;
+}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .ov-chat-giveaway-canvas .better-giveaway-stage .better-giveaway-widget.is-tall .better-gw-header {
+  position:absolute;inset:8px 12px auto;min-height:18px;margin:0;padding:0;opacity:1;transform:none;
+}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .ov-chat-giveaway-canvas .better-giveaway-stage .better-giveaway-widget .better-gw-name {font-size:min(var(--w-title-size,20px),16px);line-height:1.2}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .ov-chat-giveaway-canvas .better-giveaway-stage .better-giveaway-widget .better-gw-reel-zone {inset:34px 10px 8px}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-roulette-stage {
+  display:grid;grid-template-rows:minmax(0,1fr) auto;gap:5px;padding:0;min-height:0;
+}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-roulette-viewport {
+  height:100%;min-height:0;container-type:size;border-color:var(--w-line);background:var(--gw-embedded-reel,var(--w-reel-color));
+}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-avatar-bubble {width:min(var(--w-avatar-size,66px),55cqh);height:min(var(--w-avatar-size,66px),55cqh);border-color:var(--w-accent)}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-avatar-name {top:calc(50% + min(var(--w-avatar-size,66px),55cqh) / 2 + 3px);color:var(--gw-result-text,var(--w-label-color));font-size:11px;line-height:1.2;text-shadow:none}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-roulette-status {margin:0;min-height:14px;line-height:14px;font-size:9px;letter-spacing:.08em}
+.ov-chat-giveaway[data-giveaway-state="drawing"] .better-gw-reel-zone .better-gw-status-spin {color:var(--w-accent);text-shadow:none}
