@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'compact-requests-themed-current-game-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Compact themed requests and improved Solverde layout',
+    summary:'Requests use less space, Current Game portraits follow the selected palette and Solverde uses the live RTP bar.',
+    changes:['Image Cards uses a compact header and two compact rows by default; empty queues collapse instead of reserving unused rows.','Embedded requests inherit the Bonus Hunt palette while retaining their own appearance controls.','Both Current Game portrait layouts retain their proportions and use palette-driven statistic surfaces.','Best payout and multiplier use separate text and accent colours.','The Solverde reference preset uses RTP Stats beneath gameplay and hides Current Slot; existing saved positions change only when the preset is applied.'],
+    action:'Refresh the editor, apply Solverde reference layout if desired, then save and publish. Refresh OBS Browser Source. Custom request row settings remain configurable. No installer or database migration is required.',
+  },
+  {
     id:'palette-previews-solverde-carousel-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Palette previews and a clearer Solverde hunt carousel',
     summary:'Every colour palette has a miniature overlay preview; Solverde cards now make the current bonus easier to follow.',

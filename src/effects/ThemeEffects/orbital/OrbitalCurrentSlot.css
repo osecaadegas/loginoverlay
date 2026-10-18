@@ -1,13 +1,13 @@
 /* The Orbital terminal uses its actual container, not a scaled 1100px canvas.
    Inline per-element appearance still takes precedence over these defaults. */
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-viewport { container-name: orbital-slot; }
-.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget {
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) {
   --cg-px: 1px; --orbital-frame-depth: 7px;
   width: 100%; height: 100%; padding: clamp(10px,1.4cqi,22px); gap: clamp(8px,1.2cqi,22px);
   grid-template-columns: minmax(0,37fr) minmax(0,28fr) minmax(0,35fr);
   border-radius: var(--orbital-radius); border-color: var(--orbital-panel-border);
 }
-.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget[data-records="hidden"] { grid-template-columns: minmax(0,55fr) minmax(0,45fr); }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact)[data-records="hidden"] { grid-template-columns: minmax(0,55fr) minmax(0,45fr); }
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-identity {
   padding: 0; gap: clamp(9px,1.2cqi,22px); border: 0; box-shadow: none;
 }
@@ -28,11 +28,11 @@
   border-radius: 0; box-shadow: none; background: transparent;
   grid-template-rows: minmax(22px,.7fr) repeat(3,minmax(0,1fr)); gap: clamp(4px,.6cqi,10px);
 }
-.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget h3 {
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) h3 {
   font-size: clamp(14px,1.64cqi,30px); letter-spacing: .045em; padding: 0 4px;
   background: transparent; border-bottom: 1px solid var(--orbital-inner-border); box-shadow: none; gap: 7px;
 }
-.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget h3 svg { width: 1.15em; height: 1.15em; }
+.better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) h3 svg { width: 1.15em; height: 1.15em; }
 .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat {
   padding: 0 clamp(7px,1cqi,18px); gap: 5px; border: 1px solid var(--orbital-inner-border);
   border-radius: var(--orbital-cell-radius); background: var(--orbital-recess); box-shadow: var(--orbital-inset);
@@ -44,7 +44,7 @@
 
 /* Narrow terminals put identity above two equal readout bays. No data removed. */
 @container orbital-slot (max-width: 760px) and (min-height: 181px) {
-  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(55px,.65fr) minmax(0,1.35fr); padding: 9px; gap: 8px; }
+  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: minmax(55px,.65fr) minmax(0,1.35fr); padding: 9px; gap: 8px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-identity { grid-column: 1 / -1; gap: 12px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-cover { height: 100%; width: auto; max-width: 85px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-name-block h2 { margin: 4px 0; font-size: clamp(17px,3cqi,22px); -webkit-line-clamp: 1; }
@@ -52,15 +52,15 @@
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info,.cg-records) { padding-left: 6px; grid-template-rows: 22px repeat(3,minmax(0,1fr)); gap: 3px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat { font-size: 11px; padding-inline: 6px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat strong { font-size: 15px; }
-  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget h3 { font-size: 12px; letter-spacing: .025em; }
-  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget[data-records="hidden"] .cg-info { grid-column: 1 / -1; }
+  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) h3 { font-size: 12px; letter-spacing: .025em; }
+  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact)[data-records="hidden"] .cg-info { grid-column: 1 / -1; }
 }
 @container orbital-slot (max-height: 180px) {
-  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget { padding: 8px; gap: 6px; --orbital-frame-depth: 4px; }
+  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) { padding: 8px; gap: 6px; --orbital-frame-depth: 4px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] :is(.cg-info,.cg-records) { padding-left: 6px; grid-template-rows: 20px repeat(3,minmax(0,1fr)); gap: 3px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat { padding-inline: 5px; font-size: 10px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-stat strong { font-size: 14px; }
-  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget h3 { font-size: 12px; gap: 4px; letter-spacing: 0; }
+  .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-widget:not(.cg-widget--portrait):not(.cg-widget--compact) h3 { font-size: 12px; gap: 4px; letter-spacing: 0; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-current { font-size: 9px; padding: 2px 4px; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-name-block h2 { font-size: 18px; margin: 6px 0; -webkit-line-clamp: 2; }
   .better-widget-colour-scope[data-colour-theme="orbital"][data-widget-type] .cg-name-block p { font-size: 10px; }

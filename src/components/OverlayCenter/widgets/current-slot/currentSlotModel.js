@@ -1,3 +1,5 @@
+import {getWidgetColourTheme} from '../shared/colourThemePalettes';
+import {candyWidgetPalette} from '../../../../effects/ThemeEffects/candy/candyTheme';
 export const CURRENT_SLOT_DEFAULTS = Object.freeze({
   displayStyle: 'immersive_current', currency: '€', slot: null,
   artworkBySlot: {}, accentColor: '#00e6ae', backgroundColor: '#080d0f',
@@ -24,7 +26,10 @@ export function safeArtworkUrl(value) {
 
 export const COMPACT_SLOT_DEFAULTS=Object.freeze({borderColor:'#526672'});
 export function currentSlotConfig(config = {}) {
-  return { ...CURRENT_SLOT_DEFAULTS, ...(config.displayStyle==='portrait_compact'?COMPACT_SLOT_DEFAULTS:{}), ...config, backgroundOpacity: Math.max(0, Math.min(0.6, Number(config.backgroundOpacity ?? 0.24) || 0)) };
+  const theme=candyWidgetPalette('current_slot',getWidgetColourTheme(config.colourTheme));
+  const themed={...config};
+  if(theme)for(const [key,value] of Object.entries({portraitPanelColor:theme.surface,portraitAccentColor:theme.accent}))if(!themed[key]||themed[key]===CURRENT_SLOT_DEFAULTS[key])themed[key]=value;
+  return { ...CURRENT_SLOT_DEFAULTS, ...(config.displayStyle==='portrait_compact'?COMPACT_SLOT_DEFAULTS:{}), ...themed, backgroundOpacity: Math.max(0, Math.min(0.6, Number(config.backgroundOpacity ?? 0.24) || 0)) };
 }
 
 // Explicit current-game/variant metadata takes precedence over catalogue defaults.

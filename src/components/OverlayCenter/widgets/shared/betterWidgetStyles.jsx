@@ -3245,7 +3245,7 @@ export function BetterBonusHuntStyle({
   ]);
   const money = currency || c.currency || "€";
   const bestWinValue = displayBestWin
-    ? `${formatMoney(displayBestWin.best_win, money)}${displayBestWin.best_multiplier > 0 ? ` / ${formatMultiplier(displayBestWin.best_multiplier)}` : ""}`
+    ? <><span className="hunt-best-payout" style={{color:"var(--bh-steel-hi)"}} {...attrs("bonus_hunt",c,"bestWinValue")}>{formatMoney(displayBestWin.best_win, money)}</span>{displayBestWin.best_multiplier > 0 && <span className="hunt-best-multi" style={{color:"var(--bh-ice)"}} {...attrs("bonus_hunt",c,"bestMultiplierValue")}> / {formatMultiplier(displayBestWin.best_multiplier)}</span>}</>
     : "-";
   const bestWinAmount = displayBestWin
     ? formatMoney(displayBestWin.best_win, money)
@@ -4638,7 +4638,7 @@ export function BetterBonusHuntStyle({
                       : "-"}
                   </span>
                   {rowPersonalBest?.best_multiplier > 0 ? (
-                    <small>{formatMultiplier(rowPersonalBest.best_multiplier)}</small>
+                    <small style={{color:"var(--bh-ice)"}} {...attrs("bonus_hunt",c,"bestMultiplierValue")}>{formatMultiplier(rowPersonalBest.best_multiplier)}</small>
                   ) : null}
                 </span>
               </span>

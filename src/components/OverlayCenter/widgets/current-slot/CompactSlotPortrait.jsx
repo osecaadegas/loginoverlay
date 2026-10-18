@@ -10,12 +10,14 @@ export default function CompactSlotPortrait({config:c,slot,best,cover,failed,onI
   const art=c.artworkBySlot?.[slot.id] || {};
   const lettering=(art.lettering || c.portraitLettering || 'embedded')==='separate';
   const rating=Number(slot.volatility_rating ?? slot.volatilityRating);
+  const panel=String(c.portraitPanelColor||'').replace('#','');
+  const lightPanel=/^[0-9a-f]{6}$/i.test(panel)&&(.2126*parseInt(panel.slice(0,2),16)+.7152*parseInt(panel.slice(2,4),16)+.0722*parseInt(panel.slice(4,6),16))>160;
   const rows=[
     ['potential','MAX WIN',Gem,'#d9b65c',slotMetric(slot.max_win_multiplier,'x')],
     ['rtp','RTP',Activity,'#53c698',slotMetric(slot.rtp,'%')],
     ['volatility','VOL',Zap,'#e6a06b',slot.volatility ?? '—'],
     ['bestMulti','BEST',Award,'#58c5e4',slotMetric(best?.best_multiplier,'x')],
-  ].map((row,index)=>c.colourTheme==='candy'?[...row.slice(0,3),['#85600c','#13734c','#a45120','#14708c'][index],row[4]]:row).filter(([id])=>c.statVisibility?.[id]!==false && (id!=='bestMulti'||c.showPersonalRecords));
+  ].map((row,index)=>lightPanel?[...row.slice(0,3),['#85600c','#13734c','#a45120','#14708c'][index],row[4]]:row).filter(([id])=>c.statVisibility?.[id]!==false && (id!=='bestMulti'||c.showPersonalRecords));
   return <div className="cg-viewport cg-viewport--compact"><section className="cg-widget cg-widget--compact" data-style="portrait" data-records={c.showPersonalRecords?'visible':'hidden'} {...part('container')} style={{
     '--cp-unit':'min(.6896551724cqw,.2702702703cqh)',
     '--cp-panel':c.portraitPanelColor,'--cp-text':c.textColor,'--cp-muted':c.mutedColor,'--cg-cover':c.coverColor,

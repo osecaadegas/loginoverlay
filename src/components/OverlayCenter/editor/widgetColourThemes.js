@@ -12,7 +12,7 @@ import {
 
 const COLOUR_KEYS = {
   slot_requests:{backgroundColor:'background',cardColor:'surface',borderColor:'accent',textColor:'text',mutedColor:'muted'},
-  current_slot: { panelColor: 'surface', badgeColor: 'raised', coverColor: 'background', backgroundColor: 'background', accentColor: 'accent', borderColor: 'border', textColor: 'text', mutedColor: 'muted' },
+  current_slot: { panelColor: 'surface', badgeColor: 'raised', coverColor: 'background', backgroundColor: 'background', accentColor: 'accent', borderColor: 'border', textColor: 'text', mutedColor: 'muted', portraitPanelColor:'surface', portraitAccentColor:'accent' },
   slot_bingo: {
     backgroundColor: "background",
     panelColor: "surface",
@@ -48,7 +48,9 @@ const COLOUR_KEYS = {
 };
 
 // Explicit existing element targets, not a global recolour of arbitrary descendants.
+const REQUEST_ELEMENTS={container:{background:'background',borderColor:'border',textColor:'text'},header:{textColor:'accent'},command:{textColor:'muted'},playerCount:{textColor:'muted'},requestCard:{background:'surface',borderColor:'border'},slotTitle:{textColor:'text'},viewerName:{textColor:'muted'},position:{textColor:'accent'},emptyState:{textColor:'muted'}};
 const ELEMENT_COLOURS = {
+  slot_requests:REQUEST_ELEMENTS,
   current_slot: {
     container: { background: 'background', borderColor: 'border', textColor: 'text' },
     coverFrame: { background: 'background', borderColor: 'accent' },
@@ -60,7 +62,7 @@ const ELEMENT_COLOURS = {
     ...Object.fromEntries(['potential', 'rtp', 'volatility', 'bestWin', 'bestMulti', 'averageWin'].flatMap(id => [
       [id, { background: 'surface', borderColor: 'border' }],
       [id + 'Label', { textColor: 'muted' }],
-      [id + 'Value', { textColor: ['rtp', 'volatility'].includes(id) ? 'text' : 'accent' }],
+      [id + 'Value', { textColor: ['rtp', 'volatility','bestWin'].includes(id) ? 'text' : 'accent' }],
     ])),
   },
   slot_bingo: {
@@ -85,6 +87,7 @@ const ELEMENT_COLOURS = {
     emptyState: { textColor: "muted" },
   },
   bonus_hunt: {
+    ...Object.fromEntries(Object.entries(REQUEST_ELEMENTS).map(([id,props])=>['requestImage'+id[0].toUpperCase()+id.slice(1),props])),
     container: { background: "surface", borderColor: "border" },
     header: { background: "surface", borderColor: "border" },
     title: { textColor: "text" }, statCard: { background: "raised", borderColor: "border" },
@@ -95,7 +98,8 @@ const ELEMENT_COLOURS = {
     // Actual renderer targets, including appearances saved before Candy existed.
     headerTitle: { textColor: 'text' }, slotTitle: { textColor: 'text' },
     statCell: { background: 'raised', borderColor: 'border' },
-    ...Object.fromEntries(['betValue', 'winValue', 'multiplierValue', 'rtpValue', 'maxWinValue', 'bestWinValue', 'bestMultiplierValue', 'resultSlotName', 'resultStatValue', 'resultPayout'].map(id => [id, { textColor: 'text' }])),
+    ...Object.fromEntries(['betValue', 'winValue', 'multiplierValue', 'rtpValue', 'maxWinValue', 'resultSlotName', 'resultStatValue', 'resultPayout'].map(id => [id, { textColor: 'text' }])),
+    bestWinValue:{textColor:'text'}, bestMultiplierValue:{textColor:'accent'},
     ...Object.fromEntries(['betLabel', 'winLabel', 'multiplierLabel', 'rtpLabel', 'maxWinLabel', 'providerName', 'resultStatLabel'].map(id => [id, { textColor: 'muted' }])),
   },
   giveaway: {
@@ -151,6 +155,7 @@ export function buildWidgetColourThemePatch(type, config, key) {
   const patch = Object.fromEntries(Object.entries(COLOUR_KEYS[type])
     .map(([property, token]) => [property, theme[token]]));
   if(type==='current_slot'&&config.displayStyle==='portrait_compact') patch.portraitPanelColor=theme.surface;
+  if(type==='bonus_hunt'&&config.requestImageCards){const colours={backgroundColor:theme.background,cardColor:theme.surface,borderColor:theme.border,textColor:theme.text,mutedColor:theme.muted};patch.requestImageCards={...config.requestImageCards,...colours};}
   if (type === "bets") patch.theme = theme.key;
   if (type === "bonus_hunt") patch.colour = `theme_${theme.key}`;
   if (type === "giveaway") patch.hue = theme.hue;
@@ -236,5 +241,5 @@ export function getSelectedWidgetColourTheme(type, config = {}) {
   if (type === "bets") return getWidgetColourTheme(key)?.key || null;
   const patch = buildWidgetColourThemePatch(type, config, key);
   if (!patch) return null;
-  return Object.entries(patch).every(([property, value]) => config[property] === value) ? key : null;
+  return Object.entries(patch).every(([property, value]) => (config[property] === value || (property==='requestImageCards' && Object.entries(value).every(([id,colour])=>config[property]?.[id]===colour)))) ? key : null;
 }
