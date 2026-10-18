@@ -1,3 +1,4 @@
+import { StreetArtEnvironment } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import OverflowMarquee from './OverflowMarquee';
 import ImageCards from '../slot-requests/ImageCards';
 import React, {
@@ -9,6 +10,7 @@ import React, {
 } from "react";
 import {
   DollarSign,
+  Info,
   Flame,
   LockKeyhole,
   MessageSquare,
@@ -5073,7 +5075,7 @@ export function BetterBonusHuntStyle({
     );
   };
 
-  const renderMainstreamPanel = () => (
+  const renderMainstreamPanel = () => c.colourTheme === 'street_art' && c.streetArt?.compactHunt ? <section className="better-hunt-panel better-hunt-mainstream street-hunt-compact">{renderStatBoxes()}<div className="better-hunt-main-list-wrap">{renderList()}</div>{renderProgress()}</section> : (
     <section
       className={`better-hunt-panel better-hunt-mainstream${c.showRequests === false ? " better-hunt-mainstream--no-requests" : ""}${panelShakeClass}`}
     >
@@ -5664,6 +5666,7 @@ export function BetterChatMessage({
 }) {
   const c = context.config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
+  const streetInline = c.colourTheme==='street_art' && c.streetArt?.compactChat;
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";
   const messageType = betterChatMessageType(msg);
@@ -5771,6 +5774,9 @@ export function BetterChatMessage({
       borderColor: "#618ca02e",
       boxShadow: "inset 2px 0 0 #578ba16b,inset 0 1px 0 #c3e8fc0c",
     }),
+    ...(c.colourTheme === 'street_art' && !emphasized && {
+      background:'transparent',border:0,borderRadius:0,boxShadow:'none',padding:'3px 1px',margin:'1px 0',
+    }),
     ...(c.colourTheme === 'solverde' && !emphasized && {
       background: 'transparent', border: 0, borderRadius: 0, boxShadow: 'none',
       padding: '8px 0',
@@ -5779,10 +5785,10 @@ export function BetterChatMessage({
   return (
     <div
       ref={rootRef}
-      className={broadcast ? "broadcast-chat-row" : undefined}
+      className={streetInline ? "broadcast-chat-row street-chat-inline" : broadcast ? "broadcast-chat-row" : undefined}
       aria-hidden={!visible}
       {...attrs("chat", c, rowPart)}
-      style={{ ...messageStyle, visibility: visible ? "visible" : "hidden" }}
+      style={{ ...messageStyle,...(streetInline?{display:"block"}:{}), visibility: visible ? "visible" : "hidden" }}
     >
       <span aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: broadcast ? "hidden" : "visible", pointerEvents: "none", borderRadius: "inherit" }}>
       {animatedEffect ? (
@@ -5874,7 +5880,7 @@ export function BetterChatMessage({
       </span>
       <span style={{ minWidth: 0, ...(broadcast && { position: "relative" }) }}>
         <span
-          style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, ...(broadcast && { flexWrap: "wrap", rowGap: 3 }) }}
+          style={{ display: streetInline ? "inline" : "flex", alignItems: "center", gap: 6, minWidth: 0, ...(broadcast && { flexWrap: "wrap", rowGap: 3 }) }}
         >
           <strong
             {...attrs("chat", c, "username")}
@@ -5886,6 +5892,7 @@ export function BetterChatMessage({
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               ...(broadcast && { minWidth: 0, maxWidth: "100%", fontWeight: context.nameBold ? 700 : 400, letterSpacing: 0 }),
+              ...(streetInline && {display:"inline-block",maxWidth:"48%",verticalAlign:"top",marginRight:8}),
             })}
           >
             {msg.username || msg.user || "viewer"}
@@ -5933,6 +5940,7 @@ export function BetterChatMessage({
             lineHeight: context.msgLineHeight,
             overflowWrap: "anywhere",
             ...(broadcast && { whiteSpace: "pre-wrap", letterSpacing: 0 }),
+            ...(streetInline && {display:"inline",marginTop:0}),
           })}
         >
           {typeof context.renderMessageContent === "function"
@@ -6251,6 +6259,11 @@ export function BetterRtpStatsStyle({
     ],
   ].filter(([, , , visible]) => visible);
   const bestWinValue = `${bestAmount}${bestMulti}`;
+  if(c.colourTheme==='street_art'&&c.streetArt?.statStrip){
+    const records=displayBestWin?.best_win != null ? (currency||'')+Number(displayBestWin.best_win).toLocaleString(undefined,{maximumFractionDigits:2}) : '—';
+    const items=[...statItems.map(item=>item[0]==='volatility'?[item[0],item[1],volatilityValue||'—',...item.slice(3)]:item),['bestWin','Best Win',<>{records}{displayBestWin?.best_multiplier != null && <small> / {formatMultiplier(displayBestWin.best_multiplier)}</small>}</>,showBestWin]].filter(([, , ,visible])=>visible);
+    return <div className="rtp-stats-bar street-rtp-strip" {...rtpAttrs('container',{fontFamily:font,background:bgMid})}>{items.map(([id,label,value])=>{const Icon=id==='bestWin'?Trophy:id==='rtpValue'?Info:id==='maxWin'?TrendingUp:Zap;return <div className="street-rtp-stat" key={id} {...rtpAttrs('statCard',{})}><Icon aria-hidden="true"/><span {...rtpAttrs('label',{})}>{label}</span><strong {...rtpAttrs(id,{})}>{value}</strong></div>})}</div>;
+  }
   const bar = (
     <div
       className="oc-widget-inner rtp-stats-bar rtp-stats-bar--better"
@@ -6794,6 +6807,7 @@ function betterBackgroundTextureStyle({
 
 export function BetterBackgroundStyle({ config }) {
   const c = config || {};
+  if (getWidgetEffectsThemeKey('background',c) === 'street_art') return <StreetArtEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})}/>;
   if (getWidgetEffectsThemeKey('background', c) === 'solverde') return <SolverdeEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})} />;
   if (getWidgetEffectsThemeKey('background', c) === 'volcanic') {
     return <VolcanicEnvironment config={c} canvasAttrs={attrs('background', c, 'canvas')}

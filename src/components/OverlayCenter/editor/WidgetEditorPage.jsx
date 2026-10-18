@@ -45,6 +45,7 @@ import { useNavigate } from "react-router-dom";
 import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
 import { applyCandyComposition } from './candyComposition';
 import { applyVolcanicComposition } from './volcanicComposition';
+import { applyStreetArtComposition } from './streetArtComposition.js';
 import { applySolverdeComposition } from './solverdeComposition';
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
@@ -1708,6 +1709,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {layout.instances.some(i=>i.config?.colourTheme==='street_art') && <button type="button" disabled={Boolean(operation)||previewing} title="Apply the Street Art 1920 × 1080 reference preset. Existing data is preserved. Undo is available." onClick={()=>commitLayout(applyStreetArtComposition)}><Scan size={16}/><span>Street Art reference layout</span></button>}
           {layout.instances.some(instance => instance.config?.colourTheme === 'solverde') && <button type="button" disabled={Boolean(operation) || previewing} title="Apply the Solverde 1920 × 1080 reference layout. Uses the live RTP statistics bar below gameplay and hides the idle Current Slot widget. Undo is available." onClick={()=>commitLayout(applySolverdeComposition)}><Scan size={16}/><span>Solverde reference layout</span></button>}
           {layout.instances.some(instance => instance.config?.colourTheme === 'volcanic') && (
             <button type="button" disabled={Boolean(operation) || previewing}

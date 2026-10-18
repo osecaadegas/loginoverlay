@@ -1,5 +1,6 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
+  {id:'street-art-theme-2026-10-18',date:'2026-10-18',category:'overlays',title:'Street Art overlay theme',summary:'A new graffiti-inspired identity with distressed metal frames, torn sticker headings and realistic spray-can props.',changes:['Street Art is selectable across the existing widget families, with live content and per-instance appearance controls.','The Street Art reference layout adds the separate hunt, request cards, wide Current Slot cover, slideshow and chat composition. Theme selection alone preserves widget positions.','Giveaways stay pinned inside chat. Concrete scenery, gameplay transparency, paint colours, splashes, textures and props are configurable.','Lightweight shared textures and static decorations keep OBS output clear without extra effects canvases.'],action:'Refresh the editor, select Street Art and optionally apply Street Art reference layout. Save and publish, then refresh your OBS Browser Source.'},
   {
     id:'solverde-viewer-readability-and-request-motion-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Clearer Solverde hunts, themed chat cards and scrolling requests',

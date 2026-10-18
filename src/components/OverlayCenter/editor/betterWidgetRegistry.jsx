@@ -1,3 +1,5 @@
+import { StreetArtModule } from '../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
+import { streetArtStyleVariables } from '../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import SlotRequestsWidget from '../widgets/slot-requests/SlotRequestsWidget';
 import OverlayAssetGate from './OverlayAssetGate';
 import { volcanicStyleVariables } from '../../../effects/ThemeEffects/volcanic/volcanicTheme.js';
@@ -995,6 +997,7 @@ function normalizeZIndexes(instances) {
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
   if(instance.widgetType==='bonus_hunt'&&instance.config?.orientation==='new_horizontal') return {...constraints,minWidth:365,minHeight:75,maxWidth:1920,maxHeight:1080};
+  if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='street_art_card') return {...constraints,minWidth:240,minHeight:170,maxWidth:1200,maxHeight:1000};
   if(instance.widgetType==='current_slot'&&instance.config?.displayStyle==='portrait_compact') return {...constraints,minWidth:100,minHeight:200,maxWidth:720,maxHeight:1800};
   if (instance.config?.colourTheme === 'solverde') {
     if (instance.widgetType === 'bonus_hunt' && instance.config.solverde?.huntDock) return { ...constraints, minWidth: 850, minHeight: 200, maxWidth: 1920, maxHeight: 420 };
@@ -1439,9 +1442,9 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
-      {colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
+      {colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
       {colourThemeKey === 'volcanic' && (instance.widgetType === 'chat' || (instance.widgetType === 'navbar' && widget.config.displayStyle !== 'better_navbar')) && <VolcanicWidgetLife config={widget.config} />}
     </div>
     </OverlayAssetGate>

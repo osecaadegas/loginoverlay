@@ -171,7 +171,7 @@ export function buildWidgetColourThemePatch(type, config, key) {
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }
     if (type === 'giveaway') { patch.titleFont = 'rubik'; patch.bodyFont = 'rubik'; }
   }
-  if (['volcanic', 'solverde'].includes(theme.key)) {
+  if (['volcanic', 'solverde','street_art'].includes(theme.key)) {
     patch.fontFamily = "'Inter', Arial, sans-serif";
     if (type === 'chat') patch.font = patch.fontFamily;
     if (type === 'rtp_stats') { patch.fontBody = patch.fontFamily; patch.fontTitle = patch.fontFamily; }

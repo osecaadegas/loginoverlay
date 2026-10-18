@@ -21,7 +21,7 @@ assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true
 assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
-assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['street_art', 'solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],
@@ -36,7 +36,7 @@ const luminance = color => color.slice(1).match(/../g).map(hex => {
   const channel = parseInt(hex, 16) / 255;
   return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
-for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'volcanic', 'sunset', 'cyberpunk'].includes(theme.key) && theme.key !== 'gladiator')) {
+for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'volcanic', 'sunset', 'cyberpunk','street_art'].includes(theme.key) && theme.key !== 'gladiator')) {
   for (const token of ['text', 'muted', 'accent']) {
     for (const surface of ['background', 'surface', 'raised']) {
       const values = [luminance(theme[token]), luminance(theme[surface])].sort((a, b) => b - a);

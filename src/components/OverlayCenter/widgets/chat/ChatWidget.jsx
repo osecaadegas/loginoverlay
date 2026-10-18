@@ -1361,7 +1361,7 @@ function ChatWidget({
   const highlightedMessageStyle = (fallback = {}) =>
     subElementStyle(c, "highlightedMessage", {...fallback,...premiumMessageSurface(premiumPalette,msgSpacing,true)});
   const messageTextStyle = (fallback = {}) =>
-    subElementStyle(c, "messageText", {...fallback,...(premiumPalette?{color:premiumPalette.text,textShadow:"none",opacity:1}:{})});
+    subElementStyle(c, "messageText", {...fallback,...(premiumPalette?{color:premiumPalette.text,textShadow:"none",opacity:1,...(c.colourTheme==='street_art'?{fontFamily:c.streetArt?.contentFont||fontFamily}:{})}:{})});
   const usernameStyle = (fallback = {}) =>
     subElementStyle(c, "username", fallback);
   const avatarStyle = (fallback = {}) => subElementStyle(c, "avatar", fallback);
@@ -1503,7 +1503,7 @@ function ChatWidget({
   const giveawayVisible = c.giveawayInChat === true && giveawayConfig &&
     (giveawayConfig.isActive || giveawayConfig.spinningWinner || giveawayConfig.winner || giveawayConfig.participants?.length);
   const embeddedShoutoutActive = c.shoutoutInChat === true && shoutoutActive;
-  const giveawayPosition = ['volcanic','solverde'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const giveawayPosition = ['volcanic','solverde','street_art'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
   const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded

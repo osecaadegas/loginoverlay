@@ -2064,7 +2064,7 @@ function NavbarWidget({
             sponsorAccentColor,
             ctaColor,
             ctaColorRGB,
-          }), ...(c.colourTheme === 'volcanic' ? {
+          }), ...(c.colourTheme === 'street_art' ? {background:'transparent',boxShadow:'none',border:'0',color:textColor} : {}), ...(c.colourTheme === 'volcanic' ? {
             background: c.bgColor || '#090B0E', borderColor: sponsorBorderColor || c.borderColor,
             borderRadius: sponsorRadius ?? 10, boxShadow: sponsorShadow ?? 'none',
           } : {}), ...orbitalInstrument,
@@ -2322,7 +2322,7 @@ function NavbarWidget({
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
       </svg>
     );
-    const renderOrangeArc = () => (
+    const renderOrangeArc = () => c.colourTheme==='street_art' ? <span className="street-navbar-logo" aria-hidden="true">SC</span> : (
       <svg
         width="28"
         height="28"

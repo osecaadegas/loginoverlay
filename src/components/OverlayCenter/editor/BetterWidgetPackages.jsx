@@ -1,3 +1,4 @@
+import { normalizeStreetArtSettings } from '../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import PalettePreview from './PalettePreview';
 import ImageCardsControls from '../widgets/slot-requests/ImageCardsControls';
 import {IMAGE_CARDS_DEFAULTS} from '../widgets/slot-requests/imageCardsModel';
@@ -1676,7 +1677,10 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   };
   const solverdeVariant = getSolverdeVariant(type, merged);
   if(type==='bonus_hunt'&&merged.orientation==='new_horizontal') merged.__appearanceStyleId='new_horizontal';
+  else if(type==='bonus_hunt'&&merged.colourTheme==='street_art'&&merged.orientation==='mainstream'&&merged.streetArt?.compactHunt) merged.__appearanceStyleId='street_art_hunt';
+  else if(type==='rtp_stats'&&merged.colourTheme==='street_art'&&merged.streetArt?.statStrip) merged.__appearanceStyleId='street_art_strip';
   else if (solverdeVariant) merged.__appearanceStyleId = solverdeVariant.id;
+  else if(['street_art_strip','street_art_hunt'].includes(merged.__appearanceStyleId)) delete merged.__appearanceStyleId;
   else if(type==='bonus_hunt'&&merged.requestView==='image_cards') merged.__appearanceStyleId='better_bonus_hunt_image_cards';
   else if(merged.__appearanceStyleId==='better_bonus_hunt_image_cards') delete merged.__appearanceStyleId;
   else if (merged.__appearanceStyleId==='new_horizontal') delete merged.__appearanceStyleId;
@@ -7921,7 +7925,7 @@ function ThemedBetterWidgetControls({
   const effectsThemeKey = getWidgetEffectsThemeKey(type, c);
   return (
     <>
-      {type === "background" && !['orbital', 'candy', 'volcanic','solverde'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type === "background" && !['orbital', 'candy', 'volcanic','solverde','street_art'].includes(effectsThemeKey) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
       {!props.inheritedTheme && <div className="bp-controls bp-controls--colour-theme">
         <Section title="Colour Theme" icon={<Palette size={12} />} defaultOpen={type !== "background" || !selected}>
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
@@ -7955,6 +7959,27 @@ function ThemedBetterWidgetControls({
           </div>
         </Section>
       </div>}
+      {!props.inheritedTheme && effectsThemeKey === 'street_art' && <div className="bp-controls" data-effects-theme="street_art"><Section title="Street Art materials" icon={<Palette size={12}/>} simple>
+        {type==='background' && <>
+          <ToggleRow label="Concrete scene background" checked={normalizeStreetArtSettings(c).background} onChange={background=>onChange({...c,streetArt:{...c.streetArt,background}})}/>
+          <ToggleRow label="Reference gameplay frame" checked={normalizeStreetArtSettings(c).gameplayFrame} onChange={gameplayFrame=>onChange({...c,streetArt:{...c.streetArt,gameplayFrame}})}/>
+          {normalizeStreetArtSettings(c).gameplayFrame && <ToggleRow label="Transparent gameplay opening" checked={normalizeStreetArtSettings(c).transparentGameplay} onChange={transparentGameplay=>onChange({...c,streetArt:{...c.streetArt,transparentGameplay}})}/>}
+        </>}
+        {type==='chat' && ['better_chat','broadcast_chat'].includes(c.chatStyle) && <ToggleRow label="Compact reference messages" checked={c.streetArt?.compactChat===true} onChange={compactChat=>onChange({...c,streetArt:{...c.streetArt,compactChat}})}/>}
+        {type==='rtp_stats' && <><ToggleRow label="Reference information strip" checked={c.streetArt?.statStrip===true} onChange={statStrip=>onChange({...c,streetArt:{...c.streetArt,statStrip}})}/>{c.streetArt?.statStrip && [['showRtp','RTP'],['showMaxWin','Potential'],['showVolatility','Volatility'],['showBestWin','Best win']].map(([key,label])=><ToggleRow key={key} label={label} checked={c[key]!==false} onChange={value=>onChange({...c,[key]:value})}/>)}</>}
+        {type==='bonus_hunt' && c.orientation==='mainstream' && <ToggleRow label="Compact reference hunt" checked={c.streetArt?.compactHunt===true} onChange={compactHunt=>onChange({...c,streetArt:{...c.streetArt,compactHunt}})}/>}
+        <ToggleRow label="Paint splashes" checked={normalizeStreetArtSettings(c).splashes} onChange={splashes=>onChange({...c,streetArt:{...c.streetArt,splashes}})}/>
+        {['chat','current_slot'].includes(type) && <ToggleRow label="Spray-can props" checked={normalizeStreetArtSettings(c).props} onChange={props=>onChange({...c,streetArt:{...c.streetArt,props}})}/>}
+        {type!=='background' && <>
+          <NumberRow label="Texture intensity (%)" min={0} max={100} value={normalizeStreetArtSettings(c).textureIntensity} onChange={textureIntensity=>onChange({...c,streetArt:{...c.streetArt,textureIntensity}})}/>
+          {['bonus_hunt','slot_requests','current_slot','chat','slideshow_frame'].includes(type) && <NumberRow label="Panel opacity (%)" min={0} max={100} value={normalizeStreetArtSettings(c).panelOpacity} onChange={panelOpacity=>onChange({...c,streetArt:{...c.streetArt,panelOpacity}})}/>}
+          <NumberRow label="Frame thickness" min={0} max={8} value={normalizeStreetArtSettings(c).borderWidth} onChange={borderWidth=>onChange({...c,streetArt:{...c.streetArt,borderWidth}})}/>
+          {!['navbar','rtp_stats'].includes(type) && <SelectRow label="Sticker font" value={normalizeStreetArtSettings(c).headerFont} options={[{key:"'Permanent Marker', Impact, sans-serif",name:'Permanent Marker'},{key:"'Oswald', Impact, sans-serif",name:'Oswald'},{key:'Impact, sans-serif',name:'Impact'},{key:"'Bebas Neue', sans-serif",name:'Bebas Neue'}]} onChange={headerFont=>onChange({...c,streetArt:{...c.streetArt,headerFont}})}/>}
+          <SelectRow label="Content font" value={normalizeStreetArtSettings(c).contentFont} options={[{key:"'Barlow', Arial, sans-serif",name:'Barlow'},{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={contentFont=>onChange({...c,fontFamily:contentFont,font:contentFont,fontBody:contentFont,fontTitle:contentFont,streetArt:{...c.streetArt,contentFont}})}/>
+          {['bonus_hunt','slot_requests','current_slot','chat','slideshow_frame','tournament','giveaway','bets','raid_shoutout','slot_bingo','connect_four'].includes(type) && <TextRow label="Sticker heading" value={c.streetArt?.heading||''} onChange={heading=>onChange({...c,streetArt:{...c.streetArt,heading}})}/>}
+        </>}
+        {['primary','secondary','accent'].map((key,index)=><ColorRow key={key} label={['Cyan paint','Magenta paint','Yellow paint'][index]} value={normalizeStreetArtSettings(c)[key]} onChange={value=>onChange({...c,streetArt:{...c.streetArt,[key]:value}})}/>)}
+      </Section></div>}
       {!props.inheritedTheme && effectsThemeKey === 'volcanic' && (['background', 'navbar', 'chat'].includes(type) || (type === 'bonus_hunt' && c.orientation === 'mainstream')) && <div className="bp-controls" data-effects-theme="volcanic">
         <Section title="Volcanic environment" icon={<Flame size={12} />} simple>
           {['navbar', 'chat'].includes(type) && <>
@@ -7994,14 +8019,14 @@ function ThemedBetterWidgetControls({
         {type === 'bets' && c.solverde?.predictions && <TextRow label="Prediction heading" value={c.solverde?.predictionHeading || c.question || 'QUAL SERÁ O MULTIPLICADOR?'} onChange={predictionHeading=>onChange({...c,solverde:{...c.solverde,predictionHeading}})} />}
         {['bonus_hunt','bets'].includes(type) && getSolverdeVariant(type,c) && <><SelectRow label="Text font" value={c.fontFamily} options={[{key:"'Inter', Arial, sans-serif",name:'Inter'},{key:'Georgia, serif',name:'Georgia'},{key:'Arial, sans-serif',name:'Arial'}]} onChange={fontFamily=>onChange({...c,fontFamily})} /><NumberRow label="Text size" min={10} max={22} value={Number(c.fontSize)||14} onChange={fontSize=>onChange({...c,fontSize})} /></>}
       </Section></div>}
-      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && effectsThemeKey !== 'solverde' && <ThemeEffectsControls
+      {!props.inheritedTheme && !(type === 'bonus_hunt' && c.orientation === 'new_horizontal') && type !== 'slot_requests' && !['solverde','street_art'].includes(effectsThemeKey) && <ThemeEffectsControls
         widgetType={type}
         themeKey={effectsThemeKey}
         simple={type === "background"}
         config={c.themeEffects}
         onChange={(themeEffects) => onChange({ ...c, themeEffects })}
       />}
-      {type !== "background" && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
+      {type !== "background" && !(effectsThemeKey==='street_art'&&((type==='rtp_stats'&&c.streetArt?.statStrip)||(type==='bonus_hunt'&&c.orientation==='mainstream'&&c.streetArt?.compactHunt))) && !((type !== 'bonus_hunt' || c.orientation !== 'new_horizontal') && getSolverdeVariant(type,c) && ['bonus_hunt','bets'].includes(type)) && <WidgetSpecificControls type={type} config={config} onChange={onChange} {...props} />}
     </>
   );
 }

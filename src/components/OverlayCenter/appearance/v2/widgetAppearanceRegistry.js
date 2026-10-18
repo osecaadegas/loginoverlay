@@ -1,3 +1,4 @@
+import { STREET_ART_RTP_STYLE, STREET_ART_HUNT_STYLE } from '../../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import {IMAGE_CARDS_STYLE,EMBEDDED_IMAGE_CARD_ELEMENTS} from '../../widgets/slot-requests/imageCardsModel';
 import { SOLVERDE_VARIANTS } from '../../../../effects/ThemeEffects/solverde/solverdeTheme.js';
 import { COMPACT_CURRENT_SLOT_STYLE } from '../../widgets/current-slot/currentSlotModel.js';
@@ -1002,7 +1003,10 @@ export const widgetAppearanceRegistry = Object.freeze({
   current_slot: makeBasicWidgetCapability({
     id: 'current_slot', label: 'Current Game', category: 'casino', defaultStyleId: 'immersive_current',
     defaultAppearance: { primaryColor: '#28edac', accentColor: '#28edac' },
-    styles: [freezeStyle(SOLVERDE_VARIANTS.current_slot),makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
+    styles: [makeRuntimeStyle('street_art_card','Street Art cover','Wide cover with a compact best multiplier and RTP footer.',{
+      capabilities:{colours:true,fonts:true,fontSizes:true,borders:true,images:true,imageFit:true},
+      elementIds:['container','badge','coverFrame','slotImage','fallback','slotTitle','provider','info','bestMulti','bestMultiLabel','bestMultiValue','rtp','rtpLabel','rtpValue'],
+    }),freezeStyle(SOLVERDE_VARIANTS.current_slot),makeRuntimeStyle('immersive_current', 'Immersive', 'Slot artwork, catalog information and shared personal records.', {
       recommended: true, capabilities: { colours: true, fonts: true, fontSizes: true, containers: true, borders: true, images: true, imageFit: true, spacing: true, statCards: true },
       elementIds: ["container","identity","coverFrame","slotImage","backdrop","titleImage","slotTitle","provider","badge","info","infoTitle","records","recordsTitle","potential","potentialLabel","potentialValue","rtp","rtpLabel","rtpValue","volatility","volatilityLabel","volatilityValue","bestWin","bestWinLabel","bestWinValue","bestMulti","bestMultiLabel","bestMultiValue","averageWin","averageWinLabel","averageWinValue"],
     }), makeRuntimeStyle('portrait_card', 'Portrait Card', 'Tall, artwork-led game card with compact broadcast statistics.', {
@@ -2497,7 +2501,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: "standard",
     }),
-    styles: Object.freeze([
+    styles: Object.freeze([freezeStyle(STREET_ART_RTP_STYLE),
       freezeStyle({
         id: "v1",
         label: "Classic",
@@ -3440,7 +3444,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       scale: 1,
       textSize: "standard",
     }),
-    styles: Object.freeze([
+    styles: Object.freeze([freezeStyle(STREET_ART_HUNT_STYLE),
       freezeStyle({id:'better_bonus_hunt_image_cards',label:'Better Hunt with Image Cards',hiddenInQuickEditor:true,elementIds:[...BONUS_HUNT_CLASSIC_REQUESTS_ELEMENT_IDS,...Object.keys(EMBEDDED_IMAGE_CARD_ELEMENTS)],elements:EMBEDDED_IMAGE_CARD_ELEMENTS,capabilities:{...BASE_QUICK_CAPABILITIES,...IMAGE_QUICK_CAPABILITIES}}),
       freezeStyle(SOLVERDE_VARIANTS.bonus_hunt),
       freezeStyle(NEW_HORIZONTAL_APPEARANCE),

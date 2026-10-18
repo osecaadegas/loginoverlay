@@ -11,7 +11,7 @@ assert(groups[1].themes.every(theme => !theme.thumbnail));
 assert.equal(new Set(groups.flatMap(group => group.themes.map(theme => theme.key))).size, WIDGET_COLOUR_THEMES.length);
 assert.deepEqual(getWidgetColourThemeGroups(() => false), []);
 assert(!getWidgetColourThemeGroups(key => key !== 'arctic').flatMap(group => group.themes).some(theme => theme.key === 'arctic'));
-for (const key of ['candy', 'orbital', 'arctic', 'old_rome']) {
+for (const key of ['street_art','candy', 'orbital', 'arctic', 'old_rome']) {
   const theme = groups[0].themes.find(theme => theme.key === key);
   assert(theme && existsSync('public' + theme.thumbnail), key + ' has a real image');
 }
