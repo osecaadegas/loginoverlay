@@ -23,7 +23,7 @@ export function applyStreetArtComposition(layout) {
     if (type === 'bonus_hunt') Object.assign(config,{orientation:'mainstream',statsLayout:'grid',showRequests:false,listMode:'compact',visibleRows:3,fontSize:16,drawerMode:'contain',widgetWidth:geometry.width,widgetHeight:geometry.height,streetArt:{...config.streetArt,compactHunt:true}});
     if (type === 'slot_requests') Object.assign(config,{displayStyle:'image_cards',rowHeight:70,artworkWidth:86,artworkHeight:60,titleSize:18,usernameSize:15,cardGap:5,visibleRequests:2});
     if (type === 'current_slot') Object.assign(config,{displayStyle:'street_art_card',showBackdrop:false,accentColor:STREET_ART_TOKENS.highlight});
-    if (type === 'chat') Object.assign(config,{streetArt:{...config.streetArt,compactChat:true},chatStyle:'broadcast_chat',width:geometry.width,height:geometry.height,showHeader:false,showLegend:false,showAvatars:false,flow:'top-to-bottom',fontSize:16,msgSpacing:2,giveawayInChat:true,giveawayPosition:'top',giveawayHeight:54,giveawayWinnerHeight:116,giveawayMargin:2});
+    if (type === 'chat') Object.assign(config,{streetArt:{...config.streetArt,compactChat:true},chatStyle:'broadcast_chat',width:geometry.width,height:geometry.height,showHeader:false,showLegend:false,showAvatars:false,flow:'bottom-to-top',entry:'bottom',decoratedChatFlowVersion:1,fontSize:16,msgSpacing:2,giveawayInChat:true,giveawayPosition:'top',giveawayHeight:54,giveawayWinnerHeight:116,giveawayMargin:2});
     if (type === 'rtp_stats') Object.assign(config,{barHeight:76,barPadY:4,showRtp:true,showMaxWin:true,showVolatility:true,showBestWin:true,streetArt:{...config.streetArt,statStrip:true}});
     return { ...instance,...geometry,config,visible:true };
   }) };

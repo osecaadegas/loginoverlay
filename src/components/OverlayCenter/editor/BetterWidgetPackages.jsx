@@ -1568,6 +1568,13 @@ function normalizeBetterChatConfig(merged = {}) {
     roleEffects: Object.assign({}, defaults.roleEffects, merged.roleEffects),
   };
   const legacyFlow = next.entry === "top" ? "top-to-bottom" : defaults.flow;
+  // Adopt the new decoration-level anchor once for existing saved layouts.
+  // Subsequent flow-control changes retain their explicit direction.
+  if (['street_art','candy'].includes(next.colourTheme) && next.decoratedChatFlowVersion !== 1) {
+    next.flow = 'bottom-to-top';
+    next.entry = 'bottom';
+    next.decoratedChatFlowVersion = 1;
+  }
   if (!["bottom-to-top", "top-to-bottom"].includes(next.flow)) {
     next.flow = legacyFlow;
   }
@@ -3929,7 +3936,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
               { key: "top-to-bottom", name: "Top down" },
             ]}
             onChange={(flow) =>
-              set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom" })
+              set({ flow, entry: flow === "top-to-bottom" ? "top" : "bottom", decoratedChatFlowVersion: 1 })
             }
           />
           <SliderRow

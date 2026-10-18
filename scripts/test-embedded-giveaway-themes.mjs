@@ -60,11 +60,11 @@ try {
       },
       render(theme, state = 'open', mode = 'editor', restore = false, size = {}) {
         const source = registry.createBetterInstance('giveaway', { instanceId: 'source', width: 420, height: 270, config: themed('giveaway', theme === 'candy' ? 'gladiator' : 'candy', live(state)) });
-        const chat = registry.createBetterInstance('chat', { instanceId: 'chat-a', width: size.width || 378, height: size.height || 659, config: themed('chat', theme, { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false }) });
+        const chat = registry.createBetterInstance('chat', { instanceId: 'chat-a', width: size.width || 378, height: size.height || 659, config: themed('chat', theme, { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false, ...size.chatConfig }) });
         const second = registry.createBetterInstance('chat', { instanceId: 'chat-b', width: 378, height: 659, config: themed('chat', 'arctic', { giveawayInChat: true, shoutoutInChat: false, bttvEnabled: false }) });
         const instances = restore ? JSON.parse(localStorage.getItem('giveaway-theme-layout')) : [chat, second, source];
         localStorage.setItem('giveaway-theme-layout', JSON.stringify(instances));
-        const render = (instance, id) => h('div', { id, style: { width: instance.width, height: instance.height } }, registry.renderBetterWidgetInstance({ instance, layout: { instances }, mode: mode === 'sample' ? 'mock' : 'live', runtime: mode === 'obs' ? 'obs' : 'editor', accessVerified: true }));
+        const render = (instance, id) => h('div', { id, style: { width: instance.width, height: instance.height } }, registry.renderBetterWidgetInstance({ instance, layout: { instances }, mode: mode === 'sample' || size.messages ? 'mock' : 'live', runtime: mode === 'obs' ? 'obs' : 'editor', accessVerified: true }));
         root.render(h('main', { style: { display: 'flex', gap: 20, padding: 10 } }, ...instances.map((instance, i) => render(instance, ['chat-a', 'chat-b', 'standalone'][i]))));
         return resolveEmbeddedGiveawayConfig(instances[0].config, instances[2].config);
       },
@@ -131,6 +131,18 @@ try {
     await new Promise(r=>setTimeout(r,120));
     const fits=await page.evaluate(()=>{const bay=document.querySelector('#chat-a .ov-chat-giveaway').getBoundingClientRect(),status=document.querySelector('#chat-a .better-gw-roulette-status').getBoundingClientRect(),viewport=document.querySelector('#chat-a .better-gw-roulette-viewport').getBoundingClientRect(),name=document.querySelector('#chat-a .better-gw-avatar-name').getBoundingClientRect();return {bay:bay.height,viewport:viewport.height,status:status.bottom<=bay.bottom+1,name:name.bottom<=viewport.bottom+1};});
     assert(fits.viewport>=30&&fits.status&&fits.name,theme+' narrow chat retains complete reel: '+JSON.stringify(fits));
+  }
+  for(const theme of ['street_art','candy'])for(const runtime of ['editor','obs'])for(const chatStyle of ['better_chat','broadcast_chat','community_chat','classic','floating','stack']){
+    await page.evaluate(({theme,runtime,chatStyle})=>window.giveawayThemes.render(theme,'winner',runtime,false,{messages:true,chatConfig:{chatStyle,flow:'top-to-bottom',entry:'bottom',animation:'none',twitchEnabled:false,__appearancePreviewMessages:[{id:'one',username:'FirstViewer',message:'First message',platform:'twitch'},{id:'two',username:'NewestViewer',message:'Newest message above the decorations',platform:'twitch'}]}}),{theme,runtime,chatStyle});
+    await new Promise(r=>setTimeout(r,250));
+    const geometry=await page.evaluate(()=>{const list=document.querySelector('#chat-a .ov-chat-messages'),r=list.getBoundingClientRect(),rows=[...list.children].map(el=>el.getBoundingClientRect()).filter(r=>r.height>0),last=rows.at(-1),prop=document.querySelector('#chat-a .street-chat-props,#chat-a .candy-decoration--jar').getBoundingClientRect(),giveaway=document.querySelector('#chat-a .ov-chat-giveaway').getBoundingClientRect();return {propTop:prop.top,lastBottom:last?.bottom,listBottom:r.bottom,gap:last?r.bottom-last.bottom:999,above:!!last&&last.bottom<=prop.top+2,pinned:giveaway.bottom<=r.top+2,flow:getComputedStyle(list).justifyContent};});
+    assert.equal(geometry.flow,'flex-end',theme+'/'+runtime+'/'+chatStyle+' anchors above props');
+    assert(geometry.gap>=0&&geometry.gap<20&&geometry.above&&geometry.pinned,JSON.stringify({theme,runtime,chatStyle,geometry}));
+    if(runtime==='obs'&&chatStyle==='broadcast_chat')await page.screenshot({path:'.codex-dev/giveaway-theme-verification/bottom-anchored-'+theme+'.png'});
+  }
+  for(const theme of ['street_art','candy']){
+    await page.evaluate(theme=>window.giveawayThemes.render(theme,'open','obs',false,{chatConfig:{flow:'top-to-bottom',entry:'top',decoratedChatFlowVersion:1}}),theme);await new Promise(r=>setTimeout(r,100));
+    assert.equal(await page.$eval('#chat-a .ov-chat-messages',el=>getComputedStyle(el).justifyContent),'flex-start','explicit top-down flow stays configurable');
   }
   await page.evaluate(() => window.giveawayThemes.render('candy', 'winner', 'obs'));
   await page.reload(); await page.evaluate(initialize);

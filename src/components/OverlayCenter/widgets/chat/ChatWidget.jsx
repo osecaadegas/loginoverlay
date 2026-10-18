@@ -850,6 +850,7 @@ function ChatWidget({
   const isBetterChat = isBetterChatStyle(chatStyle);
   const isCommunity = chatStyle === COMMUNITY_CHAT_STYLE;
   const isBroadcast = chatStyle === BROADCAST_CHAT_STYLE || isCommunity;
+  const decoratedChat = ['street_art','candy'].includes(String(c.colourTheme||'').replace(/^theme_/,''));
   const betterChatFlow = isBetterChat
     ? c.flow === "top-to-bottom" || c.entry === "top"
       ? "top-to-bottom"
@@ -1355,7 +1356,7 @@ function ChatWidget({
   const headerPartStyle = (fallback = {}) =>
     subElementStyle(c, "header", {...fallback,...(premiumPalette?{background:premiumPalette.surface,color:premiumPalette.text,borderColor:premiumPalette.border,textShadow:"none"}:{})});
   const messageListStyle = (fallback = {}) =>
-    subElementStyle(c, "messageList", {...fallback,...(premiumPalette?{gap:0,padding:"6px 10px",justifyContent:isBetterChat&&betterChatFlow==="bottom-to-top"?"flex-end":"flex-start"}:{})});
+    subElementStyle(c, "messageList", {...fallback,...(premiumPalette?{gap:0,padding:"6px 10px",...(decoratedChat?{display:'flex',flexDirection:'column'}:{}),justifyContent:(isBetterChat||decoratedChat)&&betterChatFlow==="bottom-to-top"?"flex-end":"flex-start"}:{})});
   const messagePartStyle = (fallback = {}) =>
     subElementStyle(c, "message", {...fallback,...premiumMessageSurface(premiumPalette,msgSpacing)});
   const highlightedMessageStyle = (fallback = {}) =>
