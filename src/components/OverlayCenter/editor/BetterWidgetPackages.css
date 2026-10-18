@@ -3143,3 +3143,5 @@
 .bp-money-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .bp-money-upload span { font-size: 12px; font-weight: 700; }
 .bp-money-upload strong { color: #ffd45a; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.bp-theme-grid .bp-theme-card--palette-preview{position:relative;isolation:isolate;overflow:hidden;min-height:88px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;text-shadow:0 1px 3px #000;background:#0a1420}.bp-palette-preview{position:absolute;inset:0;width:100%;height:100%;z-index:-2;pointer-events:none}.bp-theme-card--palette-preview::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(transparent 10%,#020711e8 100%);pointer-events:none}.bp-theme-card--palette-preview>span{opacity:.9}.bp-theme-card--palette-preview>strong{position:relative;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}

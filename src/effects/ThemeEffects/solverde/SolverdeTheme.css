@@ -66,3 +66,9 @@
 .solverde-dock-values>span{min-width:0}.solverde-dock-values strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .solverde-predictions header>strong{min-width:0;line-height:1.2}.solverde-predictions header>span{flex:none}
+
+.solverde-atmosphere{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 12% 90%,#137b5140,transparent 55%),radial-gradient(ellipse at 85% 10%,#00db801a,transparent 58%),linear-gradient(135deg,#031612,#0b3528 50%,#021610)}
+.solverde-hunt-dock{background:radial-gradient(ellipse at 65% 0%,#146b4338,transparent 75%),linear-gradient(125deg,var(--slv-panel),var(--slv-bg))}
+.solverde-dock-card{transition:background-color .3s,border-color .3s,box-shadow .3s}.solverde-dock-card[data-opened=true]:not([data-active=true]){background:#17231f;border-color:#4b5c51;opacity:.8}.solverde-dock-card[data-opened=true]:not([data-active=true]) .solverde-dock-art{filter:grayscale(1) brightness(.72)}.solverde-dock-card[data-opened=true]:not([data-active=true]) :is(.solverde-dock-name strong,.solverde-dock-values strong){color:var(--slv-muted)}
+.solverde-dock-card[data-active=true]{background:radial-gradient(ellipse at 20% 0%,#0d684b70,transparent 85%),var(--slv-bg);border-color:var(--slv-accent);box-shadow:inset 0 0 0 1px #00db80a0,0 0 12px #00db8018}.solverde-dock-card[data-active=true] .solverde-dock-name strong{font-weight:800}.solverde-provider-chip{align-self:flex-start;display:flex;align-items:center;justify-content:center;max-width:100%;height:27px;padding:3px 6px;background:#f1eddf;border-radius:5px;overflow:hidden}.solverde-provider-chip img{width:auto;max-width:90px;max-height:21px;object-fit:contain;display:block}
+.solverde-provider-chip[data-tone=dark]{background:var(--slv-bg);box-shadow:inset 0 0 0 1px #c7b78e33}

@@ -1,3 +1,4 @@
+import PalettePreview from './PalettePreview';
 import ImageCardsControls from '../widgets/slot-requests/ImageCardsControls';
 import {IMAGE_CARDS_DEFAULTS} from '../widgets/slot-requests/imageCardsModel';
 import { useOverlayAssetAccess } from '../../../hooks/useOverlayAssetAccess';
@@ -7936,11 +7937,12 @@ function ThemedBetterWidgetControls({
                   key={theme.key}
                   type="button"
                   data-colour-theme-key={theme.key}
-                  className={[selected === theme.key ? 'is-active' : '', theme.thumbnail ? 'bp-theme-card--illustrated' : ''].filter(Boolean).join(' ')}
+                  className={[selected === theme.key ? 'is-active' : '', theme.thumbnail ? 'bp-theme-card--illustrated' : 'bp-theme-card--palette-preview'].filter(Boolean).join(' ')}
                   aria-pressed={selected === theme.key}
                   style={theme.thumbnail ? { backgroundImage: `linear-gradient(0deg, #020711 5%, transparent 100%), url(${theme.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
                   onClick={() => onChange(applyWidgetColourTheme(type, c, theme.key))}
                 >
+                  {!theme.thumbnail && <PalettePreview theme={theme}/>}
                   <span aria-hidden="true">
                     {theme.swatches.map((color) => <i key={color} style={{ background: color }} />)}
                   </span>
@@ -7980,7 +7982,9 @@ function ThemedBetterWidgetControls({
         {['background','navbar'].includes(type) && <ToggleRow label="Sunburst decorations" checked={normalizeSolverdeSettings(c).decorations} onChange={decorations=>onChange({...c,solverde:{...c.solverde,decorations}})} />}
         {type === 'background' && <><ToggleRow label="Reference gameplay frame" checked={normalizeSolverdeSettings(c).gameplayFrame} onChange={gameplayFrame=>onChange({...c,solverde:{...c.solverde,gameplayFrame}})} hint="Fixed at the reference layout position. Transparent by default." />{normalizeSolverdeSettings(c).gameplayFrame && <ToggleRow label="Idle gameplay fill" checked={normalizeSolverdeSettings(c).idleBackground} onChange={idleBackground=>onChange({...c,solverde:{...c.solverde,idleBackground}})} hint="Leave off for an OBS source beneath the opening." />}</>}
         {type === 'bonus_hunt' && <><ToggleRow label="Horizontal hunt dock" checked={normalizeSolverdeSettings(c).huntDock} onChange={huntDock=>onChange({...c,orientation:huntDock?'horizontal':c.orientation,solverde:{...c.solverde,huntDock}})} />{normalizeSolverdeSettings(c).huntDock && <><TextRow label="Dock heading" value={c.solverde?.dockTitle || 'BONUS HUNT'} onChange={dockTitle=>onChange({...c,solverde:{...c.solverde,dockTitle}})} /><NumberRow label="Visible cards" min={2} max={4} value={normalizeSolverdeSettings(c).dockCards} onChange={dockCards=>onChange({...c,solverde:{...c.solverde,dockCards}})} /></>}</>}
-        {type === 'bonus_hunt' && c.solverde?.huntDock && <ToggleRow label="Cycle slots while collecting" checked={c.animations !== false} onChange={animations=>onChange({...c,animations})} hint="Opening and ended hunts follow the real active slot." />}
+        {type === 'bonus_hunt' && c.solverde?.huntDock && <ToggleRow label="Automatic card carousel" checked={c.solverde?.autoCarousel !== false} onChange={autoCarousel=>onChange({...c,solverde:{...c.solverde,autoCarousel}})} hint="The viewport cycles smoothly without changing the current bonus or queue order. Respects reduced motion." />}
+        {type === 'bonus_hunt' && c.solverde?.huntDock && <><ToggleRow label="Provider logos" checked={c.solverde?.providerLogos!==false} onChange={providerLogos=>onChange({...c,solverde:{...c.solverde,providerLogos}})} /><NumberRow label="Carousel interval (seconds)" min={2} max={15} step={0.1} value={(Number(c.carouselMs)||3200)/1000} onChange={seconds=>onChange({...c,carouselMs:seconds*1000})}/></>}
+        {type === 'background' && <ToggleRow label="Smooth emerald background" checked={normalizeSolverdeSettings(c).scenery} onChange={scenery=>onChange({...c,solverde:{...c.solverde,scenery}})} hint="Keeps the reference gameplay opening transparent when idle fill is off."/>}
         {type === 'current_slot' && <ToggleRow label="Integrated slot footer" checked={normalizeSolverdeSettings(c).footer} onChange={footer=>onChange({...c,solverde:{...c.solverde,footer}})} />}
         {type === 'chat' && <TextRow label="Community heading" value={c.solverde?.communityHeading || 'COMUNIDADE'} onChange={communityHeading=>onChange({...c,solverde:{...c.solverde,communityHeading}})} />}
         {type === 'slideshow_frame' && <ToggleRow label="Default Solverde slide" checked={normalizeSolverdeSettings(c).defaultBrandSlide} onChange={defaultBrandSlide=>onChange({...c,solverde:{...c.solverde,defaultBrandSlide}})} hint="Used only when no image or video is configured." />}

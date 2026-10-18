@@ -15,7 +15,7 @@ export const SOLVERDE_VARIANTS = Object.freeze({
     ...Object.fromEntries(['rtp','potential','bestWin'].flatMap(id=>[[id,surfaceElement(id)],[id+'Label',textElement(id+' label')],[id+'Value',textElement(id+' value')]])),
   }),
   bonus_hunt: variant('solverde_dock','Solverde horizontal hunt dock',{
-    container:surfaceElement('Hunt dock'),headerTitle:textElement('Dock heading'),progressCount:textElement('Opened count'),statCell:surfaceElement('Session figure'),statLabel:textElement('Session label'),statValue:textElement('Session value'),slotRow:surfaceElement('Slot card'),slotStatus:textElement('Bonus status'),slotTitle:textElement('Slot title'),providerText:textElement('Provider'),betValue:textElement('Bet'),multiplierValue:textElement('Multiplier'),
+    container:surfaceElement('Hunt dock'),headerTitle:textElement('Dock heading'),progressCount:textElement('Opened count'),statCell:surfaceElement('Session figure'),statLabel:textElement('Session label'),statValue:textElement('Session value'),slotRow:surfaceElement('Slot card'),slotStatus:textElement('Bonus status'),slotTitle:textElement('Slot title'),providerText:textElement('Provider'),providerLogo:{label:'Provider logo',kind:'image',capabilities:['border'],controls:['radius','opacity']},betValue:textElement('Bet'),multiplierValue:textElement('Multiplier'),
   }),
   bets: variant('solverde_predictions','Solverde prediction rows',{
     widgetBackground:surfaceElement('Predictions surface'),title:textElement('Question'),statusBadge:{label:'Status pill',kind:'badge',capabilities:['surface','border','typography']},individualBetCard:surfaceElement('Prediction row'),cardRangeText:textElement('Range'),cardPercentageText:textElement('Percentage'),progressBar:{label:'Vote fill',kind:'progress',capabilities:['progress'],controls:['fillColor','radius']},
@@ -28,7 +28,7 @@ export function getSolverdeVariant(type, config = {}) {
 }
 export function normalizeSolverdeSettings(config = {}) {
   const raw = config.solverde || {};
-  return { decorations: raw.decorations !== false, gameplayFrame: raw.gameplayFrame === true, idleBackground: raw.idleBackground === true,
+  return { scenery: raw.scenery !== false, decorations: raw.decorations !== false, gameplayFrame: raw.gameplayFrame === true, idleBackground: raw.idleBackground === true,
     defaultBrandSlide: raw.defaultBrandSlide !== false,
     huntDock: raw.huntDock === true, footer: raw.footer === true, predictions: raw.predictions === true,
     dockCards: Math.max(2, Math.min(4, Math.round(Number(raw.dockCards) || 3))) };

@@ -56,6 +56,8 @@ try {
   const premiumKeys = groups[0].themes.map(theme => theme.key);
   assert.deepEqual(await page.$$eval('[data-theme-group=premium] button', els => els.map(el => el.dataset.colourThemeKey)), premiumKeys);
   assert(await page.evaluate(() => document.querySelector('[data-theme-group=premium]').compareDocumentPosition(document.querySelector('[data-theme-group=palettes]')) & Node.DOCUMENT_POSITION_FOLLOWING));
+  assert.equal(await page.$$eval('[data-theme-group=palettes] [data-palette-preview]',els=>els.length),groups[1].themes.length);
+  for(const theme of groups[1].themes){await page.click(`[data-colour-theme-key="${theme.key}"]`);assert.equal(await page.$eval(`[data-colour-theme-key="${theme.key}"]`,el=>el.getAttribute('aria-pressed')),'true');}
   for (const theme of groups[0].themes) {
     assert(await page.evaluate(async url => { const img = new Image(); img.src = url; await img.decode(); return img.naturalWidth > 0; }, theme.thumbnail));
     await page.click(`[data-colour-theme-key="${theme.key}"]`);

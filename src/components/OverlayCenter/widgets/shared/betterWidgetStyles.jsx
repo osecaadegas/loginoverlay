@@ -3191,7 +3191,7 @@ export function BetterBonusHuntStyle({
   const rotatingIndex = useBetterHuntCarousel(
     rows.length,
     Number(c.carouselMs) || 3200,
-    c.orientation!=='new_horizontal' && c.animations !== false && sessionState === "hunt",
+    c.orientation!=='new_horizontal' && !(c.colourTheme==='solverde'&&c.solverde?.huntDock&&c.orientation==='horizontal') && c.animations !== false && sessionState === "hunt",
     initialIndex,
   );
   const lockedIndex =
@@ -5236,7 +5236,7 @@ export function BetterBonusHuntStyle({
       superOpened={superOpened} superCount={superCount} extremeOpened={extremeOpened} extremeCount={extremeCount}
       cards={rows.map((bonus,index)=>({id:String(bonus.id||`bonus-${index}`),number:index+1,name:bonusSlotName(bonus,index),image:bonusImage(bonus),opened:bonusOpened(bonus),tier:bonusTier(bonus),bet:hasBonusMetric(bonus,['betSize','bet_size','bet','stake','amount'])?formatMoney(bonusBet(bonus),money):'—',payout:hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result'])?formatMoney(bonusPayout(bonus),money):'—',multiplier:hasBonusMetric(bonus,['_multi','multiplier','multi','x','bonusMultiplier'])||(bonusBet(bonus)>0&&hasBonusMetric(bonus,['_payout','payout','pay','win','winAmount','win_amount','result']))?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))}/>
     : c.colourTheme === 'solverde' && c.solverde?.huntDock && orientation === 'horizontal' ? (
-      <SolverdeHuntDock config={c} opened={opened.length} total={rows.length} activeIndex={activeIndex}
+      <SolverdeHuntDock config={c} opened={opened.length} total={rows.length} activeIndex={firstUnopened}
         start={startKnown ? formatMoney(startValue, money) : '—'} actual={Number.isFinite(currentHuntBalance) ? formatMoney(currentHuntBalance, money) : '—'} breakEven={displayBreakEven > 0 ? formatMultiplier(displayBreakEven) : '—'}
         part={id => ({ ...attrs('bonus_hunt', c, id), style: subElementStyle(c, id, {}) })}
         cards={rows.map((bonus,index) => ({id:bonus.id || index,name:bonusSlotName(bonus,index),provider:bonusProvider(bonus),opened:bonusOpened(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,index)} fit="cover" />,bet:formatMoney(bonusBet(bonus),money),multiplier:bonusOpened(bonus)?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))} />

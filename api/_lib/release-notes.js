@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'palette-previews-solverde-carousel-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Palette previews and a clearer Solverde hunt carousel',
+    summary:'Every colour palette has a miniature overlay preview; Solverde cards now make the current bonus easier to follow.',
+    changes:['Standard palettes show lightweight previews using their own surfaces, borders and accents; premium grouping and access stay unchanged.','Solverde removes manual arrow buttons and automatically scrolls longer hunts without changing their order or current-bonus state.','Provider logos, a stronger current-card highlight and greyscale opened artwork improve card recognition.','A smooth emerald background is available, preserving the reference gameplay cutout when idle fill is off.'],
+    action:'Refresh the editor and OBS Browser Source. Solverde hunt settings include Automatic card carousel, Provider logos and the carousel interval; the Background widget includes Smooth emerald background. Save and publish after changing settings. No installer or database migration is required.',
+  },
+  {
     id:'slot-requests-image-cards-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'Image Cards layout for Slot Requests',
     summary:'Large slot artwork, top-aligned titles and readable requester names in a mint-framed queue.',
