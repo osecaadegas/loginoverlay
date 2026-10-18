@@ -1,6 +1,13 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id:'solverde-dock-readability-2026-10-18',date:'2026-10-18',category:'overlays',
+    title:'Solverde hunt cards and predictions refined',
+    summary:'Hunt details remain visible in the compact dock and prediction fills stay inside their rows.',
+    changes:['The hunt heading sits higher, with a responsive progress ring and contained card statistics.','Bonus cards show their opened, current or upcoming status.','Prediction rows support six options without overflowing bars; range and percentage font sizes are independently adjustable.'],
+    action:'Refresh the editor and OBS Browser Source. Adjust prediction fonts in Solverde layout settings, then save and publish. No installer or database update is needed.',
+  },
+  {
     id:'bonus-hunt-new-horizontal-2026-10-18',date:'2026-10-18',category:'overlays',
     title:'New Horizontal Bonus Hunt layout',
     summary:'A compact five-card hunt tracker with a central live summary.',

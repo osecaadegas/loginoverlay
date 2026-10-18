@@ -32,7 +32,7 @@ export function SolverdeHuntDock({ config, cards, activeIndex, opened, total, st
     <dl className="solverde-hunt-session">{[['START', start], ['ATUAL', actual], ['B.E.', breakEven]].map(([label, value]) => <div key={label} {...part('statCell')}><dt {...part('statLabel')}>{label}</dt><dd {...part('statValue')}>{value}</dd></div>)}</dl>
     <div className="solverde-dock-window"><div className="solverde-dock-track" ref={track} role="list">
       {cards.map((card, index) => <article key={card.id} className="solverde-dock-card" role="listitem" data-active={index === activeIndex} {...part('slotRow')}>
-        <div className="solverde-dock-art">{card.art}</div><div className="solverde-dock-name"><strong {...part('slotTitle')}>{card.name}</strong><small {...part('providerText')}>{card.provider}</small></div>
+        <div className="solverde-dock-art">{card.art}</div><div className="solverde-dock-name"><span className="solverde-dock-status" {...part('slotStatus')}>{card.opened?'ABERTO':index===activeIndex?'ATUAL':'POR ABRIR'}</span><strong {...part('slotTitle')}>{card.name}</strong><small {...part('providerText')}>{card.provider}</small></div>
         <div className="solverde-dock-values"><span>BET<strong {...part('betValue')}>{card.bet}</strong></span><span>MULTI<strong {...part('multiplierValue')}>{card.multiplier}</strong></span></div>
       </article>)}
       {!cards.length && <div className="solverde-dock-empty">À espera dos dados do hunt</div>}
@@ -41,7 +41,7 @@ export function SolverdeHuntDock({ config, cards, activeIndex, opened, total, st
 }
 export function SolverdePredictions({ config, options, percentages, status, part }) {
   const accents = ['var(--slv-accent)', '#71E3BA', 'var(--slv-ivory)'];
-  return <section className="solverde-predictions" {...part('widgetBackground')} style={{fontFamily:config.fontFamily,fontSize:Number(config.fontSize)||14,'--slv-options':Math.max(1,options.length),...part('widgetBackground').style}}><header><strong {...part('title')}>{config.solverde?.predictionHeading || config.question || 'QUAL SERÁ O MULTIPLICADOR?'}</strong><span {...part('statusBadge')}>{status === 'open' ? 'ABERTO' : status === 'result' ? 'RESULTADO' : 'FECHADO'}</span></header>
+  return <section className="solverde-predictions" {...part('widgetBackground')} style={{fontFamily:config.fontFamily,fontSize:Number(config.fontSize)||14,'--slv-options':Math.max(1,options.length),'--slv-range-size':`${Number(config.solverde?.rangeSize)||Number(config.fontSize)||14}px`,'--slv-percentage-size':`${Number(config.solverde?.percentageSize)||Number(config.fontSize)||14}px`,...part('widgetBackground').style}}><header><strong {...part('title')}>{config.solverde?.predictionHeading || config.question || 'QUAL SERÁ O MULTIPLICADOR?'}</strong><span {...part('statusBadge')}>{status === 'open' ? 'ABERTO' : status === 'result' ? 'RESULTADO' : 'FECHADO'}</span></header>
     <div className="solverde-prediction-options">{options.map((option, index) => <div className="solverde-prediction-row" key={index} {...part('individualBetCard')}><span {...part('cardRangeText')}>{option}</span><span className="solverde-prediction-track"><i {...part('progressBar')} style={{ background: accents[index % accents.length], ...part('progressBar').style, width: `${percentages[index]}%` }} /></span><strong {...part('cardPercentageText')}>{percentages[index]}%</strong></div>)}</div>
   </section>;
 }

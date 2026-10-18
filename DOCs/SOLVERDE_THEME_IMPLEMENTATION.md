@@ -2,6 +2,16 @@
 
 Implemented 18 October 2026 in the existing Overlay Center and published Browser Source renderer.
 
+### Compact dock and prediction fixes, 18 October
+
+The hunt heading now sits at the top of the dock. A height-aware progress ring, constrained grid tracks and reserved card-statistic space prevent BET/MULTI and the session figures from falling below the frame. Each card displays ABERTO, ATUAL or POR ABRIR from existing hunt state. `slotStatus` is registered in the dock's strict appearance schema.
+
+Prediction tracks fit within their rows with three or six options. Larger configured fonts increase the row minimum height; short frames allow scrolling rather than clipping the content. Range text size and Percentage text size are independent controls in Solverde layout settings, alongside the existing text font and size.
+
+Modified files: `src/effects/ThemeEffects/solverde/SolverdeTheme.jsx`, `SolverdeTheme.css`, `solverdeTheme.js`; `src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx`; `src/components/OverlayCenter/editor/BetterWidgetPackages.jsx`; `scripts/test-solverde-theme.mjs`; `api/_lib/release-notes.js`; this document. No files created, dependencies or database migrations added.
+
+Verification adds geometry assertions at dock heights 200, 220 and 246, six-row track containment, opened/current card labels, persisted font configuration, and six rows on the actual published overlay component. Existing Solverde behavior, New Horizontal, widget validation, release-note validation and production compilation remain checked. Screenshots were inspected at 1920×1080. Native OBS Studio was not directly tested.
+
 ## Using the theme
 
 1. Open `/editor`, select a widget and choose **Solverde** under **Colour theme → Premium**. This changes its visual theme without repositioning it.

@@ -5237,7 +5237,7 @@ export function BetterBonusHuntStyle({
       <SolverdeHuntDock config={c} opened={opened.length} total={rows.length} activeIndex={activeIndex}
         start={startKnown ? formatMoney(startValue, money) : '—'} actual={Number.isFinite(currentHuntBalance) ? formatMoney(currentHuntBalance, money) : '—'} breakEven={displayBreakEven > 0 ? formatMultiplier(displayBreakEven) : '—'}
         part={id => ({ ...attrs('bonus_hunt', c, id), style: subElementStyle(c, id, {}) })}
-        cards={rows.map((bonus,index) => ({id:bonus.id || index,name:bonusSlotName(bonus,index),provider:bonusProvider(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,index)} fit="cover" />,bet:formatMoney(bonusBet(bonus),money),multiplier:bonusOpened(bonus)?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))} />
+        cards={rows.map((bonus,index) => ({id:bonus.id || index,name:bonusSlotName(bonus,index),provider:bonusProvider(bonus),opened:bonusOpened(bonus),art:<SlotImage src={bonusImage(bonus)} alt={bonusSlotName(bonus,index)} fit="cover" />,bet:formatMoney(bonusBet(bonus),money),multiplier:bonusOpened(bonus)?formatMultiplier(bonusMultiplierValue(bonus)):'—'}))} />
     ) : orientation === "vertical" && getWidgetEffectsThemeKey('bonus_hunt', c) === 'candy' ? (
       <section className={`better-hunt-panel candy-hunt-composition${c.showRequests === false ? ' candy-hunt-composition--no-requests' : ''}${panelShakeClass}`}>
         <div className="candy-hunt-summary candy-structural-panel">
