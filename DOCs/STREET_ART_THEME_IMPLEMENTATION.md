@@ -1,5 +1,13 @@
 # Street Art theme — implementation and verification
 
+## Frame and chat update
+
+Select **Background → Street Art materials → Reference gameplay frame** to edit **Main frame left, top, width, height, corners and thickness**. Dimensions use the 1920×1080 design canvas. The background instance saves `streetArt.gameplay`; the shared environment renderer uses the same rectangle and radius for the border and transparent scenery cutout. Older layouts retain the original defaults. Applying the explicit reference preset restores reference dimensions.
+
+Street Art shoutouts retain their configured chat position and media height, contained video artwork and a visible absent-clip fallback. The local card treatment keeps long streamer names and channel links within the panel. Giveaways still reuse the existing entry, drawing and winner renderers above messages; an active shoutout temporarily uses that bay and the giveaway returns after it ends.
+
+The updated `scripts/test-street-art-theme.mjs` checks resized frame controls, JSON layout round trips, the actual published OBS renderer, cutout alpha, clip playback, missing clips and giveaway states. Production build, widget validation and control-category checks pass. Native OBS was not launched. No database migrations or dependencies were added.
+
 Implemented in the existing React/Vite overlay system on 2026-10-18. No new application, service, subscription, dependency or database migration was introduced.
 
 ## Delivered

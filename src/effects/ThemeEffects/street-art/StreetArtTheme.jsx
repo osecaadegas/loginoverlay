@@ -2,7 +2,7 @@ import React from 'react';
 import { appearanceAttrs, subElementStyle } from '../../../components/OverlayCenter/widgets/shared/appearanceStyles';
 import { giveawayFontStack } from '../../../components/OverlayCenter/widgets/giveaway/giveawayFonts';
 import { Gift } from 'lucide-react';
-import { normalizeStreetArtSettings, STREET_ART_ASSETS, STREET_ART_GAMEPLAY } from './streetArtTheme';
+import { normalizeStreetArtSettings, STREET_ART_ASSETS } from './streetArtTheme';
 import './StreetArtTheme.css';
 
 const HEADINGS = { bonus_hunt: 'BONUS HUNT', slot_requests: 'SLOT REQUESTS', current_slot: 'CURRENT SLOT',
@@ -35,11 +35,11 @@ export function StreetArtModule({ type, config, children }) {
   </section>;
 }
 export function StreetArtEnvironment({ config, canvasAttrs, canvasStyle }) {
-  const s = normalizeStreetArtSettings(config), r = STREET_ART_GAMEPLAY;
-  const mask = s.gameplayFrame && s.transparentGameplay ? `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="opening"><rect width="1920" height="1080" fill="white"/><rect x="${r.x}" y="${r.y}" width="${r.width}" height="${r.height}" rx="18" fill="black"/></mask></defs><rect width="1920" height="1080" fill="white" mask="url(#opening)"/></svg>`)}")` : undefined;
+  const s = normalizeStreetArtSettings(config), r = s.gameplay;
+  const mask = s.gameplayFrame && s.transparentGameplay ? `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="opening"><rect width="1920" height="1080" fill="white"/><rect x="${r.x}" y="${r.y}" width="${r.width}" height="${r.height}" rx="${r.radius}" fill="black"/></mask></defs><rect width="1920" height="1080" fill="white" mask="url(#opening)"/></svg>`)}")` : undefined;
   return <div {...canvasAttrs} className="oc-bg-widget street-environment" style={canvasStyle}>
     {s.background && <img className="street-environment-image" src={STREET_ART_ASSETS.background} alt="" draggable={false} style={{ maskImage: mask, maskSize: '100% 100%' }}/>}
-    {s.gameplayFrame && <div className="street-gameplay-frame" style={{ left: `${r.x / 19.2}%`, top: `${r.y / 10.8}%`, width: `${r.width / 19.2}%`, height: `${r.height / 10.8}%` }} aria-hidden="true">{s.splashes && <PaintCorners/>}</div>}
+    {s.gameplayFrame && <div className="street-gameplay-frame" style={{ left: `${r.x / 19.2}%`, top: `${r.y / 10.8}%`, width: `${r.width / 19.2}%`, height: `${r.height / 10.8}%`, borderRadius:r.radius, borderWidth:s.borderWidth }} aria-hidden="true">{s.splashes && <PaintCorners/>}</div>}
   </div>;
 }
 export function StreetArtGiveawayNotice({ config }) {

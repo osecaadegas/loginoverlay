@@ -249,7 +249,7 @@ function RaidShoutoutCard({ alert, config, phase, remaining, onMediaEnded }) {
       <div className="better-shoutout-media" data-widget-element="clipFrame">
         <ShoutoutMedia
           alert={alert}
-          showClipPlaceholder={config.colourTheme==='solverde'}
+          showClipPlaceholder={['solverde','street_art'].includes(config.colourTheme)}
           videoUrl={videoUrl}
           embedUrl={embedUrl}
           mediaFailed={mediaFailed}

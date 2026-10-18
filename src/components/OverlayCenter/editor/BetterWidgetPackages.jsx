@@ -7963,7 +7963,11 @@ function ThemedBetterWidgetControls({
         {type==='background' && <>
           <ToggleRow label="Concrete scene background" checked={normalizeStreetArtSettings(c).background} onChange={background=>onChange({...c,streetArt:{...c.streetArt,background}})}/>
           <ToggleRow label="Reference gameplay frame" checked={normalizeStreetArtSettings(c).gameplayFrame} onChange={gameplayFrame=>onChange({...c,streetArt:{...c.streetArt,gameplayFrame}})}/>
-          {normalizeStreetArtSettings(c).gameplayFrame && <ToggleRow label="Transparent gameplay opening" checked={normalizeStreetArtSettings(c).transparentGameplay} onChange={transparentGameplay=>onChange({...c,streetArt:{...c.streetArt,transparentGameplay}})}/>}
+          {normalizeStreetArtSettings(c).gameplayFrame && <>
+            <ToggleRow label="Transparent gameplay opening" checked={normalizeStreetArtSettings(c).transparentGameplay} onChange={transparentGameplay=>onChange({...c,streetArt:{...c.streetArt,transparentGameplay}})}/>
+            {[['x','Main frame left',0,1820],['y','Main frame top',0,1000],['width','Main frame width',100,1920-normalizeStreetArtSettings(c).gameplay.x],['height','Main frame height',80,1080-normalizeStreetArtSettings(c).gameplay.y],['radius','Main frame corners',0,100]].map(([key,label,min,max])=><NumberRow key={key} label={label} min={min} max={max} value={normalizeStreetArtSettings(c).gameplay[key]} onChange={value=>onChange({...c,streetArt:{...c.streetArt,gameplay:{...normalizeStreetArtSettings(c).gameplay,[key]:value}}})}/>)}
+            <NumberRow label="Main frame thickness" min={0} max={8} value={normalizeStreetArtSettings(c).borderWidth} onChange={borderWidth=>onChange({...c,streetArt:{...c.streetArt,borderWidth}})}/>
+          </>}
         </>}
         {type==='chat' && ['better_chat','broadcast_chat'].includes(c.chatStyle) && <ToggleRow label="Compact reference messages" checked={c.streetArt?.compactChat===true} onChange={compactChat=>onChange({...c,streetArt:{...c.streetArt,compactChat}})}/>}
         {type==='rtp_stats' && <><ToggleRow label="Reference information strip" checked={c.streetArt?.statStrip===true} onChange={statStrip=>onChange({...c,streetArt:{...c.streetArt,statStrip}})}/>{c.streetArt?.statStrip && [['showRtp','RTP'],['showMaxWin','Potential'],['showVolatility','Volatility'],['showBestWin','Best win']].map(([key,label])=><ToggleRow key={key} label={label} checked={c[key]!==false} onChange={value=>onChange({...c,[key]:value})}/>)}</>}

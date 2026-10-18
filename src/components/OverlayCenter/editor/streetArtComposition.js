@@ -18,7 +18,7 @@ export function applyStreetArtComposition(layout) {
     if (!geometry || (instance.locked && type !== 'background') || counts.get(type) !== 1) return instance;
     const config = type==='slot_window' ? {...instance.config} : applyWidgetColourTheme(type,instance.config,'street_art');
     config.streetArt = { ...config.streetArt };
-    if (type === 'background') Object.assign(config.streetArt,{gameplayFrame:true});
+    if (type === 'background') Object.assign(config.streetArt,{gameplayFrame:true,gameplay:{...STREET_ART_GAMEPLAY,radius:18}});
     if (type === 'navbar') Object.assign(config,{barHeight:68,showCrypto:false,showClock:true,showStartBalance:true,showCTA:true});
     if (type === 'bonus_hunt') Object.assign(config,{orientation:'mainstream',statsLayout:'grid',showRequests:false,listMode:'compact',visibleRows:3,fontSize:16,drawerMode:'contain',widgetWidth:geometry.width,widgetHeight:geometry.height,streetArt:{...config.streetArt,compactHunt:true}});
     if (type === 'slot_requests') Object.assign(config,{displayStyle:'image_cards',rowHeight:70,artworkWidth:86,artworkHeight:60,titleSize:18,usernameSize:15,cardGap:5,visibleRequests:2});

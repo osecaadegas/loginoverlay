@@ -21,7 +21,10 @@ export const STREET_ART_HUNT_STYLE = Object.freeze({id:'street_art_hunt',label:'
 const bounded = (value, min, max, fallback) => Number.isFinite(Number(value)) ? Math.max(min, Math.min(max, Number(value))) : fallback;
 export function normalizeStreetArtSettings(config = {}) {
   const c = config.streetArt || {};
+  const frame = c.gameplay || {};
+  const x = bounded(frame.x, 0, 1820, STREET_ART_GAMEPLAY.x), y = bounded(frame.y, 0, 1000, STREET_ART_GAMEPLAY.y);
   return { background: c.background !== false, transparentGameplay: c.transparentGameplay !== false,
+    gameplay: {x,y,width:bounded(frame.width,100,1920-x,Math.min(1920-x,STREET_ART_GAMEPLAY.width)),height:bounded(frame.height,80,1080-y,Math.min(1080-y,STREET_ART_GAMEPLAY.height)),radius:bounded(frame.radius,0,100,18)},
     gameplayFrame: c.gameplayFrame === true, splashes: c.splashes !== false, props: c.props !== false,
     textureIntensity: bounded(c.textureIntensity, 0, 100, 55), panelOpacity: bounded(c.panelOpacity, 0, 100, 100),
     borderWidth: bounded(c.borderWidth, 0, 8, 2), headerFont: c.headerFont || "'Permanent Marker', Impact, sans-serif",
