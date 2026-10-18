@@ -80,3 +80,15 @@ The reference was used to refine composition, spacing, brush lettering, frame co
 ## Use
 
 Refresh the editor, select **Street Art**, and optionally choose **Street Art reference layout**. Adjust the instance's materials/appearance settings, save and publish, then refresh the OBS Browser Source. Keep **Transparent gameplay opening** enabled when placing a gameplay source beneath the overlay. No manual database or environment configuration is required.
+
+## Spray-can visibility and optional gameplay chroma fill (2026-10-18)
+
+Updated `src/effects/ThemeEffects/street-art/StreetArtTheme.jsx`, `StreetArtTheme.css`, `streetArtTheme.js` and `src/components/OverlayCenter/editor/BetterWidgetPackages.jsx`.
+
+- Editor/OBS overflow exceptions are restricted to Street Art instances with spray props enabled. Content remains clipped inside its own panel.
+- Chat displays the existing cyan/magenta/yellow cluster and an additional single can in a dedicated lower decoration bay, outside messages and embedded giveaway/shoutout content. Current Slot's existing can and sticker have safer positioning. The per-instance Spray-can props toggle remains available; disabling it reclaims chat space.
+- Background → Street Art materials → Reference gameplay frame now exposes Main frame chroma-key fill and, while enabled, Main frame chroma-key colour. The existing key-colour validator supplies green by default. Only the frame interior is filled; decorations and other widget surfaces are preserved. Off restores the configured transparent/scene opening.
+- Settings save in `streetArt.gameplayChromaKey` and `streetArt.gameplayChromaColor`. Existing saved builds default to chroma off. No dependencies, services, assets, database migrations or environment changes were needed.
+
+Extended `scripts/test-street-art-theme.mjs` to verify saved colour, exact chroma pixels, alpha restoration, loaded non-interactive props, content separation and the actual OBS route. Production build and widget/control validation run as part of this update. Release notes are in `api/_lib/release-notes.js`.
+`test:street-art`, `test:updates`, `validate:widgets`, `test:widget-control-categories`, production build and `git diff --check` passed. Visual evidence: `DOCs/verification/street-art-chroma-props.png`.

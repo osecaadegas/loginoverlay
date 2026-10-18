@@ -1,3 +1,4 @@
+import {normalizeChromaKeyColor} from '../../../components/OverlayCenter/widgets/background/backgroundSource.js';
 export const STREET_ART_TOKENS = Object.freeze({
   background: '#090C0E', surface: '#101416', raised: '#1B2023', border: '#AAAFAA',
   highlight:'#FFE600', accent: '#00D5ED', secondary: '#FF149A', text: '#F1EFE8', muted: '#B8BDBF',
@@ -24,6 +25,7 @@ export function normalizeStreetArtSettings(config = {}) {
   const frame = c.gameplay || {};
   const x = bounded(frame.x, 0, 1820, STREET_ART_GAMEPLAY.x), y = bounded(frame.y, 0, 1000, STREET_ART_GAMEPLAY.y);
   return { background: c.background !== false, transparentGameplay: c.transparentGameplay !== false,
+    gameplayChromaKey:c.gameplayChromaKey===true,gameplayChromaColor:normalizeChromaKeyColor(c.gameplayChromaColor),
     gameplay: {x,y,width:bounded(frame.width,100,1920-x,Math.min(1920-x,STREET_ART_GAMEPLAY.width)),height:bounded(frame.height,80,1080-y,Math.min(1080-y,STREET_ART_GAMEPLAY.height)),radius:bounded(frame.radius,0,100,18)},
     gameplayFrame: c.gameplayFrame === true, splashes: c.splashes !== false, props: c.props !== false,
     textureIntensity: bounded(c.textureIntensity, 0, 100, 55), panelOpacity: bounded(c.panelOpacity, 0, 100, 100),

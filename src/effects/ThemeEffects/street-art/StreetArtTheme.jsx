@@ -25,12 +25,12 @@ export function StreetArtModule({ type, config, children }) {
   const s = normalizeStreetArtSettings(config), heading = s.heading || HEADINGS[type];
   const headingId = {bonus_hunt:'headerTitle',slot_requests:'header',chat:'header',current_slot:'badge'}[type];
   const headingAttrs = headingId ? appearanceAttrs({config,widgetType:type,widgetId:config.__betterInstanceId,elementId:headingId}) : {};
-  return <section className={`street-module street-module--${type}${heading ? ' street-module--headed' : ''}`} data-street-splashes={s.splashes ? 'on' : 'off'}>
+  return <section className={`street-module street-module--${type}${heading ? ' street-module--headed' : ''}`} data-street-props={s.props&&['chat','current_slot'].includes(type)?'on':'off'} data-street-splashes={s.splashes ? 'on' : 'off'}>
     <div className="street-material" aria-hidden="true"/>
     {heading && <header className="street-heading"><span {...headingAttrs} style={headingId?subElementStyle(config,headingId,{color:'#090C0E',fontFamily:s.headerFont}):{fontFamily:s.headerFont}}>{heading}</span><svg viewBox="0 0 100 36" aria-hidden="true"><path d="m5 27 72-9-12-9m13 9-12 12"/>{type==='bonus_hunt' && <path className="street-crown" d="m73 28-5-21 12 10L86 2l5 17 7-9-2 20Z"/>}</svg></header>}
     <div className="street-module-content">{children}</div>
     {s.splashes && <PaintCorners/>}
-    {s.props && type === 'chat' && <img className="street-prop street-prop--cluster" src={STREET_ART_ASSETS.props} alt="" draggable={false} aria-hidden="true"/>}
+    {s.props && type === 'chat' && <div className="street-chat-props" aria-hidden="true"><img className="street-prop street-prop--extra-can" src={STREET_ART_ASSETS.can} alt="" draggable={false}/><img className="street-prop street-prop--cluster" src={STREET_ART_ASSETS.props} alt="" draggable={false}/></div>}
     {s.props && type === 'current_slot' && <><img className="street-prop street-prop--can" src={STREET_ART_ASSETS.can} alt="" draggable={false} aria-hidden="true"/><svg className="street-sticker-tag" viewBox="0 0 90 50" aria-hidden="true"><path d="m5 4 77 3-3 9 7 6-6 8 5 13-75 4 2-10-8-4 7-11Z" fill="#F1EFE8"/><path d="m25 33-4-18 14 9 6-15 9 16 14-9-3 21Z" fill="none" stroke="#090C0E" strokeWidth="4" strokeLinejoin="round"/></svg></>}
   </section>;
 }
@@ -39,7 +39,7 @@ export function StreetArtEnvironment({ config, canvasAttrs, canvasStyle }) {
   const mask = s.gameplayFrame && s.transparentGameplay ? `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="opening"><rect width="1920" height="1080" fill="white"/><rect x="${r.x}" y="${r.y}" width="${r.width}" height="${r.height}" rx="${r.radius}" fill="black"/></mask></defs><rect width="1920" height="1080" fill="white" mask="url(#opening)"/></svg>`)}")` : undefined;
   return <div {...canvasAttrs} className="oc-bg-widget street-environment" style={canvasStyle}>
     {s.background && <img className="street-environment-image" src={STREET_ART_ASSETS.background} alt="" draggable={false} style={{ maskImage: mask, maskSize: '100% 100%' }}/>}
-    {s.gameplayFrame && <div className="street-gameplay-frame" style={{ left: `${r.x / 19.2}%`, top: `${r.y / 10.8}%`, width: `${r.width / 19.2}%`, height: `${r.height / 10.8}%`, borderRadius:r.radius, borderWidth:s.borderWidth }} aria-hidden="true">{s.splashes && <PaintCorners/>}</div>}
+    {s.gameplayFrame && <div className="street-gameplay-frame" data-chroma-key={s.gameplayChromaKey?'on':'off'} style={{ left: `${r.x / 19.2}%`, top: `${r.y / 10.8}%`, width: `${r.width / 19.2}%`, height: `${r.height / 10.8}%`, borderRadius:r.radius, borderWidth:s.borderWidth,background:s.gameplayChromaKey?s.gameplayChromaColor:'transparent' }} aria-hidden="true">{s.splashes && <PaintCorners/>}</div>}
   </div>;
 }
 export function StreetArtGiveawayNotice({ config }) {

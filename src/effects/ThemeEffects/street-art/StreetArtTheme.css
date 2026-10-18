@@ -115,3 +115,14 @@
 .street-module--current_slot .street-current-card{background:transparent}
 .street-module--navbar :is(.better-navbar-ambient,.better-navbar-sheen){display:none}
 @media(prefers-reduced-motion:reduce){.street-module *{scroll-behavior:auto}}
+
+/* Keep the physical props visible while content retains its own clipping. */
+.better-editor-canvas-instance__content:has(> .better-widget-colour-scope[data-colour-theme="street_art"] > .street-module[data-street-props="on"]),
+.better-obs-instance:has(> .better-widget-colour-scope[data-colour-theme="street_art"] > .street-module[data-street-props="on"]){overflow:visible}
+.street-module--chat[data-street-props=on]{--street-prop-bay:clamp(60px,25cqh,140px)}
+.street-module--chat[data-street-props=on]>.street-module-content{margin-bottom:var(--street-prop-bay)}
+.street-chat-props{position:absolute;bottom:-6px;left:5%;right:2%;height:var(--street-prop-bay);pointer-events:none;z-index:4}
+.street-chat-props .street-prop--cluster{top:auto;bottom:0;right:0;width:76%;height:100%;max-height:none;object-position:bottom right}
+.street-chat-props .street-prop--extra-can{left:8%;bottom:0;width:20%;height:85%;max-height:none;object-position:bottom;transform:rotate(-9deg)}
+.street-module--current_slot .street-prop--can{width:17%;left:-4%;bottom:-7%;max-height:40%;z-index:-1}
+.street-module--current_slot .street-sticker-tag{bottom:-7%;width:20%;z-index:-1}

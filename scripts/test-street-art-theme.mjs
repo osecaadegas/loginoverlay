@@ -66,7 +66,7 @@ try {
  for(const label of ['Concrete scene background','Reference gameplay frame','Transparent gameplay opening','Paint splashes']){const buttons=await page.$$('.bp-toggle');for(const b of buttons)if(await b.evaluate((e,label)=>e.querySelector('strong')?.textContent===label,label)){await b.click();break;}}
  const saved=await page.evaluate(()=>{localStorage.setItem('street-control-test',JSON.stringify(window.street.controlConfig));return window.street.controlConfig});assert.equal(saved.streetArt.background,false);assert.equal(saved.streetArt.splashes,false);assert.equal(saved.streetArt.gameplayFrame,true);assert.equal(saved.streetArt.transparentGameplay,false);
  await page.evaluate(()=>window.street.controls('chat'));await page.waitForSelector('[data-effects-theme=street_art]');
- const field=async(label,value)=>page.evaluate(({label,value})=>{const e=[...document.querySelectorAll('label')].find(e=>e.querySelector('span')?.textContent===label)?.querySelector('input,select');if(!e)throw Error('Missing field '+label);Object.getOwnPropertyDescriptor(e.tagName==='SELECT'?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set.call(e,String(value));e.dispatchEvent(new Event(e.tagName==='SELECT'?'change':'input',{bubbles:true}));},{label,value});
+ const field=async(label,value)=>page.evaluate(({label,value})=>{const e=[...document.querySelectorAll('label')].find(e=>(e.querySelector('span strong')?.textContent||e.querySelector('span')?.textContent)===label)?.querySelector('input,select');if(!e)throw Error('Missing field '+label);Object.getOwnPropertyDescriptor(e.tagName==='SELECT'?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set.call(e,String(value));e.dispatchEvent(new Event(e.tagName==='SELECT'?'change':'input',{bubbles:true}));},{label,value});
 
  await page.evaluate(()=>window.street.controls('background'));await page.waitForSelector('[data-effects-theme=street_art]');
  for(const b of await page.$$('.bp-toggle'))if(await b.evaluate(e=>e.querySelector('strong')?.textContent==='Reference gameplay frame')){await b.click();break;}
@@ -76,6 +76,20 @@ try {
  const checkFrame=async()=>assert.deepEqual(await page.$eval('.street-gameplay-frame',el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height,parseFloat(getComputedStyle(el).borderRadius)]}),[500,130,880,690,32]);
  await checkFrame();const resized=await page.screenshot({path:folder+'/resized-frame.png',omitBackground:true});assert.equal((await rgbaAt(resized,550,180))[3],0);assert((await rgbaAt(resized,470,500))[3]>0,'previous frame opening is filled again');
  await page.evaluate(()=>window.street.obs());await page.waitForSelector('.better-obs-overlay .street-gameplay-frame');await settle();await checkFrame();
+
+ // Chroma fill changes only the saved gameplay opening, in editor and published output.
+ await page.evaluate(()=>window.street.controls('background'));await page.waitForSelector('[data-effects-theme=street_art]');
+ for(const b of await page.$$('.bp-toggle'))if(await b.evaluate(e=>e.querySelector('strong')?.textContent==='Reference gameplay frame')){await b.click();break;}
+ for(const b of await page.$$('.bp-toggle'))if(await b.evaluate(e=>e.querySelector('strong')?.textContent==='Main frame chroma-key fill')){await b.click();break;}
+ await field('Main frame chroma-key colour','#ff00ff');
+ await page.evaluate(()=>{const a=window.street,l=a.scene(),bg=l.instances.find(i=>i.widgetType==='background');bg.config=JSON.parse(JSON.stringify(a.controlConfig));localStorage.setItem('street-chroma-test',JSON.stringify(l));a.render(a.r.normalizeBetterLayout(JSON.parse(localStorage.getItem('street-chroma-test'))))});await settle();
+ assert.equal(await page.$eval('.street-gameplay-frame',e=>getComputedStyle(e).backgroundColor),'rgb(255, 0, 255)');
+ assert.deepEqual(await rgbaAt(await page.screenshot({path:folder+'/chroma-editor.png',omitBackground:true}),900,500),[255,0,255,255]);
+ await page.evaluate(()=>window.street.obs());await page.waitForSelector('.better-obs-overlay .street-gameplay-frame');await settle();
+ assert.deepEqual(await rgbaAt(await page.screenshot({path:folder+'/chroma-obs.png',omitBackground:true}),900,500),[255,0,255,255]);
+ assert(await page.$eval('.better-obs-instance:has(.street-module--chat)',e=>getComputedStyle(e).overflow==='visible'),'OBS does not clip exterior props');
+ assert(await page.evaluate(()=>{const c=document.querySelector('.street-module--chat'),p=c.querySelector('.street-chat-props').getBoundingClientRect(),m=c.querySelector('.ov-chat-messages').getBoundingClientRect();return m.bottom<=p.top+2&&c.querySelectorAll('.street-prop').length===2&&[...c.querySelectorAll('.street-prop')].every(i=>i.naturalWidth>0&&getComputedStyle(i).pointerEvents==='none')}),'spray cans occupy a separate bay below messages');
+ await page.evaluate(()=>{const a=window.street,l=JSON.parse(localStorage.getItem('street-chroma-test'));l.instances.find(i=>i.widgetType==='background').config.streetArt.gameplayChromaKey=false;a.render(l)});await settle();assert.equal((await rgbaAt(await page.screenshot({omitBackground:true}),900,500))[3],0,'chroma off restores transparent opening');
  await page.evaluate(()=>window.street.controls('chat'));await page.waitForSelector('[data-effects-theme=street_art]');
  await field('Frame thickness',4);await field('Texture intensity (%)',17);await field('Panel opacity (%)',72);await field('Sticker font','Impact, sans-serif');await field('Content font','Arial, sans-serif');
  await page.evaluate(()=>{const a=window.street,l=a.scene(),edited=JSON.parse(JSON.stringify(a.controlConfig));const chat=l.instances.find(i=>i.widgetType==='chat');chat.config={...chat.config,...edited};a.render(l)});await settle();
