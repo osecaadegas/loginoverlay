@@ -96,6 +96,15 @@ export default function AppsPage() {
       art: "screensplit",
     },
     {
+      href: "/SC_Web_Transitions.zip",
+      download: "SC_Web_Transitions.zip",
+      label: "SC Web Transitions",
+      desc: "Download the Windows transition package (ZIP)",
+      icon: Download,
+      tone: "cyan",
+      art: "screensplit",
+    },
+    {
       to: "/offers",
       label: "Deals",
       desc: "Casino offers and partners",
@@ -212,6 +221,7 @@ export default function AppsPage() {
           const tileProps = tile.href
             ? {
                 href: tile.href,
+                download: tile.download,
                 target: tile.external ? "_blank" : undefined,
                 rel: tile.external ? "noreferrer" : undefined,
               }
