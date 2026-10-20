@@ -13,7 +13,7 @@ try{
  await page.goto(base+'__frame');await page.evaluate(async()=>{
   const entry=await(await fetch('/src/main.jsx')).text(),url=entry.match(/"([^"\n]*\/react\.js[^"\n]*)"/)[1],R=(await import(url)).default,D=(await import('/node_modules/.vite/deps/react-dom_client.js?'+url.split('?')[1])).default;
   const registry=await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');const root=D.createRoot(document.getElementById('root'));
-  window.frameTest={render(mode,keyEnabled=true,runtime='editor',restore=false){let config={...registry.getBetterWidgetDefinition('background').defaultConfig,colourTheme:'street_art',bgMode:mode,imageUrl:'/player.webp',videoUrl:'/smoke_effect2.mp4',gameplayFrame:{enabled:true,keyEnabled,keyColor:'#ff00ff',width:900,height:600,x:400,y:100,radius:24},fxParticles:'none',fxFog:'none',fxGlimpse:'none'};if(restore)config=JSON.parse(localStorage.getItem('frame-test'));else localStorage.setItem('frame-test',JSON.stringify(config));root.render(R.createElement('div',{style:{width:1920,height:1080,transform:'scale(.5)',transformOrigin:'top left'}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('background',{config}),runtime,mode:'live',accessVerified:true})));}};
+  window.frameTest={render(mode,keyEnabled=true,runtime='editor',restore=false,theme='street_art'){let config={...registry.getBetterWidgetDefinition('background').defaultConfig,colourTheme:theme,bgMode:mode,imageUrl:'/player.webp',videoUrl:'/smoke_effect2.mp4',gameplayFrame:{enabled:true,keyEnabled,keyColor:'#ff00ff',width:900,height:600,x:400,y:100,radius:24},fxParticles:'none',fxFog:'none',fxGlimpse:'none'};if(restore)config=JSON.parse(localStorage.getItem('frame-test'));else localStorage.setItem('frame-test',JSON.stringify(config));root.render(R.createElement('div',{style:{width:1920,height:1080,transform:'scale(.5)',transformOrigin:'top left'}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('background',{config}),runtime,mode:'live',accessVerified:true})));}};
  });
  for(const runtime of ['editor','obs'])for(const mode of ['texture','image','video','transparent']){
   await page.evaluate(({mode,runtime})=>window.frameTest.render(mode,true,runtime),{mode,runtime});await page.waitForSelector('[data-background-gameplay-frame]');
@@ -25,5 +25,14 @@ try{
   assert.equal(await page.$eval('[data-background-gameplay-frame]',el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
  }
  await page.evaluate(()=>window.frameTest.render('image',true,'obs',true));await page.waitForFunction(()=>document.querySelector('[data-background-gameplay-frame]')?.dataset.keyEnabled==='false');
+ const {WIDGET_COLOUR_THEMES}=await import('../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js');
+ for(const {key} of WIDGET_COLOUR_THEMES){
+  await page.evaluate(key=>window.frameTest.render('image',true,'obs',false,key),key);
+  await page.waitForFunction(key=>document.querySelector('[data-background-gameplay-frame]')?.dataset.frameTheme===key,{},key);
+  assert.equal(await page.$eval('[data-background-gameplay-frame]',el=>getComputedStyle(el).backgroundColor),'rgb(255, 0, 255)');
+  assert.notEqual(await page.$eval('[data-background-gameplay-frame]',el=>getComputedStyle(el).boxShadow),'none');
+  await page.waitForFunction(()=>document.querySelector('img[data-better-element=media]')?.naturalWidth>0);
+ }
+ if(process.env.FRAME_SCREENSHOT)await page.screenshot({path:process.env.FRAME_SCREENSHOT});
  assert.deepEqual(errors,[]);console.log('Background frame: texture/image/playing video/transparent, editor and OBS, independent key toggle, bounds and saved configuration PASS');
 }finally{await browser.close();await server.close();}

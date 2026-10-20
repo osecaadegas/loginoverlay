@@ -307,3 +307,14 @@
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Background media and key fill share a frame that follows the active palette. */
+.themed-background-frame { isolation:isolate; }
+.themed-background-frame:not([data-frame-theme="custom"]) { box-shadow:0 0 0 3px var(--frame-metal),0 0 14px color-mix(in srgb,var(--frame-accent) 38%,transparent),inset 0 0 0 1px var(--frame-accent); }
+.themed-background-frame[data-frame-theme="candy"] { outline:3px solid #fff; outline-offset:3px; box-shadow:0 0 0 8px var(--frame-secondary),0 0 20px var(--frame-accent),inset 0 0 0 3px #fff; }
+.themed-background-frame[data-frame-theme="solverde"] { border-color:var(--solverde-gold,#c6b887)!important; box-shadow:0 0 0 3px var(--frame-metal),inset 0 0 0 1px var(--frame-secondary); }
+.themed-background-frame[data-frame-theme="galactic_command"],.themed-background-frame[data-frame-theme="orbital"] { outline:5px ridge var(--frame-metal); outline-offset:3px; box-shadow:0 0 0 3px var(--frame-secondary),0 0 20px var(--frame-accent),inset 0 0 0 2px var(--frame-accent); }
+.themed-background-frame[data-frame-theme="starter_studio"]::before { content:""; position:absolute; top:0; left:0; width:22px; height:22px; background:var(--frame-accent); clip-path:polygon(0 0,100% 0,0 100%); }
+.themed-background-frame[data-frame-theme="volcanic"] { outline:4px ridge var(--frame-metal); outline-offset:2px; box-shadow:0 0 13px var(--frame-secondary),inset 0 0 0 1px var(--frame-accent); }
+.themed-background-frame[data-frame-theme="arctic"] { outline:3px ridge var(--frame-accent); outline-offset:2px; }
+.themed-background-frame[data-frame-theme="old_rome"],.themed-background-frame[data-frame-theme="gladiator"],.themed-background-frame[data-frame-theme="luxe"] { outline:4px double var(--frame-secondary); outline-offset:3px; }

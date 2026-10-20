@@ -1,6 +1,6 @@
-import {GalacticHunt} from '../../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
-import {StarterStudioHunt} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
-import { StreetArtEnvironment } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
+import {GalacticHunt, GalacticCommandModule} from '../../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
+import {StarterStudioHunt, StarterStudioModule} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
+import { StreetArtEnvironment, PaintCorners } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import OverflowMarquee from './OverflowMarquee';
 import ImageCards from '../slot-requests/ImageCards';
 import React, {
@@ -45,7 +45,7 @@ import "../background/BackgroundWidget.css";
 import { isExternalBackgroundSource, normalizeChromaKeyColor, normalizeBackgroundFrame } from "../background/backgroundSource";
 import ChromaKeySmoke from "../background/ChromaKeySmoke";
 import { appearanceAttrs, subElementStyle, subValue } from "./appearanceStyles";
-import { getHuntColourTheme, WIDGET_COLOUR_THEMES } from "./colourThemePalettes";
+import { getHuntColourTheme, getWidgetColourTheme, WIDGET_COLOUR_THEMES } from "./colourThemePalettes";
 import {
   getHorizontalHuntHeight,
   getHorizontalRequestPitch,
@@ -6814,15 +6814,20 @@ function betterBackgroundTextureStyle({
 export function BetterBackgroundStyle({ config }) {
   const c=config||{},frame=normalizeBackgroundFrame(c.gameplayFrame);
   if(!frame.enabled)return <BetterBackgroundScene config={c}/>;
+  const themeKey=String(c.colourTheme||'neon').replace(/^theme_/,''), palette=getWidgetColourTheme(themeKey)||getWidgetColourTheme('neon');
+  const themeBorder=c.gameplayFrame?.themeFrame!==false;
   const scene={...c,streetArt:{...c.streetArt,gameplayFrame:false},solverde:{...c.solverde,gameplayFrame:false}};
   return <div className="background-gameplay-frame-stage" style={{position:'relative',width:'100%',height:'100%',overflow:'hidden'}}>
     {frame.useSelectedSource?<LegacyBetterBackgroundStyle config={scene}/>:<BetterBackgroundScene config={scene}/>}
-    <div aria-label="Gameplay chroma-key frame" data-background-gameplay-frame data-key-enabled={frame.keyEnabled} style={{position:'absolute',zIndex:20,pointerEvents:'none',boxSizing:'border-box',left:frame.x/19.2+'%',top:frame.y/10.8+'%',width:frame.width/19.2+'%',height:frame.height/10.8+'%',borderRadius:frame.radius,border:frame.borderWidth+'px solid '+frame.borderColor,background:frame.keyEnabled?frame.keyColor:'transparent'}}/>
+    <div aria-label="Gameplay chroma-key frame" data-background-gameplay-frame data-frame-theme={themeBorder?themeKey:"custom"} className={themeBorder&&themeKey==='street_art'?'street-gameplay-frame themed-background-frame':'themed-background-frame'} data-key-enabled={frame.keyEnabled} style={{position:'absolute',zIndex:20,pointerEvents:'none',boxSizing:'border-box',left:frame.x/19.2+'%',top:frame.y/10.8+'%',width:frame.width/19.2+'%',height:frame.height/10.8+'%',borderRadius:frame.radius,border:frame.borderWidth+'px solid '+(themeBorder?palette.border:frame.borderColor),'--frame-accent':palette.accent,'--frame-secondary':palette.secondary,'--frame-metal':palette.raised,background:frame.keyEnabled?frame.keyColor:'transparent'}}>{themeBorder&&themeKey==='street_art'&&c.streetArt?.splashes!==false&&<PaintCorners/>}</div>
   </div>;
 }
 
 function BetterBackgroundScene({ config }) {
   const c = config || {};
+  const sceneryConfig={...c,gameplayFrame:{...c.gameplayFrame,enabled:false}};
+  if(c.gameplayFrame?.enabled&&c.colourTheme==='galactic_command')return <GalacticCommandModule type="background" config={sceneryConfig}/>;
+  if(c.gameplayFrame?.enabled&&c.colourTheme==='starter_studio')return <StarterStudioModule type="background" config={sceneryConfig}/>;
   if (getWidgetEffectsThemeKey('background',c) === 'street_art') return <StreetArtEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})}/>;
   if (getWidgetEffectsThemeKey('background', c) === 'solverde') return <SolverdeEnvironment config={c} canvasAttrs={attrs('background',c,'canvas')} canvasStyle={subElementStyle(c,'canvas',{width:'100%',height:'100%',position:'relative',overflow:'hidden',opacity:clampNumber(c.opacity ?? 100,0,100,100)/100})} />;
   if (getWidgetEffectsThemeKey('background', c) === 'volcanic') {

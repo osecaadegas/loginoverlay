@@ -9,6 +9,7 @@ const headings={bonus_hunt:['SESSION STATS',Orbit],current_slot:['CURRENT GAME',
 export function galacticPart(c,type,id){return {...appearanceAttrs({config:c,widgetType:type,widgetId:c.__betterInstanceId,elementId:id}),style:subElementStyle(c,id,{})};}
 export function GalacticCommandModule({type,config:c,layout,children}){
  if(type==='background'){
+  if(c.gameplayFrame?.enabled)return children;
   if(c.galactic?.background===false)return null;
   const holes=(layout?.instances||[]).filter(i=>i.visible!==false&&i.widgetType==='slot_window'&&i.config?.colourTheme==='galactic_command'&&i.config.galactic?.transparent!==false);
   const polygon=i=>{const x=Number(i.x),y=Number(i.y),w=Number(i.width),h=Number(i.height),b=Math.min(28,w/4,h/4);return `<polygon points="${x+b},${y} ${x+w-b},${y} ${x+w},${y+b} ${x+w},${y+h-b} ${x+w-b},${y+h} ${x+b},${y+h} ${x},${y+h-b} ${x},${y+b}" fill="black"/>`;};

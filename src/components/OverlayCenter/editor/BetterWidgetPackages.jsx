@@ -4647,10 +4647,11 @@ function SimpleThemedControls({
               <ToggleRow label="Enable gameplay frame" checked={frame.enabled} onChange={enabled=>setFrame({enabled})}/>
               {frame.enabled&&<>
                 <ToggleRow label="Use selected background source" checked={frame.useSelectedSource} onChange={useSelectedSource=>setFrame({useSelectedSource})} hint="Use the texture, image or video selected below. Turn off to keep the theme scenery."/>
+                <ToggleRow label="Use colour theme frame" checked={c.gameplayFrame?.themeFrame!==false} onChange={themeFrame=>setFrame({themeFrame})} hint="Match the frame to the selected colour theme. Turn off for a custom border."/>
                 <ToggleRow label="Chroma-key fill" checked={frame.keyEnabled} onChange={keyEnabled=>setFrame({keyEnabled})}/>
                 {frame.keyEnabled&&<ColorRow label="Frame key colour" value={frame.keyColor} onChange={keyColor=>setFrame({keyColor})}/>}
                 {[['x','Frame X',0,1920],['y','Frame Y',0,1080],['width','Frame width',40,1920],['height','Frame height',40,1080],['radius','Frame corner radius',0,100],['borderWidth','Frame border thickness',0,12]].map(([key,label,min,max])=><SliderRow key={key} label={label} value={frame[key]} min={min} max={max} unit="px" onChange={value=>setFrame({[key]:value})}/>)}
-                <ColorRow label="Frame border colour" value={frame.borderColor} onChange={borderColor=>setFrame({borderColor})}/>
+                {c.gameplayFrame?.themeFrame===false&&<ColorRow label="Frame border colour" value={frame.borderColor} onChange={borderColor=>setFrame({borderColor})}/>}
               </>}
             </Section>
             <Section title="Background source" icon={<ImagePlus size={13} />}>

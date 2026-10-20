@@ -6,6 +6,7 @@ import './StarterStudioTheme.css';
 const titles={bonus_hunt:['BONUS HUNT',Crown],slot_requests:['SLOT REQUESTS',MessageSquare],slideshow_frame:['PARTNERS',Link],chat:['LIVE CHAT',MessageSquare],tournament:['TOURNAMENT',Crown],giveaway:['GIVEAWAY',Gift],bets:['PREDICTIONS',ChartNoAxesColumnIncreasing],raid_shoutout:['SHOUTOUT',MessageSquare]};
 export function StarterStudioModule({type,config:c,layout,runtime,children}){
  if(type==='background'){
+  if(c.gameplayFrame?.enabled)return children;
   if(c.studio?.background===false)return null;
   const holes=(layout?.instances||[]).filter(i=>i.visible!==false&&i.config?.colourTheme==='starter_studio'&&(i.widgetType==='slot_window'||(i.widgetType==='camera'&&i.config.studio?.externalCamera!==false)));
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="m"><rect width="1920" height="1080" fill="white"/>${holes.map(i=>`<rect x="${i.x}" y="${i.y}" width="${i.width}" height="${i.height-(i.widgetType==='camera'?48:0)}" rx="${Number(i.config.studio?.radius??12)}" fill="black"/>`).join('')}</mask></defs><rect width="1920" height="1080" fill="white" mask="url(#m)"/></svg>`;
