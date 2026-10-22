@@ -4,7 +4,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // This follows the supplied MainStreamOverlay scene: a slim top bar, its
 // 350px left rail with a 240px active panel aligned to the rail's right edge,
 // an unobstructed gameplay opening, and chat on the right.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 6;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 7;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
@@ -30,14 +30,18 @@ export function getStreamerOverlayName(layout, user) {
 
 export function hasStreamerOverlayComposition(layout) {
   const instances = Array.isArray(layout?.instances) ? layout.instances : [];
-  return STREAMER_OVERLAY_COMPOSITION.every(({ type, role }) =>
-      instances.some(
-        (instance) =>
-          instance.widgetType === type &&
-          instance.config?.streamerOverlay?.role === role &&
-          instance.config?.streamerOverlay?.compositionVersion === STREAMER_OVERLAY_COMPOSITION_VERSION,
+  return STREAMER_OVERLAY_COMPOSITION.every((spec) => {
+    const instance = instances.find((item) =>
+      item.widgetType === spec.type && item.config?.streamerOverlay?.role === spec.role,
+    );
+    return Boolean(
+      instance &&
+      instance.config?.streamerOverlay?.compositionVersion === STREAMER_OVERLAY_COMPOSITION_VERSION &&
+      [instance.x, instance.y, instance.width, instance.height].every((value, index) =>
+        Math.abs(Number(value) - [spec.x, spec.y, spec.width, spec.height][index]) < 0.01,
       ),
     );
+  });
 }
 
 export function isLegacyStreamerOverlayComposition(layout) {
@@ -48,11 +52,18 @@ export function isLegacyStreamerOverlayComposition(layout) {
   const legacyWidgetScene = roles.has("header") && roles.has("hunt") && roles.has("gameplay") && roles.has("chat");
   const previousSuppliedScene =
     roles.has("header") && roles.has("active_panel") && roles.has("gameplay") && roles.has("chat") &&
-    instances.some(
-      (instance) =>
-        instance.config?.streamerOverlay?.role === "active_panel" &&
-        Number(instance.config?.streamerOverlay?.compositionVersion) < STREAMER_OVERLAY_COMPOSITION_VERSION,
-    );
+    STREAMER_OVERLAY_COMPOSITION.some((spec) => {
+      const instance = instances.find((item) =>
+        item.widgetType === spec.type && item.config?.streamerOverlay?.role === spec.role,
+      );
+      return Boolean(
+        instance &&
+        (Number(instance.config?.streamerOverlay?.compositionVersion) < STREAMER_OVERLAY_COMPOSITION_VERSION ||
+          ![instance.x, instance.y, instance.width, instance.height].every((value, index) =>
+            Math.abs(Number(value) - [spec.x, spec.y, spec.width, spec.height][index]) < 0.01,
+          )),
+      );
+    });
   return legacyWidgetScene || previousSuppliedScene;
 }
 
@@ -162,7 +173,6 @@ export function applyStreamerOverlayComposition(layout, user) {
 
     used.add(index);
     const instance = instances[index];
-    if (instance.locked && type !== "background") continue;
     const config = configureStreamerWidget(type, instance.config, role, geometry);
     instances[index] = {
       ...instance,

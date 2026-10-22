@@ -341,6 +341,19 @@ try {
     true,
     "version 5 saved builds retain the source chat header",
   );
+  const lockedMisalignedLayout = {
+    ...applied,
+    instances: applied.instances.map((instance) => instance.config.streamerOverlay?.role === "active_panel"
+      ? { ...instance, x: 40, y: 90, width: 282, height: 500, locked: true }
+      : instance),
+  };
+  assert.equal(hasStreamerOverlayComposition(lockedMisalignedLayout), false, "a current version marker cannot hide source geometry drift");
+  assert.equal(isLegacyStreamerOverlayComposition(lockedMisalignedLayout), true, "misaligned source builds are eligible for geometry repair");
+  const exactLockedLayout = applyStreamerOverlayComposition(lockedMisalignedLayout);
+  const exactLockedPanel = exactLockedLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "active_panel");
+  assert.deepEqual([exactLockedPanel.x, exactLockedPanel.y, exactLockedPanel.width, exactLockedPanel.height], [130, 60, 240, 720], "locked layers retain the exact source size and position");
+  assert.equal(exactLockedPanel.locked, true, "geometry repair preserves the layer lock");
+  assert.equal(hasStreamerOverlayComposition(exactLockedLayout), true, "the repaired scene passes exact geometry validation");
   assert.ok(
     state.calls.some(
       (call) =>
