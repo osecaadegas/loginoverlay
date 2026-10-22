@@ -329,3 +329,53 @@
   outline: 2px solid rgba(62, 173, 255, .28);
   outline-offset: 1px;
 }
+
+/* Layer-list controls have more specific legacy selectors, so theme them directly. */
+.editor-workspace .editor-layer-tools { background: transparent; }
+.editor-workspace .editor-add-widget {
+  color: #d9ecff;
+  border: 1px solid rgba(66, 137, 227, .38);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(11, 41, 72, .96), rgba(5, 22, 45, .96));
+}
+.editor-workspace .editor-add-widget:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(62, 219, 255, .58);
+  background: linear-gradient(135deg, rgba(13, 64, 105, .98), rgba(7, 34, 67, .98));
+}
+.editor-workspace .better-editor-widget-row {
+  color: #d9ecff;
+  border-color: transparent;
+  background: transparent;
+}
+.editor-workspace .better-editor-widget-row:hover:not(.is-selected) {
+  border-color: rgba(66, 137, 227, .2);
+  background: rgba(11, 33, 64, .42);
+}
+.editor-workspace .better-editor-widget-row.is-selected {
+  color: #f2f8ff;
+  border-color: rgba(62, 219, 255, .46);
+  background: linear-gradient(120deg, rgba(9, 46, 79, .96), rgba(6, 28, 54, .96));
+  box-shadow: inset 3px 0 #3edbff, 0 5px 16px rgba(0, 4, 15, .2);
+}
+.editor-workspace .better-editor-widget-row__main strong,
+.editor-workspace .better-editor-widget-row.is-selected .better-editor-widget-row__main strong {
+  color: #edf5ff;
+}
+.editor-workspace .better-editor-widget-row__main small { color: #9db2ce; }
+.editor-workspace .better-editor-widget-row__icon {
+  color: #9beaff;
+  border: 1px solid rgba(62, 173, 255, .3);
+  border-radius: 7px;
+  background: rgba(5, 23, 47, .9);
+}
+.editor-workspace .editor-layer-quick-actions button { color: #9db2ce; }
+.editor-workspace .editor-layer-quick-actions button:hover:not(:disabled),
+.editor-workspace .editor-layer-quick-actions button[aria-pressed="true"] { color: #8fe8ff; }
+.editor-workspace .better-editor-widget-row__drag-handle { color: #7598b8; }
+.editor-workspace .better-editor-widget-row__drag-handle:hover,
+.editor-workspace .better-editor-widget-row__drag-handle:focus-visible { color: #67dfff; }
+.editor-workspace .better-editor-widget-row.is-drag-over {
+  border-color: #67dfff;
+  box-shadow: inset 0 2px #3edbff;
+}

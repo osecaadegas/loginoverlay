@@ -580,8 +580,8 @@
 }
 
 .offer-card-front {
-  display: grid;
-  grid-template-rows: minmax(236px, 0.9fr) auto auto;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -611,8 +611,10 @@
 
 .offer-card-media {
   position: relative;
-  min-height: 236px;
-  aspect-ratio: 1.62 / 1;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #020617;
 }
@@ -860,6 +862,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+  align-items: stretch;
 }
 
 .offer-stat-tile {
@@ -870,9 +873,9 @@
     "icon value";
   align-items: center;
   min-width: 0;
-  min-height: 58px;
+  min-height: 64px;
   gap: 2px 7px;
-  padding: 7px;
+  padding: 8px;
   border: 1px solid rgba(148, 163, 184, 0.13);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.5);
@@ -894,7 +897,7 @@
   min-width: 0;
   overflow: hidden;
   color: #94a3b8;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 950;
   line-height: 1;
   text-overflow: ellipsis;
@@ -907,7 +910,7 @@
   min-width: 0;
   overflow: hidden;
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 950;
   line-height: 1.08;
   text-overflow: ellipsis;
