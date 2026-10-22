@@ -1,0 +1,131 @@
+/* Product-page chrome follows the Streamers Center landing palette.
+   The positioned canvas and widget rendering remain controlled by the editor. */
+.better-editor-page {
+  background: #020d25;
+  color: #edf5ff;
+}
+
+.better-editor-sidebar,
+.better-editor-settings {
+  background: linear-gradient(180deg, #071a34, #051329);
+  border-color: rgba(66, 137, 227, 0.28);
+}
+
+.better-editor-panel-header,
+.better-editor-toolbar,
+.better-editor-builds,
+.better-editor-footer {
+  background: rgba(5, 19, 41, 0.96);
+  border-color: rgba(66, 137, 227, 0.24);
+}
+
+.better-editor-panel-header span,
+.better-editor-toolbar span,
+.better-editor-builds__heading > span {
+  color: #9db2ce;
+}
+
+.better-editor-panel-header h1,
+.better-editor-panel-header h2,
+.better-editor-toolbar h2,
+.better-editor-widget-row__main strong {
+  color: #edf5ff;
+}
+
+.better-editor-widget-row,
+.better-editor-sidebar-section,
+.better-editor-widget-row__menu-panel {
+  border-color: rgba(66, 137, 227, 0.26);
+  background: linear-gradient(145deg, rgba(11, 33, 64, 0.92), rgba(5, 18, 38, 0.98));
+}
+
+.better-editor-widget-row.is-selected {
+  border-color: rgba(62, 219, 255, 0.7);
+  background: rgba(9, 46, 79, 0.94);
+  box-shadow: inset 3px 0 0 #3edbff;
+}
+
+.better-editor-widget-row.is-drag-over {
+  border-color: #67dfff;
+  box-shadow: inset 0 2px 0 #3edbff;
+}
+
+.better-editor-widget-row__icon {
+  border-color: rgba(62, 173, 255, 0.32);
+  background: rgba(5, 23, 47, 0.9);
+  color: #9beaff;
+}
+
+.better-editor-widget-row__drag-handle:hover,
+.better-editor-widget-row__drag-handle:focus-visible {
+  color: #67dfff;
+}
+
+.better-editor-widget-row__menu-trigger,
+.better-editor-toolbar button {
+  border-color: rgba(66, 137, 227, 0.28);
+  background: rgba(7, 27, 53, 0.92);
+  color: #d9ecff;
+}
+
+.better-editor-widget-row__menu-panel button:hover:not(:disabled),
+.better-editor-builds button:hover {
+  background: rgba(22, 135, 223, 0.18);
+  color: #fff;
+}
+
+.better-editor-builds__list button[aria-current] {
+  border-color: rgba(62, 219, 255, 0.38);
+  background: rgba(22, 135, 223, 0.18);
+  color: #c8f2ff;
+}
+
+.better-editor-toolbar button.is-primary {
+  border-color: rgba(62, 173, 255, 0.58);
+  background: linear-gradient(125deg, #087fc5, #195ddd);
+  color: #fff;
+}
+
+.better-editor-toolbar button.is-copy {
+  border-color: rgba(62, 219, 255, 0.44);
+  background: rgba(22, 135, 223, 0.16);
+  color: #c8f2ff;
+}
+
+.better-editor-canvas-shell {
+  background-color: #06152c;
+  background-image:
+    linear-gradient(90deg, rgba(116, 169, 217, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(116, 169, 217, 0.07) 1px, transparent 1px);
+}
+
+.better-editor-canvas {
+  border-color: rgba(116, 169, 217, 0.34);
+}
+
+.better-editor-selection-layer {
+  border-color: rgba(62, 219, 255, 0.88);
+  box-shadow:
+    inset 0 0 0 1px rgba(62, 219, 255, 0.58),
+    0 0 0 1px rgba(62, 173, 255, 0.24);
+}
+
+.better-editor-canvas-line {
+  background: rgba(62, 219, 255, 0.4);
+}
+
+.better-editor-page :is(input, select, textarea):focus-visible {
+  border-color: rgba(62, 219, 255, 0.72);
+  outline: 2px solid rgba(62, 173, 255, 0.28);
+  outline-offset: 1px;
+}
+
+.better-editor-name-dialog {
+  border-color: rgba(66, 137, 227, 0.42);
+  background: #071a34;
+}
+
+.better-editor-name-dialog footer button[type="submit"] {
+  color: #fff;
+  background: linear-gradient(125deg, #087fc5, #195ddd);
+}

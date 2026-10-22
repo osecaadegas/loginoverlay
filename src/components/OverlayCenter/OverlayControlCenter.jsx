@@ -75,6 +75,7 @@ import {
 } from "./editor/betterWidgetRegistry";
 import "./OverlayCenter.css";
 import "./OverlayRenderer.css";
+import "./OverlayProductTheme.css";
 import {
   currencySymbolForCode,
   normalizeCommandName,

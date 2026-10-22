@@ -1,0 +1,135 @@
+/* Streamers Center application palette for Overlay Center routes.
+   Widget previews and saved per-widget theme choices remain untouched. */
+.oc2-page:not(.oc-dedup-26236) {
+  --oc-accent: #3edbff;
+  --oc-accent-light: #75dfff;
+  --oc-accent-cyan: #9beaff;
+  --oc-accent-glow: rgba(62, 219, 255, 0.16);
+  --oc-accent-glow-strong: rgba(62, 219, 255, 0.28);
+  --oc-accent-solid: #1687df;
+  --oc-text-teal-bright: #65d9ff;
+  --oc-text-mint-bright: #a9eaff;
+  --oc-text-teal-pale: #c8f2ff;
+  --oc-text-info-mint: #c8f2ff;
+  --oc-text-info-mint-strong: #d9f7ff;
+  --oc-bg-primary: #020d25;
+  --oc-bg-secondary: #06152c;
+  --oc-bg-tertiary: #0a1d38;
+  background:
+    radial-gradient(ellipse 78% 520px at 82% 0, rgba(7, 55, 115, 0.52), transparent 74%),
+    linear-gradient(180deg, #020d25 0%, #04112b 55%, #030b1a 100%);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-topbar:not(.oc-dedup-26252) {
+  border-bottom-color: rgba(66, 137, 227, 0.3);
+  background: rgba(3, 13, 31, 0.94);
+  box-shadow: 0 10px 34px rgba(0, 4, 15, 0.22);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-nav-link:not(.oc-dedup-23739):hover,
+.oc2-page:not(.oc-dedup-26236) .oc2-nav-link--active:not(.oc-dedup-23740) {
+  background: rgba(22, 135, 223, 0.16);
+  border-color: rgba(62, 219, 255, 0.32);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-btn--primary:not(.oc-dedup-23772) {
+  color: #fff;
+  background: linear-gradient(125deg, #087fc5, #195ddd);
+  border-color: rgba(62, 173, 255, 0.62);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-btn--primary:not(.oc-dedup-23778):hover,
+.oc2-page:not(.oc-dedup-26236) .oc2-btn--primary:not(.oc-dedup-23779):focus-visible {
+  background: linear-gradient(125deg, #079bd8, #2369eb);
+  box-shadow: 0 0 0 3px rgba(62, 173, 255, 0.18);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-eyebrow:not(.oc-dedup-26270) {
+  color: #69d9ff;
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-panel:not(.oc-dedup-23840),
+.oc2-page:not(.oc-dedup-26236) .oc2-detail:not(.oc-dedup-23841),
+.oc2-page:not(.oc-dedup-26236) .oc2-setup:not(.oc-dedup-23842),
+.oc2-page:not(.oc-dedup-26236) .oc2-setup-summary:not(.oc-dedup-23845),
+.oc2-page:not(.oc-dedup-26236) .oc2-tool-card:not(.oc-dedup-23846),
+.oc2-page:not(.oc-dedup-26236) .oc2-setting-tile:not(.oc-dedup-23847),
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-card:not(.oc-dedup-23848) {
+  border-color: rgba(66, 137, 227, 0.24);
+  background: linear-gradient(145deg, rgba(11, 33, 64, 0.94), rgba(5, 18, 38, 0.96));
+  box-shadow: inset 0 1px 0 rgba(210, 235, 255, 0.045), 0 14px 34px rgba(0, 4, 18, 0.18);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-tool-card--clickable:not(.oc-dedup-24023):hover,
+.oc2-page:not(.oc-dedup-26236) .oc2-tool-card--clickable:not(.oc-dedup-24024):focus-visible,
+.oc2-page:not(.oc-dedup-26236) .oc2-setting-tile:not(.oc-dedup-24328):hover,
+.oc2-page:not(.oc-dedup-26236) .oc2-setting-tile:not(.oc-dedup-24329):focus-visible {
+  border-color: rgba(62, 219, 255, 0.48);
+  background: linear-gradient(145deg, rgba(13, 46, 82, 0.96), rgba(6, 24, 48, 0.98));
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-tool-card__icon:not(.oc-dedup-24059),
+.oc2-page:not(.oc-dedup-26236) .oc2-setting-tile:not(.oc-dedup-24336) > svg:first-child {
+  color: #77ddff;
+  border-color: rgba(62, 173, 255, 0.34);
+  background: linear-gradient(135deg, rgba(15, 113, 177, 0.22), rgba(22, 63, 133, 0.22));
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-grid--modern:not(.oc-dedup-22551) .oc2-integration-card {
+  border-color: rgba(66, 137, 227, 0.26);
+  background: linear-gradient(150deg, rgba(11, 33, 64, 0.94), rgba(5, 18, 38, 0.96));
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-grid--modern:not(.oc-dedup-22586) .oc2-integration-card:hover {
+  border-color: rgba(62, 219, 255, 0.52);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-card--twitch:not(.oc-dedup-22592),
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-card--streamelements:not(.oc-dedup-22596),
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-card--spotify:not(.oc-dedup-22600),
+.oc2-page:not(.oc-dedup-26236) .oc2-integration-card--slotdb:not(.oc-dedup-22604) {
+  --oc-integration-glow: rgba(62, 173, 255, 0.18);
+}
+
+.oc2-page:not(.oc-dedup-26236) :is(input, select, textarea):focus,
+.oc2-page:not(.oc-dedup-26236) :is(input, select, textarea):focus-visible {
+  border-color: rgba(62, 219, 255, 0.68);
+  box-shadow: 0 0 0 3px rgba(62, 173, 255, 0.14);
+}
+
+.oc2-page:not(.oc-dedup-26236) .oc2-detail-header {
+  border-color: rgba(66, 137, 227, 0.24);
+  background: linear-gradient(145deg, rgba(11, 33, 64, 0.9), rgba(5, 18, 38, 0.92));
+}
+
+/* Legacy widget-data route shares the same family without changing widget previews. */
+.oc-page:not(.oc-dedup-23311) {
+  --oc-cosmic-panel: linear-gradient(145deg, rgba(11, 33, 64, 0.9), rgba(5, 18, 38, 0.98)) !important;
+  --oc-cosmic-panel-strong: linear-gradient(145deg, rgba(13, 43, 76, 0.94), rgba(5, 18, 38, 0.98)) !important;
+  --oc-cosmic-border: rgba(66, 137, 227, 0.32) !important;
+  --oc-cosmic-border-hot: rgba(62, 219, 255, 0.48) !important;
+  --oc-accent: #3edbff !important;
+  --oc-accent-light: #75dfff !important;
+  --oc-accent-cyan: #9beaff !important;
+  --oc-accent-glow: rgba(62, 219, 255, 0.16) !important;
+  --oc-accent-glow-strong: rgba(62, 219, 255, 0.28) !important;
+  --oc-accent-solid: #1687df !important;
+  background:
+    radial-gradient(ellipse 78% 520px at 82% 0, rgba(7, 55, 115, 0.52), transparent 74%),
+    linear-gradient(180deg, #020d25 0%, #04112b 55%, #030b1a 100%) !important;
+}
+
+.oc-page:not(.oc-dedup-23336) :is(.wm-section, .wm-library-group) {
+  border-color: rgba(66, 137, 227, 0.22) !important;
+  background: linear-gradient(150deg, rgba(11, 33, 64, 0.92), rgba(5, 18, 38, 0.98)) !important;
+}
+
+.oc-page:not(.oc-dedup-23355) .wm-tile {
+  border-color: rgba(66, 137, 227, 0.3) !important;
+  background: linear-gradient(145deg, rgba(11, 33, 64, 0.94), rgba(5, 18, 38, 0.98)) !important;
+}
+
+.oc-page:not(.oc-dedup-23369) .wm-tile:hover {
+  border-color: rgba(62, 219, 255, 0.52) !important;
+  background: linear-gradient(145deg, rgba(13, 46, 82, 0.96), rgba(6, 24, 48, 0.98)) !important;
+}

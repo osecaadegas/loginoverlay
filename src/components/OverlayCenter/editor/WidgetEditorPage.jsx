@@ -94,6 +94,7 @@ import "../OverlayRenderer.css";
 import "./BetterWidgetPackages.css";
 import "./WidgetEditorPage.css";
 import "./EditorWorkspace.css";
+import "./WidgetEditorPageTheme.css";
 
 const SNAP_TOLERANCE = 10;
 const SNAP_GRID = 20;

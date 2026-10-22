@@ -103,6 +103,7 @@ body {
 }
 
 .apps-page .apps-tile {
+  --tile-accent: var(--sc-page-accent);
   border-color: var(--sc-page-border);
   background: linear-gradient(150deg, #0b2140, #051226);
 }
@@ -173,9 +174,19 @@ body {
 .as-page .as-panel,
 .pbh-page :is(.pbh-card, .pbh-panel),
 .affiliate-page :is(.affiliate-panel, .affiliate-card),
+.an-dash :is(.an-dash__card, .an-dash__panel, .an-dash__metric, .an-dash__chart-card),
 .dev-page :is(.dev-panel, .dev-info-card),
 .slot-manager-page :is(.slot-manager-page-header, .slot-manager-page-content) {
   border-color: var(--sc-page-border);
+}
+
+.admin-affiliates-page :is(.admin-affiliates-panel, .admin-affiliates-stat),
+.as-page .as-panel,
+.sd-page .sd-panel,
+.pbh-page .pbh-panel,
+.affiliate-page .affiliate-panel,
+.an-dash :is(.an-dash__card, .an-dash__panel, .an-dash__metric, .an-dash__chart-card) {
+  background-color: rgba(8, 26, 50, 0.84);
 }
 
 .slot-manager-v2 {
