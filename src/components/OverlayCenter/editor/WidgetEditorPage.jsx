@@ -43,11 +43,12 @@ import {
   ArrowLeft,
   AlertCircle,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { applyOrbitalComposition, isOrbitalCompositionWidget } from './orbitalComposition';
 import { applyCandyComposition } from './candyComposition';
 import { applyVolcanicComposition } from './volcanicComposition';
 import { applyStreetArtComposition } from './streetArtComposition.js';
+import { applyWidgetColourTheme } from './widgetColourThemes.js';
 import { applySolverdeComposition } from './solverdeComposition';
 import { useAuth } from "../../../context/AuthContext";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
@@ -539,6 +540,7 @@ function BetterEditorWorkspace({ userId }) {
 
 function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const shellRef = useRef(null);
   const layoutRef = useRef(createDefaultBetterLayout());
@@ -546,6 +548,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const loadedRef = useRef(false);
   const dirtyRef = useRef(false);
   const draftVersionRef = useRef(0);
+  const showcasePresetHandledRef = useRef('');
   const editorSyncChannelRef = useRef(null);
   const savePromiseRef = useRef(null);
   const overlayRecordRef = useRef(null);
@@ -940,6 +943,27 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     },
     [pushHistory],
   );
+
+  useEffect(() => {
+    if (!loadedRef.current || loading) return;
+    const themeId = new URLSearchParams(location.search).get('theme');
+    if (!['galactic_command','starter_studio','street_art','solverde','candy','volcanic','orbital'].includes(themeId)) return;
+    const key = `${overlayRecord?.id || 'default'}:${themeId}`;
+    if (showcasePresetHandledRef.current === key) return;
+    showcasePresetHandledRef.current = key;
+    const themed = { ...layoutRef.current, instances: layoutRef.current.instances.map(instance => ({ ...instance, config: applyWidgetColourTheme(instance.widgetType, instance.config, themeId) })) };
+    const applyPreset = {
+      galactic_command: applyGalacticCommandComposition,
+      starter_studio: applyStarterStudioComposition,
+      street_art: applyStreetArtComposition,
+      solverde: applySolverdeComposition,
+      candy: applyCandyComposition,
+      volcanic: applyVolcanicComposition,
+      orbital: applyOrbitalComposition,
+    }[themeId];
+    commitLayout(() => applyPreset(themed));
+    navigate('/editor', { replace: true });
+  }, [commitLayout, loading, location.search, navigate, overlayRecord?.id]);
 
   const updateInstance = useCallback(
     (instanceId, patch, { commit = true } = {}) => {

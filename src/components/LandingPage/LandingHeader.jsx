@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 const links = [
-  ['Features', '#features'], ['Widgets', '#widgets'], ['Pricing', '#pricing'],
+  ['Features', '#features'], ['Overlays', '#overlays'], ['Widgets', '#widgets'], ['Pricing', '#pricing'],
   ['Streamer Deals', '/offers'], ['Reviews', '#reviews'], ['Discord', 'https://discord.gg/bkxAyTn73Y'],
 ];
 

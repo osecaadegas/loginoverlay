@@ -49,6 +49,7 @@ import "./LandingPage.css";
 import "./LandingModern.css";
 import useLandingMotion from "./useLandingMotion";
 import LandingHeader from "./LandingHeader";
+import OverlayShowcase from "./OverlayShowcase";
 import { WIDGET_COLOUR_THEMES } from "../OverlayCenter/widgets/shared/colourThemePalettes";
 import { BACKGROUND_IMAGE_LIBRARY } from "../OverlayCenter/widgets/background/backgroundLibrary";
 
@@ -1615,6 +1616,8 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
         <div className="lp-home-hero__media" id="playground"><InteractiveHomeShowcase /></div>
       </section>
 
+      <OverlayShowcase />
+
 
       <div className="lp-proof-strip" aria-label="Streamers Center product facts">
         {slotCount !== null && <span><Database size={19} aria-hidden="true" /><strong>{slotCount.toLocaleString()}</strong> slots in database</span>}
@@ -1683,15 +1686,6 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             <ChevronRight aria-hidden="true" />
           </button>
         </div>
-      </section>
-
-      <section className="lp-home-section lp-use-cases" aria-labelledby="use-cases-title">
-        <span className="lp-eyebrow">Real tools. Real stream moments.</span><h2 id="use-cases-title">Made for what happens live.</h2>
-        <div className="lp-use-case-grid">{[
-          { type: 'bonus_hunt', title: 'Keep the hunt on screen.', text: 'Follow bonuses and reveal results alongside the action in your OBS scene.', format: 'horizontal' },
-          { type: 'giveaway', title: 'Give chat a reason to join.', text: 'Bring a viewer giveaway into the stream and let the winner reveal become a shared moment.' },
-          { type: 'tournament', title: 'Make every round an event.', text: 'Show the tournament as it unfolds, with matchups and results your audience can follow.' },
-        ].map(item => <article key={item.type}><div className="lp-use-case-scene"><div className="lp-scene-label"><span><SiObsstudio />OBS scene</span><span>Example data</span></div><HomeWidgetMedia widget={HOME_WIDGETS.find(widget => widget.widgetType === item.type)} bonusOrientation={item.format} colourTheme="neon" carousel /></div><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
       </section>
 
       <section className="lp-home-section lp-home-steps">

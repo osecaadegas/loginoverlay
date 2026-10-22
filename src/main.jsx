@@ -7,6 +7,7 @@ import "./index.css";
 import "./styles/custom-fonts.css";
 import "./styles/theme-system.css";
 import "./styles/utilities.css";
+import "./styles/AppPageTheme.css";
 
 const PRELOAD_RELOAD_KEY = "streamers-center:preload-reload";
 window.addEventListener("vite:preloadError", (event) => {

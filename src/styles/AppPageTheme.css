@@ -1,0 +1,227 @@
+/* Shared application-page palette based on the public landing page.
+   Kept separate from the OBS renderer and widget/theme appearance system. */
+:root {
+  --sc-page-bg: #020d25;
+  --sc-page-bg-deep: #030b1a;
+  --sc-page-surface: #081a32;
+  --sc-page-surface-raised: #0b2140;
+  --sc-page-border: rgba(66, 137, 227, 0.25);
+  --sc-page-border-strong: rgba(56, 150, 231, 0.48);
+  --sc-page-accent: #3edbff;
+  --sc-page-accent-blue: #1687df;
+  --sc-page-text: #edf5ff;
+  --sc-page-muted: #9db2ce;
+}
+
+body {
+  color: var(--sc-page-text);
+  background:
+    radial-gradient(ellipse 85% 620px at 82% 0, rgba(7, 55, 115, 0.8), transparent 75%),
+    linear-gradient(180deg, var(--sc-page-bg), #04112b 55%, var(--sc-page-bg-deep));
+  background-attachment: fixed;
+}
+
+/* Marketing and authenticated page shells share the same ambient backdrop. */
+:is(
+  .offers-page,
+  .apps-page,
+  .profile-page,
+  .pricing-page,
+  .product-updates,
+  .affiliate-page,
+  .admin-affiliates-page,
+  .as-page,
+  .sd-page,
+  .pbh-page,
+  .dev-page,
+  .legal-page,
+  .slot-manager-page,
+  .analytics-page,
+  .an-dash,
+  .admin-panel,
+  .oc-page,
+  .oc2-page,
+  .community-share-page
+) {
+  color: var(--sc-page-text);
+  background:
+    radial-gradient(ellipse 78% 520px at 82% 0, rgba(7, 55, 115, 0.54), transparent 74%),
+    linear-gradient(180deg, #020d25 0%, #04112b 55%, #030b1a 100%);
+}
+
+/* A consistent glassy navigation rail across all non-home app routes. */
+.topnav-shell {
+  color: var(--sc-page-text);
+  background: linear-gradient(180deg, rgba(3, 13, 31, 0.97), rgba(3, 12, 29, 0.9));
+  border-bottom-color: rgba(66, 137, 227, 0.3);
+  box-shadow: 0 10px 34px rgba(0, 4, 15, 0.2);
+}
+
+.topnav-account {
+  background: rgba(8, 31, 57, 0.72);
+  border-color: rgba(73, 143, 202, 0.28);
+}
+
+.topnav-account:hover,
+.topnav-account--active {
+  background: rgba(15, 60, 101, 0.76);
+  border-color: rgba(62, 219, 255, 0.42);
+}
+
+.audience-toggle {
+  border-color: rgba(66, 137, 227, 0.32);
+  background: rgba(4, 19, 40, 0.86);
+}
+
+.audience-toggle__option--player,
+.audience-toggle__option--streamer {
+  color: #fff;
+  background: linear-gradient(120deg, #087fc5, #195ddd);
+}
+
+.audience-toggle__option:hover {
+  background: rgba(30, 86, 137, 0.62);
+}
+
+.topnav-shell :is(a, button):focus-visible,
+.main-content :is(a, button, input, select, textarea, summary):focus-visible {
+  outline-color: #67e8f9;
+}
+
+/* Tune common cards and page headings without changing their layout or behavior. */
+.offers-page {
+  --offers-accent: var(--sc-page-accent);
+}
+
+.offers-page :is(.offers-hero, .offer-card, .offer-filter-shell, .offers-panel) {
+  border-color: var(--sc-page-border);
+  background-color: rgba(7, 25, 48, 0.88);
+}
+
+.apps-page {
+  --apps-accent: var(--sc-page-accent);
+}
+
+.apps-page .apps-tile {
+  border-color: var(--sc-page-border);
+  background: linear-gradient(150deg, #0b2140, #051226);
+}
+
+.profile-page {
+  --profile-accent: var(--sc-page-accent);
+}
+
+.profile-page :is(.profile-card, .settings-card, .inventory-card) {
+  border-color: var(--sc-page-border);
+  background: linear-gradient(150deg, rgba(11, 33, 64, 0.96), rgba(5, 18, 38, 0.96));
+}
+
+.pricing-page {
+  --premium-bg: #020d25;
+  --premium-panel: rgba(8, 26, 50, 0.86);
+  --premium-panel-strong: rgba(8, 26, 50, 0.96);
+  --premium-border: var(--sc-page-border);
+  --premium-border-hot: rgba(62, 219, 255, 0.42);
+  --premium-cyan: var(--sc-page-accent);
+  --premium-blue: #246bff;
+  --premium-pink: #65aaff;
+  --premium-violet: #648cff;
+  background:
+    radial-gradient(ellipse 78% 520px at 82% 0, rgba(7, 55, 115, 0.54), transparent 74%),
+    linear-gradient(180deg, #020d25 0%, #04112b 55%, #030b1a 100%);
+}
+
+.pricing-page :is(.premium-hero, .premium-card, .premium-feature-card) {
+  border-color: var(--sc-page-border);
+  background-image: linear-gradient(145deg, rgba(11, 33, 64, 0.96), rgba(5, 18, 38, 0.96));
+}
+
+.product-updates {
+  --updates-accent: var(--sc-page-accent);
+}
+
+.product-updates :is(.product-updates__hero, .product-updates__card) {
+  border-color: var(--sc-page-border);
+  background: linear-gradient(145deg, #0b2140, #051226);
+}
+
+.product-updates__meta [data-product] {
+  color: #7bdcff;
+  background: rgba(18, 102, 173, 0.14);
+}
+
+.affiliate-page,
+.admin-affiliates-page,
+.admin-panel,
+.as-page,
+.sd-page,
+.pbh-page,
+.dev-page,
+.legal-page,
+.slot-manager-page,
+.analytics-page,
+.an-dash,
+.oc-page,
+.oc2-page,
+.community-share-page {
+  --page-accent: var(--sc-page-accent);
+  --accent: var(--sc-page-accent);
+}
+
+.sd-page :is(.sd-panel, .sd-stat, .sd-card),
+.admin-affiliates-page :is(.admin-affiliates-hero, .admin-affiliates-panel, .admin-affiliates-stat),
+.as-page .as-panel,
+.pbh-page :is(.pbh-card, .pbh-panel),
+.affiliate-page :is(.affiliate-panel, .affiliate-card),
+.dev-page :is(.dev-panel, .dev-info-card),
+.slot-manager-page :is(.slot-manager-page-header, .slot-manager-page-content) {
+  border-color: var(--sc-page-border);
+}
+
+.slot-manager-v2 {
+  background: linear-gradient(180deg, #06152a, #030b1a);
+  color: var(--sc-page-text);
+}
+
+.admin-panel,
+.an-dash {
+  color: var(--sc-page-text);
+  background:
+    radial-gradient(ellipse 78% 520px at 82% 0, rgba(7, 55, 115, 0.36), transparent 74%),
+    linear-gradient(180deg, #020d25 0%, #04112b 55%, #030b1a 100%);
+}
+
+.oc-page,
+.oc2-page,
+.community-share-page {
+  --oc-accent: var(--sc-page-accent);
+  --accent-color: var(--sc-page-accent);
+}
+
+.login-route {
+  background-color: var(--sc-page-bg);
+}
+
+@media (max-width: 760px) {
+  .offers-page,
+  .apps-page,
+  .profile-page,
+  .pricing-page,
+  .product-updates,
+  .affiliate-page,
+  .admin-affiliates-page,
+  .as-page,
+  .sd-page,
+  .pbh-page,
+  .dev-page,
+  .legal-page,
+  .slot-manager-page,
+  .analytics-page,
+  .an-dash,
+  .admin-panel,
+  .oc-page,
+  .oc2-page,
+  .community-share-page {
+    background-attachment: scroll;
+  }
+}
