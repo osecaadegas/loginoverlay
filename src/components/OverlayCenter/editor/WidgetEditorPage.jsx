@@ -1,5 +1,6 @@
 import {applyGalacticCommandComposition} from './galacticCommandComposition.js';
 import {applyStarterStudioComposition} from './starterStudioComposition.js';
+import {applyStreamerOverlayComposition, getStreamerOverlayName} from './streamerOverlayComposition.js';
 import React, {
   useCallback,
   useEffect,
@@ -51,6 +52,7 @@ import { applyStreetArtComposition } from './streetArtComposition.js';
 import { applyWidgetColourTheme } from './widgetColourThemes.js';
 import { applySolverdeComposition } from './solverdeComposition';
 import { useAuth } from "../../../context/AuthContext";
+import { useAdmin } from "../../../hooks/useAdmin";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
   getBetterEditorLiveSource,
@@ -543,6 +545,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const shellRef = useRef(null);
   const layoutRef = useRef(createDefaultBetterLayout());
   const interactionRef = useRef(null);
@@ -1736,6 +1739,17 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
+          {isAdmin && (
+            <button
+              type="button"
+              disabled={Boolean(operation) || previewing}
+              title={`Apply the free ${getStreamerOverlayName(layout, user)} layout using StreamersCenter live widgets. Undo is available.`}
+              onClick={() => commitLayout((current) => applyStreamerOverlayComposition(current, user))}
+            >
+              <Scan size={16} />
+              <span>{getStreamerOverlayName(layout, user)} open-source beta</span>
+            </button>
+          )}
           {layout.instances.some(i=>i.config?.colourTheme==='galactic_command')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Galactic Command 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyGalacticCommandComposition)}><Scan size={16}/><span>Galactic Command reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='starter_studio')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Starter Studio 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyStarterStudioComposition)}><Scan size={16}/><span>Starter Studio reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='street_art') && <button type="button" disabled={Boolean(operation)||previewing} title="Apply the Street Art 1920 × 1080 reference preset. Existing data is preserved. Undo is available." onClick={()=>commitLayout(applyStreetArtComposition)}><Scan size={16}/><span>Street Art reference layout</span></button>}

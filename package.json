@@ -72,7 +72,8 @@
     "test:new-horizontal": "node scripts/test-new-horizontal-hunt.mjs",
     "test:request-image-cards": "node scripts/test-request-image-cards.mjs",
     "test:galactic-command": "node scripts/test-galactic-command.mjs",
-    "test:starter-studio": "node scripts/test-starter-studio.mjs"
+    "test:starter-studio": "node scripts/test-starter-studio.mjs",
+    "test:streamer-overlay": "node scripts/test-streamer-overlay-preset.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
