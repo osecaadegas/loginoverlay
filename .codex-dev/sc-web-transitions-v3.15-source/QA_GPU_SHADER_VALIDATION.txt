@@ -1,0 +1,18 @@
+platformproc True
+display 0x32335540
+init 1 version 1 5
+bindAPI 1
+config 1 1
+surface 0x322919c0
+context 0x31682d90
+makeCurrent 1
+GL b'4.5 (Compatibility Profile) Mesa 25.0.7-2'
+vsSeal PASS
+fsSeal PASS
+vsMesh PASS
+fsMesh PASS
+vsArc PASS
+fsArc PASS
+vsSeal + fsSeal LINK PASS
+vsMesh + fsMesh LINK PASS
+vsArc + fsArc LINK PASS

@@ -99,7 +99,7 @@ export default function AppsPage() {
       href: "/SC_Web_Transitions.zip",
       download: "SC_Web_Transitions.zip",
       label: "SC Web Transitions",
-      desc: "Download the Windows transition package (ZIP)",
+      desc: "Download the latest Windows build and source (ZIP)",
       icon: Download,
       tone: "cyan",
       art: "screensplit",

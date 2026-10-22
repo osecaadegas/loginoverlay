@@ -1,0 +1,114 @@
+[
+  {
+    "effect": "glitch",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "glitch",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "lightning",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "lightning",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "shadow",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "shadow",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "holy",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "holy",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "sand",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "sand",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "crystal",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "crystal",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "petal",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "petal",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "plasma",
+    "direction": "out",
+    "state": "cover",
+    "renderer": "2D compatibility",
+    "errors": []
+  },
+  {
+    "effect": "plasma",
+    "direction": "in",
+    "state": "play",
+    "renderer": "2D compatibility",
+    "errors": []
+  }
+]

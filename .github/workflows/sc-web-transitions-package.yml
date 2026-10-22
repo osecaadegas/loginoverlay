@@ -1,0 +1,72 @@
+name: Build latest SC Web Transitions download
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".codex-dev/sc-web-transitions-v3.15-source/**"
+      - "scripts/package-sc-web-transitions.ps1"
+      - ".github/workflows/sc-web-transitions-package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sc-web-transitions-package-main
+  cancel-in-progress: false
+
+jobs:
+  build-and-refresh-download:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.2"
+          cache-dependency-path: .codex-dev/sc-web-transitions-v3.15-source/go.mod
+
+      - name: Test transition controller
+        working-directory: .codex-dev/sc-web-transitions-v3.15-source
+        run: go test ./...
+
+      - name: Check gas renderer syntax
+        working-directory: .codex-dev/sc-web-transitions-v3.15-source
+        run: node --check gas-vfx3d.js
+
+      - name: Build latest Windows x64 application
+        shell: pwsh
+        working-directory: .codex-dev/sc-web-transitions-v3.15-source
+        run: |
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          $env:CGO_ENABLED = "0"
+          go build -trimpath -ldflags="-s -w -H windowsgui" -o "$env:RUNNER_TEMP\SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_RC1.exe" .
+
+      - name: Package current executable and source for the Apps download
+        shell: pwsh
+        run: |
+          ./scripts/package-sc-web-transitions.ps1 `
+            -RepoRoot "$env:GITHUB_WORKSPACE" `
+            -ExecutablePath "$env:RUNNER_TEMP\SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_RC1.exe"
+
+      - name: Publish refreshed website package
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/SC_Web_Transitions.zip
+          git diff --cached --quiet
+          $packageChanged = $LASTEXITCODE
+          if ($packageChanged -eq 1) {
+            git commit -m "chore: refresh SC Web Transitions download"
+            git push origin HEAD:main
+          } elseif ($packageChanged -ne 0) {
+            throw "Unable to check the refreshed download package."
+          } else {
+            Write-Output "The website package already matches the latest app source."
+          }

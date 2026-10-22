@@ -1,0 +1,25 @@
+{
+  "environment": "headless Chromium SwiftShader, synthetic silhouette, 960x540; not production FPS",
+  "results": [
+    {
+      "effect": "smoke",
+      "coverage": 0,
+      "maxAlpha": 219,
+      "opaque": 0,
+      "draws": 3,
+      "resolution": "672x378",
+      "contextLost": false,
+      "alpha": true
+    },
+    {
+      "effect": "toxic",
+      "coverage": 0,
+      "maxAlpha": 220,
+      "opaque": 0,
+      "draws": 3,
+      "resolution": "672x378",
+      "contextLost": false,
+      "alpha": true
+    }
+  ]
+}

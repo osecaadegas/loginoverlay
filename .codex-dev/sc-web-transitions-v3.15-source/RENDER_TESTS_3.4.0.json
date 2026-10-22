@@ -1,0 +1,45 @@
+{
+  "effects": {
+    "glitch": {
+      "coverage": 0.991008744919325,
+      "tiles": 149,
+      "particles": 205
+    },
+    "lightning": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 205
+    },
+    "shadow": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 260
+    },
+    "holy": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 330
+    },
+    "sand": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 1500
+    },
+    "crystal": {
+      "coverage": 0.991008744919325,
+      "tiles": 126,
+      "particles": 205
+    },
+    "petal": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 220
+    },
+    "plasma": {
+      "coverage": 0.991008744919325,
+      "tiles": 127,
+      "particles": 160
+    }
+  },
+  "page_errors": []
+}

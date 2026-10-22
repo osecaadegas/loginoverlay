@@ -1,0 +1,56 @@
+[
+  {
+    "effect": "money",
+    "resolution": "1280x720",
+    "median_ms": 9.3,
+    "p95_ms": 10.7,
+    "max_ms": 16.7,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  },
+  {
+    "effect": "smoke",
+    "resolution": "1280x720",
+    "median_ms": 9.6,
+    "p95_ms": 11.8,
+    "max_ms": 15,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  },
+  {
+    "effect": "toxic",
+    "resolution": "1280x720",
+    "median_ms": 10.35,
+    "p95_ms": 12.3,
+    "max_ms": 12.8,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  },
+  {
+    "effect": "money",
+    "resolution": "1920x1080",
+    "median_ms": 13.4,
+    "p95_ms": 17.2,
+    "max_ms": 17.6,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  },
+  {
+    "effect": "smoke",
+    "resolution": "1920x1080",
+    "median_ms": 15.85,
+    "p95_ms": 18.6,
+    "max_ms": 19.8,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  },
+  {
+    "effect": "toxic",
+    "resolution": "1920x1080",
+    "median_ms": 14.5,
+    "p95_ms": 20.8,
+    "max_ms": 29.8,
+    "browser": "Chromium headless --disable-gpu, forced Canvas2D readback",
+    "n": 46
+  }
+]

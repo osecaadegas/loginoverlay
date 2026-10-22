@@ -1,0 +1,114 @@
+[
+  {
+    "effect": "glitch",
+    "direction": "out",
+    "drawCalls": 117,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "glitch",
+    "direction": "in",
+    "drawCalls": 73,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "lightning",
+    "direction": "out",
+    "drawCalls": 155,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "lightning",
+    "direction": "in",
+    "drawCalls": 145,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "shadow",
+    "direction": "out",
+    "drawCalls": 102,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "shadow",
+    "direction": "in",
+    "drawCalls": 92,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "holy",
+    "direction": "out",
+    "drawCalls": 168,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "holy",
+    "direction": "in",
+    "drawCalls": 135,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "sand",
+    "direction": "out",
+    "drawCalls": 114,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "sand",
+    "direction": "in",
+    "drawCalls": 90,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "crystal",
+    "direction": "out",
+    "drawCalls": 94,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "crystal",
+    "direction": "in",
+    "drawCalls": 89,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "petal",
+    "direction": "out",
+    "drawCalls": 110,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "petal",
+    "direction": "in",
+    "drawCalls": 87,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "plasma",
+    "direction": "out",
+    "drawCalls": 166,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  },
+  {
+    "effect": "plasma",
+    "direction": "in",
+    "drawCalls": 146,
+    "mode": "WebGL2 instanced 3D",
+    "errors": []
+  }
+]

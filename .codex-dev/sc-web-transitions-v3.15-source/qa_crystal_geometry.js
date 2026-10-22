@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const context={window:{},console,Math};vm.createContext(context);
+vm.runInContext(fs.readFileSync(__dirname+'/crystal-hero3d.js','utf8'),context);
+const w=640,h=360,b={x:210,y:24,w:240,h:340};
+function belongs(x,y){const head=((x-330)/49)**2+((y-95)/56)**2<1;
+ const body=((x-330)/100)**2+((y-274)/164)**2<1&&y>155;
+ const leftArm=((x-244)/30)**2+((y-260)/87)**2<1;
+ const rightArm=((x-416)/30)**2+((y-260)/87)**2<1;
+ return head||body||leftArm||rightArm;
+}
+const fx={W:w,H:h,b,o:{seed:7532},field:{contains:belongs}};
+const out=context.window.SCCrystalHero.triangulateCells(fx);
+assert(out.facets>=30,'too few facets');assert(out.triangles>=500,'too few triangles');
+for(let i=0;i<out.vertices.length;i++)assert(Number.isFinite(out.vertices[i]),`non finite value ${i}`);
+assert(out.vertices.length%17===0);
+const actual=out.vertices.length/17;
+if(process.argv[2])fs.writeFileSync(process.argv[2],Buffer.from(out.vertices.buffer));
+if(process.argv[3])fs.writeFileSync(process.argv[3],JSON.stringify({width:w,height:h,facets:out.facets,triangles:out.triangles,vertexCount:actual}));
+console.log(`PASS Crystal tessellation: ${out.facets} mutually fitted facets, ${out.triangles} triangles, ${actual} vertices, all finite`);

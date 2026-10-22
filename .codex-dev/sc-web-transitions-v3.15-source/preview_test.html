@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v2.2</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}canvas{width:100%;height:100%;display:block;background:transparent!important}</style></head><body><canvas id="fx"></canvas><script>
+'use strict';
+// All geometry is in the native, uncropped camera source coordinates. OBS mirrors
+// position, crop, bounds, scale and rotation onto this Browser Source.
+const cvs=document.getElementById('fx'),ctx=cvs.getContext('2d',{alpha:true});
+const params=new URLSearchParams(location.search),demo=params.get('preview')==='1';
+let W=1,H=1,DPR=1,field=null,subject=null,bill=null,job=null,jobId=0,stage='idle';
+let billParts=[],billMosaic=null,hero=null,shards=[],clouds=[],smokeSprites=[],coverStarted=0,started=0,loading=false;
+let ackCovered=false,ackReveal=false,ackDone=false,previewEpoch=0;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const ease=x=>1-Math.pow(1-clamp(x),3),mix=(a,b,p)=>a+(b-a)*p,rand=(a,b)=>a+Math.random()*(b-a);
+const fract=x=>x-Math.floor(x);
+function resize(){const w=Math.max(1,Math.round(innerWidth)),h=Math.max(1,Math.round(innerHeight));if(w===W&&h===H)return;W=w;H=h;DPR=Math.min(devicePixelRatio||1,2);cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize);resize();
+function image(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Cannot load image: '+url));im.src=url})}
+function keyed(r,g,b){return g>72&&g-r>34&&g-b>29&&g>r*1.26&&g>b*1.24}
+function silhouette(img){
+ const c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d',{willReadFrequently:true});q.drawImage(img,0,0,W,H);
+ const im=q.getImageData(0,0,W,H),d=im.data;let clear=0,greenEdge=0,edge=0,total=0;
+ const step=Math.max(2,Math.floor(Math.min(W,H)/130));
+ for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const k=(y*W+x)*4;total++;if(d[k+3]<225)clear++;
+  if(x<step*4||x>W-step*5||y<step*4||y>H-step*5){edge++;if(keyed(d[k],d[k+1],d[k+2]))greenEdge++}}
+ const alphaMask=clear>total*.012,chroma=!alphaMask&&greenEdge>edge*.24;
+ if(!alphaMask&&!chroma)throw Error('No keyed silhouette detected. Apply Chroma Key or background removal directly to your webcam OBS source.');
+ let minX=W,minY=H,maxX=0,maxY=0,covered=0;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const k=(y*W+x)*4;
+  if(chroma){const strength=Math.min(d[k+1]-d[k],d[k+1]-d[k+2]);d[k+3]=Math.round(d[k+3]*clamp((46-strength)/26))}
+  if(d[k+3]<18){d[k]=d[k+1]=d[k+2]=d[k+3]=0;continue}
+  covered++;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)
+ }
+ const coverage=covered/(W*H);
+ if(coverage<.004||coverage>.92)throw Error('Foreground covers '+Math.round(coverage*100)+'% of camera area; fix the Chroma Key/background removal.');
+ q.putImageData(im,0,0);
+ // Extract a binary silhouette thumbnail for rapid foreground lookups.
+ const s=document.createElement('canvas');s.width=256;s.height=Math.max(40,Math.round(256*H/W));
+ const u=s.getContext('2d',{willReadFrequently:true});u.drawImage(c,0,0,s.width,s.height);
+ const map=u.getImageData(0,0,s.width,s.height).data;
+ const points=[];for(let y=0;y<s.height;y+=2)for(let x=0;x<s.width;x+=2)if(map[(y*s.width+x)*4+3]>145)points.push([x/s.width*W,y/s.height*H]);
+ if(points.length<20)throw Error('Foreground silhouette is too small for an effect.');
+ return {image:c,bounds:{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1},coverage,points,map,mw:s.width,mh:s.height,
+ contains(x,y,threshold=125){const ix=Math.floor(x/W*this.mw),iy=Math.floor(y/H*this.mh);return ix>=0&&iy>=0&&ix<this.mw&&iy<this.mh&&this.map[(iy*this.mw+ix)*4+3]>threshold}};
+}
+function drawSubject(alpha=1){if(subject&&alpha>0){ctx.save();ctx.globalAlpha=clamp(alpha);ctx.drawImage(subject,0,0,W,H);ctx.restore()}}
+function note(c,n,x=n.x,y=n.y,t=0,alpha=1,scale=1){
+ if(alpha<=0||!bill)return;const w=n.w*scale,h=w*.455;
+ c.save();c.globalAlpha=clamp(alpha);c.translate(x,y);c.rotate(n.rot+n.spin*t);
+ c.scale(1,Math.max(.13,Math.abs(.84+.16*Math.sin(n.phase+t*8))));
+ c.drawImage(bill,-w/2,-h/2,w,h);c.restore();
+}
+function setupMoney(intensity){
+ billParts=[];const b=field.bounds,density=clamp(intensity/100),base=clamp(b.w/mix(15,23,density),12,60),row=base*.36;
+ const stepX=base*.54,stepY=row*.71;
+ // A staggered, close-packed grid avoids the sparse cluster that the old random
+ // placement created. Large, medium, small and micro notes all contribute.
+ for(let y=b.y+stepY*.25,r=0;y<b.y+b.h+stepY*.6;y+=stepY,r++){
+  for(let x=b.x+(r%2)*stepX*.5;x<b.x+b.w+stepX;x+=stepX){
+   const jitter=stepX*.19,x0=x+rand(-jitter,jitter),y0=y+rand(-stepY*.25,stepY*.25);
+   if(!field.contains(x0,y0,95))continue;
+   const special=Math.random(),size=special<.12?1.7:special<.35?1.13:special<.79?.78:.48;
+   const w=base*size;
+   const dx=x0-W*.5,dy=y0-H*.5;
+   billParts.push({x:x0,y:y0,w,rot:rand(-.18,.18),spin:rand(-3.7,3.7),phase:rand(0,6.28),
+    driftX:dx*.28+rand(-W*.3,W*.3),driftY:rand(-H*.35,-H*.1),scatterX:rand(-W*.45,W*.45),
+    assemble:rand(0,.47),vx:rand(-b.w*.36,b.w*.36),vy:rand(-H*.48,-H*.18),gravity:rand(.68,1.13),wave:rand(2,13)});
+  }
+ }
+ // additional micro banknotes eliminate holes in facial/shoulder areas
+ const extras=Math.round(mix(60,280,density));
+ for(let i=0;i<extras;i++){
+  const p=field.points[Math.floor(rand(0,field.points.length))];
+  billParts.push({x:p[0],y:p[1],w:base*rand(.32,.56),rot:rand(-.45,.45),spin:rand(-5,5),phase:rand(0,6.28),
+   driftX:rand(-W*.28,W*.28),driftY:rand(-H*.3,-H*.06),scatterX:rand(-W*.4,W*.4),assemble:rand(0,.51),
+   vx:rand(-b.w*.36,b.w*.36),vy:rand(-H*.42,-H*.15),gravity:rand(.7,1.13),wave:rand(3,12)});
+ }
+ // Pre-rendered, alpha-clipped final mosaic stays perfectly still while OBS
+ // disables the live camera. No flicker or premature fall.
+ const mosaic=document.createElement('canvas');mosaic.width=W;mosaic.height=H;
+ const m=mosaic.getContext('2d');billParts.forEach(n=>note(m,n));
+ m.globalCompositeOperation='destination-in';m.drawImage(subject,0,0,W,H);m.globalCompositeOperation='source-over';
+ billMosaic=mosaic;
+ hero={x:W*.5,y:H*.34,w:Math.max(W*.50,b.w*.86),rot:-.08,spin:0,phase:1};
+}
+function drawMoneyCover(p){
+ if(p<.12){drawSubject();return}
+ const q=smooth((p-.12)/.72);
+ drawSubject(1-smooth((p-.23)/.57));
+ // Subset of note sprites travels back to its mask position, then holds still.
+ // Final mosaic covers tiny residual gaps while keeping a strict silhouette.
+ for(const n of billParts){const r=smooth((q-n.assemble)/Math.max(.15,1-n.assemble));if(r<=0)continue;
+  note(ctx,n,n.x+n.driftX*(1-r),n.y+n.driftY*(1-r),0,r, mix(.36,1,r));
+ }
+ if(q>.82){ctx.save();ctx.globalAlpha=smooth((q-.82)/.18);ctx.drawImage(billMosaic,0,0);ctx.restore()}
+}
+function drawMoney(t,dir,duration){const p=clamp(t/duration),b=field.bounds;
+ if(dir==='out'){
+  // Freeze the completely assembled bill-shaped person before falling.
+  if(p<.085){ctx.drawImage(billMosaic,0,0);return}
+  const f=clamp((p-.085)/.71),seconds=f*duration;
+  for(const n of billParts){const q=clamp((f-n.assemble*.19)/.77);if(q<=0)note(ctx,n);else{
+   const time=q*duration;
+   const x=n.x+n.vx*time+Math.sin(time*7+n.phase)*n.wave;
+   const y=n.y+n.vy*time+H*.56*n.gravity*time*time;
+   const alpha=1-smooth((p-.70)/.18);
+   note(ctx,n,x,y,time,alpha);
+  }}
+  // Hero bill reaches the lens LAST: grows dramatically, then slides below it.
+  if(p>.63){const k=clamp((p-.63)/.37);const approach=smooth(k/.57),slide=smooth((k-.51)/.49);
+   const maxW=W*1.32;const w=mix(Math.max(W*.15,b.w*.22),maxW,approach);
+   const x=mix(b.x+b.w*.58,W*.51,approach)+Math.sin(k*3)*W*.014;
+   const y=mix(b.y+b.h*.4,H*.50,approach)+slide*H*1.65;
+   note(ctx,{...hero,w,rot:mix(-.24,.075,approach)+slide*.15},x,y,k*2,1,1);
+  }
+ }else{
+  const gather=ease(p/.88);
+  for(const n of billParts){const x=mix(n.x+n.scatterX,n.x,gather),y=mix(n.y+H*1.4,n.y,gather);
+   note(ctx,n,x,y,(1-gather)*1.2,1-smooth((p-.84)/.13),mix(.5,1,gather))}
+  // Underlying live camera is enabled on the reveal callback, not drawn from
+  // the old cached screenshot.
+ }
+}
+function setupIce(intensity){
+ shards=[];const b=field.bounds,cols=Math.round(mix(9,23,clamp(intensity/100))),rows=Math.max(6,Math.round(cols*b.h/b.w));
+ const dx=b.w/cols,dy=b.h/rows,vs=[];
+ for(let y=0;y<=rows;y++){const row=[];for(let x=0;x<=cols;x++)row.push({x:b.x+x*dx+(x===0||x===cols?0:rand(-dx*.17,dx*.17)),
+ y:b.y+y*dy+(y===0||y===rows?0:rand(-dy*.19,dy*.19))});vs.push(row)}
+ for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+  const a=vs[y][x],bb=vs[y][x+1],c=vs[y+1][x],d=vs[y+1][x+1];
+  for(const vertices of [[a,bb,c],[bb,d,c]]){
+   const L=Math.max(0,Math.floor(Math.min(...vertices.map(p=>p.x))-3)),T=Math.max(0,Math.floor(Math.min(...vertices.map(p=>p.y))-3));
+   const R=Math.min(W,Math.ceil(Math.max(...vertices.map(p=>p.x))+3)),B=Math.min(H,Math.ceil(Math.max(...vertices.map(p=>p.y))+3));
+   if(R-L<3||B-T<3)continue;
+   // Keep the source texture at native resolution inside each triangular shard.
+   // The custom per-shard canvas is cropped but never resized or blurred.
+   const c=document.createElement('canvas');c.width=R-L;c.height=B-T;const g=c.getContext('2d');
+   g.save();g.translate(-L,-T);g.beginPath();g.moveTo(vertices[0].x,vertices[0].y);vertices.slice(1).forEach(v=>g.lineTo(v.x,v.y));g.closePath();g.clip();
+   g.drawImage(subject,0,0,W,H);g.restore();
+   let presence=0;const pix=g.getImageData(0,0,c.width,c.height).data;
+   for(let z=3;z<pix.length;z+=24)if(pix[z]>100)presence++;
+   if(presence<Math.max(3,c.width*c.height/100))continue;
+   const cx=(vertices[0].x+vertices[1].x+vertices[2].x)/3,cy=(vertices[0].y+vertices[1].y+vertices[2].y)/3;
+   shards.push({img:c,L,T,cx,cy,edges:vertices.map(v=>[v.x-cx,v.y-cy]),
+    vx:rand(-b.w*.9,b.w*.9),vy:rand(-b.h*.85,b.h*.50),rot:rand(-8,8),delay:rand(0,.20),z:rand(.84,1.10)});
+  }
+ }
+ if(shards.length<5)throw Error('Ice effect found too few visible shards.');
+}
+function drawShard(s,cx,cy,angle,opacity=1){
+ if(opacity<=0)return;ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);ctx.globalAlpha=clamp(opacity);
+ ctx.shadowColor='rgba(110,218,255,.48)';ctx.shadowBlur=5;
+ ctx.drawImage(s.img,s.L-s.cx,s.T-s.cy);ctx.shadowBlur=0;
+ ctx.beginPath();s.edges.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+ ctx.lineWidth=Math.max(.65,Math.min(W/700,1.8));ctx.strokeStyle='rgba(217,248,255,.82)';ctx.stroke();
+ ctx.globalAlpha=clamp(opacity)*.36;ctx.lineWidth=3;ctx.strokeStyle='rgba(60,174,238,.48)';ctx.stroke();ctx.restore();
+}
+function drawIceCover(p){drawSubject(1);if(p<.23)return;const k=smooth((p-.23)/.68);
+ ctx.save();ctx.globalAlpha=k;for(const s of shards){ctx.beginPath();s.edges.forEach((v,i)=>i?ctx.lineTo(s.cx+v[0],s.cy+v[1]):ctx.moveTo(s.cx+v[0],s.cy+v[1]));ctx.closePath();ctx.lineWidth=1.5;ctx.strokeStyle='rgba(189,237,255,.74)';ctx.stroke()}
+ ctx.globalCompositeOperation='source-atop';ctx.fillStyle='rgba(104,196,242,.12)';ctx.fillRect(0,0,W,H);ctx.restore()}
+function drawIce(t,dir,dur){const p=clamp(t/dur);
+ if(dir==='out'){
+  if(p<.11){shards.forEach(s=>drawShard(s,s.cx,s.cy,0));return}
+  for(const s of shards){const q=clamp((p-.11-s.delay*.32)/.78);if(q<=0){drawShard(s,s.cx,s.cy,0);continue}
+   const r=ease(q),x=s.cx+s.vx*r,y=s.cy+s.vy*r+H*.46*r*r;
+   drawShard(s,x,y,s.rot*r,(1-smooth((p-.78)/.20)))
+  }
+ }else{
+  const r=ease(p/.90);
+  for(const s of shards){drawShard(s,mix(s.cx+s.vx,s.cx,r),mix(s.cy+s.vy+H*.40,s.cy,r),s.rot*(1-r),1-smooth((p-.86)/.13))}
+ }
+}
+function makePuff(color,seed){const c=document.createElement('canvas');c.width=256;c.height=256;const g=c.getContext('2d');
+ const isToxic=color==='toxic';const cx=128,cy=128;
+ // Several offset translucent lobes form a continuous volumetric cloud sprite.
+ for(let j=0;j<14;j++){
+  const a=j*2.399+seed*.71,d=rand(0,34),x=cx+Math.cos(a)*d,y=cy+Math.sin(a)*d,rad=rand(51,96);
+  const grad=g.createRadialGradient(x,y,rad*.08,x,y,rad);
+  if(isToxic){grad.addColorStop(0,'rgba(108,230,38,.13)');grad.addColorStop(.30,'rgba(54,154,19,.12)');grad.addColorStop(.76,'rgba(18,83,20,.09)')}
+  else{grad.addColorStop(0,'rgba(12,16,23,.21)');grad.addColorStop(.45,'rgba(24,27,36,.17)');grad.addColorStop(.77,'rgba(47,50,59,.09)')}
+  grad.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=grad;g.beginPath();g.arc(x,y,rad,0,6.283);g.fill()
+ }
+ return c}
+function setupCloud(effect,intensity){
+ clouds=[];smokeSprites=Array.from({length:7},(_,i)=>makePuff(effect,i));
+ const b=field.bounds;const num=Math.round(mix(85,185,clamp(intensity/100)));
+ for(let i=0;i<num;i++){
+  const p=field.points[Math.floor(rand(0,field.points.length))],edge=i%4===0;
+  const x=p[0]+rand(-b.w*.10,b.w*.10),y=p[1]+rand(-b.h*.08,b.h*.08);
+  clouds.push({x,y,dx:rand(-b.w*.45,b.w*.45),dy:rand(-b.h*.8,-b.h*.12),
+   puff:smokeSprites[i%smokeSprites.length],sz:rand(44,116)*Math.max(.7,b.w/520),
+   seed:rand(0,7),delay:rand(0,.56),a:rand(.56,.95),edge,spin:rand(-1,1)});
+ }
+}
+function drawClouds(t,direction='out',cover=false){
+ const toxic=job.effect==='toxic';const p=clamp(t);const lift=direction==='in'?1-ease(p/.9):p;
+ for(const c of clouds){
+  let progress,opacity,scale,x,y;
+  if(cover){progress=smooth((p-c.delay*.3)/.65);opacity=c.a*progress;scale=mix(.27,1.25,progress);x=c.x+Math.sin(p*5+c.seed)*6;y=c.y-progress*H*.05}
+  else if(direction==='out'){
+   progress=smooth(p);opacity=c.a*(1-smooth((p-.60)/.4));scale=1.25+p*1.4;
+   x=c.x+c.dx*p+Math.sin(p*9+c.seed)*W*.04;y=c.y+c.dy*p;
+  }else{
+   progress=ease(p/.87);opacity=c.a*(1-smooth((p-.64)/.32));scale=mix(2.2,.78,progress);
+   x=c.x+c.dx*(1-progress);y=c.y+H*.9*(1-progress)-c.dy*progress*.1;
+  }
+  if(opacity<=0)continue;
+  const size=c.sz*scale;
+  ctx.save();ctx.globalAlpha=clamp(opacity);ctx.translate(x,y);ctx.rotate(c.spin*(p+.05));
+  ctx.drawImage(c.puff,-size/2,-size/2,size,size);ctx.restore();
+ }
+ if(toxic){
+  // Chemical luminescence and suspended motes, deterministic per cloud point.
+  ctx.save();ctx.globalCompositeOperation='screen';
+  for(let i=0;i<clouds.length;i+=5){const c=clouds[i],k=cover?smooth((p-c.delay*.3)/.65):direction==='in'?1-ease(p):1-smooth((p-.55)/.45);
+   if(k<=0)continue;const x=c.x+Math.sin(p*10+c.seed)*12,y=c.y-p*H*.32;
+   const rad=clamp(c.sz*.085,2,10);const g=ctx.createRadialGradient(x,y,0,x,y,rad*4);g.addColorStop(0,'rgba(183,255,47,.37)');g.addColorStop(.25,'rgba(60,243,13,.16)');g.addColorStop(1,'rgba(30,190,0,0)');
+   ctx.globalAlpha=k;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad*4,0,6.283);ctx.fill()}
+  ctx.restore()
+ }
+}
+function drawSmokeCover(p){
+ drawSubject(1-smooth((p-.21)/.67));
+ drawClouds(p,'out',true);
+}
+function drawSmoke(t,dir,duration){drawClouds(clamp(t/duration),dir,false)}
+function coverTime(effect){return effect==='money'?1450:effect==='ice'?920:1200}
+function drawCover(p){if(job.effect==='money')drawMoneyCover(p);else if(job.effect==='ice')drawIceCover(p);else drawSmokeCover(p)}
+function playEffect(t){if(job.effect==='money')drawMoney(t,job.direction,job.duration);
+ else if(job.effect==='ice')drawIce(t,job.direction,job.duration);else drawSmoke(t,job.direction,job.duration)}
+async function signal(action,id,reason=''){try{const r=await fetch('/'+action+'?id='+id+(reason?'&reason='+encodeURIComponent(reason):''),{method:'POST',cache:'no-store'});if(!r.ok)console.warn('Bridge rejected',action,r.status)}catch(err){console.warn(action,err)}}
+function animate(now){resize();ctx.clearRect(0,0,W,H);
+ if(stage==='cover'&&job){const p=clamp((now-coverStarted)/coverTime(job.effect));drawCover(p);
+   if(p>=1&&!ackCovered){ackCovered=true; if(!demo)signal('covered',jobId)}}
+ else if(stage==='play'&&job){const t=clamp((now-started)/1000,0,job.duration);playEffect(t);
+   const p=clamp(t/job.duration);
+   if(job.direction==='in'&&!ackReveal&&p>=.86){ackReveal=true;if(!demo)signal('reveal',jobId)}
+   if(p>=1&&!ackDone){ackDone=true;stage='done';if(!demo)signal('done',jobId)}
+ }
+ requestAnimationFrame(animate)
+}
+requestAnimationFrame(animate);
+async function prepare(state){const id=state.job_id;loading=true;stage='loading';jobId=id;
+ try{
+  const img=await image('/frame.png?job='+id+'&nonce='+Date.now());field=silhouette(img);subject=field.image;
+  job=state;
+  if(state.effect==='money'){if(!bill)bill=await image('./bill.png');setupMoney(state.intensity)}
+  else if(state.effect==='ice')setupIce(state.intensity);
+  else setupCloud(state.effect,state.intensity);
+  stage='prepared';ackCovered=ackReveal=ackDone=false;
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if(stage==='prepared')await signal('ready',id)
+ }catch(e){stage='idle';job=null;await signal('error',id,e.message||String(e));console.error(e)}finally{loading=false}
+}
+async function poll(){if(demo||loading)return;
+ try{const s=await(await fetch('/state?ts='+Date.now(),{cache:'no-store'})).json();
+  if(s.phase==='idle'){if(stage!=='idle'){stage='idle';job=null;subject=null}}
+  else if(s.phase==='prepare'&&s.job_id!==jobId){await prepare(s)}
+  else if(s.job_id===jobId&&s.phase==='cover'&&stage==='prepared'){job=s;stage='cover';coverStarted=performance.now();ackCovered=false}
+  else if(s.job_id===jobId&&s.phase==='play'&&['cover','prepared'].includes(stage)){job=s;stage='play';started=performance.now();ackReveal=ackDone=false}
+ }catch(e){/* local engine may be starting up */}
+}
+if(demo){
+ function fakeImage(){const c=document.createElement('canvas');c.width=960;c.height=540;const g=c.getContext('2d');
+  g.fillStyle='#f0b994';g.beginPath();g.arc(480,128,67,0,6.283);g.fill();
+  g.fillStyle='#245c9d';g.beginPath();g.ellipse(480,410,156,225,0,0,6.283);g.fill();
+  g.fillStyle='#eac4a0';g.fillRect(327,355,38,112);g.fillRect(592,354,40,115);
+  g.fillStyle='#121b2d';g.fillRect(426,107,107,22);return c.toDataURL()}
+ (async()=>{const img=await image(fakeImage());field=silhouette(img);subject=field.image;
+  const effect=['money','ice','smoke','toxic'].includes(params.get('effect'))?params.get('effect'):'money';
+  job={effect,direction:params.get('direction')==='in'?'in':'out',duration:+params.get('duration')||3,intensity:+params.get('intensity')||75};
+  if(effect==='money'){bill=await image('./bill.png');setupMoney(job.intensity)}else if(effect==='ice')setupIce(job.intensity);else setupCloud(effect,job.intensity);
+  function cycle(){ackCovered=ackDone=ackReveal=false;stage=job.direction==='out'?'cover':'play';coverStarted=performance.now();started=performance.now();
+   setTimeout(()=>{if(stage==='cover'){stage='play';started=performance.now()}},coverTime(effect)+170);
+   setTimeout(cycle,(job.direction==='out'?coverTime(effect)+170:0)+job.duration*1000+700)
+  }cycle()
+ })().catch(console.error)
+}else{setInterval(poll,65);poll()}
+window.__scDebug=()=>({stage,jobId,effect:job&&job.effect,mask:field&&{bounds:field.bounds,coverage:field.coverage},bills:billParts.length,shards:shards.length,puffs:clouds.length,covered:ackCovered});
+</script></body></html>

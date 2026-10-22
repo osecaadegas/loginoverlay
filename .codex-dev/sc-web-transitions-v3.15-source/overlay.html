@@ -1,0 +1,1885 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v3.14.0 Raymarched Gas RC1</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}canvas{width:100%;height:100%;display:block;background:transparent!important}</style></head><body><canvas id="fx"></canvas><script src="/money-vfx3d.js"></script><script src="/ice-vfx3d.js"></script><script src="/gas-vfx3d.js"></script><script src="/cinematic-plates.js"></script><script src="/premium-vfx-meshes.js"></script><script src="/premium-crystal-accents.js"></script><script src="/crystal-hero3d.js"></script><script src="/gpu-vfx3d.js"></script><script src="/expansion-effects.js"></script><script>
+'use strict';
+// All geometry is in the native, uncropped camera source coordinates. OBS mirrors
+// position, crop, bounds, scale and rotation onto this Browser Source.
+const cvs=document.getElementById('fx'),ctx=cvs.getContext('2d',{alpha:true});
+const params=new URLSearchParams(location.search),demo=params.get('preview')==='1',RID=params.get('rid')||'';
+let W=1,H=1,DPR=1,field=null,subject=null,bill=null,job=null,jobId=0,stage='idle';
+let expansion=null,expansionGPU=null,gpuCoverage=0,gpuUnavailable="";
+let moneyCGI=null,moneyNormal=null,moneyRoughness=null,moneyGPUError="";
+let iceGPU=null,iceGPUError="",iceCoverage=0;
+let gasGPU=null,gasGPUError='',cinematicPlates=null,cinematicPlateError='';
+function plateActive(){return !!(cinematicPlates&&cinematicPlates.isReady&&job&&(job.effect==='smoke'||job.effect==='toxic'))}
+function disposePlates(){if(cinematicPlates){try{cinematicPlates.dispose()}catch(e){console.warn('Cinematic plate dispose',e)}cinematicPlates=null}}
+function gasGPUActive(){return !!(job&&(job.effect==='smoke'||job.effect==='toxic')&&gasGPU&&gasGPU.isReady&&job.renderer_mode!=='2d')}
+function disposeGasGPU(){if(gasGPU){try{gasGPU.dispose()}catch(_){}gasGPU.canvas.remove();gasGPU=null}}
+function iceGPUActive(){return !!(job&&job.effect==='ice'&&iceGPU&&iceGPU.isReady&&job.renderer_mode!=='2d')}
+let billParts=[],billMosaic=null,moneyMatte=null,hero=null,shards=[],clouds=[],smokeSprites=[],smokeWispSprites=[],smokeMatte=null,frostMap=null,frostFrames=[],iceFrozenLayer=null,iceCracks=[],coverStarted=0,started=0,loading=false;
+let ackCovered=false,ackReveal=false,ackDone=false,previewEpoch=0,smokeReleaseAge=0,smokeCoverAge=0;
+let smokeCanvas=null,smokeCtx=null,smokeBufferScale=1,smokeVolume=null,smokeVolCtx=null,gasSeal=null,gasCoverage=0,gasCoverageReport='',gasInReleaseAt=0,gasInArmed=false;
+let renderSamples=[],fpsSamples=[],sampleStart=0,framesThisSample=0,measuredFPS=0,measuredP95=0;
+let idleCanvasClear=false;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const ease=x=>1-Math.pow(1-clamp(x),3),mix=(a,b,p)=>a+(b-a)*p,rand=(a,b)=>a+Math.random()*(b-a);
+const fract=x=>x-Math.floor(x);
+function resize(){const w=Math.max(1,Math.round(innerWidth)),h=Math.max(1,Math.round(innerHeight));if(w===W&&h===H)return;W=w;H=h;DPR=demo?Math.min(devicePixelRatio||1,1.5):1; /* OBS composites at native pixel size; no oversampling. */cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize);resize();
+function image(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Cannot load image: '+url));im.src=url})}
+function keyed(r,g,b){return g>72&&g-r>34&&g-b>29&&g>r*1.26&&g>b*1.24}
+function silhouette(img){
+ const c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d',{willReadFrequently:true});q.drawImage(img,0,0,W,H);
+ const im=q.getImageData(0,0,W,H),d=im.data;let clear=0,greenEdge=0,edge=0,total=0;
+ const step=Math.max(2,Math.floor(Math.min(W,H)/130));
+ for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const k=(y*W+x)*4;total++;if(d[k+3]<225)clear++;
+  if(x<step*4||x>W-step*5||y<step*4||y>H-step*5){edge++;if(keyed(d[k],d[k+1],d[k+2]))greenEdge++}}
+ const alphaMask=clear>total*.012,chroma=!alphaMask&&greenEdge>edge*.24;
+ if(!alphaMask&&!chroma)throw Error('No keyed silhouette detected. Apply Chroma Key or background removal directly to your webcam OBS source.');
+ let minX=W,minY=H,maxX=0,maxY=0,covered=0;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const k=(y*W+x)*4;
+  if(chroma){const strength=Math.min(d[k+1]-d[k],d[k+1]-d[k+2]);d[k+3]=Math.round(d[k+3]*clamp((46-strength)/26))}
+  if(d[k+3]<18){d[k]=d[k+1]=d[k+2]=d[k+3]=0;continue}
+  covered++;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)
+ }
+ const coverage=covered/(W*H);
+ if(coverage<.004||coverage>.92)throw Error('Foreground covers '+Math.round(coverage*100)+'% of camera area; fix the Chroma Key/background removal.');
+ q.putImageData(im,0,0);
+ // Extract a binary silhouette thumbnail for rapid foreground lookups.
+ const s=document.createElement('canvas');s.width=256;s.height=Math.max(40,Math.round(256*H/W));
+ const u=s.getContext('2d',{willReadFrequently:true});u.drawImage(c,0,0,s.width,s.height);
+ const map=u.getImageData(0,0,s.width,s.height).data;
+ const points=[];for(let y=0;y<s.height;y+=2)for(let x=0;x<s.width;x+=2)if(map[(y*s.width+x)*4+3]>145)points.push([x/s.width*W,y/s.height*H]);
+ if(points.length<20)throw Error('Foreground silhouette is too small for an effect.');
+ return {image:c,bounds:{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1},coverage,points,map,mw:s.width,mh:s.height,
+ contains(x,y,threshold=125){const ix=Math.floor(x/W*this.mw),iy=Math.floor(y/H*this.mh);return ix>=0&&iy>=0&&ix<this.mw&&iy<this.mh&&this.map[(iy*this.mw+ix)*4+3]>threshold}};
+}
+// SC Web Transitions / Cinematic renderer v2.4
+// All drawing remains source-local: OBS owns placement, crop and rotation.
+// Deterministic geometry eliminates random jumps between captures and replays.
+let seed32=0x51C0FFEE;
+function rngReset(id=1){seed32=(0x51C0FFEE^(id*2654435761))>>>0}
+function rng(){seed32^=seed32<<13;seed32^=seed32>>>17;seed32^=seed32<<5;return (seed32>>>0)/4294967296}
+function rr(a,b){return a+(b-a)*rng()}
+function smoother(x){x=clamp(x);return x*x*x*(x*(x*6-15)+10)}
+function outCubic(x){return 1-Math.pow(1-clamp(x),3)}
+function outQuint(x){return 1-Math.pow(1-clamp(x),5)}
+function inCubic(x){x=clamp(x);return x*x*x}
+function arc(a,b,t){return a+(b-a)*t}
+function canvas2(w=W,h=H){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c}
+function maskedCanvas(fillCanvas){const c=canvas2(),g=c.getContext('2d');g.drawImage(fillCanvas,0,0);g.globalCompositeOperation='destination-in';g.drawImage(subject,0,0,W,H);g.globalCompositeOperation='source-over';return c}
+function drawSubject(alpha=1){if(subject&&alpha>0){ctx.save();ctx.globalAlpha=clamp(alpha);ctx.drawImage(subject,0,0,W,H);ctx.restore()}}
+function note(c,n,x=n.x,y=n.y,t=0,alpha=1,scale=1){
+ if(alpha<=.008||!bill)return;const w=n.w*scale,h=w*.454;
+ c.save();c.globalAlpha=clamp(alpha);c.translate(x,y);c.rotate(n.rot+(n.spin||0)*t);
+ // Controlled bill flex: almost flat for the frozen silhouette, animated after release.
+ const flutter=Math.cos((n.phase||0)+t*(n.flutter||8));
+ const flip=1-.32*Math.pow(Math.sin(t*(n.flip||4)+(n.phase||0)),2);
+ c.transform(1,flutter*.035,Math.sin(t*5+(n.phase||0))*.08,Math.max(.32,flip),0,0);
+ c.drawImage(bill,-w/2,-h/2,w,h);
+ c.restore();
+}
+function buildFrostMap(){
+ const fw=256,fh=Math.max(48,Math.round(fw*H/W));
+ const probe=canvas2(fw,fh),p=probe.getContext('2d',{willReadFrequently:true});
+ p.drawImage(subject,0,0,fw,fh);
+ const rgba=p.getImageData(0,0,fw,fh).data;
+ const d=new Float32Array(fw*fh),INF=1e4;
+ for(let y=0;y<fh;y++)for(let x=0;x<fw;x++){
+  const k=y*fw+x;
+  d[k]=(rgba[k*4+3]<120||x===0||y===0||x===fw-1||y===fh-1)?0:INF;
+ }
+ for(let y=1;y<fh;y++)for(let x=1;x<fw;x++){
+  const k=y*fw+x;
+  d[k]=Math.min(d[k],d[k-1]+1,d[k-fw]+1,d[k-fw-1]+1.4142,d[k-fw+1]+1.4142);
+ }
+ for(let y=fh-2;y>=0;y--)for(let x=fw-2;x>=0;x--){
+  const k=y*fw+x;
+  d[k]=Math.min(d[k],d[k+1]+1,d[k+fw]+1,d[k+fw+1]+1.4142,d[k+fw-1]+1.4142);
+ }
+ const out=p.createImageData(fw,fh);
+ for(let k=0;k<fw*fh;k++){
+  const v=Math.round(clamp(d[k]/35)*255);
+  out.data[k*4]=out.data[k*4+1]=out.data[k*4+2]=v;
+  out.data[k*4+3]=255;
+ }
+ p.putImageData(out,0,0);return probe;
+}
+function bakeFrostFrames(){
+ // High-resolution keyed material with cached edge-to-center frozen layers.
+ // Prebuilt once, not recalculated every OBS animation frame.
+ frostFrames=[];
+ const w=Math.min(640,W),h=Math.max(1,Math.round(w*H/W));
+ const c=canvas2(w,h),g=c.getContext('2d',{willReadFrequently:true});
+ g.drawImage(subject,0,0,w,h);
+ const camera=g.getImageData(0,0,w,h);
+ const m=canvas2(w,h),q=m.getContext('2d',{willReadFrequently:true});
+ q.drawImage(frostMap,0,0,w,h);const mask=q.getImageData(0,0,w,h).data;
+ const levels=14;
+ for(let step=0;step<levels;step++){
+  const t=step/(levels-1),out=g.createImageData(w,h);
+  for(let i=0;i<w*h;i++){
+   const k=i*4,a=camera.data[k+3];if(a<5)continue;
+   const x=i%w,y=(i/w)|0;
+   const jitter=(Math.sin(x*.67+y*.31)*.028+Math.sin(x*.17-y*.49)*.022);
+   const dist=mask[k]/255;
+   const amt=smoother((t*1.27+jitter-dist+.06)/.12);
+   const glint=(Math.sin(x*.45+y*.81)**16)*amt;
+   out.data[k]=Math.min(255,camera.data[k]*(1-amt*.55)+amt*(156+glint*28));
+   out.data[k+1]=Math.min(255,camera.data[k+1]*(1-amt*.38)+amt*(204+glint*34));
+   out.data[k+2]=Math.min(255,camera.data[k+2]*(1-amt*.32)+amt*(240+glint*15));
+   out.data[k+3]=a;
+  }
+  const frame=canvas2(w,h);frame.getContext('2d').putImageData(out,0,0);
+  frostFrames.push(frame);
+ }
+}
+// Money Burst 2.7 — individual readable custom banknotes, measured raster
+// coverage, deterministic fall/blast, and perspective-correct hero ribbon.
+let moneyCoverage=0,moneyCoverageReport='',moneyCoverageLayer=null,moneyMaskLayer=null,moneyTex=[],moneyBufferScale=1,moneyPaperShadow=null;
+function moneyBoundsMap(){
+ const b=field.bounds, sw=Math.min(256,Math.max(160,Math.round(W/5))),sh=Math.max(72,Math.round(sw*H/W));
+ const m=canvas2(sw,sh),g=m.getContext('2d',{willReadFrequently:true});
+ g.drawImage(subject,0,0,sw,sh);const a=g.getImageData(0,0,sw,sh).data;
+ const cells=[],edge=[];
+ for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+  const k=(y*sw+x)*4+3;if(a[k]>145){cells.push(y*sw+x);if(x>1&&y>1&&x<sw-2&&y<sh-2)edge.push(y*sw+x)}
+ }
+ return {w:sw,h:sh,cells,edge,mask:a};
+}
+function moneyNote(n,c,x=n.x,y=n.y,age=0,alpha=1,scale=1){
+ if(alpha<=.002)return;
+ const w=n.w*scale,h=w*.454;
+ c.save();c.globalAlpha=clamp(alpha);c.translate(x,y);
+ const flutter=Math.sin(age*(n.flutter||3.4)+n.phase),twist=Math.sin(age*(n.flutter||3.4)*.64+n.phase*1.7);
+ c.rotate(n.rot+n.spin*age*.55);
+ c.transform(1,flutter*.023,twist*.047,Math.max(.59,1-.19*Math.sin(age*3+n.phase)**2),0,0);
+ const texture=n.texture||bill;
+ c.drawImage(texture,-w/2,-h/2,w,h);c.restore();
+}
+// GPU money is the preferred presentation. The verified final seal and the
+// camera safety logic stay in the original 2D Money engine.
+function moneyGPUActive(){return !!(job&&job.effect==='money'&&moneyCGI&&moneyCGI.isReady&&job.renderer_mode!=='2d')}
+function moneyGPURecord(n,x,y,age,alpha,scale=1,heroFlag=0,extras=null){
+ const v=extras||{};
+ return {x,y,w:n.w*scale,age,alpha,rot:v.rot??(n.rot+n.spin*age*.55),depth:v.depth??(v.airborne?(-38-56*n.depth):0),
+  phase:n.phase,wave:v.wave??(v.airborne?1.12:.28),yaw:v.yaw??(Math.sin(n.phase+age*2.2)*(.24+.48*!!v.airborne)+(v.airborne?n.spin*age*.16:0)),
+  pitch:v.pitch??(Math.sin(n.phase*1.4+age*3.4)*(.16+.26*!!v.airborne)),hero:heroFlag};
+}
+function drawMoneyCoverCGI(p){
+ // The same note positions and settle curve as the measured original Money effect.
+ // Settled banknotes revert to the EXACT measured pixel layer by p=1 so the
+ // OBS disable acknowledgment can never expose silhouette holes.
+ const g=ctx,airborne=[];
+ for(const n of billParts){
+  const q=smoother((p-n.drop*.79)/Math.max(.15,n.fall*.82));
+  if(q<=.003)continue;
+  const start=n.y-H*(.36+.26*n.depth)-H*n.drop*.10,fall=1-q;
+  const x=n.x+n.side*fall+Math.sin(p*8+n.phase)*n.wave*fall;
+  const y=mix(start,n.y,q)+Math.sin(q*Math.PI)*H*.012;
+  const landed=smoother((q-.68)/.30);
+  if(landed>.003)moneySettledNote(n,g,landed);
+  if(1-landed>.003)airborne.push(moneyGPURecord(n,x,y,fall*.32,1-landed,1,0,{airborne:true,depth:-64*(1-q),wave:.6+q*.16}));
+ }
+ if(p>=1){g.clearRect(0,0,W,H);g.drawImage(moneyCoverageLayer,0,0)}
+ moneyCGI.draw(airborne,p*2.1);
+}
+function moneyHeroCGI(p,duration,records){
+ const q=clamp((p-.27)/.73);if(q<=0||q>=1)return;
+ const approach=smoother(q/.68),impact=smoother((q-.62)/.11),slide=smoother((q-.75)/.25);
+ const focal=Math.max(W*.67,H*.95),z=mix(focal*.08,-focal*.79,approach);
+ const anchor=blastPosition(hero.note,.27,duration);
+ records.push(moneyGPURecord(hero.note,mix(anchor.x,W*.52,approach),mix(anchor.y,H*.45,approach)+slide*H*2.6,q*2.5,
+  1-smoother((q-.96)/.04),1.04,1,{depth:z,rot:mix(anchor.rot,.055,approach)+slide*.12,
+   yaw:Math.sin(q*5.3)*.28*(1-impact*.8),pitch:Math.sin(q*8.2)*.21*(1-impact*.65),wave:.98-impact*.35}));
+}
+function moneyInTiming(n){
+ const lane=clamp(n.inDelay??n.drop,0,.96);
+ return {lane,lead:lane*.80,travel:.30+(1-n.depth)*.11+(n.fall||.32)*.30+(n.tier===0?.08:n.tier===2?-.015:0),settleStart:.58+lane*.09,settleSpan:.15+(1-n.depth)*.06+(n.tier===0?.015:0)};
+}
+function moneyInPose(n,build){
+ const timing=moneyInTiming(n),q=smoother((build-timing.lead)/Math.max(.16,timing.travel));
+ if(q<=0)return null;
+ const fall=1-q,startY=-H*(.26+.32*n.depth)-H*(.10+.34*timing.lane);
+ const x=n.x+n.side*.88*fall+Math.sin((1-q)*6.2+n.phase)*n.wave*fall*.58;
+ const yFall=mix(startY,n.y,q)+Math.sin(q*Math.PI)*H*(.016+.006*n.depth);
+ const contact=clamp((q-timing.settleStart)/Math.max(.12,timing.settleSpan),0,1),landed=smoother(contact);
+ const settleBase=(1-landed)*n.weightDrop*H*(.018+.005*(1-n.depth));
+ const rebound=Math.sin(contact*Math.PI*(1.65+n.bounceCycles))*Math.exp(-contact*4.9)*n.bounceAmp*H;
+ const yOffset=(contact>0?(settleBase+rebound):0);
+ const settleAge=(1-landed)*.06+contact*.02;
+ const scale=mix(.915,1,q)*(1-Math.sin(Math.min(1,contact)*Math.PI)*n.squash);
+ const y=mix(yFall,n.y+yOffset,landed);
+ return {q,fall,x,y,landed,airborne:1-landed,scale,age:(1-q)*.34+(1-landed)*.05,settleAge,yOffset,depth:-72*(1-q),wave:.52+.40*fall};
+}
+function moneyInRevealPose(n,burst,duration){
+ const cx=field.bounds.x+field.bounds.w*.5,cy=field.bounds.y+field.bounds.h*.45;
+ const dx=(n.x-cx)/Math.max(50,field.bounds.w*.42),edge=Math.abs(dx),topBias=1-clamp((n.y-field.bounds.y)/Math.max(1,field.bounds.h),0,1),bottomBias=1-topBias;
+ // Luxury reveal: upper silhouette and outer edges peel first, torso/core holds slightly longer.
+ const delay=(n.peelDelay||0)+edge*.055+bottomBias*.075-(topBias*.018);
+ const q=clamp((burst-delay)/Math.max(.60,.92-delay*.18),0,1);
+ if(q<=0)return {q:0,x:n.x,y:n.y,alpha:1,sec:0,scale:1,depth:0};
+ const sec=q*duration*.135,r=smoother(q);
+ const driftX=(dx*W*.14+n.peelSide*W*.045+n.vx*.14)*r+Math.sin(sec*4.2+n.phase)*n.wave*.18*q;
+ const lift=-H*(.08+.13*n.peelLift+.045*topBias)*r;
+ const driftY=lift+H*.035*n.gravity*sec*sec-Math.abs(n.vy)*.035*sec;
+ const alpha=(1-smoother((burst-.94)/.06))*(1-smoother((q-.975)/.025));
+ return {q,x:n.x+driftX,y:n.y+driftY,alpha,sec,scale:mix(1,1.03*(n.tier===0?1.03:1),Math.sin(Math.min(1,q)*Math.PI)*.30),depth:-58*q};
+}
+function drawMoneyCGI(t,dir,duration){
+ const p=clamp(t/duration),records=[];
+ if(dir==='out'){
+  const release=smoother((p-.025)/.20);
+  if(release<1)moneyAssembled(1-release);
+  for(const n of billParts){
+   if(n===hero.note&&p>=.27)continue;
+   const v=blastPosition(n,p,duration);
+   if(v.q<=0){moneyNote(n,ctx,n.x,n.y,0,1);continue}
+   if(v.x<-340||v.x>W+340||v.y<-320||v.y>H+390)continue;
+   const alpha=(1-smoother((p-.60)/.22))*(1-smoother((v.q-.93)/.07));
+   if(alpha>.003)records.push(moneyGPURecord(n,v.x,v.y,v.sec,alpha,mix(1,n.depth+.18,outCubic(v.q)),0,{airborne:true,rot:v.rot,depth:-50*v.q+80*(1-n.depth)}));
+  }
+  moneyHeroCGI(p,duration,records);
+ }else{
+  const buildEnd=.77,holdEnd=.915;
+  if(p<buildEnd){
+   const build=clamp(p/buildEnd);
+   for(const n of billParts){
+    const pose=moneyInPose(n,build);if(!pose)continue;
+    if(pose.landed>.003)moneyPileNote(n,ctx,pose.landed,pose.yOffset,pose.settleAge,pose.scale);
+    if(pose.airborne>.003)records.push(moneyGPURecord(n,pose.x,pose.y,pose.age,pose.airborne,pose.scale,0,{airborne:true,depth:pose.depth,wave:pose.wave}));
+   }
+   // Keep the rain readable almost until the silhouette is fully rebuilt, then
+   // switch to the exact measured money layer for the webcam reveal.
+   if(p>=buildEnd-.030){ctx.clearRect(0,0,W,H);moneyAssembled(1);records.length=0}
+  }else if(p<holdEnd){moneyAssembled(1)}
+  else{
+   const burst=clamp((p-holdEnd)/(1-holdEnd));
+   for(const n of billParts){
+    const v=moneyInRevealPose(n,burst,duration);
+    if(v.q<=0){moneyNote(n,ctx,n.x,n.y,0,1,1);continue}
+    if(v.alpha>.003&&v.x>-280&&v.x<W+280&&v.y>-260&&v.y<H+260)records.push(moneyGPURecord(n,v.x,v.y,v.sec,v.alpha,v.scale,0,{airborne:true,depth:v.depth,wave:.26+n.peelLift*.55}));
+   }
+  }
+ }
+ moneyCGI.draw(records,p*duration);
+}
+function createMoneyTextureCache(){
+ moneyTex=[];
+ for(const w of [32,42,56,72,92,116,144,180,220,275,340]){
+  const t=canvas2(w,Math.round(w*.454));t.getContext('2d').drawImage(bill,0,0,t.width,t.height);
+  moneyTex.push([w,t]);
+ }
+}
+// Single cached soft paper shadow; render it once, not with an expensive
+// shadowBlur for each note on every animation frame. The artwork is untouched.
+function prepareMoneyPaperShadow(){
+ if(moneyPaperShadow)return;
+ const silhouette=canvas2(320,Math.round(320*.454)),s=silhouette.getContext('2d');
+ s.drawImage(bill,0,0,silhouette.width,silhouette.height);
+ s.globalCompositeOperation='source-in';s.fillStyle='rgba(13,9,8,.82)';s.fillRect(0,0,silhouette.width,silhouette.height);
+ moneyPaperShadow=canvas2(384,Math.round(384*.454)+28);
+ const g=moneyPaperShadow.getContext('2d');g.filter='blur(8px)';
+ g.drawImage(silhouette,32,14);g.filter='none';
+}
+function moneySettledNote(n,c,opacity=1){
+ if(moneyPaperShadow&&opacity>.01){
+  c.save();c.globalAlpha=clamp(opacity)*.59;c.translate(n.x,n.y);c.rotate(n.rot);
+  const w=n.w*1.2,h=n.w*(.454*1.2+.088);
+  c.drawImage(moneyPaperShadow,-w/2+n.w*.015,-h/2+n.w*.019,w,h);c.restore();
+ }
+ moneyNote(n,c,n.x,n.y,0,opacity,1);
+}
+function moneyPileNote(n,c,opacity=1,yOffset=0,age=0,scale=1){
+ if(moneyPaperShadow&&opacity>.01){
+  c.save();c.globalAlpha=clamp(opacity)*(.50+.09*Math.min(1,scale));c.translate(n.x,n.y+yOffset*.34+n.w*.012);
+  c.rotate(n.rot+n.spin*age*.22);
+  const w=n.w*1.2*mix(.96,1.03,Math.min(1,scale)),h=n.w*(.454*1.2+.088)*mix(.96,1.03,Math.min(1,scale));
+  c.drawImage(moneyPaperShadow,-w/2+n.w*.015,-h/2+n.w*.019,w,h);c.restore();
+ }
+ moneyNote(n,c,n.x,n.y+yOffset,age,opacity,scale);
+}
+function moneyFinalLayer(){
+ const layer=canvas2(),g=layer.getContext('2d');
+ for(const n of billParts)moneySettledNote(n,g,1);
+ // Keep the full rectangular edges of individual notes. Coverage is still
+ // evaluated ONLY against the keyed subject, but visible paper is uncut.
+ return layer;
+}
+function coverageOf(canvas,probe){
+ const c=canvas2(probe.w,probe.h),g=c.getContext('2d',{willReadFrequently:true});
+ g.drawImage(canvas,0,0,probe.w,probe.h);const d=g.getImageData(0,0,probe.w,probe.h).data;
+ let hit=0,all=0;const holes=[];
+ for(const k of probe.cells){all++;if(d[k*4+3]>243)hit++;else holes.push(k)}
+ return {ratio:hit/Math.max(1,all),holes};
+}
+function createMoneyNote(x,y,w,tier,seedDelay=0){
+ const b=field.bounds,depth=rr(.84,1.23);
+ const texture=moneyTex.reduce((best,item)=>Math.abs(item[0]-w)<Math.abs(best[0]-w)?item:best,moneyTex[0])[1];
+ const tierBias=tier===0?rr(0,.18):tier===1?rr(.10,.42):rr(.28,.62),verticalBias=clamp((y-b.y)/Math.max(1,b.h),0,1)*.18;
+ return {x,y,w,tier,texture,rot:rr(-.24,.24),phase:rr(0,6.283),spin:rr(-2.1,2.1),
+  flutter:rr(2.5,4.7),depth,drop:seedDelay,inDelay:clamp(tierBias+verticalBias+rr(-.04,.05),0,.94),fall:rr(.26,.43),
+  side:rr(-b.w*.16,b.w*.16),wave:rr(6,22),
+  vx:rr(-W*.46,W*.46),vy:rr(-H*.49,-H*.22),gravity:rr(.81,1.21),
+  weightDrop:rr(.22,.58)*(tier===0?1.24:tier===2?.82:1),bounceAmp:rr(.006,.016)*(tier===0?1.18:1),bounceCycles:rr(.55,1.35),squash:rr(.018,.052)*(tier===0?1.18:1),
+  peelDelay:rr(0,.10)+(tier===0?.03:0),peelLift:rr(.06,.18)+(tier===0?.05:0),peelSide:rr(-1,1),
+  blastDelay:rr(0,.13),impulse:rr(.83,1.25)};
+}
+function setupMoney(intensity){
+ prepareMoneyPaperShadow();
+ billParts=[];moneyMatte=null;moneyCoverageLayer=null;moneyMaskLayer=null;moneyCoverage=0;
+ createMoneyTextureCache();
+ const b=field.bounds,small=Math.min(b.w,b.h),quality=clamp(intensity/100,.15,1);
+ const base=clamp(small*.42,108,275),probe=moneyBoundsMap();
+ const widths=[base*1.64,base*1.17,base*.82];
+ // The leading layer is deliberately larger and individually readable.
+ // Cover all regions by selecting mostly uncovered foreground pixels.
+ const occ=canvas2(probe.w,probe.h),og=occ.getContext('2d',{willReadFrequently:true});
+ const sx=probe.w/W,sy=probe.h/H;
+ function place(n){
+  billParts.push(n);og.save();og.translate(n.x*sx,n.y*sy);og.rotate(n.rot);
+  og.drawImage(bill,-n.w*sx*.5,-n.w*.454*sy*.5,n.w*sx,n.w*.454*sy);og.restore();
+ }
+ function current(){const im=og.getImageData(0,0,probe.w,probe.h).data,holes=[];let hit=0;
+  for(const k of probe.cells){if(im[k*4+3]>246)hit++;else holes.push(k)}
+  return {ratio:hit/Math.max(1,probe.cells.length),holes};
+ }
+ // Primary notes: use three explicit size bands and nonuniform positions.
+ const frontCount=Math.round(mix(19,31,quality)*(small/440)**.32);
+ for(let i=0;i<frontCount;i++){
+  const r=rng(),tier=r<.48?0:r<.86?1:2;
+  const pos=field.points[Math.floor(rng()*field.points.length)];
+  const x=clamp(pos[0]+rr(-base*.18,base*.18),b.x,b.x+b.w),y=clamp(pos[1]+rr(-base*.18,base*.18),b.y,b.y+b.h);
+  const d=clamp((y-b.y)/Math.max(1,b.h));
+  place(createMoneyNote(x,y,widths[tier]*rr(.91,1.12),tier,rr(0,.19)+d*.29));
+ }
+ // Premium polish: add a small front-most hero cluster so some larger notes
+ // feel closer to the lens during Money IN and create a denser luxury layer.
+ const heroCluster=Math.round(mix(3,6,quality));
+ for(let i=0;i<heroCluster;i++){
+  const px=b.x+b.w*(.34+.32*rng())+rr(-base*.09,base*.09),py=b.y+b.h*(.16+.42*rng())+rr(-base*.07,base*.07);
+  place(createMoneyNote(clamp(px,b.x,b.x+b.w),clamp(py,b.y,b.y+b.h),widths[0]*rr(1.02,1.18),0,rr(0,.14)));
+ }
+ // Third-pass luxury buildup: thicken the torso/core so the silhouette feels
+ // denser through the chest and stomach, not only around random coverage cells.
+ const torsoCluster=Math.round(mix(4,8,quality));
+ for(let i=0;i<torsoCluster;i++){
+  const tier=i%3===0?0:1;
+  const px=b.x+b.w*(.40+.20*rng())+rr(-base*.06,base*.06),py=b.y+b.h*(.34+.30*rng())+rr(-base*.05,base*.05);
+  place(createMoneyNote(clamp(px,b.x,b.x+b.w),clamp(py,b.y,b.y+b.h),widths[tier]*rr(.96,1.14),tier,rr(.04,.20)));
+ }
+ // Refine head/shoulder edges with a few guided placements so the upper shape
+ // reads cleaner and more premium before the exact final silhouette lock.
+ const upperEdgeCluster=Math.round(mix(4,7,quality));
+ for(let i=0;i<upperEdgeCluster;i++){
+  const shoulderSide=i%2===0?-1:1;
+  const high=i<Math.ceil(upperEdgeCluster*.45);
+  const px=b.x+b.w*(high?.50:.50+shoulderSide*.20)+rr(-base*.05,base*.05),
+        py=b.y+b.h*(high?.14:.24+rr(-.04,.04))+rr(-base*.04,base*.04);
+  const tier=high?2:1;
+  place(createMoneyNote(clamp(px,b.x,b.x+b.w),clamp(py,b.y,b.y+b.h),widths[tier]*rr(.88,1.05),tier,rr(.02,.18)));
+ }
+ // Greedy gap-filling is made of *more actual notes* — never a tiled texture
+ // or camera screenshot. It works at silhouette-mask resolution, in preparation.
+ let data=current(),fallback=false,added=0;
+ const limit=Math.round(mix(195,270,quality)*(probe.cells.length/7800)**.30);
+ while(data.ratio<.987 && billParts.length<limit && data.holes.length){
+  const sample=data.holes[Math.floor(rng()*data.holes.length)];
+  const px=((sample%probe.w)+.5)/probe.w*W,py=(Math.floor(sample/probe.w)+.5)/probe.h*H;
+  const tier=(added%4===0)?0:(added%9===0)?2:1;
+  place(createMoneyNote(px+rr(-base*.08,base*.08),py+rr(-base*.06,base*.06),widths[tier]*rr(.89,1.13),tier,rr(.12,.38)+clamp((py-b.y)/Math.max(1,b.h))*.20));
+  added++;
+  if(added%4===0)data=current();
+ }
+ data=current();
+ if(data.ratio<.985){
+  // Tight final holes need narrow paper strips; still individual real bills.
+  fallback=true;
+  while(data.ratio<.987&&billParts.length<limit+135&&data.holes.length){
+   const sample=data.holes[Math.floor(rng()*data.holes.length)];
+   const x=((sample%probe.w)+.5)/probe.w*W,y=(Math.floor(sample/probe.w)+.5)/probe.h*H;
+   place(createMoneyNote(x,y,widths[1]*rr(.80,1.05),1,rr(.35,.61)));
+   if(billParts.length%4===0)data=current();
+  }
+ }
+ moneyCoverageLayer=moneyFinalLayer();
+ let actual=coverageOf(moneyCoverageLayer,probe);
+ // Verify coverage on the final alpha-clipped, composited image (not merely
+ // the planning bitmap). Fill remaining anti-aliased edge gaps with bills.
+ let finalAdds=0;
+ while(actual.ratio<.989 && actual.holes.length && finalAdds<180){
+  const sample=actual.holes[Math.floor(rng()*actual.holes.length)];
+  const x=((sample%probe.w)+.5)/probe.w*W,y=(Math.floor(sample/probe.w)+.5)/probe.h*H;
+  billParts.push(createMoneyNote(x,y,widths[1]*rr(.76,1.12),1,rr(.24,.55)));
+  finalAdds++;
+  if(finalAdds%5===0){moneyCoverageLayer=moneyFinalLayer();actual=coverageOf(moneyCoverageLayer,probe)}
+ }
+ if(finalAdds%5){moneyCoverageLayer=moneyFinalLayer();actual=coverageOf(moneyCoverageLayer,probe)}
+ fallback=fallback||finalAdds>0;
+ moneyCoverage=actual.ratio;
+ moneyCoverageReport=`${(moneyCoverage*100).toFixed(2)}% (${billParts.length} individual notes; adaptive fill ${fallback?'yes':'no'})`;
+ if(moneyCoverage<.985)throw Error('Money coverage only '+moneyCoverageReport+'; source stays visible. Adjust webcam mask or increase density.');
+ // The final live-cover sprite is the exact cached final configuration.
+ moneyMatte=moneyCoverageLayer;
+ const anchorX=b.x+b.w*.53,anchorY=b.y+b.h*.40;
+ const pool=billParts.filter(n=>n.tier===0);
+ const selected=(pool.length?pool:billParts).reduce((a,n)=>!a||Math.hypot(n.x-anchorX,n.y-anchorY)<Math.hypot(a.x-anchorX,a.y-anchorY)?n:a,null);
+ hero={x:selected.x,y:selected.y,w:selected.w,rot:selected.rot,phase:selected.phase,note:selected};
+}
+function moneyAssembled(alpha=1){if(!moneyCoverageLayer||alpha<=.002)return;
+ ctx.save();ctx.globalAlpha=clamp(alpha);ctx.drawImage(moneyCoverageLayer,0,0);ctx.restore();}
+function drawMoneyCover(p){
+ // No webcam draw. OBS remains live beneath banknotes throughout the buildup.
+ // Individual bill timing creates a natural cascade rather than opacity-wiping
+ // a pre-baked person-shaped still.
+ if(!moneyMaskLayer){
+  const q=job.quality||'Cinematic';
+  const base=W>=1550?.34:W>=1150?.64:1;
+  const mult={Performance:.70,Balanced:.88,Cinematic:1.0,Ultra:1.28}[q]||1;
+  moneyBufferScale=clamp(base*mult,.34,1);
+  moneyMaskLayer=canvas2(W*moneyBufferScale,H*moneyBufferScale)
+ }
+ const layer=moneyMaskLayer,g=layer.getContext('2d');
+ g.setTransform(moneyBufferScale,0,0,moneyBufferScale,0,0);
+ g.clearRect(0,0,W,H);
+ const falling=[];
+ for(const n of billParts){
+  const q=smoother((p-n.drop*.79)/Math.max(.15,n.fall*.82));
+  if(q<=.003)continue;
+  const start=n.y-H*(.36+.26*n.depth)-H*n.drop*.10;
+  const fall=1-q;
+  const x=n.x+n.side*fall+Math.sin((p*8+n.phase))*n.wave*fall;
+  const y=mix(start,n.y,q)+Math.sin(q*Math.PI)*H*.012;
+  // Landed paper gradually attaches to the silhouette. Falling notes remain
+  // visible OUTSIDE the person until they land, not abruptly masked away.
+  const landed=smoother((q-.68)/.30);
+  if(landed>.003)moneySettledNote(n,g,landed);
+  const airborne=1-landed;
+  if(airborne>.003)falling.push({n,x,y,age:fall*.32,alpha:airborne});
+ }
+ // Keep each settled banknote intact instead of cutting it at subject edges.
+ // The mask is used for placement/coverage tests, NOT for clipping artwork.
+ // Batch moving foreground and landed layer into a single small bitmap.
+ // This eliminates dozens of full-1080p affine sprite draws per frame.
+ for(const f of falling)moneyNote(f.n,g,f.x,f.y,f.age,f.alpha,1);
+ ctx.drawImage(layer,0,0,W,H);
+ // At completion switch to the pixel-exact measured layer, with no different
+ // design/layout that could pop at OBS camera-off.
+ if(p>=1){ctx.clearRect(0,0,W,H);ctx.drawImage(moneyCoverageLayer,0,0)}
+}
+function moneyHeroRibbon(p){
+ // Project a flexible strip mesh through a perspective camera. The hero bill
+ // flies out from the burst, approaches the lens, flexes on impact, then slides.
+ const q=clamp((p-.27)/.73);if(q<=0||q>=1)return;
+ const approach=smoother(q/.68),impact=smoother((q-.62)/.11),slide=smoother((q-.75)/.25);
+ const focal=Math.max(W*.67,H*.95),z=mix(focal*.08,-focal*.79,approach);
+ const anchor=blastPosition(hero.note,.27,job.duration);
+ const cx=mix(anchor.x,W*.52,approach),cy=mix(anchor.y,H*.45,approach)+slide*H*2.6;
+ const angle=mix(anchor.rot,.055,approach)+slide*.12;
+ const cos=Math.cos(angle),sin=Math.sin(angle),segments=12,verts=[];
+ const worldW=hero.w*1.04,worldH=worldW*.454;
+ const lens=(u,v)=>{
+  const curl=Math.sin((u+.5)*Math.PI*2+q*5.2)*worldW*.025*(1-impact*.5);
+  const depth=z+Math.sin((u+.5)*Math.PI)*worldW*.09+Math.sin(q*9+u*4)*worldW*.015;
+  const factor=clamp(focal/(focal+depth),.15,5);
+  const rx=u*worldW,ry=v*worldH+curl;
+  return [cx+(rx*cos-ry*sin)*factor,cy+(rx*sin+ry*cos)*factor];
+ };
+ for(let i=0;i<=segments;i++){const u=i/segments-.5;verts.push([lens(u,-.5),lens(u,.5)])}
+ ctx.save();ctx.globalAlpha=1-smoother((q-.96)/.04);
+ // UV-mapped triangles preserve the sheep image while the bill bends in depth.
+ function tri(src,dst){
+  const [a,b,c]=dst,[p0,p1,p2]=src;
+  const den=(p0[0]*(p1[1]-p2[1])+p1[0]*(p2[1]-p0[1])+p2[0]*(p0[1]-p1[1]));if(Math.abs(den)<.000001)return;
+  const A=(a[0]*(p1[1]-p2[1])+b[0]*(p2[1]-p0[1])+c[0]*(p0[1]-p1[1]))/den;
+  const B=(a[1]*(p1[1]-p2[1])+b[1]*(p2[1]-p0[1])+c[1]*(p0[1]-p1[1]))/den;
+  const C=(a[0]*(p2[0]-p1[0])+b[0]*(p0[0]-p2[0])+c[0]*(p1[0]-p0[0]))/den;
+  const D=(a[1]*(p2[0]-p1[0])+b[1]*(p0[0]-p2[0])+c[1]*(p1[0]-p0[0]))/den;
+  const E=a[0]-A*p0[0]-C*p0[1],F=a[1]-B*p0[0]-D*p0[1];
+  ctx.save();ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.lineTo(c[0],c[1]);ctx.closePath();ctx.clip();ctx.transform(A,B,C,D,E,F);ctx.drawImage(bill,0,0);ctx.restore();
+ }
+ const bw=bill.naturalWidth,bh=bill.naturalHeight;
+ for(let i=0;i<segments;i++){
+  const l=i/segments*bw,r=(i+1)/segments*bw;
+  const d=verts[i],e=verts[i+1];
+  tri([[l,0],[l,bh],[r,0]],[d[0],d[1],e[0]]);
+  tri([[r,0],[l,bh],[r,bh]],[e[0],d[1],e[1]]);
+ }
+ ctx.restore();
+}
+function drawHeroBill(p){moneyHeroRibbon(p)}
+// Single deterministic pressure impulse shared by all notes including the hero.
+// The hero shot starts from its physically tracked position in this blast.
+function blastPosition(n,p,duration){
+ const cx=field.bounds.x+field.bounds.w*.52,cy=field.bounds.y+field.bounds.h*.47;
+ const q=clamp((p-.018-n.blastDelay)/.73),sec=q*duration,r=outCubic(q);
+ const dx=(n.x-cx)/Math.max(40,field.bounds.w*.45),dy=(n.y-cy)/Math.max(40,field.bounds.h*.42);
+ const pressure=1.0+.18*Math.sin(n.phase+q*2.8);
+ const x=n.x+(dx*W*.24*n.impulse*pressure+n.vx*sec*.45)*r+Math.sin(sec*4+n.phase)*n.wave*r;
+ const y=n.y+(dy*H*.12+n.vy*sec*.48)*r+H*.46*n.gravity*sec*sec;
+ return {x,y,q,sec,rot:n.rot+n.spin*sec*.55};
+}
+function drawMoney(t,dir,duration){
+ const p=clamp(t/duration);
+ if(dir==='out'){
+  const release=smoother((p-.025)/.20);
+  if(release<1)moneyAssembled(1-release);
+  for(const n of billParts){
+   if(n===hero.note&&p>=.27)continue;
+   const v=blastPosition(n,p,duration);
+   if(v.q<=0){moneyNote(n,ctx,n.x,n.y,0,1);continue}
+   if(v.x<-190||v.x>W+190||v.y<-170||v.y>H+230)continue;
+   const a=(1-smoother((p-.60)/.22))*(1-smoother((v.q-.93)/.07));
+   moneyNote(n,ctx,v.x,v.y,v.sec,a,mix(1,n.depth+.18,outCubic(v.q)));
+  }
+  drawHeroBill(p);
+ }else{
+  const buildEnd=.77,holdEnd=.915;
+  if(p<buildEnd){
+   const build=clamp(p/buildEnd);
+   for(const n of billParts){
+    const pose=moneyInPose(n,build);
+    if(!pose)continue;
+    if(pose.landed>.003)moneyPileNote(n,ctx,pose.landed,pose.yOffset,pose.settleAge,pose.scale);
+    if(pose.airborne>.003)moneyNote(n,ctx,pose.x,pose.y,pose.age,pose.airborne,pose.scale);
+   }
+   if(p>=buildEnd-.030)moneyAssembled(1);
+  }else if(p<holdEnd){
+   moneyAssembled(1);
+  }else{
+   const burst=clamp((p-holdEnd)/(1-holdEnd));
+   for(const n of billParts){
+    const v=moneyInRevealPose(n,burst,duration);
+    if(v.q<=0){moneyNote(n,ctx,n.x,n.y,0,1,1);continue}
+    if(v.x>-220&&v.x<W+220&&v.y>-240&&v.y<H+240)moneyNote(n,ctx,v.x,v.y,v.sec,v.alpha,v.scale);
+   }
+  }
+ }
+}
+
+// ICE 3.2.4: all static ice imagery is keyed against the user's silhouette.
+// Fragments are exact Voronoi partitions of the same frozen portrait; no glass
+// window, square screen bounds or overlapping independent polygon collage.
+let iceCrackCanvas=null,iceCrackCtx=null,iceGrowthFrames=[],iceGrowthDebug=null;
+const ICE_IN_BUILD=.55,ICE_IN_BREAK=.72,ICE_OUT_BREAK=.35;
+function buildIceMaterial(){
+ const c=canvas2(),g=c.getContext('2d',{alpha:true});
+ g.drawImage(subject,0,0,W,H);
+ g.globalCompositeOperation='source-atop';
+ const b=field.bounds,grad=g.createLinearGradient(b.x,b.y,b.x+b.w*.13,b.y+b.h);
+ grad.addColorStop(0,'rgba(226,245,255,.78)');
+ grad.addColorStop(.29,'rgba(150,210,246,.48)');
+ grad.addColorStop(.70,'rgba(77,142,203,.48)');
+ grad.addColorStop(1,'rgba(202,239,255,.64)');
+ g.fillStyle=grad;g.fillRect(0,0,W,H);
+ // Mottled semi-transparent subsurface refraction, only on actual subject pixels.
+ g.globalCompositeOperation='source-atop';
+ for(let i=0;i<34;i++){
+  const x=rr(b.x,b.x+b.w),y=rr(b.y,b.y+b.h),r=rr(14,b.w*.23);
+  const rgrad=g.createRadialGradient(x,y,0,x,y,r);
+  rgrad.addColorStop(0,i%3===0?'rgba(255,255,255,.23)':'rgba(17,78,139,.13)');
+  rgrad.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=rgrad;g.fillRect(x-r,y-r,r*2,r*2);
+ }
+ g.globalCompositeOperation='source-over';
+ // Detect the subject perimeter in an antialiased downsampled alpha image.
+ const sw=Math.min(500,W),sh=Math.max(1,Math.round(sw*H/W)),mask=canvas2(sw,sh),mg=mask.getContext('2d',{willReadFrequently:true});
+ mg.drawImage(subject,0,0,sw,sh);
+ const pixels=mg.getImageData(0,0,sw,sh).data,edge=mg.createImageData(sw,sh);
+ for(let y=1;y<sh-1;y++)for(let x=1;x<sw-1;x++){
+  const n=y*sw+x,k=n*4,a=pixels[k+3];if(a<35)continue;
+  const surrounding=Math.min(pixels[(n-1)*4+3],pixels[(n+1)*4+3],pixels[(n-sw)*4+3],pixels[(n+sw)*4+3],pixels[(n-2)*4+3]||0);
+  if(surrounding>235)continue;
+  edge.data[k]=213;edge.data[k+1]=240;edge.data[k+2]=255;
+  edge.data[k+3]=Math.round(Math.min(a,180)*.88);
+ }
+ const edgeCanvas=canvas2(sw,sh);edgeCanvas.getContext('2d').putImageData(edge,0,0);
+ g.drawImage(edgeCanvas,0,0,W,H);
+ // Ensure no decorative light or particles ever produce a rectangular webcam frame.
+ g.globalCompositeOperation='destination-in';g.drawImage(subject,0,0,W,H);g.globalCompositeOperation='source-over';
+ return c;
+}
+function iceClipPolygon(poly,a,b,c){
+ if(poly.length<3)return [];
+ const out=[];
+ for(let i=0;i<poly.length;i++){
+  const p=poly[i],q=poly[(i+1)%poly.length];
+  const d=a*p[0]+b*p[1]-c,e=a*q[0]+b*q[1]-c;
+  if(d<=0)out.push(p);
+  if((d<0&&e>0)||(d>0&&e<0)){
+   const t=d/(d-e);out.push([mix(p[0],q[0],t),mix(p[1],q[1],t)]);
+  }
+ }
+ return out;
+}
+function iceSites(){
+ const b=field.bounds,sites=[],cols=8,rows=10;
+ for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+  const x=b.x+b.w*(col+.5+rr(-.32,.32))/cols;
+  const y=b.y+b.h*(row+.5+rr(-.29,.29))/rows;
+  if(field.contains(x,y,35))sites.push([x,y]);
+ }
+ // Add a few smaller splinters in occupied regions, but leave enough space
+ // between centers for legible large ice plates.
+ for(let i=0;i<16;i++){
+  const v=field.points[Math.floor(rng()*field.points.length)];
+  if(!v)continue;
+  if(sites.every(s=>Math.hypot(s[0]-v[0],s[1]-v[1])>Math.max(16,b.w*.060)))sites.push([v[0],v[1]]);
+ }
+ return sites;
+}
+function iceShardFromCell(poly,index){
+ if(poly.length<3)return null;
+ let xmin=W,ymin=H,xmax=0,ymax=0;
+ for(const [x,y] of poly){xmin=Math.min(xmin,x);ymin=Math.min(ymin,y);xmax=Math.max(xmax,x);ymax=Math.max(ymax,y)}
+ const L=Math.max(0,Math.floor(xmin-3)),T=Math.max(0,Math.floor(ymin-3));
+ const R=Math.min(W,Math.ceil(xmax+3)),B=Math.min(H,Math.ceil(ymax+3));
+ if(R-L<5||B-T<5)return null;
+ const c=canvas2(R-L,B-T),g=c.getContext('2d',{willReadFrequently:true});
+ g.save();g.translate(-L,-T);g.beginPath();g.moveTo(poly[0][0],poly[0][1]);
+ for(let k=1;k<poly.length;k++)g.lineTo(poly[k][0],poly[k][1]);g.closePath();g.clip();
+ g.drawImage(iceFrozenLayer,0,0,W,H);g.restore();
+ const pix=g.getImageData(0,0,c.width,c.height).data;
+ let used=0;for(let k=3;k<pix.length;k+=12)if(pix[k]>48)used++;
+ if(used<Math.max(12,c.width*c.height/96))return null;
+ // Draw slight thickness on polygon seams, then key the edges to the portrait.
+ g.save();g.translate(-L,-T);g.beginPath();g.moveTo(poly[0][0],poly[0][1]);
+ for(let k=1;k<poly.length;k++)g.lineTo(poly[k][0],poly[k][1]);g.closePath();
+ g.strokeStyle='rgba(226,248,255,.52)';g.lineWidth=1.4;g.stroke();g.restore();
+ g.globalCompositeOperation='destination-in';g.drawImage(subject,-L,-T,W,H);g.globalCompositeOperation='source-over';
+ const cx=poly.reduce((a,v)=>a+v[0],0)/poly.length,cy=poly.reduce((a,v)=>a+v[1],0)/poly.length;
+ const b=field.bounds,midX=b.x+b.w*.5,midY=b.y+b.h*.48;
+ const dx=(cx-midX)/Math.max(b.w*.34,1),dy=(cy-midY)/Math.max(b.h*.34,1);
+ const direction=Math.atan2(dy+rr(-.28,.28),dx+rr(-.28,.28));
+ let ux=Math.cos(direction),uy=Math.sin(direction);
+ if(Math.abs(ux)<.16)ux=ux>=0?.16:-.16;
+ if(Math.abs(uy)<.16)uy=uy>=0?.16:-.16;
+ const tX=ux>0?(W+150-cx)/ux:(-150-cx)/ux;
+ const tY=uy>0?(H+150-cy)/uy:(-150-cy)/uy;
+ const travel=Math.max(180,Math.min(tX,tY))*rr(1.14,1.52);
+ const area=Math.max(1,(xmax-xmin)*(ymax-ymin)),big=area>5200;
+ return {img:c,L,T,cx,cy,poly:poly.map(v=>[v[0]-cx,v[1]-cy]),
+  vx:ux*travel,vy:uy*travel,rot:rr(-8.6,8.6)*(big?.78:1.22),spinBoost:rr(.92,1.42)*(big?.86:1.14),
+  lift:rr(.018,.072),wobble:rr(.008,.034),delay:rr(0,.17),depth:rr(.84,1.18),spark:rr(0,6.283),area,index};
+}
+function iceOpticalCoverage(){
+ // Defensive optical alpha comparison, independent of GL availability.
+ // The Go bridge independently checks OBS' real composited pixels before OFF.
+ const w=Math.min(W,360),h=Math.round(w*H/W);
+ const a=canvas2(w,h),b=canvas2(w,h),ag=a.getContext('2d',{willReadFrequently:true}),bg=b.getContext('2d',{willReadFrequently:true});
+ ag.drawImage(subject,0,0,w,h);bg.drawImage(iceFrozenLayer,0,0,w,h);
+ const src=ag.getImageData(0,0,w,h).data,fx=bg.getImageData(0,0,w,h).data;
+ let total=0,opaque=0;
+ for(let i=3;i<src.length;i+=4){if(src[i]<208)continue;total++;if(fx[i]>=250)opaque++}
+ return total>35?opaque/total:0;
+}
+function setupIce(intensity){
+ frostMap=buildFrostMap();iceFrozenLayer=buildIceMaterial();iceCoverage=iceOpticalCoverage();buildOrganicIceGrowth();iceCracks=[];shards=[];
+ const b=field.bounds,sites=iceSites();
+ for(let i=0;i<sites.length;i++){
+  const [x,y]=sites[i];
+  let poly=[[b.x,b.y],[b.x+b.w,b.y],[b.x+b.w,b.y+b.h],[b.x,b.y+b.h]];
+  for(let j=0;j<sites.length&&poly.length>=3;j++){
+   if(i===j)continue;
+   const [u,v]=sites[j],a=2*(u-x),bb=2*(v-y),c=u*u+v*v-x*x-y*y;
+   poly=iceClipPolygon(poly,a,bb,c);
+  }
+  if(poly.length>=3){
+   const shard=iceShardFromCell(poly,i);if(shard)shards.push(shard);
+  }
+ }
+ if(shards.length<18)throw Error('Ice Shatter: cannot build a complete keyed ice silhouette. Check webcam mask.');
+ // Irregular Voronoi seams plus jagged primary fractures, masked strictly to
+ // the opaque figure; no screen-sized glass window can appear.
+ for(const s of shards){
+  if(s.index%3===0)continue;
+  const pts=s.poly.map(v=>[v[0]+s.cx,v[1]+s.cy]);pts.push(pts[0]);
+  iceCracks.push({pts,width:rr(.55,1.4),delay:rr(.15,.84),glow:rr(.3,.8)});
+ }
+ for(let k=0;k<11;k++){
+  const anchor=field.points[Math.floor(rng()*field.points.length)],pts=[anchor];
+  let x=anchor[0],y=anchor[1],theta=rr(0,6.283);
+  for(let j=0;j<4;j++){
+   theta+=rr(-.7,.7);x+=Math.cos(theta)*rr(10,b.w*.11);y+=Math.sin(theta)*rr(10,b.w*.11);
+   pts.push([x,y]);
+  }
+  iceCracks.push({pts,width:rr(.8,2),delay:rr(0,.66),glow:rr(.55,1)});
+ }
+ iceCrackCanvas=canvas2();iceCrackCtx=iceCrackCanvas.getContext('2d',{alpha:true});
+}
+function drawShard(s,x,y,angle=0,opacity=1,scale=1,light=0){
+ if(opacity<=.002)return;
+ ctx.save();ctx.globalAlpha=clamp(opacity);ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
+ ctx.drawImage(s.img,s.L-s.cx,s.T-s.cy);
+ const shimmer=light*(.58+.42*Math.sin((started||0)*.014+s.spark*3.1)*.5+.21);
+ if(shimmer>.07){
+  const v=s.poly;if(v.length>1){
+   ctx.strokeStyle='rgba(240,251,255,'+(shimmer*.78).toFixed(3)+')';ctx.lineWidth=1.45;
+   ctx.beginPath();ctx.moveTo(v[0][0],v[0][1]);
+   for(let i=1;i<Math.min(v.length,4);i++)ctx.lineTo(v[i][0],v[i][1]);
+   ctx.stroke();
+   ctx.globalCompositeOperation='screen';
+   ctx.fillStyle='rgba(214,243,255,'+(shimmer*.16).toFixed(3)+')';
+   ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.max(4,Math.min(18,Math.sqrt(s.area)*.12))*scale,0,Math.PI*2);ctx.fill();
+   ctx.globalCompositeOperation='source-over';
+  }
+ }
+ ctx.restore();
+}
+function iceFragments(amount,approaching=false,opacity=1){
+ if(iceGPUActive()){
+  try{iceGPU.draw(clamp(amount),approaching,performance.now()/1000);return}
+  catch(e){iceGPUError=String(e);console.error('Ice Shatter Ultra WebGL2 failed; switching to safe 2D shards',e);
+   try{iceGPU.dispose()}catch(_){}try{iceGPU.canvas.remove()}catch(_){}iceGPU=null;}
+ }
+ // Identical flight path in opposite time directions: spatially coherent IN.
+ const q=clamp(amount);
+ for(const s of shards){
+  const local=clamp((q-s.delay)/Math.max(.12,1-s.delay));
+  // Inbound motion must visibly rewind through the viewport, not remain offscreen.
+  const travel=approaching?Math.pow(local,1.42):Math.pow(local,1.58+2.25*fract(Math.sin(s.spark*3.47)*43758.54));
+  const flutter=Math.sin(local*8.4+s.spark*1.7),arc=Math.sin(Math.min(1,local)*Math.PI);
+  const x=s.cx+s.vx*travel+W*s.wobble*flutter*arc;
+  const y=s.cy+s.vy*travel+H*(.045*local*local-s.lift*arc);
+  const a=s.rot*travel*(1+.55*local)*s.spinBoost+flutter*.22*local*s.spinBoost,scale=mix(1,s.depth,travel);
+  // Pieces actually travel outside the viewport; no fake full-body dissolve.
+  if(x<-s.img.width*1.8||x>W+s.img.width*1.8||y<-s.img.height*1.8||y>H+s.img.height*1.8)continue;
+  drawShard(s,x,y,a,opacity,scale,Math.sin(local*8+s.spark)**2*clamp(local*2.2)*.62);
+ }
+}
+function iceCrackStroke(g,crack,q){
+ if(q<=0||crack.pts.length<2)return;
+ const pts=crack.pts,end=(pts.length-1)*clamp(q),whole=Math.floor(end),frac=end-whole;
+ g.beginPath();g.moveTo(pts[0][0],pts[0][1]);
+ for(let i=1;i<=whole;i++)g.lineTo(pts[i][0],pts[i][1]);
+ if(whole<pts.length-1){const a=pts[whole],b=pts[whole+1];g.lineTo(mix(a[0],b[0],frac),mix(a[1],b[1],frac));}
+ g.lineWidth=crack.width;g.stroke();
+}
+function drawIceCracks(amount,opacity=1,flash=0){
+ if(amount<=0||opacity<=0)return;
+ const g=iceCrackCtx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);
+ const burst=clamp(flash);
+ g.save();g.globalAlpha=clamp(opacity);g.lineCap='round';g.lineJoin='round';
+ for(const crack of iceCracks){
+  const q=smoother((amount-crack.delay)/Math.max(.08,1-crack.delay));if(q<=0)continue;
+  const glow=(crack.glow||.6),w=crack.width*(1+burst*(.8+.45*glow));
+  g.strokeStyle='rgba(140,214,255,'+((.12+.18*glow)*opacity*(.5+.5*burst)).toFixed(3)+')';
+  g.lineWidth=w*3.2;iceCrackStroke(g,crack,q);
+  g.strokeStyle='rgba(230,248,255,'+((.78+.18*burst)*opacity).toFixed(3)+')';
+  g.lineWidth=w;iceCrackStroke(g,crack,q);
+ }
+ g.globalCompositeOperation='destination-in';g.drawImage(subject,0,0,W,H);g.restore();
+ ctx.drawImage(iceCrackCanvas,0,0,W,H);
+}
+function drawIceFlash(intensity=0){
+ const t=clamp(intensity);if(t<=.001)return;
+ ctx.save();
+ ctx.globalCompositeOperation='screen';
+ ctx.globalAlpha=.10+.24*t;
+ ctx.drawImage(iceFrozenLayer,0,0,W,H);
+ ctx.globalCompositeOperation='source-atop';
+ ctx.fillStyle='rgba(216,242,255,'+(.10+.34*t).toFixed(3)+')';
+ ctx.fillRect(0,0,W,H);
+ ctx.restore();
+}
+// Growth is solved once per captured silhouette at preparation time.
+// A multi-source propagation field replaces the former rectangular wipes:
+// heterogeneous cell resistance, crystalline low-resistance tendrils,
+// jittered top/bottom boundary seeds and branching paths yield interlocking fronts.
+function buildOrganicIceGrowth(){
+ const width=Math.min(496,Math.max(264,Math.round(W*.44))),height=Math.max(64,Math.round(width*H/W));
+ const sample=canvas2(width,height),sg=sample.getContext('2d',{willReadFrequently:true});
+ sg.drawImage(subject,0,0,width,height);
+ const original=sg.getImageData(0,0,width,height).data;
+ const size=width*height,inside=new Uint8Array(size),resistance=new Float32Array(size),arrival=new Float32Array(size);
+ const active=[];
+ for(let k=0;k<size;k++){
+  inside[k]=original[k*4+3]>12?1:0;
+  arrival[k]=1e22;
+  if(inside[k])active.push(k);
+ }
+ if(active.length<80)throw Error('Organic Ice: silhouette too small for frost growth');
+ // Three smoothly interpolated, independently seeded noise scales.
+ function lattice(nx,ny){const values=new Float32Array(nx*ny);for(let i=0;i<values.length;i++)values[i]=rng();return {nx,ny,values}}
+ const slow=lattice(Math.max(6,Math.round(width/37)),Math.max(5,Math.round(height/32))),
+       medium=lattice(Math.max(10,Math.round(width/14)),Math.max(8,Math.round(height/14))),
+       fine=lattice(Math.max(17,Math.round(width/6)),Math.max(12,Math.round(height/6)));
+ function noise(t,x,y){
+  const xx=clamp(x/(width-1)*(t.nx-1),0,t.nx-1),yy=clamp(y/(height-1)*(t.ny-1),0,t.ny-1);
+  const ix=Math.floor(xx),iy=Math.floor(yy),fx=smooth(xx-ix),fy=smooth(yy-iy);
+  const x2=Math.min(t.nx-1,ix+1),y2=Math.min(t.ny-1,iy+1);
+  const a=mix(t.values[iy*t.nx+ix],t.values[iy*t.nx+x2],fx),b=mix(t.values[y2*t.nx+ix],t.values[y2*t.nx+x2],fx);
+  return mix(a,b,fy);
+ }
+ for(const k of active){
+  const x=k%width,y=(k/width)|0;
+  const macro=noise(slow,x,y),mid=noise(medium,x,y),micro=noise(fine,x,y);
+  resistance[k]=clamp(.48+1.23*(1-macro)**1.85+.62*(1-mid)+.15*(1-micro),.45,2.44);
+ }
+ // Distinct crystal fingers emerge from discrete cold contact points.
+ // Favour several meandering routes so some freeze veins travel ahead of
+ // their surrounding material, then the slower patches crystallize afterward.
+ const laneCount=Math.max(14,Math.round(width/21));
+ for(let i=0;i<laneCount;i++){
+  const fromTop=i%2===0,baseX=Math.round((i+.45+rr(-.25,.25))/laneCount*(width-1));
+  let x=baseX,y=fromTop?0:height-1,velocity=rr(-.65,.65),radius=rr(1.1,3.5);
+  for(let step=0;step<height*.67;step++){
+   y+=fromTop?1:-1;if(y<0||y>=height)break;
+   velocity=clamp(velocity*.86+rr(-.36,.36),-1.3,1.3);x=clamp(x+velocity,0,width-1);
+   const xmin=Math.max(0,Math.floor(x-radius)),xmax=Math.min(width-1,Math.ceil(x+radius));
+   for(let yy=Math.max(0,y-3);yy<=Math.min(height-1,y+3);yy++)for(let xx=xmin;xx<=xmax;xx++){
+    const d=Math.hypot((xx-x)/radius,(yy-y)/2.2),k=yy*width+xx;
+    if(inside[k]&&d<1.3)resistance[k]*=mix(.46,1,clamp(d));
+   }
+   if(step%15===5){
+    // Forks remain attached to the primary vein rather than teleporting.
+    const sign=rr(-1,1)>0?1:-1;
+    for(let j=1;j<=14;j++){
+     const xx=Math.round(x+sign*j*.8),yy=y+(fromTop?1:-1)*j;
+     if(xx>=0&&xx<width&&yy>=0&&yy<height&&inside[yy*width+xx])resistance[yy*width+xx]*=.64;
+    }
+   }
+  }
+ }
+ // Dijkstra heap: separate top/bottom growth sources propagate through
+ // keyed pixels; growth does not occur in the rectangular empty camera area.
+ const indices=[],times=[];
+ function push(k,t){let i=indices.length;indices.push(k);times.push(t);
+  while(i>0){let parent=(i-1)>>1;if(times[parent]<=t)break;
+   indices[i]=indices[parent];times[i]=times[parent];i=parent;
+  }indices[i]=k;times[i]=t;
+ }
+ function pop(){const index=indices[0],last=indices.pop(),time=times.pop();
+  if(indices.length){let i=0;while(true){let l=i*2+1;if(l>=indices.length)break;
+   let r=l+1,child=r<indices.length&&times[r]<times[l]?r:l;
+   if(times[child]>=time)break;
+   indices[i]=indices[child];times[i]=times[child];i=child;
+  }indices[i]=last;times[i]=time;
+  }return index;
+ }
+ const interval=Math.max(4,Math.round(width/67));
+ for(let x=0;x<width;x++){
+  const shouldSeed=(x%interval===0||x===width-1);
+  if(!shouldSeed)continue;
+  // Seed the top/bottom of each contiguous vertical foreground run, handling
+  // arms, head and disconnected anti-aliased silhouette components.
+  let y=0;
+  while(y<height){while(y<height&&!inside[y*width+x])y++;if(y>=height)break;
+   const first=y;while(y+1<height&&inside[(y+1)*width+x])y++;const last=y;
+   const delay=rr(0,5.5);
+   const a=first*width+x,b=last*width+x;
+   if(delay<arrival[a]){arrival[a]=delay;push(a,delay)}
+   const delay2=rr(0,5.5);
+   if(delay2<arrival[b]){arrival[b]=delay2;push(b,delay2)}
+   y++;
+  }
+ }
+ const neighbor=[[1,0,1],[-1,0,1],[0,1,.82],[0,-1,.82],[1,1,1.28],[-1,1,1.28],[1,-1,1.28],[-1,-1,1.28]];
+ while(indices.length){
+  const k=pop(),x=k%width,y=(k/width)|0;
+  for(const [dx,dy,cost] of neighbor){const xx=x+dx,yy=y+dy;
+   if(xx<0||yy<0||xx>=width||yy>=height)continue;
+   const j=yy*width+xx;if(!inside[j])continue;
+   const candidate=arrival[k]+cost*(resistance[k]+resistance[j])*.5;
+   if(candidate<arrival[j]-.00001){arrival[j]=candidate;push(j,candidate)}
+  }
+ }
+ // Normalize after propagation; all keyed pixels complete before cracks.
+ let maximum=0;
+ for(const k of active){if(arrival[k]<1e21)maximum=Math.max(maximum,arrival[k]);}
+ if(maximum<1)throw Error('Organic Ice: invalid frost propagation field');
+ for(const k of active){arrival[k]=arrival[k]>=1e21?1:clamp(arrival[k]/maximum);}
+ const frozen=canvas2(width,height),fg=frozen.getContext('2d',{willReadFrequently:true});
+ fg.drawImage(iceFrozenLayer,0,0,width,height);
+ const frozenData=fg.getImageData(0,0,width,height).data;
+ iceGrowthFrames=[];
+ const frameCount=43;
+ for(let f=0;f<frameCount;f++){
+  const progress=f/(frameCount-1),mask=fg.createImageData(width,height),dst=mask.data;
+  for(const k of active){
+   const pos=k*4,a=original[pos+3],when=arrival[k];
+   // Smooth emerging crystal edge with cold specular rim, clipped to alpha.
+   const coverage=smoother((progress-when+.032)/.064);
+   if(coverage<=.001)continue;
+   const ridge=(1-smoother(Math.abs(progress-when)/.055))*.48;
+   dst[pos]=Math.min(255,frozenData[pos]+ridge*65);
+   dst[pos+1]=Math.min(255,frozenData[pos+1]+ridge*49);
+   dst[pos+2]=Math.min(255,frozenData[pos+2]+ridge*34);
+   dst[pos+3]=Math.round(Math.min(a,frozenData[pos+3])*coverage);
+  }
+  const frame=canvas2(width,height);frame.getContext('2d').putImageData(mask,0,0);
+  iceGrowthFrames.push(frame);
+ }
+ // Test visibility of different front heights on actual foreground columns.
+ const fronts=[];
+ for(let x=Math.round(width*.17);x<Math.round(width*.83);x+=Math.max(2,Math.round(width/42))){
+  let min=height,max=0;
+  for(let y=0;y<height;y++){const k=y*width+x;if(inside[k]&&arrival[k]>.40){min=Math.min(y,min);max=Math.max(y,max)}}
+  if(min<height)fronts.push({x,y:min});
+ }
+ iceGrowthDebug={width,height,frameCount,seedInterval:interval,activePixels:active.length,fronts,completed:true};
+}
+function drawIceClosure(p){
+ // The camera is intentionally a keyed still for Ice OUT: no rectangular matte.
+ ctx.drawImage(subject,0,0,W,H);
+ if(!iceGrowthFrames.length)return;
+ const progress=clamp((p-.015)/.765),idx=progress*(iceGrowthFrames.length-1),a=Math.floor(idx),f=idx-a;
+ ctx.save();ctx.drawImage(iceGrowthFrames[a],0,0,W,H);
+ if(a<iceGrowthFrames.length-1&&f>.001){ctx.globalAlpha=f;ctx.drawImage(iceGrowthFrames[a+1],0,0,W,H)}
+ ctx.restore();
+ // Frost is complete before the crack network starts growing.
+ if(p>=.78){ctx.drawImage(iceFrozenLayer,0,0,W,H);drawIceCracks(smoother((p-.78)/.21),1,0);}
+}
+function drawIceCover(p){if(iceGPU)iceGPU.hide();drawIceClosure(p)}
+function drawIce(t,dir,dur){
+ const p=clamp(t/dur);
+ if(iceGPU && (dir==='out'&&p<ICE_OUT_BREAK || dir==='in'&&p>=.47&&p<ICE_IN_BREAK))iceGPU.hide();
+ if(dir==='out'){
+  if(p<ICE_OUT_BREAK){
+   const crackBuild=smoother(Math.pow(clamp(p/ICE_OUT_BREAK),1.35));
+   const crackFlash=smoother((p-(ICE_OUT_BREAK-.085))/.085);
+   ctx.drawImage(iceFrozenLayer,0,0,W,H);
+   drawIceCracks(crackBuild,1,crackFlash);
+   if(crackFlash>.001)drawIceFlash(crackFlash);
+   return;
+  }
+  const explode=clamp((p-ICE_OUT_BREAK)/(1-ICE_OUT_BREAK));
+  const body=1-smoother(explode/.10);
+  if(body>.002){
+   const residualFlash=1-smoother(explode/.16);
+   ctx.save();ctx.globalAlpha=body;ctx.drawImage(iceFrozenLayer,0,0,W,H);ctx.restore();
+   drawIceCracks(1,body,residualFlash);
+   if(residualFlash>.001)drawIceFlash(residualFlash*.85);
+  }
+  iceFragments(explode,false,1);
+ }else{
+  if(p<.47){
+   // Shattered pieces travel back along exactly their former trajectories.
+   const rewind=1-smoother(p/.47);
+   iceFragments(rewind,true,1);
+   return;
+  }
+  if(p<ICE_IN_BREAK){
+   // One coherent new figure, held opaque over camera activation.
+   ctx.drawImage(iceFrozenLayer,0,0,W,H);
+   drawIceCracks(smoother((p-ICE_IN_BUILD)/(.70-ICE_IN_BUILD)),1,0);
+   return;
+  }
+  const burst=clamp((p-ICE_IN_BREAK)/(1-ICE_IN_BREAK));
+  const body=1-smoother(burst/.095);
+  if(body>.002){ctx.save();ctx.globalAlpha=body;ctx.drawImage(iceFrozenLayer,0,0,W,H);ctx.restore();drawIceCracks(1,body)}
+  iceFragments(burst,false,1);
+ }
+}
+function makePuff(effect,seed){
+ // Natural plume sprite: asymmetric multi-lobe density with stronger domain
+ // warping and breakup so the result feels organic instead of like a neat cloud icon.
+ const dim=224,c=canvas2(dim,dim),g=c.getContext('2d',{willReadFrequently:true}),im=g.createImageData(dim,dim),d=im.data;
+ const toxic=effect==='toxic',phase=seed*1.19;
+ function noise(x,y){let n=Math.sin(x*127.1+y*311.7+seed*37.19)*43758.5453;return fract(n)}
+ function valueNoise(x,y){let ix=Math.floor(x),iy=Math.floor(y),fx=smooth(x-ix),fy=smooth(y-iy);
+  return mix(mix(noise(ix,iy),noise(ix+1,iy),fx),mix(noise(ix,iy+1),noise(ix+1,iy+1),fx),fy)}
+ const lobeA={x:(valueNoise(phase,1.7)-.5)*.24,y:(valueNoise(2.1,phase)-.5)*.18,r:.74+.22*valueNoise(phase,5.3)};
+ const lobeB={x:(valueNoise(phase+2.7,8.1)-.5)*.34,y:(valueNoise(9.3,phase+1.2)-.5)*.24,r:.48+.26*valueNoise(phase+1.1,2.7)};
+ const lobeC={x:(valueNoise(phase+4.4,3.8)-.5)*.28,y:(valueNoise(6.2,phase+3.1)-.5)*.20,r:.38+.22*valueNoise(phase+2.2,7.1)};
+ for(let y=0;y<dim;y++)for(let x=0;x<dim;x++){
+  const u=(x-dim/2)/(dim*.5),v=(y-dim/2)/(dim*.5);
+  const baseWarp=valueNoise(u*2.1+phase*.73,v*2.1-phase*.47)-.5;
+  const fineWarp=valueNoise(u*5.8-baseWarp*1.2,v*5.3+phase)-.5;
+  const du=u+baseWarp*.23+fineWarp*.07,dv=v*1.03+baseWarp*.18;
+  const d1=Math.hypot((du-lobeA.x)/lobeA.r,(dv-lobeA.y)/(lobeA.r*.92));
+  const d2=Math.hypot((du-lobeB.x)/(lobeB.r*.95),(dv-lobeB.y)/(lobeB.r*1.08));
+  const d3=Math.hypot((du-lobeC.x)/(lobeC.r*1.10),(dv-lobeC.y)/(lobeC.r*.88));
+  const blob=Math.max(1-d1,Math.max((1-d2)*.92,(1-d3)*.80));
+  const fractal=valueNoise(du*3.8+baseWarp*.7,dv*3.8+phase)*.38+
+                valueNoise(du*8.1+phase*.4,dv*8.1-baseWarp)*.34+
+                valueNoise(du*15.8-fineWarp,dv*15.8+phase*.2)*.18+
+                valueNoise(du*28.0+phase*.1,dv*28.0)*.10;
+  const edge=smoother((blob+.12+baseWarp*.22-Math.hypot(du*.84,dv*.98))/.42);
+  const breakup=clamp((fractal-.16)*1.28+(valueNoise(du*42,dv*42)-.5)*.12,0,1);
+  const wispy=smoother((1-Math.hypot(du*1.18,dv*1.08)+fractal*.22)/.34)*(.34+.44*valueNoise(du*10.5+7,dv*10.5+13));
+  const a=clamp(edge*(breakup*.82+wispy*.32));
+  const k=(y*dim+x)*4;
+  if(toxic){
+   const glow=clamp(.30+.70*fractal+.20*wispy,0,1);
+   d[k]=Math.round(10+glow*42+breakup*6);
+   d[k+1]=Math.round(44+glow*138+wispy*15);
+   d[k+2]=Math.round(8+glow*28);
+   d[k+3]=Math.round(a*214);
+  }else{
+   const lum=Math.round(16+fractal*55+wispy*34+(1-edge)*18);
+   d[k]=lum;d[k+1]=lum+4;d[k+2]=lum+11;d[k+3]=Math.round(a*242);
+  }
+ }
+ g.putImageData(im,0,0);return c;
+}
+
+// Cached slender filament sprites supplement the volumetric seal. Unlike the
+// broader cloud puffs these rise in winding trails with low optical density.
+function makeSmokeWisp(effect,seed){
+ const width=120,height=284,c=canvas2(width,height),g=c.getContext('2d',{willReadFrequently:true});
+ const rgba=g.createImageData(width,height),d=rgba.data,toxic=effect==='toxic';
+ const phase=seed*1.73;
+ const hash=(x,y)=>fract(Math.sin(x*127.1+y*311.7+seed*34.7)*43758.5453);
+ function vnoise(x,y){
+  const ix=Math.floor(x),iy=Math.floor(y),u=smooth(x-ix),v=smooth(y-iy);
+  return mix(mix(hash(ix,iy),hash(ix+1,iy),u),mix(hash(ix,iy+1),hash(ix+1,iy+1),u),v);
+ }
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const ty=y/(height-1),nx=(x-width*.5)/(width*.5);
+  const coarse=vnoise(ty*3.2+phase,phase*.41)-.5;
+  const bend=.26*Math.sin(ty*8.2+phase)+.13*Math.sin(ty*19.4+phase*.71)+.21*coarse;
+  const micro=vnoise(nx*6.4+phase,ty*9.1+phase)-.5;
+  const widthNorm=.15+.08*(1-ty)+.06*vnoise(ty*6.2,phase);
+  const offset=nx-bend-micro*.10;
+  const softness=1-smoother((Math.abs(offset)-widthNorm*.27)/(widthNorm*1.12));
+  const filaments=.33+.67*vnoise(nx*12.3+phase,ty*15.6-phase);
+  const wispy=(.50+.5*Math.sin(ty*25.2+phase+nx*9.8));
+  const envelope=smoother(ty/.20)*(1-smoother((ty-.78)/.22));
+  const density=softness*(.35+.65*filaments)*(.56+.44*wispy)*envelope;
+  const k=(y*width+x)*4;
+  if(toxic){d[k]=25;d[k+1]=Math.round(112+filaments*99);d[k+2]=28;d[k+3]=Math.round(165*density)}
+  else{const z=Math.round(57+filaments*53);d[k]=z;d[k+1]=z+4;d[k+2]=z+10;d[k+3]=Math.round(145*density)}
+ }
+ g.putImageData(rgba,0,0);return c;
+}
+
+// Smoke is a deliberately premium volumetric effect: blend particles in a smaller offscreen
+// buffer and composite it once at full OBS resolution. This avoids massive
+// per-frame blending over full-resolution canvas pixels in OBS/CEF software paths.
+// SC 2.8 cinematic cloud renderer. Unlike earlier versions, this renders an
+// advected, bottom-origin volume AND separate billowing wisps. The opaque volume
+// supplies measurable concealment; textured wisps provide depth and movement.
+// Both cover and release use the SAME time field, including OBS handoff delays.
+// Multi-scale gas is rendered at a bounded resolution and covered by a separate
+// dilated alpha field. The latter is not a rectangle: it is derived from the
+// camera alpha and ensures full occlusion precisely at the OBS handoff.
+function initSmokeBuffer(){
+ const pixels=W*H;
+ smokeBufferScale=pixels>=3500000?.32:pixels>=1750000?.43:pixels>=1150000?.53:.63;
+ smokeCanvas=canvas2(Math.ceil(W*smokeBufferScale),Math.ceil(H*smokeBufferScale));
+ smokeCtx=smokeCanvas.getContext('2d',{alpha:true,willReadFrequently:true});
+ const vw=Math.max(140,Math.min(240,Math.round(W*.16)));
+ smokeVolume=canvas2(vw,Math.round(vw*H/W));
+ smokeVolCtx=smokeVolume.getContext('2d',{willReadFrequently:true});
+ buildGasSeal();
+}
+function buildGasSeal(){
+ if(!field||!smokeVolume){gasSeal=null;return}
+ const w=smokeVolume.width,h=smokeVolume.height;
+ const c=canvas2(w,h),g=c.getContext('2d',{willReadFrequently:true});
+ g.drawImage(subject,0,0,w,h);
+ const rgba=g.getImageData(0,0,w,h).data,raw=new Uint8Array(w*h);
+ for(let i=0;i<raw.length;i++)raw[i]=rgba[i*4+3]>27?1:0;
+ // Build the optical concealment field as a UNION OF ROUND CLOUD LOBES,
+ // never as rectangular horizontal/vertical image dilation. The silhouetted
+ // camera itself is always opaque at full cover, while the boundary remains
+ // an irregular, soft-edged cluster of billows beyond the human outline.
+ const expanded=new Uint8Array(w*h);
+ const step=Math.max(3,Math.round(w/48));
+ const radiusBase=Math.max(6,Math.min(14,w*.068));
+ const prev=seed32;rngReset(92411);
+ function stamp(cx,cy,r){
+  const x0=Math.max(0,Math.floor(cx-r)),x1=Math.min(w-1,Math.ceil(cx+r));
+  const y0=Math.max(0,Math.floor(cy-r)),y1=Math.min(h-1,Math.ceil(cy+r));
+  const r2=r*r;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+   const dx=(x-cx),dy=(y-cy);
+   if(dx*dx+dy*dy<=r2)expanded[y*w+x]=1;
+  }
+ }
+ for(let y=0;y<h;y+=step)for(let x=0;x<w;x+=step){
+  if(!raw[y*w+x])continue;
+  const jitter=gasNoiseTile?gasNoise(x*.10,y*.10):rng();
+  const r=radiusBase*(.62+1.10*rng()+.2*jitter);
+  stamp(x+rr(-step*.8,step*.8),y+rr(-step*.8,step*.8),r);
+ }
+ seed32=prev;
+ for(let i=0;i<raw.length;i++)if(raw[i])expanded[i]=1;
+ // Two-pass inexpensive blur to get feathered, varied edges. Core remains
+ // truly opaque; the alpha threshold is verified from real rendered pixels.
+ const radius=3,temp=new Float32Array(w*h),seal=new Float32Array(w*h);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  let sum=0,count=0;
+  for(let k=-radius;k<=radius;k++){const xx=x+k;if(xx<0||xx>=w)continue;sum+=expanded[y*w+xx];count++}
+  temp[y*w+x]=sum/Math.max(1,count);
+ }
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  let sum=0,count=0;
+  for(let k=-radius;k<=radius;k++){const yy=y+k;if(yy<0||yy>=h)continue;sum+=temp[yy*w+x];count++}
+  seal[y*w+x]=sum/Math.max(1,count);
+ }
+ // Protect the full-resolution keyed silhouette after the low-res cloud
+ // buffer's bilinear filtering. Without this slightly enlarged opaque core,
+ // 3-5% of edge pixels fall below alpha=250 and block camera-off entirely.
+ const core=new Uint8Array(w*h),guard=3;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  if(!raw[y*w+x])continue;
+  for(let oy=-guard;oy<=guard;oy++){
+   const yy=y+oy;if(yy<0||yy>=h)continue;
+   for(let ox=-guard;ox<=guard;ox++){
+    const xx=x+ox;if(xx<0||xx>=w)continue;
+    if(ox*ox+oy*oy<=guard*guard+2)core[yy*w+xx]=1;
+   }
+  }
+ }
+ for(let i=0;i<seal.length;i++)if(core[i])seal[i]=1;
+ gasSeal=seal;
+}
+function beginSmokeFrame(){
+ if(!smokeCtx||smokeCanvas.width!==Math.ceil(W*smokeBufferScale)||smokeCanvas.height!==Math.ceil(H*smokeBufferScale))initSmokeBuffer();
+ smokeCtx.setTransform(1,0,0,1,0,0);
+ smokeCtx.clearRect(0,0,smokeCanvas.width,smokeCanvas.height);
+ smokeCtx.setTransform(smokeBufferScale,0,0,smokeBufferScale,0,0);
+ smokeCtx.globalAlpha=1;smokeCtx.globalCompositeOperation='source-over';
+ return smokeCtx;
+}
+function endSmokeFrame(){
+ smokeCtx.setTransform(1,0,0,1,0,0);
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(smokeCanvas,0,0,W,H);ctx.restore();
+}
+function setupCloud(effect,intensity){
+ initSmokeBuffer();gasCoverage=0;gasInReleaseAt=0;gasInArmed=false;
+ const b=field.bounds,quality=clamp(intensity/100,.15,1),toxic=effect==='toxic';
+ smokeSprites=Array.from({length:14},(_,i)=>makePuff(effect,i));
+ smokeWispSprites=Array.from({length:8},(_,i)=>makeSmokeWisp(effect,i));
+ clouds=[];
+ // Three staggered banks of clouds born BELOW the webcam. Each has a finite
+ // life and moves continuously upward without teleporting or modulo looping.
+ const amount=Math.round(mix(toxic?38:41,toxic?62:66,quality));
+ for(let i=0;i<amount;i++){
+  const layer=i%3,lane=(i%7)/6,depth=rr(.72,1.43);
+  const birth=rr(-.32,.95)+(layer*.19);
+  clouds.push({
+   x:b.x+b.w*(.05+.90*lane)+rr(-b.w*.16,b.w*.16),
+   y0:b.y+b.h+rr(H*.09,H*.36)+Math.max(0,birth)*b.h*.18,
+   rise:rr(b.h*.38,b.h*.73)*(toxic?rr(.78,1.00):rr(.93,1.21)),
+   birth,
+   sway:rr(14,53)*Math.max(.7,b.w/450),
+   phase:rr(0,6.283),freq:rr(.36,1.25),depth,
+   size:Math.max(55,Math.min(W*.45,b.w*rr(.21,.51)*depth)),
+   opacity:rr(toxic?.21:.18,toxic?.46:.43),
+   tex:smokeSprites[i%smokeSprites.length],
+   breathe:rr(.55,1.18),
+   vortex:rr(-.23,.23),
+   yaw:rr(-.24,.24),pitch:rr(-.18,.18),roll:rr(-.52,.52),
+   stretch:rr(.88,1.34),puffs:2+((i+layer)%3),
+   light:rr(.24,.70),rim:rr(.18,.52),
+   innerGlow:toxic?rr(.28,.56):rr(.06,.16),
+   spin:rr(-.30,.30),
+   parallax:rr(.90,1.55),coreBias:rr(.32,.72),skew:rr(-.18,.18),swirl:rr(.16,.54),drift2:rr(-.22,.22)
+  });
+ }
+ smokeMatte=null;
+}
+
+// A stable, seeded noise lattice gives smoke a non-periodic density field.
+// Bilinear sampling keeps it smooth when advected. Never rebuild the lattice
+// during a transition: only texture coordinates change over time.
+let gasNoiseTile=null;
+function ensureGasNoise(){
+ if(gasNoiseTile)return;
+ gasNoiseTile=new Uint8Array(256*256);
+ const prev=seed32;rngReset(13871);
+ for(let i=0;i<gasNoiseTile.length;i++)gasNoiseTile[i]=(rng()*256)|0;
+ seed32=prev;
+}
+function gasNoise(x,y){
+ const ix=Math.floor(x),iy=Math.floor(y),fx=smooth(x-ix),fy=smooth(y-iy),n=gasNoiseTile;
+ const xa=ix&255,xb=(ix+1)&255,ya=(iy&255)*256,yb=((iy+1)&255)*256;
+ const a=mix(n[ya+xa],n[ya+xb],fx),b=mix(n[yb+xa],n[yb+xb],fx);
+ return mix(a,b,fy)/255;
+}
+function gasRibbon(g,stage,progress,age,toxic){
+ ensureGasNoise();
+ const b=field.bounds,vw=smokeVolume.width,vh=smokeVolume.height;
+ const img=smokeVolCtx.createImageData(vw,vh),d=img.data;
+ const p=clamp(progress),cover=stage==='cover';
+ // The visible gas field never has a stationary end pose. In COVER, successive
+ // rolling billows flow over a protected opaque core. After OBS confirms OFF,
+ // that SAME core is advected up out of frame, without any opacity curtain wipe.
+ if(!cover&&p>=.999){smokeVolCtx.putImageData(img,0,0);return}
+ const dx=W/vw,dy=H/vh,cx=b.x+b.w*.50;
+ // The front advances across the FULL cover interval instead of waiting
+ // until the last ~10% to switch on the solid concealment seal.
+ // The uppermost gas is allowed to evaporate *inside* the webcam frame.
+ const upper=b.y-H*.31,lower=b.y+b.h+H*.22;
+ const riseProgress=cover?clamp((p-.025)/.955):1;
+ const leading=mix(lower,upper,riseProgress);
+ const trailing=cover?lower+H*.12:mix(lower+H*.12,b.y-H*.53,smoother(p));
+ const up=cover?0:H*1.20*smoother(p);
+ const feather=Math.max(24,H*.13),edgeFeather=Math.max(18,b.w*.19);
+ const sealStrength=cover?smoother(p/.23):1-smoother((p-.08)/.48);
+ const fadingHeight=mix(b.y-H*.46,b.y+b.h*.40,smoother(p/.94));
+ // Domain-warped noise flows up permanently; cover does not stop time.
+ for(let y=0;y<vh;y++){
+  const py=(y+.5)*dy;
+  for(let x=0;x<vw;x++){
+   const px=(x+.5)*dx,k=(y*vw+x)*4;
+   const flowY=py-age*(toxic?33:51);
+   const macro=gasNoise(px*.0063+age*.072,flowY*.0092);
+   const eddy=gasNoise(px*.019-age*.157,flowY*.026+age*.06);
+   const detail=gasNoise(px*.046+age*.23,flowY*.061-age*.13);
+   const flow=(macro-.5)*b.w*.17+(eddy-.5)*b.w*.085;
+   const ux=(px-cx-flow)/Math.max(30,b.w*.50);
+   const wave=(py-b.y)/Math.max(1,b.h);
+   // Organic overlap of asymmetric, independently drifting macro lobes.
+   const l1=Math.exp(-Math.pow((ux+.38+Math.sin(wave*3.1+age*.38)*.12)/.59,2));
+   const l2=Math.exp(-Math.pow((ux-.33+Math.sin(wave*4.4-age*.46)*.13)/.61,2));
+   const l3=Math.exp(-Math.pow((ux+Math.sin(wave*5.3+age*.31)*.26)/.72,2));
+   const lobes=Math.max(l1*.88,l2*.91,l3*.73);
+   const side=1-smoother((Math.abs(ux)-1.08)/Math.max(.12,edgeFeather/b.w));
+   // Large and small vortices distort the surface of the rising plume.
+   // The same coherent front is used for the alpha field AND protective seal:
+   // no late sudden opacity jump or straight-edged rectangle.
+   const crest=H*((macro-.5)*.16+(eddy-.5)*.085+
+        Math.sin(px*.012+age*.47)*.039+Math.sin(px*.033-age*.28)*.013);
+   const frontLocal=leading+crest;
+   const tailLocal=trailing+feather*((macro-.5)*.98+(eddy-.5)*.64);
+   const arrived=smoother((py-frontLocal+feather*.36)/(feather*.93));
+   const belowTail=1-smoother((py-tailLocal+feather*.52)/feather);
+   const rolling=(.29+.46*macro+.23*eddy+.08*detail)*lobes*side;
+   const dissolveCrest=H*((macro-.5)*.19+(eddy-.5)*.11+Math.sin(px*.016+age*.48)*.047);
+   const evaporate=cover?1:smoother((py-fadingHeight-dissolveCrest)/(feather*1.23));
+   let alpha=rolling*arrived*belowTail*(toxic?.79:.74)*evaporate;
+   // The protection follows the same plume front and does not activate as
+   // a full-body curtain. By cover completion it becomes optically opaque.
+   if(gasSeal&&sealStrength>.0001){
+    const ragged=cover?0:smoother(p/.14)*H*((macro-.5)*.11+(eddy-.5)*.063+Math.sin(px*.036+age*.41)*.019);
+    const srcY=Math.floor((py+up+ragged)/dy);
+    if(srcY>=0&&srcY<vh){
+     const core=gasSeal[srcY*vw+x];
+     // Eddies fill independently; the protective matte no longer looks like
+     // one contiguous rectangle appearing from nowhere.
+     const density=.52*macro+.32*eddy+.16*detail;
+     const threshold=mix(.69,-.28,clamp((p-.08)/.80));
+     const patchiness=cover?smoother((density-threshold)/.19):1;
+     const coreReveal=cover?arrived*patchiness:evaporate*belowTail;
+     alpha=Math.max(alpha,core*sealStrength*coreReveal);
+    }
+   }
+   if(alpha<.002)continue;
+   const lighting=clamp(.10+.34*macro+.26*eddy+.17*detail+.06*Math.sin(age*.83+px*.012));
+   if(toxic){
+    d[k]=Math.round(7+lighting*40+detail*8);
+    d[k+1]=Math.round(22+lighting*99+macro*17);
+    d[k+2]=Math.round(6+lighting*26);
+   }else{
+    const shade=Math.round(10+lighting*67+detail*9);
+    d[k]=shade;d[k+1]=shade+4;d[k+2]=shade+9;
+   }
+   d[k+3]=Math.round(clamp(alpha)*255);
+  }
+ }
+ smokeVolCtx.putImageData(img,0,0);
+ g.save();g.globalAlpha=1;g.drawImage(smokeVolume,0,0,W,H);g.restore();
+}
+
+function smokeFlow(c,age){
+ // Continuous, nonlooping vertical trajectory. New cloud generations are
+ // seeded once below the subject, not recycled back into view mid-transition.
+ const elapsed=Math.max(0,age-c.birth);
+ return {
+  x:c.x+c.sway*(.64*Math.sin(elapsed*c.freq+c.phase)+.36*Math.sin(elapsed*.57+c.phase*1.7))+c.vortex*elapsed*17,
+  y:c.y0-elapsed*c.rise,
+  scale:1+.10*Math.sin(elapsed*c.breathe+c.phase),
+  roll:c.roll+Math.sin(elapsed*(.35+c.freq*.18)+c.phase)*.18+c.spin*elapsed*.18,
+  drift:Math.sin(elapsed*(.28+c.swirl*.35)+c.phase*1.4)*c.parallax,
+  elapsed
+ };
+}
+function drawCloudBillboard(g,c,v,size,alpha,toxic,age,layerIndex,totalLayers){
+ const t=totalLayers<=1?0:layerIndex/(totalLayers-1);
+ const front=t-.5,depthMix=(c.depth-.72)/.71,centerBias=1-Math.abs(front)*1.25;
+ const parallax=(.11+.16*depthMix)*c.parallax*(size*.60);
+ const wind=Math.sin(age*(.48+c.freq*.13)+c.phase*(1.2+t))*parallax;
+ const swirl=Math.cos(age*(.66+c.swirl*.24)+c.phase*1.7+t*2.4)*parallax*.48;
+ const dx=(wind+swirl+v.drift*size*.015)*front + Math.sin(age*(.92+c.freq*.21)+t*8.1+c.phase)*size*.03*c.drift2;
+ const dy=-Math.abs(front)*size*(.04+.07*depthMix)+Math.cos(age*.44+c.phase+t*3.1)*size*.016 + Math.sin(age*.71+t*4.4+c.phase)*size*.010;
+ const scale=(1+front*(.18+.12*depthMix))*c.stretch;
+ const w=size*scale*(1+.18*Math.abs(c.yaw)+.08*Math.sin(t*6.28+c.phase));
+ const h=size*(1-front*.06)*(1+.24*Math.abs(c.pitch));
+ const layerAlpha=alpha*(.30+.34*centerBias+.10*c.light);
+ const rot=v.roll*(.50+.34*front)+Math.sin(age*(.33+c.swirl*.14)+t*5.2+c.phase)*.08;
+ const sx=1+(c.yaw*front*.62)+(c.skew*.18*centerBias), sy=1+(c.pitch*(.30-front*.20));
+ g.save();
+ g.translate(v.x+dx,v.y+dy);
+ g.rotate(rot);
+ g.scale(sx,sy);
+ g.globalAlpha=clamp(layerAlpha);
+ g.drawImage(c.tex,-w*.50,-h*.55,w,h*1.10);
+ const satelliteAlpha=layerAlpha*(.13+.07*centerBias);
+ for(let si=0;si<1;si++){
+  const sPhase=c.phase+si*2.7+t*5.1;
+  const ox=Math.sin(age*(.58+si*.09)+sPhase)*(w*(.10+.05*si))+front*w*(.05-.03*si);
+  const oy=Math.cos(age*(.47+si*.11)+sPhase)*(h*(.06+.03*si))-h*(.03+.02*si);
+  const sw=w*(.42-.05*si),sh=h*(.46-.06*si);
+  g.globalAlpha=satelliteAlpha*(.85-.14*si);
+  g.drawImage(c.tex,ox-sw*.5,oy-sh*.5,sw,sh);
+ }
+ // Smoke does not have hard elliptical highlight discs: these read like
+ // artificial round cloud stamps, especially on a white OBS preview.
+ // Instead use a second, offset sample of the same irregular plume texture.
+ g.globalCompositeOperation='screen';
+ g.globalAlpha=layerAlpha*(toxic?(.14+.19*c.innerGlow):(.035+.055*c.rim));
+ g.drawImage(c.tex,-w*.43,-h*.59,w*.82,h*.90);
+ g.restore();
+}
+function drawClouds(p,direction='out',cover=false,age=0){
+ const toxic=job.effect==='toxic',g=beginSmokeFrame();
+ const progress=clamp(p),b=field.bounds;
+ if(!cover&&progress>=.999){endSmokeFrame();return}
+ gasRibbon(g,cover?'cover':'release',progress,age,toxic);
+ // Independent macro/meso plumes follow persistent upward advection.
+ // Their motion never depends on a synchronous OBS WebSocket response.
+ for(const c of clouds){
+  const v=smokeFlow(c,age),size=c.size*v.scale;
+  if(v.elapsed<=0||v.y+size*.7<b.y-H*.43||v.y-size*.7>b.y+b.h+H*.42)continue;
+  const appear=smoother(v.elapsed/.49);
+  // Wisps must follow the rising front, rather than popping on everywhere.
+  const buildFront=mix(b.y+b.h+H*.22,b.y-H*.31,clamp((progress-.025)/.955));
+  const body=cover?smoother((v.y-buildFront+size*.35)/Math.max(1,size*.86))*smoother((progress-c.birth*.12)/.52):1;
+  const topDissolve=cover?1:smoother((v.y-(b.y-H*.07))/(size*.66+b.h*.12));
+  const upwardLeave=topDissolve;
+  const disperse=cover?1:1-smoother((progress-.35)/.64);
+  const alpha=c.opacity*appear*body*upwardLeave*topDissolve*disperse*(.84+.13*Math.sin(age*c.freq+c.phase));
+  if(alpha<.003)continue;
+  const layers=Math.max(2,Math.min(3,c.puffs));
+  for(let li=0;li<layers;li++)drawCloudBillboard(g,c,v,size,alpha,toxic,age,li,layers);
+  if(c.depth<1.02){
+   const sx=v.x+Math.sin(age*.9+c.phase)*size*.12;
+   g.globalAlpha=alpha*.28;
+   drawCloudBillboard(g,{...c,yaw:c.yaw*.4,pitch:c.pitch*.4,roll:c.roll*.7,stretch:c.stretch*.88,light:c.light*.9,rim:c.rim*.85,innerGlow:c.innerGlow*.82,puffs:1,tex:c.tex,depth:c.depth},
+     {...v,x:sx,y:v.y-size*.02,roll:v.roll*.72},size*.58,alpha*.52,toxic,age,0,1);
+  }
+ }
+ // Thin, independently drifting filament plumes. These are drawn only on
+ // a subset of particles and are not used as the webcam's opacity seal.
+ for(let i=0;i<clouds.length;i+=3){
+  const c=clouds[i],v=smokeFlow(c,age),size=c.size*v.scale;
+  if(v.elapsed<=0||v.y+size*.65<b.y-H*.19||v.y-size*1.3>b.y+b.h+H*.27)continue;
+  const appear=smoother(v.elapsed/.65);
+  const coverFront=mix(b.y+b.h+H*.22,b.y-H*.31,clamp((progress-.025)/.955));
+  const build=cover?smoother((v.y-coverFront+size*.48)/(size*1.12)):1;
+  const top=smoother((v.y-(b.y-H*.04))/(size*.85+b.h*.10));
+  const end=cover?1:1-smoother((progress-.45)/.54);
+  const alpha=clamp(c.opacity*.55*appear*build*top*end);
+  if(alpha<.004)continue;
+  const w=size*(.50+.16*c.parallax),h=size*(1.50+.21*c.parallax);
+  g.save();g.translate(v.x+Math.sin(age*.8+c.phase)*size*.16,v.y-size*.44);
+  g.rotate(Math.sin(age*.37+c.phase)*.15+c.yaw*.36);
+  g.globalCompositeOperation=toxic?'screen':'source-over';g.globalAlpha=alpha;
+  g.drawImage(smokeWispSprites[(i/3)%smokeWispSprites.length],-w*.5,-h*.73,w,h);
+  g.restore();
+ }
+ if(toxic){
+  g.save();g.globalCompositeOperation='screen';
+  for(let i=0;i<Math.min(16,clouds.length);i++){
+   const c=clouds[i*3%clouds.length],v=smokeFlow(c,age);
+   if(v.elapsed<=0||v.y<b.y-H*.32||v.y>b.y+b.h+H*.25)continue;
+   const fade=(cover?1:1-smoother((progress-.31)/.67))*(cover?1:smoother((v.y-(b.y-H*.03))/(c.size*.65+b.h*.11)));
+   g.globalAlpha=.07*fade;g.fillStyle='#a9e869';g.beginPath();
+   g.arc(v.x+Math.sin(age*1.5+c.phase)*9,v.y,Math.max(1,c.size*.013),0,6.283);g.fill();
+  }
+  g.restore();
+ }
+ g.globalAlpha=1;endSmokeFrame();
+}
+
+function gasOpacityCoverage(){
+ if(!field||!smokeCanvas)return 0;
+ // Sample the true composited smoke buffer, including every layer's alpha.
+ const vw=smokeCanvas.width,vh=smokeCanvas.height;
+ const pixels=smokeCtx.getImageData(0,0,vw,vh).data;
+ let count=0,opaque=0;
+ // Ignore antialiased silhouette edge pixels, which should remain soft.
+ for(let y=1;y<field.mh-1;y+=2)for(let x=1;x<field.mw-1;x+=2){
+  if(field.map[(y*field.mw+x)*4+3]<196)continue;
+  count++;const sx=Math.min(vw-1,Math.floor((x+.5)/field.mw*vw)),sy=Math.min(vh-1,Math.floor((y+.5)/field.mh*vh));
+  if(pixels[(sy*vw+sx)*4+3]>=250)opaque++;
+ }
+ gasCoverage=count?opaque/count:0;
+ gasCoverageReport=`${(gasCoverage*100).toFixed(2)}% (${count} silhouette samples; effective composited alpha)`;
+ return gasCoverage;
+}
+function drawSmokeCover(p,age){
+ if(plateActive()){
+  try{cinematicPlates.draw(p,'cover',coverTime(job.effect)/1000);return}
+  catch(e){cinematicPlateError=String(e);console.warn('Cinematic plate failed; falling back',e);disposePlates()}
+ }
+ if(gasGPUActive()){
+  try{gasGPU.draw(p,true,age);return}
+  catch(e){gasGPUError=String(e);console.warn('GPU gas cover failed; using safety-tested 2D engine',e);disposeGasGPU()}
+ }
+ drawClouds(p,'out',true,age)
+}
+function drawSmoke(t,dir,duration){
+ const p=clamp(t/duration),age=dir==='out'?smokeReleaseAge+t:Math.max(0,(performance.now()-started)/1000);
+ if(plateActive()){
+  try{cinematicPlates.draw(p,dir==='in'?'in':'release',duration);return}
+  catch(e){cinematicPlateError=String(e);console.warn('Cinematic plate failed during playback',e);disposePlates()}
+ }
+ if(gasGPUActive()){
+  try{gasGPU.draw(p,false,age);return}
+  catch(e){gasGPUError=String(e);console.warn('GPU gas release failed; using 2D fallback',e);disposeGasGPU()}
+ }
+ drawClouds(p,dir,false,age)
+}
+
+// Inferno Disintegration v3.3.0: a separate camera-aware ember transformation.
+// Money/Ice/Smoke/Toxic pipelines are intentionally not changed.
+let infernoCoverFrames=[],infernoErodeFrames=[],infernoSeal=null,infernoHalo=null;
+let infernoTongues=[],infernoTongueTex=[],infernoEmbers=[],infernoCoverage=0,infernoCoverageReport='';
+let infernoCoverSeconds=0;
+function fireNoise(x,y,seed=0){
+ const v=Math.sin(x*127.1+y*311.7+seed*97.31)*43758.5453123;
+ return v-Math.floor(v);
+}
+function fireValueNoise(x,y,seed=0){
+ const ix=Math.floor(x),iy=Math.floor(y),u=smooth(x-ix),v=smooth(y-iy);
+ return mix(mix(fireNoise(ix,iy,seed),fireNoise(ix+1,iy,seed),u),mix(fireNoise(ix,iy+1,seed),fireNoise(ix+1,iy+1,seed),u),v);
+}
+function makeInfernoTongue(seed){
+ const tw=90,th=176,c=canvas2(tw,th),g=c.getContext('2d',{willReadFrequently:true});
+ const im=g.createImageData(tw,th),d=im.data;
+ for(let y=0;y<th;y++)for(let x=0;x<tw;x++){
+  const u=(x+0.5)/tw,v=(y+0.5)/th,up=1-v;
+  const n=fireValueNoise(u*5.1+seed*.7,v*5.4+seed*.25,seed)*.57+
+          fireValueNoise(u*12.2,v*13.7+seed*.5,seed+11)*.29+
+          fireValueNoise(u*27.5,v*29.2,seed+19)*.14;
+  const centered=(u-.5-(n-.5)*(.24+.10*up));
+  const width=.32*(.24+.76*Math.pow(v,.88))+(.10*(n-.5));
+  const edge=1-smoother((Math.abs(centered)-width*.75)/Math.max(.025,width*.35));
+  const tip=smoother(v/.21),root=smoother((1-v)/.16);
+  const a=clamp(edge*tip*root*(.53+.42*n));
+  const heat=clamp(v*.72+.25*n);
+  const k=(y*tw+x)*4;
+  d[k]=Math.round(173+82*heat);
+  d[k+1]=Math.round(26+189*heat*heat);
+  d[k+2]=Math.round(3+72*Math.pow(heat,4));
+  d[k+3]=Math.round(a*234);
+ }
+ g.putImageData(im,0,0);return c;
+}
+function setupInferno(intensity){
+ infernoCoverFrames=[];infernoErodeFrames=[];infernoTongues=[];infernoEmbers=[];infernoCoverage=0;
+ infernoTongueTex=Array.from({length:9},(_,i)=>makeInfernoTongue(i+3));
+ const b=field.bounds,quality=clamp(intensity/100,.15,1);
+ const renderQuality=({Performance:.72,Balanced:.88,Cinematic:1,Ultra:1.16})[(job&&job.quality)||'Cinematic']||1;
+ const scale=Math.min(1,680*renderQuality/W),fw=Math.max(120,Math.round(W*scale)),fh=Math.max(72,Math.round(H*scale));
+ const scaled=canvas2(fw,fh),sg=scaled.getContext('2d',{willReadFrequently:true});sg.drawImage(subject,0,0,fw,fh);
+ const pixels=sg.getImageData(0,0,fw,fh).data;
+ const len=fw*fh,appear=new Float32Array(len),erase=new Float32Array(len),heat=new Float32Array(len);
+ for(let y=0;y<fh;y++)for(let x=0;x<fw;x++){
+  const i=y*fw+x,a=pixels[i*4+3];if(a<12)continue;
+  const xx=(x+.5)/fw*W,yy=(y+.5)/fh*H;
+  const yn=clamp((yy-b.y)/Math.max(1,b.h));
+  const a0=fireValueNoise(x*.034,y*.032,17),a1=fireValueNoise(x*.10,y*.12,27);
+  // A jagged growth front travels from the feet to the head with branches.
+  appear[i]=clamp(.055+(1-yn)*.65+(a0-.5)*.24+(a1-.5)*.12,.015,.91);
+  // The same frozen subject burns away from the bottom with uneven edges.
+  erase[i]=clamp(.065+(1-yn)*.66+(a0-.5)*.24+(a1-.5)*.13,.01,.90);
+  heat[i]=clamp(.31+a0*.44+a1*.25);
+ }
+ const frames=22;
+ for(let j=0;j<frames;j++){
+  const p=j/(frames-1),cover=canvas2(fw,fh),erode=canvas2(fw,fh);
+  const cg=cover.getContext('2d'),eg=erode.getContext('2d');
+  const ci=cg.createImageData(fw,fh),ei=eg.createImageData(fw,fh);
+  for(let i=0;i<len;i++){
+   if(pixels[i*4+3]<12)continue;
+   const t=heat[i],idx=i*4;
+   const glow=Math.pow(clamp((t-.28)*1.55),2.0);
+   const r=Math.round(38+212*glow),g=Math.round(13+153*Math.pow(glow,1.6)),bb=Math.round(5+37*Math.pow(glow,2));
+   const build=p>=1?1:smoother((p-appear[i])/.12);
+   const burn=p>=1?0:1-smoother((p-erase[i])/.16);
+   ci.data[idx]=ei.data[idx]=r;
+   ci.data[idx+1]=ei.data[idx+1]=g;
+   ci.data[idx+2]=ei.data[idx+2]=bb;
+   ci.data[idx+3]=Math.round(255*build);
+   ei.data[idx+3]=Math.round(255*burn);
+  }
+  cg.putImageData(ci,0,0);eg.putImageData(ei,0,0);
+  infernoCoverFrames.push(cover);infernoErodeFrames.push(erode);
+ }
+ // Native-resolution silhouette seal prevents low-resolution sampled holes.
+ infernoSeal=canvas2(),infernoHalo=canvas2();
+ const sealCtx=infernoSeal.getContext('2d',{willReadFrequently:true});
+ sealCtx.drawImage(subject,0,0,W,H);
+ const sealImage=sealCtx.getImageData(0,0,W,H),sd=sealImage.data;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const idx=(y*W+x)*4;if(sd[idx+3]<12){sd[idx+3]=0;continue}
+  const n=fireValueNoise(x*.014,y*.016,13),n2=fireNoise(x*.11,y*.13,9);
+  const v=clamp(.22+.55*n+.23*n2);
+  const glow=Math.pow(clamp((v-.28)*1.55),2);
+  sd[idx]=Math.round(38+212*glow);
+  sd[idx+1]=Math.round(13+153*Math.pow(glow,1.6));
+  sd[idx+2]=Math.round(5+37*glow*glow);
+  sd[idx+3]=255;
+ }
+ sealCtx.putImageData(sealImage,0,0);
+ const hg=infernoHalo.getContext('2d');
+ hg.save();hg.filter='blur('+Math.max(8,Math.round(W*.010))+'px)';hg.globalAlpha=.44;hg.drawImage(infernoSeal,0,0);hg.restore();
+ // Screen-space tongues are individually advected, never a full-width curtain.
+ const tongues=Math.round(mix(34,59,quality)*renderQuality),embers=Math.round(mix(110,240,quality)*renderQuality);
+ const edgePoints=[];
+ for(let iy=3;iy<field.mh-3;iy+=2)for(let ix=3;ix<field.mw-3;ix+=2){
+  const k=(iy*field.mw+ix)*4+3;
+  if(field.map[k]<135)continue;
+  const left=field.map[(iy*field.mw+ix-3)*4+3],right=field.map[(iy*field.mw+ix+3)*4+3];
+  const up=field.map[((iy-3)*field.mw+ix)*4+3],down=field.map[((iy+3)*field.mw+ix)*4+3];
+  if(Math.min(left,right,up,down)<75)edgePoints.push([ix/field.mw*W,iy/field.mh*H]);
+ }
+ for(let i=0;i<tongues;i++){
+  const points=edgePoints.length?edgePoints:field.points;
+  const pos=points[Math.floor(rr(0,points.length))];
+  if(!pos)continue;
+  infernoTongues.push({x:pos[0],y:pos[1],w:rr(19,52)*Math.max(.7,b.w/480),h:rr(36,96)*Math.max(.74,b.h/530),
+   speed:rr(38,118),vx:rr(-19,19),phase:rr(0,6.283),delay:rr(0,.20),tex:infernoTongueTex[i%infernoTongueTex.length],
+   seed:rr(0,10)});
+ }
+ for(let i=0;i<embers;i++){
+  const pt=field.points[Math.floor(rr(0,field.points.length))];if(!pt)continue;
+  infernoEmbers.push({x:pt[0],y:pt[1],vx:rr(-W*.19,W*.19),vy:rr(-H*.28,-H*.10),
+   size:rr(.9,3.5)*Math.max(.7,W/960),phase:rr(0,6.283),delay:rr(0,.32),
+   hue:rr(0,1),drift:rr(9,31)});
+ }
+ const probe=moneyBoundsMap(),measured=coverageOf(infernoSeal,probe);
+ infernoCoverage=measured.ratio;
+ infernoCoverageReport=`${(infernoCoverage*100).toFixed(2)}% full-opacity subject coverage`;
+ if(infernoCoverage<.985)throw Error('Inferno cannot conceal source: '+infernoCoverageReport);
+}
+function infernoFrame(frames,p){
+ const idx=Math.max(0,Math.min(frames.length-1,Math.round(clamp(p)*(frames.length-1))));
+ return frames[idx];
+}
+function drawInfernoCore(p,mode){
+ if(mode==='build'&&p>=.999){ctx.drawImage(infernoSeal,0,0);return}
+ if(mode==='release'&&p<=.001){ctx.drawImage(infernoSeal,0,0);return}
+ if(mode==='build')ctx.drawImage(infernoFrame(infernoCoverFrames,p),0,0,W,H);
+ else ctx.drawImage(infernoFrame(infernoErodeFrames,p),0,0,W,H);
+}
+function drawInfernoFlames(progress,age,release=false){
+ if(progress>=1&&release)return;
+ const b=field.bounds;
+ const envelope=release?1-smoother((progress-.48)/.52):smoother(progress/.34);
+ if(envelope<=.003)return;
+ ctx.save();ctx.globalCompositeOperation='screen';
+ // Cached blurred heat halo follows the silhouetted subject during coverage.
+ ctx.globalAlpha=envelope*(release?.12:.18);
+ ctx.drawImage(infernoHalo,0,0,W,H);
+ for(const f of infernoTongues){
+  const fy=clamp((f.y-b.y)/Math.max(1,b.h));
+  const threshold=.055+(1-fy)*.62+f.delay;
+  const ignition=release?1:smoother((progress-threshold)/.24);
+  if(ignition<=.002)continue;
+  const rAge=Math.max(0,age),rise=rAge*f.speed;
+  // Flame motion is continuous through OBS handoff and eventually dissipates.
+  const origin=f.y-rise*.16;
+  const y=origin-rAge*f.speed*.24+(release?-progress*H*.36:0);
+  const x=f.x+Math.sin(rAge*1.7+f.phase)*f.w*.22+f.vx*rAge*.17;
+  const h=f.h*(.78+.22*Math.sin(rAge*2.3+f.phase));
+  const alpha=envelope*ignition*(.43+.24*Math.sin(rAge*3.2+f.phase));
+  if(alpha<.005)continue;
+  ctx.globalAlpha=clamp(alpha);
+  ctx.drawImage(f.tex,x-f.w*.5,y-h*.84,f.w,h);
+ }
+ ctx.restore();
+}
+function drawInfernoEmbers(progress,age,release=false,assemble=false){
+ if(progress>=1&&release)return;
+ const b=field.bounds,env=release?1-smoother((progress-.50)/.5):smoother(progress/.26);
+ if(env<.002)return;
+ ctx.save();ctx.globalCompositeOperation='lighter';
+ for(const e of infernoEmbers){
+  let x=e.x,y=e.y,alpha=env;
+  if(release){
+   const q=clamp((progress-e.delay*.56)/Math.max(.15,.86-e.delay*.56));
+   if(q<=0)continue;
+   const sec=q*2.5;
+   x+=e.vx*sec+Math.sin(sec*4+e.phase)*e.drift*q;
+   y+=e.vy*sec-H*.21*q*q;
+   alpha*=1-smoother((q-.65)/.35);
+  }else if(assemble){
+   const start=e.delay*.28,q=smoother((progress-start)/Math.max(.20,.65-start));
+   x=mix(e.x+e.vx*.65,e.x,q);
+   y=mix(e.y-H*.45-H*e.delay*.45,e.y,q);
+   alpha*=.65+.3*(1-q);
+  }else{
+   const q=clamp((progress-e.delay*.4)/.72);
+   x+=Math.sin(age*2+e.phase)*e.drift*q;
+   y-=age*(17+e.size*16)*q;
+   alpha*=q;
+  }
+  if(alpha<.004||x<-8||x>W+8||y<-8||y>H+8)continue;
+  ctx.globalAlpha=clamp(alpha*(.58+.42*e.hue));
+  ctx.fillStyle=e.hue>.6?'#ffe8aa':e.hue>.22?'#ffaf41':'#fb5622';
+  const s=e.size*(release?1+.30*progress:1);
+  ctx.fillRect(x-s*.5,y-s*.5,s,s*1.3);
+ }
+ ctx.restore();
+}
+function drawInfernoCover(p,age=0){
+ const prog=clamp(p);
+ drawInfernoCore(prog,'build');
+ drawInfernoFlames(prog,age,false);
+ drawInfernoEmbers(prog,age,false,false);
+}
+function drawInferno(t,dir,duration){
+ const p=clamp(t/duration);
+ if(dir==='out'){
+  const age=infernoCoverSeconds+t;
+  const clear=clamp((p-.07)/.90);
+  drawInfernoCore(clear,'release');
+  drawInfernoFlames(clear,age,true);
+  drawInfernoEmbers(clear,age,true,false);
+ }else{
+  const buildEnd=.61,breakEnd=.73;
+  if(p<buildEnd){
+   const grow=clamp(p/buildEnd);
+   drawInfernoCore(grow,'build');
+   drawInfernoEmbers(grow,t,false,true);
+   drawInfernoFlames(grow,t,false);
+  }else if(p<breakEnd){
+   drawInfernoCore(1,'build');
+   drawInfernoFlames(1,t,false);
+   drawInfernoEmbers(1,t,false,false);
+  }else{
+   const clear=clamp((p-breakEnd)/(1-breakEnd));
+   drawInfernoCore(clear,'release');
+   drawInfernoFlames(clear,t,true);
+   drawInfernoEmbers(clear,t,true,false);
+  }
+ }
+}
+
+function isExpansion(effect){return window.SCExpansion&&window.SCExpansion.TYPES[effect]}
+function setupExpansion(effect,intensity){if(expansion)expansion.dispose();expansion=window.SCExpansion.create(effect,{field,subject,W,H,ctx,intensity,quality:job.quality||'Cinematic',tuning:job.tuning||{},seed:jobId||13579});}
+function renderGPU(stage,p,age){
+ if(!expansion||!expansionGPU||!expansionGPU.current||!expansionGPU.ready)return false;
+ try{return expansionGPU.render(stage,p,age)}catch(e){
+  console.error('GPU 3D rendering failure; switching to Canvas2D volumetric compatibility:',e);
+  gpuUnavailable=String(e);try{expansionGPU.dispose();expansionGPU.hide()}catch(_){ }
+  return false;
+ }
+}
+function coverTime(effect){if(isExpansion(effect))return 1980;return effect==='money'?1880:effect==='ice'?1370:effect==='smoke'||effect==='toxic'?2200:effect==='inferno'?1950:1350}
+function drawCover(p){
+ if(isExpansion(job.effect)){
+  if(!renderGPU('cover',p,smokeCoverAge))expansion.renderCover(p,smokeCoverAge);
+ }else if(job.effect==='money'){
+  if(moneyGPUActive()){try{drawMoneyCoverCGI(p)}catch(e){moneyGPUError=String(e);console.error('Money CGI cover fallback',e);moneyCGI.dispose();moneyCGI=null;ctx.clearRect(0,0,W,H);drawMoneyCover(p)}}
+  else drawMoneyCover(p);
+ }
+ else if(job.effect==='ice')drawIceCover(p);
+ else if(job.effect==='inferno')drawInfernoCover(p,smokeCoverAge);
+ else drawSmokeCover(p,smokeCoverAge)
+}
+function playEffect(t){
+ if(isExpansion(job.effect)){
+  const age=job.direction==='out'?smokeReleaseAge+t:Math.max(0,(performance.now()-started)/1000);
+  if(!renderGPU(job.direction,clamp(t/job.duration),age))expansion.renderPlay(t,job.direction,job.duration,age);
+ }else if(job.effect==='money'){
+  if(moneyGPUActive()){try{drawMoneyCGI(t,job.direction,job.duration)}catch(e){moneyGPUError=String(e);console.error('Money CGI playback fallback',e);moneyCGI.dispose();moneyCGI=null;ctx.clearRect(0,0,W,H);drawMoney(t,job.direction,job.duration)}}
+  else drawMoney(t,job.direction,job.duration);
+ }
+ else if(job.effect==='ice')drawIce(t,job.direction,job.duration);
+ else if(job.effect==='inferno')drawInferno(t,job.direction,job.duration);
+ else drawSmoke(t,job.direction,job.duration)
+}
+window.__sc3dData=()=>({job,field,subject,bill,billParts,moneyMatte,billMosaic,hero,shards,clouds,smokeSprites,smokeMatte,frostMap});
+async function prepare3D(){
+ if(job.effect==='smoke'||job.effect==='toxic'){
+  disposePlates();disposeGasGPU();gasGPUError='';cinematicPlateError='';
+  {
+   // Prefer professionally simulated, pre-rendered alpha footage when the
+   // streamer installs it. Missing/corrupt footage falls back automatically.
+   if(window.SCCinematicPlates){
+    try{
+     cinematicPlates=new window.SCCinematicPlates.Renderer();
+     await cinematicPlates.prepare(job.effect,W,H);
+     console.info('Professional cinematic simulation plates active',cinematicPlates.diagnostics());
+    }catch(e){cinematicPlateError=String(e);disposePlates()}
+   }
+   if(!plateActive()&&job.renderer_mode!=='2d'){
+    try{
+     if(!window.SCGasVolume)throw Error('Volumetric gas module unavailable');
+     gasGPU=new window.SCGasVolume.Renderer();
+     gasGPU.prepare(subject,W,H,job.quality||'Cinematic',job.effect,job.intensity);
+     console.info('Procedural gas fallback prepared',gasGPU.diagnostics());
+    }catch(e){gasGPUError=String(e);console.warn('Gas WebGL2 unavailable, retaining 2D gas engine',e);disposeGasGPU()}
+   }
+  }
+  return;
+ }
+ disposePlates();
+ disposeGasGPU();
+ if(job.effect==='money'&&job.renderer_mode!=='2d'){
+  try{
+   if(!window.SCMoneyCGI)throw Error('Money 3D renderer unavailable');
+   if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove()}
+   moneyCGI=new window.SCMoneyCGI.Renderer();
+   if(!moneyNormal)moneyNormal=await image('/vfx-assets/golden_sheep_paper_normal.png');
+   if(!moneyRoughness)moneyRoughness=await image('/vfx-assets/golden_sheep_paper_roughness.png');
+   moneyCGI.prepare(bill,moneyNormal,W,H,job.quality||'Cinematic',moneyRoughness);
+   moneyGPUError='';console.info('SC Money CGI prepared',moneyCGI.diagnostics());
+  }catch(e){moneyGPUError=String(e);console.warn('Money CGI unavailable; preserving Money 2D:',e);if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}}
+  return;
+ }
+ if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}
+ if(job.effect==='ice'&&job.renderer_mode!=='2d'){
+  try{
+   if(!window.SCIceUltra)throw Error('Ice Shatter Ultra module unavailable');
+   if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove()}
+   iceGPU=new window.SCIceUltra.Renderer();
+   iceGPU.prepare(shards,iceFrozenLayer,W,H,job.quality||'Cinematic');
+   iceGPUError='';console.info('SC Ice Shatter Ultra prepared',iceGPU.diagnostics());
+  }catch(e){iceGPUError=String(e);console.warn('Ice 3D unavailable; retaining keyed 2D shard engine:',e);
+   if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}}
+  return;
+ }
+ if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}
+ if(isExpansion(job.effect)&&job.renderer_mode!=='2d'){
+  try{
+   if(!window.SCGPU3D)throw Error('GPU 3D module unavailable');
+   if(!expansionGPU)expansionGPU=new window.SCGPU3D.Renderer();
+   expansionGPU.prepare(expansion);gpuUnavailable='';
+   console.info('SC 3D active',expansionGPU.diagnostics());
+  }catch(e){gpuUnavailable=String(e);console.warn('WebGL2 unavailable; Canvas2D fallback:',e);if(expansionGPU)expansionGPU.hide()}
+ }else if(expansionGPU){expansionGPU.dispose();expansionGPU.hide()}
+}
+async function signal(action,id,reason=''){try{const coverageParam=action==='covered'&&job?(job.effect==='money'?'&coverage='+moneyCoverage.toFixed(5):job.effect==='inferno'?'&coverage='+infernoCoverage.toFixed(5):isExpansion(job.effect)?'&coverage='+expansion.coverage.toFixed(5):job.effect==='smoke'||job.effect==='toxic'?'&coverage='+gasCoverage.toFixed(5):job.effect==='ice'?'&coverage='+iceCoverage.toFixed(5):''):'';const r=await fetch('/'+action+'?rid='+encodeURIComponent(RID)+'&id='+id+coverageParam+(reason?'&reason='+encodeURIComponent(reason):''),{method:'POST',cache:'no-store'});if(!r.ok)console.warn('Bridge rejected',action,r.status)}catch(err){console.warn(action,err)}}
+function animate(now){const renderBegin=performance.now();resize();
+ const inactive=!demo&&['idle','done','loading','prepared'].includes(stage);
+ if(!inactive||!idleCanvasClear){ctx.clearRect(0,0,W,H);idleCanvasClear=inactive}
+ if(expansionGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared')&&expansionGPU.canvas.style.display!=='none')expansionGPU.hide();
+ if(moneyCGI&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))moneyCGI.hide();
+ if(iceGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))iceGPU.hide();
+ if(gasGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))gasGPU.hide();
+ if(cinematicPlates&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))cinematicPlates.hide();
+ if(!sampleStart)sampleStart=now;framesThisSample++;
+ if(stage==='cover'&&job){const p=clamp((now-coverStarted)/coverTime(job.effect));smokeCoverAge=(now-coverStarted)/1000;drawCover(p);
+   if(p>=1&&!ackCovered){
+    let ratio=job.effect==='money'?moneyCoverage:job.effect==='inferno'?infernoCoverage:isExpansion(job.effect)?expansion.coverage:(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?cinematicPlates.measureCoverage(field):gasGPUActive()?gasGPU.measureCoverage(field):gasOpacityCoverage()):job.effect==='ice'?iceCoverage:1;
+    if(isExpansion(job.effect)&&expansionGPU&&expansionGPU.current&&expansionGPU.ready){
+     try{gpuCoverage=expansionGPU.measureCoverage(field);ratio=gpuCoverage;expansion.coverage=ratio}
+     catch(e){gpuUnavailable='GPU coverage readback failed: '+String(e);console.error(gpuUnavailable);ratio=0}
+    }
+    if(job.effect==='smoke'||job.effect==='toxic'){gasCoverage=ratio;gasCoverageReport='GPU optical coverage '+(ratio*100).toFixed(2)+'%'}
+    if(ratio>=.985){ackCovered=true;if(!demo)signal('covered',jobId)}
+    else{ackCovered=true;if(!demo)signal('error',jobId,`Effect coverage ${(ratio*100).toFixed(2)}% below safe 98.5% threshold`)}
+   }}
+ else if(stage==='play'&&job){
+   const incoming=job.direction==='in';
+   // ALL incoming effects establish concealment first. Their timeline does
+   // not expose the webcam until OBS has validated a source screenshot.
+   // Smoke's texture/time field keeps moving while visual reveal is gated.
+   if(incoming&&job.camera_ready&&!gasInArmed){gasInArmed=true;gasInReleaseAt=now+80}
+   let t;
+   if(incoming&&(job.effect==='money'||job.effect==='ice'||isExpansion(job.effect))){
+     const buildSeconds=job.duration*(job.effect==='ice'?ICE_IN_BUILD:isExpansion(job.effect)?window.SCExpansion.TYPES[job.effect].inBuild:.57);
+     // Animate the descending bills BEFORE requesting camera activation.
+     // Hold the completed silhouette while OBS waits for a fresh live frame.
+     t=gasInArmed?buildSeconds+Math.max(0,(now-gasInReleaseAt)/1000):
+       Math.min((now-started)/1000,buildSeconds);
+   }else{
+     t=incoming?(gasInArmed?Math.max(0,(now-gasInReleaseAt)/1000):0):clamp((now-started)/1000,0,job.duration);
+   }
+   playEffect(clamp(t,0,job.duration));
+   const p=clamp(t/job.duration);
+   if(incoming&&!ackReveal&&(job.effect==='ice'?p>=ICE_IN_BUILD:job.effect==='money'?p>=.57:isExpansion(job.effect)?p>=window.SCExpansion.TYPES[job.effect].inBuild:true)){
+     ackReveal=true;
+     if(!demo)signal('reveal',jobId);
+     else {gasInArmed=true;gasInReleaseAt=now+80}
+   }
+   if(p>=1&&!ackDone){ackDone=true;stage='done';if(!demo)signal('done',jobId)}
+ }
+ renderSamples.push(performance.now()-renderBegin);if(renderSamples.length>180)renderSamples.shift();
+ if(now-sampleStart>=1000){const sorted=renderSamples.slice().sort((a,b)=>a-b);
+  measuredFPS=Math.round(framesThisSample*1000/Math.max(1,now-sampleStart));
+  measuredP95=sorted.length?Math.round(sorted[Math.min(sorted.length-1,Math.floor(sorted.length*.95))]*10)/10:0;
+  sampleStart=now;framesThisSample=0;}
+ // Avoid clearing a full-resolution canvas 60-144 times/second while idle.
+ if(inactive)setTimeout(()=>requestAnimationFrame(animate),100);
+ else requestAnimationFrame(animate)
+}
+requestAnimationFrame(animate);
+async function prepare(state){const id=state.job_id;loading=true;stage='loading';jobId=id;
+ try{
+  rngReset(id);
+  const img=await image('/frame.png?rid='+encodeURIComponent(RID)+'&job='+id+'&nonce='+Date.now());field=silhouette(img);subject=field.image;
+  job=state;
+  if(state.effect==='money'){if(!bill)bill=await image('./bill.png');setupMoney(state.intensity)}
+  else if(state.effect==='ice')setupIce(state.intensity);
+  else if(state.effect==='inferno')setupInferno(state.intensity);
+  else if(isExpansion(state.effect))setupExpansion(state.effect,state.intensity);
+  else setupCloud(state.effect,state.intensity);
+  await prepare3D();
+  stage='prepared';ackCovered=ackReveal=ackDone=false;
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if(stage==='prepared')await signal('ready',id)
+ }catch(e){stage='idle';job=null;await signal('error',id,e.message||String(e));console.error(e)}finally{loading=false}
+}
+async function poll(){if(demo||loading)return;
+ try{const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),2500);let response;
+  try{response=await fetch('/state?rid='+encodeURIComponent(RID)+'&ts='+Date.now(),{cache:'no-store',signal:abort.signal})}finally{clearTimeout(timer)}
+  if(!response.ok)throw Error('Renderer state HTTP '+response.status);
+  const s=await response.json();
+  if(s.phase==='idle'){if(stage!=='idle'){stage='idle';job=null;subject=null;if(expansion){expansion.dispose();expansion=null}if(expansionGPU){expansionGPU.dispose();expansionGPU.hide()}if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}disposeGasGPU();disposePlates()}}
+  else if(s.phase==='prepare'&&s.job_id!==jobId){await prepare(s)}
+  else if(s.job_id===jobId&&s.phase==='cover'&&stage==='prepared'){job=s;stage='cover';coverStarted=performance.now();sampleStart=0;framesThisSample=0;renderSamples.length=0;measuredFPS=0;smokeReleaseAge=0;ackCovered=false}
+  else if(s.job_id===jobId&&s.phase==='play'&&['cover','prepared'].includes(stage)){
+   const fromCover=stage==='cover';job=s;stage='play';smokeReleaseAge=fromCover?Math.max(0,(performance.now()-coverStarted)/1000):0;infernoCoverSeconds=smokeReleaseAge;
+   started=performance.now();sampleStart=0;framesThisSample=0;renderSamples.length=0;measuredFPS=0;gasInArmed=false;gasInReleaseAt=0;ackReveal=ackDone=false;
+  }else if(s.job_id===jobId&&s.phase==='play'&&stage==='play'&&job){job.camera_ready=!!s.camera_ready}
+ }catch(e){/* local engine may be starting up */}
+}
+if(demo){
+ // Demonstration is a MOVING person behind the same FX canvas used by OBS.
+ // The live OBS source is never duplicated or simulated in production mode.
+ const demoCam=document.createElement('canvas');demoCam.id='sc-demo-live';
+ demoCam.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+ cvs.style.position='absolute';cvs.style.inset='0';cvs.style.zIndex='1';
+ document.body.insertBefore(demoCam,cvs);
+ const live=demoCam.getContext('2d');
+ function demoLive(now){
+  if(demoCam.width!==cvs.width||demoCam.height!==cvs.height){demoCam.width=cvs.width;demoCam.height=cvs.height}
+  live.setTransform(DPR,0,0,DPR,0,0);live.clearRect(0,0,W,H);
+  const p=job&&stage==='play'?(now-started)/(job.duration*1000):0;
+  const visible=(stage==='cover'||stage==='prepared'||stage==='loading'||stage==='idle')||
+   (job&&job.direction==='in'&&p>=(job.effect==='inferno'?.61:isExpansion(job.effect)?.61:(job.effect==='smoke'||job.effect==='toxic'?.10:.86)));
+  if(visible){
+   const sway=Math.sin(now*.0021)*W*.007,arm=Math.sin(now*.0033)*W*.009;
+   live.save();live.translate(sway,0);
+   live.fillStyle='#eac4a0';live.fillRect(W*.341+arm,H*.658,W*.040,H*.207);live.fillRect(W*.617-arm,H*.656,W*.042,H*.207);
+   live.fillStyle='#245c9d';live.beginPath();live.ellipse(W*.500,H*.759,W*.163,H*.417,0,0,6.283);live.fill();
+   live.fillStyle='#f0b994';live.beginPath();live.arc(W*.5,H*.237,W*.070,0,6.283);live.fill();
+   live.fillStyle='#121b2d';live.fillRect(W*.444,H*.198,W*.111,H*.041);
+   live.restore();
+  }
+  requestAnimationFrame(demoLive);
+ }requestAnimationFrame(demoLive);
+ function fakeImage(){const c=document.createElement('canvas');c.width=960;c.height=540;const g=c.getContext('2d');
+  g.fillStyle='#f0b994';g.beginPath();g.arc(480,128,67,0,6.283);g.fill();
+  g.fillStyle='#245c9d';g.beginPath();g.ellipse(480,410,156,225,0,0,6.283);g.fill();
+  g.fillStyle='#eac4a0';g.fillRect(327,355,38,112);g.fillRect(592,354,40,115);
+  g.fillStyle='#121b2d';g.fillRect(426,107,107,22);return c.toDataURL()}
+ (async()=>{rngReset(13579);const img=await image(fakeImage());field=silhouette(img);subject=field.image;
+  const effect=['money','ice','smoke','toxic','inferno',...window.SCExpansion.keys].includes(params.get('effect'))?params.get('effect'):'money';
+  job={effect,direction:params.get('direction')==='in'?'in':'out',duration:+params.get('duration')||3,intensity:+params.get('intensity')||75,quality:params.get('quality')||'Cinematic',renderer_mode:params.get('gpu')==='0'?'2d':'gpu',tuning:{accent:params.get('tuneColor')||'',motion:+params.get('tuneMotion')||1,detail:+params.get('tuneDetail')||1}};
+  if(effect==='money'){bill=await image('./bill.png');setupMoney(job.intensity)}else if(effect==='ice')setupIce(job.intensity);else if(effect==='inferno')setupInferno(job.intensity);else if(isExpansion(effect))setupExpansion(effect,job.intensity);else setupCloud(effect,job.intensity);
+  await prepare3D();
+  function cycle(){ackCovered=ackDone=ackReveal=false;stage=job.direction==='out'?'cover':'play';coverStarted=performance.now();started=performance.now();
+   setTimeout(()=>{if(stage==='cover'){smokeReleaseAge=(performance.now()-coverStarted)/1000;infernoCoverSeconds=smokeReleaseAge;stage='play';started=performance.now()}},coverTime(effect)+170);
+   setTimeout(cycle,(job.direction==='out'?coverTime(effect)+170:0)+job.duration*1000+700)
+  }cycle()
+ })().catch(console.error)
+}else{
+ async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.15.0-cinematic-plate-engine-rc1',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 raymarched 3D volume':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
+ // A single adaptive poll loop prevents overlapping HTTP requests during OBS stalls.
+ async function pollLoop(){await poll();setTimeout(pollLoop,stage==='idle'||stage==='done'?320:95)}
+ setInterval(heartbeat,2000);heartbeat();pollLoop()
+}
+window.__scDebug=()=>({iceGrowth:iceGrowthDebug,moneyCoverage,moneyCoverageReport,iceCoverage,gasCoverage,gasCoverageReport,gasInArmed,stage,jobId,effect:job&&job.effect,mask:field&&{bounds:field.bounds,coverage:field.coverage},bills:billParts.length,shards:shards.length,puffs:clouds.length,infernoCoverage,infernoCoverageReport,infernoEmbers:infernoEmbers.length,covered:ackCovered,measuredFPS,measuredP95,expansion:expansion&&expansion.getState(),renderMode:plateActive()?cinematicPlates.diagnostics():moneyGPUActive()?moneyCGI.diagnostics():iceGPUActive()?iceGPU.diagnostics():gasGPUActive()?gasGPU.diagnostics():expansionGPU&&expansionGPU.current?expansionGPU.diagnostics():{mode:'2D volumetric compatibility',reason:moneyGPUError||gpuUnavailable||'legacy baseline'},moneyGPUError,iceGPUError,gasGPUError,cinematicPlateError,gpuCoverage,gpuUnavailable});
+</script></body></html>

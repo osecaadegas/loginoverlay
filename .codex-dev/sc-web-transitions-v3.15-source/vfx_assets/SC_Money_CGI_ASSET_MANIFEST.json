@@ -1,0 +1,17 @@
+{
+  "version": "3.9.0",
+  "design": "Original SC Golden Sheep 100 banknote artwork",
+  "source_texture": "../bill.png",
+  "material": "Golden Sheep satin currency paper",
+  "normal_map": "golden_sheep_paper_normal.png",
+  "roughness_map": "golden_sheep_paper_roughness.png",
+  "asset_names": [
+    "hero_bill_softcurl",
+    "bill_falling_wave",
+    "bill_wind_twist",
+    "bill_camera_flyby"
+  ],
+  "3d_meshes": 4,
+  "pipeline": "Blender-editable GLB models, and separate real-time WebGL2 deformable paper renderer in money-vfx3d.js",
+  "notes": "No Blender installation required to use the Windows app; Blender can import the source GLBs."
+}
