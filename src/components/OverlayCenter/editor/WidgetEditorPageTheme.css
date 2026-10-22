@@ -206,3 +206,126 @@
     transition: none;
   }
 }
+
+/* Bring the complete editor chrome onto the same navy/cyan system as the site.
+   The canvas remains a neutral editing surface and widget appearance stays data-driven. */
+.editor-workspace {
+  --editor-accent: var(--sc-page-accent, #3edbff);
+  color: var(--sc-page-text, #edf5ff);
+  background: #020d25;
+}
+.editor-workspace :is(.editor-topbar, .better-editor-footer) {
+  color: var(--sc-page-text, #edf5ff);
+  background: linear-gradient(180deg, rgba(5, 19, 41, .98), rgba(3, 13, 31, .98));
+  border-color: rgba(66, 137, 227, .28);
+}
+.editor-workspace .editor-topbar button {
+  color: #d9ecff;
+  border-color: rgba(66, 137, 227, .28);
+  background: rgba(7, 27, 53, .92);
+}
+.editor-workspace .editor-topbar button:hover:not(:disabled),
+.editor-workspace .editor-actions-menu-panel button:hover {
+  color: #fff;
+  background: rgba(22, 135, 223, .2);
+}
+.editor-workspace .editor-topbar button.is-primary {
+  color: #fff;
+  border-color: rgba(62, 173, 255, .58);
+  background: linear-gradient(125deg, #087fc5, #195ddd);
+}
+.editor-workspace .editor-actions-menu-panel,
+.editor-workspace .better-editor-widget-row__menu-panel {
+  color: var(--sc-page-text, #edf5ff);
+  border-color: rgba(66, 137, 227, .34);
+  background: linear-gradient(145deg, #0b2140, #051226);
+}
+.editor-workspace :is(.better-editor-sidebar, .better-editor-settings, .better-editor-settings-scroll, .editor-inspector-tools) {
+  color: var(--sc-page-text, #edf5ff);
+  background: linear-gradient(180deg, #071a34, #051329);
+  border-color: rgba(66, 137, 227, .25);
+}
+.editor-workspace .editor-panel-heading,
+.editor-workspace .editor-geometry,
+.editor-workspace .editor-source-status,
+.editor-workspace .editor-scoped-controls .bp-section,
+.editor-workspace .editor-inspector-tools {
+  border-color: rgba(66, 137, 227, .2);
+}
+.editor-workspace :is(.editor-panel-heading h2, .editor-geometry > summary, .editor-scoped-controls .bp-section__head) {
+  color: #d9ecff;
+}
+.editor-workspace .editor-panel-heading h2 small,
+.editor-workspace :is(.editor-source-status, .editor-geometry-grid label, .editor-check) {
+  color: var(--sc-page-muted, #9db2ce);
+}
+.editor-workspace .editor-search,
+.editor-workspace .editor-segmented,
+.editor-workspace .editor-scoped-controls .bp-panel-tabs {
+  border-color: rgba(93, 149, 197, .32);
+  background: rgba(2, 11, 26, .72);
+}
+.editor-workspace :is(.editor-search input, .editor-geometry-grid input, .editor-canvas-tools select,
+  .editor-dialog, .better-editor-name-dialog, .better-editor-widget-row__rename input) {
+  color: var(--sc-page-text, #edf5ff);
+  border-color: rgba(93, 149, 197, .36);
+  background-color: #06162d;
+}
+.editor-workspace :is(.editor-search, .editor-geometry-grid input, .editor-canvas-tools select, .editor-dialog,
+  .better-editor-name-dialog, .better-editor-widget-row__rename input) {
+  border-radius: 8px;
+}
+.editor-workspace .editor-canvas-tools {
+  color: var(--sc-page-text, #edf5ff);
+  border-color: rgba(66, 137, 227, .22);
+  background: rgba(5, 19, 41, .96);
+}
+.editor-workspace :is(.editor-canvas-tools button, .editor-align-tools button) { color: #bcd4ed; }
+.editor-workspace :is(.editor-canvas-tools button:hover, .editor-align-tools button:hover) {
+  background: rgba(22, 135, 223, .18);
+}
+.editor-workspace .editor-canvas-tools button[aria-pressed="true"],
+.editor-workspace .editor-segmented button[aria-pressed="true"] {
+  color: #d9f7ff;
+  background: rgba(22, 135, 223, .28);
+}
+.editor-workspace .editor-segmented { border-radius: 8px; }
+.editor-workspace .editor-segmented button[aria-label="Community overlays"] { color: #9beaff; border-color: rgba(66, 137, 227, .3); }
+.editor-workspace .better-editor-canvas-shell,
+.editor-workspace .better-editor-stage { background-color: #06152c; }
+.editor-workspace .better-editor-canvas-shell {
+  background-image:
+    linear-gradient(90deg, rgba(116, 169, 217, .07) 1px, transparent 1px),
+    linear-gradient(rgba(116, 169, 217, .07) 1px, transparent 1px);
+}
+.editor-workspace .better-editor-canvas { box-shadow: 0 8px 32px rgba(0, 4, 15, .45); }
+.editor-workspace :is(.editor-dialog, .better-editor-name-dialog) {
+  border: 1px solid rgba(66, 137, 227, .42);
+  box-shadow: 0 22px 70px rgba(0, 4, 15, .72);
+}
+.editor-workspace .editor-dialog footer button {
+  color: #d9ecff;
+  border-color: rgba(66, 137, 227, .32);
+  background: rgba(7, 27, 53, .92);
+}
+.editor-workspace .editor-dialog footer button.is-primary,
+.editor-workspace .editor-dialog footer button[type="submit"],
+.editor-workspace .better-editor-name-dialog footer button[type="submit"] {
+  color: #fff;
+  border-color: rgba(62, 173, 255, .58);
+  background: linear-gradient(125deg, #087fc5, #195ddd);
+}
+.editor-workspace .editor-save-error {
+  color: #ffd5dd;
+  border-top: 1px solid rgba(255, 112, 139, .28);
+  background: rgba(75, 22, 43, .94);
+}
+.editor-workspace .editor-save-error button {
+  color: #ffe1e5;
+  border-color: rgba(255, 170, 186, .42);
+}
+.editor-workspace :is(input, select, textarea):focus-visible {
+  border-color: rgba(62, 219, 255, .72);
+  outline: 2px solid rgba(62, 173, 255, .28);
+  outline-offset: 1px;
+}
