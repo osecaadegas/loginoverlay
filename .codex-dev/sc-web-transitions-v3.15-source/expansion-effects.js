@@ -152,7 +152,8 @@ class Effect {
    const dx=(xy[0]-ct)/Math.max(40,b.w*.5),dy=(xy[1]-cy)/Math.max(40,b.h*.5);
    const tx=t==='sand' ? W*(.56+.32*range) : t==='holy'?dx*W*.12 : t==='petal'?dx*W*.24+Math.sin(phase)*W*.15:t==='shadow'?dx*W*.4+Math.cos(phase*2)*W*.18:dx*W*.3+Math.cos(phase*2)*W*.13;
    const ty=t==='sand'?H*(.02+.18*range) : t==='glitch' ? dy*H*.18 : -(H*(t==='holy'?.78:t==='petal'?.52:t==='shadow'?.47:.58)*range);
-   this.particles.push({x:xy[0],y:xy[1],phase,tx,ty,spin:this.random(-5,5),size:this.random(.65,1.45),delay:this.random(0,.22),depth:this.random(.72,1.36)});
+   this.particles.push({x:xy[0],y:xy[1],phase,tx,ty,spin:this.random(-5,5),size:this.random(.65,1.45),delay:this.random(0,.22),depth:this.random(.72,1.36),
+    wind:this.random(-.32,.32),gravity:this.random(.035,.13),flutter:this.random(.55,1.55)});
   }
   this.buildFragmentsV35();
   this.buildArcsV35();
@@ -287,9 +288,18 @@ class Effect {
   if(t==='crystal'||t==='glitch')this.drawTileMotionV35(progress,incoming);
   for(let i=0;i<N;i++){
    const o=this.particles[i],d=clamp((target-o.delay*.46)/Math.max(.4,.90-o.delay*.35));
-   const r=ease(d),sway=Math.sin(o.phase+age*(t==='sand'?3:t==='petal'?1.4:1.8))*b.w*.018;
-   const xx=o.x+o.tx*r*this.motion+(t==='petal'||t==='shadow'||t==='plasma'?sway*r:0);
-   const yy=o.y+o.ty*r*this.motion+(t==='sand'?this.H*.16*r*r:0);
+   const r=ease(d),time=age*this.motion;
+   const sway=Math.sin(o.phase+time*(t==='sand'?2.2:t==='petal'?1.4:1.8))*b.w*.018*o.flutter;
+   const curlX=Math.sin(time*1.1+o.phase*1.7)*b.w*.025*r*r;
+   const curlY=Math.cos(time*.83+o.phase)*b.h*.018*r;
+   const xx=o.x+o.tx*r*this.motion+
+    (t==='petal'||t==='shadow'||t==='plasma'?sway*r:0)+
+    (t==='shadow'||t==='plasma'?curlX:0)+
+    (t==='sand'?o.wind*b.w*r+Math.sin(time*1.7+o.phase)*b.w*.012*r:0);
+   const yy=o.y+o.ty*r*this.motion+
+    (t==='sand'?this.H*(o.gravity+.12)*r*r:0)+
+    (t==='petal'?this.H*o.gravity*.12*r*r:0)+
+    (t==='shadow'||t==='plasma'?curlY:0);
    if(xx<-90||xx>this.W+90||yy<-90||yy>this.H+90)continue;
    const visible=incoming?ease((progress-.015)/.28):1-ease((progress-.78)/.22);
    if(visible<=.01)continue;
@@ -297,7 +307,9 @@ class Effect {
    g.save();g.globalAlpha=clamp(visible*(.70+.26*o.depth));
    if(t==='sand'){
     g.fillStyle=i%5===0?'#f7d9a2':i%3===0?'#9d7046':this.colorCSS;
-    g.fillRect(xx,yy,Math.max(.7,sz*.65),Math.max(.7,sz*.65));
+    const grain=Math.max(.7,sz*.40),flatten=.58+o.depth*.12;
+    g.beginPath();g.ellipse(xx,yy,grain,grain*flatten,o.phase,0,Math.PI*2);g.fill();
+    if(i%4===0){g.globalAlpha*=.38;g.fillStyle='#fff0ce';g.beginPath();g.ellipse(xx-grain*.22,yy-grain*.24,grain*.32,grain*.20,o.phase,0,Math.PI*2);g.fill()}
    }else if(t==='glitch'){
     g.fillStyle=i%3===0?'rgba(240,88,184,.82)':this.colorCSS;
     g.fillRect(xx,yy,sz*(i%2?2.1:1),sz*.58);

@@ -23,7 +23,10 @@ return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+1
 void main(){
  vec4 a=texture(uSeal,vUV); if(a.a<.04)discard;
  vec2 xy=vUV*vec2(16.,11.);
- float n=noise(xy*1.5)+.5*noise(xy*4.)+.25*noise(xy*9.);
+ // Animate the material field independently from the growth matte: the keyed
+ // silhouette remains stable while the surface keeps moving during the hold.
+ vec2 flow=vec2(uClock*.037,-uClock*.029);
+ float n=noise(xy*1.5+flow*.32)+.5*noise(xy*4.+flow)+.25*noise(xy*9.-flow*1.7);
  float threshold=clamp(.11+.51*noise(xy*.63)+.21*noise(xy*2.6)+.08*noise(xy*10.),.02,.90);
  float p=clamp(uProgress,0.,1.);
  float coverage=p>.999?1.:smoothstep(threshold-.055,threshold+.065,p);
@@ -33,24 +36,43 @@ void main(){
  float nd=clamp(dot(normalize(vec3(d*13.,1.)),normalize(vec3(-.34,-.45,1.))),0.,1.);
  float fres=pow(1.-nd,2.);
  if(k<.5){
-  // Cybernetic scan bands with controlled RGB stress (no full-screen flash).
-  float band=step(.83,fract(vUV.y*137.+noise(xy*2.)*.12));
-  col=mix(col,uAccent*.62+.06,band*.22);
+  // Scan bands drift across fragmented RGB channels, with restrained bloom.
+  float band=step(.84,fract(vUV.y*137.+noise(xy*2.+flow)*.12-uClock*.23));
+  float chroma=noise(xy*3.1+flow*1.8);
+  col=mix(col,uAccent*.62+.06,band*.28);
+  col+=vec3(.10,.16,.42)*pow(chroma,5.)*.30;
  }else if(k<1.5){
-  col=col*(.68+.37*nd)+uAccent*(.13+.24*pow(nd,10.));
+  float leader=pow(max(0.,sin((vUV.x*19.+vUV.y*13.+n*4.)*3.14159-uClock*2.4)),18.);
+  col=col*(.66+.35*nd)+uAccent*(.13+.24*pow(nd,10.));
+  col+=vec3(.56,.79,1.)*leader*(.18+.24*n);
  }else if(k<2.5){
-  col=mix(col,uAccent*.25,col.r*.17);col*=.72+.36*noise(xy*4.+uClock*.025);
+  float eddy=noise(xy*2.2+vec2(flow.y,-flow.x))+noise(xy*5.1-flow)*.35;
+  float rimShade=pow(1.-abs(nd),2.);
+  col=mix(col,uAccent*.25,col.r*.17);col*=.66+.42*eddy;
+  col+=uAccent*(.035+.09*rimShade)*n;
  }else if(k<3.5){
+  float shaft=pow(max(0.,sin(vUV.x*8.+n*2.)),8.)*(.5+.5*sin(uClock*.65+vUV.y*2.));
   col=col*.70+uAccent*(.27+.10*nd)+vec3(.17,.11,.05)*pow(nd,15.);
+  col+=vec3(1.,.72,.34)*shaft*.16;
  }else if(k<4.5){
-  col=mix(col,uAccent*.53,n*.36)*(.73+.38*nd);
+  float grains=noise(xy*48.+flow*3.);
+  float erosion=smoothstep(.20,.82,n*.72+grains*.28);
+  col=mix(col,uAccent*.53,n*.36)*(.69+.40*nd);
+  col*=.88+.12*erosion;
+  col+=vec3(.24,.14,.06)*pow(grains,7.)*.18;
  }else if(k<5.5){
   float facets=pow(abs(sin(xy.x*4.1+xy.y*3.2+n*2.)),18.);
+  float caustic=pow(max(0.,sin(xy.x*7.2-xy.y*5.4+uClock*.32+n*3.)),24.);
   col=col*.38+uAccent*(.25+.27*nd)+facets*vec3(.34,.44,.55)+fres*vec3(.17,.20,.27);
+  col+=vec3(.53,.73,1.)*caustic*.20;
  }else if(k<6.5){
+  float vein=exp(-abs(fract(vUV.x*5.+sin(vUV.y*4.+uClock*.35)*.08)-.5)*32.);
   col=mix(col,uAccent,.31);col*=.76+.34*nd;
+  col+=vec3(1.,.68,.77)*vein*(.08+.12*n);
  }else{
+  float filament=pow(max(0.,sin(xy.x*9.+sin(xy.y*4.+uClock*.44)*2.+uClock*.7+n*4.)),16.);
   col=col*.64+uAccent*(.25+.16*pow(nd,8.));
+  col+=vec3(.42,.88,1.)*filament*.30;
  }
  outColor=vec4(clamp(col,0.,1.),coverage*(a.a>.52?1.:a.a));
 }`;
@@ -80,10 +102,28 @@ void main(){
  else {alpha=1.;move=0.;}
  vec2 pos=iOrigin.xy+uMotion*iMotion.xy*move;
  float flutter=sin(uTime*(.9+iTiming.w)+phase)*.075;
- if(uKind>3.5&&uKind<4.5)pos.y+=uResolution.y*.22*move*move;
- if(uKind>5.5&&uKind<6.5)pos.x+=sin(uTime*2.+phase+move*8.)*iOrigin.w*.31;
- if(uKind>1.5&&uKind<2.5)pos.x+=sin(uTime*1.7+phase)*iOrigin.w*.39;
- if(uKind>6.5)pos.x+=sin(uTime*1.4+phase+move*9.)*iOrigin.w*.33;
+ if(uKind<.5){
+  float tear=step(.82,fract(uTime*1.7+phase));
+  pos.x+=tear*sin(phase*17.+uTime*39.)*iOrigin.w*.22*move;
+  pos.y+=floor(sin(uTime*16.+phase)*3.)*move*1.6;
+ }
+ if(uKind>1.5&&uKind<2.5){
+  float orbit=uTime*(.75+iTiming.w*.35)+phase;
+  pos+=vec2(cos(orbit),sin(orbit*1.27))*iOrigin.w*.16*move;
+ }
+ if(uKind>2.5&&uKind<3.5)pos.y-=uResolution.y*.13*move*move;
+ if(uKind>3.5&&uKind<4.5){
+  pos.y+=uResolution.y*(.17+.08*iTiming.z)*move*move;
+  pos.x+=sin(uTime*.8+phase)*iOrigin.w*.09*move;
+ }
+ if(uKind>5.5&&uKind<6.5){
+  pos.x+=sin(uTime*2.+phase+move*8.)*iOrigin.w*.31;
+  pos.y+=cos(uTime*1.25+phase)*iOrigin.w*.07*move;
+ }
+ if(uKind>6.5){
+  float orbit=uTime*(1.4+iTiming.w*.25)+phase+move*9.;
+  pos+=vec2(sin(orbit),cos(orbit*1.31))*iOrigin.w*.24;
+ }
  float yaw=(sin(phase+uTime*.9)*.19+move*1.75*sin(phase))*1.;
  float pitch=(flutter+move*.92*cos(phase));
  float roll=iTiming.y+move*iMotion.z*.34 + sin(uTime*.95+phase)*.08;
@@ -113,33 +153,41 @@ void main(){
  float a=1.; vec3 color=uAccent;
  if(k<.5){
   // glitch: hard-edged volumetric cyber-cubes
+  float pulse=step(.83,fract(vUV.y*23.+uTime*.17+vSeed));
   color=mix(uAccent*.42,vec3(.9,.22,.67),step(.73,hash(vec2(vSeed,17.))));
-  color+=vec3(.25,.30,.55)*edge;
+  color+=vec3(.25,.30,.55)*edge+uAccent*pulse*.18;
  }else if(k<1.5){
   float beam=pow(clamp(1.-abs(c.x)*2.,0.,1.),2.5);
-  a=beam; color=mix(uAccent,vec3(.85,.97,1.),beam*.85);
+  float flicker=.76+.24*sin(uTime*31.+vSeed*19.);
+  a=beam*flicker; color=mix(uAccent,vec3(.85,.97,1.),beam*.85);
  }else if(k<2.5){
   float spine=abs(c.x)+.30*c.y;
   a=1.;
-  color=mix(vec3(.025,.015,.065),uAccent*.75,light*.35+edge*.25);
+  float flow=.5+.5*sin(vUV.y*10.-uTime*.7+vSeed*13.);
+  color=mix(vec3(.025,.015,.065),uAccent*.75,light*.35+edge*.25+flow*.12);
  }else if(k<3.5){
   float ray=pow(clamp(1.-abs(c.x)*2.,0.,1.),4.);
   a=ray*clamp(1.-abs(c.y)*1.6,0.,1.);
-  color=mix(uAccent*.8,vec3(1.,.95,.69),ray*.8);
+  float pulse=.82+.18*sin(uTime*2.1+vSeed*11.);
+  color=mix(uAccent*.8,vec3(1.,.95,.69),ray*.8)*pulse;
  }else if(k<4.5){
-  color=uAccent*(.45+.57*hash(vec2(vSeed,7.)))+vec3(.18,.12,.06)*light;
+  float grain=.82+.18*sin(vUV.x*91.+vUV.y*67.+vSeed*21.);
+  color=(uAccent*(.45+.57*hash(vec2(vSeed,7.)))+vec3(.18,.12,.06)*light)*grain;
  }else if(k<5.5){
   float facet=pow(max(0.,dot(normal,normalize(vec3(.42,-.63,.72)))),17.);
+  float glint=pow(max(0.,sin(uTime*.8+vSeed*29.)),20.);
   color=uAccent*(.31+.56*light)+facet*vec3(.65,.76,.83)+edge*vec3(.23,.25,.40);
+  color+=vec3(.48,.72,1.)*glint*.28;
  }else if(k<6.5){
   // Curved, pointed petal with luminous vein.
   float tip=1.-pow(clamp(abs(c.y)*2.,0.,1.),2.3);
   float side=abs(c.x)*2.;
   a=1.;
   color=mix(uAccent*.48,vec3(1.,.78,.81),clamp(1.-side,0.,1.)*.47+max(0.,normal.z)*.15);
-  float vein=exp(-abs(c.x)*28.)*.16;color+=vec3(vein);
+  float vein=exp(-abs(c.x)*28.)*(.10+.06*sin(uTime*1.2+vSeed*17.));color+=vec3(vein);
  }else{
   float filament=pow(clamp(1.-abs(c.x)*2.,0.,1.),3.2);
+  filament*=.82+.18*sin(uTime*5.+vSeed*23.);
   a=filament;
   color=mix(uAccent*.32,vec3(.88,1.,1.),filament*.75);
  }
@@ -295,5 +343,5 @@ class Renderer{
  }
  diagnostics(){const gl=this.gl;if(this.crystalHero)return {...this.crystalHero.diagnostics(),renderer:String(gl.getParameter(gl.RENDERER)||'')};return {mode:this.ready?'WebGL2 instanced 3D':'WebGL2 context lost',instances:this.instances||0,triangles:(this.instances||0)*16,renderer:String(gl.getParameter(gl.RENDERER)||''),maxTexture:gl.getParameter(gl.MAX_TEXTURE_SIZE)};}
 }
-root.SCGPU3D={Renderer,TYPES};
+root.SCGPU3D={Renderer,TYPES,shaders:{vsSeal,fsSeal,vsMesh,fsMesh,vsArc,fsArc}};
 })(window);

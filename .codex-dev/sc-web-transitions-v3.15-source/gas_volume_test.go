@@ -14,7 +14,7 @@ func TestRaymarchedGasModuleIsServed(t *testing.T) {
   app.routes().ServeHTTP(rr,req)
   if rr.Code != http.StatusOK {t.Fatalf("module HTTP status: %d", rr.Code)}
   body:=rr.Body.String()
-  for _, expected := range []string{"sampler3D", "densityAt", "SCGasVolume", "measureCoverage", "render"} {
+  for _, expected := range []string{"sampler3D", "plumeDensity", "SCGasVolume", "measureCoverage", "render"} {
     if !strings.Contains(body, expected) {t.Errorf("missing gas renderer token %q", expected)}
   }
 }

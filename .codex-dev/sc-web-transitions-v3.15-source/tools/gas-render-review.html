@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SC Gas Renderer Review</title>
+<style>
+  *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#101820;color:#edf5fa;font:14px/1.4 system-ui,sans-serif}
+  body{position:relative;background:radial-gradient(ellipse at 52% 72%,#344551 0,#1a2832 48%,#08131d 100%)}
+  #subject{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+  #review{position:absolute;z-index:10;right:18px;top:18px;width:260px;padding:14px;border:1px solid #7f9bac;border-radius:10px;background:#07111dd9;box-shadow:0 8px 28px #0008}
+  #review h1{font-size:14px;margin:0 0 10px;letter-spacing:.1em;text-transform:uppercase}
+  #review label{display:grid;grid-template-columns:82px 1fr;align-items:center;gap:8px;margin:8px 0;color:#b7cbd6}
+  #review select,#review input{min-width:0;width:100%}
+  #progress{width:100%}#readout{font:11px/1.5 ui-monospace,monospace;color:#66e2d2;white-space:pre-wrap}
+  #hint{position:absolute;z-index:3;left:20px;bottom:18px;padding:8px 11px;border-radius:7px;background:#08121da6;color:#d9e5eb;pointer-events:none}
+  @media(max-width:600px){#review{right:8px;top:8px;width:220px;padding:10px}#hint{left:8px;bottom:8px}}
+</style>
+<canvas id="subject" width="960" height="540"></canvas>
+<div id="hint">Synthetic alpha subject over a transparent browser canvas</div>
+<section id="review" aria-label="Gas renderer review controls">
+  <h1>Gas renderer review</h1>
+  <label>Effect<select id="effect"><option value="smoke">Smoke</option><option value="toxic">Toxic Cloud</option></select></label>
+  <label>Direction<select id="direction"><option value="cover">Cover</option><option value="release">Release</option></select></label>
+  <label>Progress<input id="progress" type="range" min="0" max="1" step="0.01" value="1"></label>
+  <pre id="readout">Preparing…</pre>
+</section>
+<script src="../gas-vfx3d.js"></script>
+<script>
+(() => {
+  const source=document.querySelector('#subject'),g=source.getContext('2d');
+  g.fillStyle='#e8eef1';
+  g.beginPath();g.ellipse(480,116,45,55,0,0,Math.PI*2);g.fill();
+  g.beginPath();g.roundRect(430,163,100,230,34);g.fill();
+  g.beginPath();g.roundRect(367,185,63,205,28);g.fill();
+  g.beginPath();g.roundRect(530,185,63,205,28);g.fill();
+  g.beginPath();g.roundRect(433,370,43,160,18);g.fill();
+  g.beginPath();g.roundRect(484,370,43,160,18);g.fill();
+  const maskCanvas=document.createElement('canvas');maskCanvas.width=source.width;maskCanvas.height=source.height;
+  maskCanvas.getContext('2d').drawImage(source,0,0);
+  const coverageField={mw:source.width,mh:source.height,map:maskCanvas.getContext('2d').getImageData(0,0,source.width,source.height).data};
+  let renderer,effect='';
+  async function prepare(){
+    if(renderer)renderer.dispose();
+    effect=document.querySelector('#effect').value;
+    renderer=new SCGasVolume.Renderer();
+    renderer.prepare(maskCanvas,960,540,'Cinematic',effect,78);
+  }
+  function draw(){
+    if(!renderer||!renderer.isReady){requestAnimationFrame(draw);return}
+    const progress=Number(document.querySelector('#progress').value);
+    const cover=document.querySelector('#direction').value==='cover';
+    renderer.draw(progress,cover,performance.now()/1000);
+    const coverage=cover?renderer.measureCoverage(coverageField):null;
+    document.querySelector('#readout').textContent=
+      `${effect.toUpperCase()} · ${cover?'COVER':'RELEASE'} ${Math.round(progress*100)}%\n`+
+      `optical coverage: ${cover?(coverage*100).toFixed(2)+'%':'n/a'}\n`+
+      `mask bounds: ${renderer.diagnostics().maskBounds.map(n=>n.toFixed(3)).join(', ')}`;
+    requestAnimationFrame(draw);
+  }
+  document.querySelector('#effect').addEventListener('change',prepare);
+  prepare().then(()=>requestAnimationFrame(draw)).catch(error=>document.querySelector('#readout').textContent=String(error));
+})();
+</script>
+</html>

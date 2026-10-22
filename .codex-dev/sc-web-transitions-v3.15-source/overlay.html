@@ -1430,8 +1430,16 @@ function drawSmoke(t,dir,duration){
 // Inferno Disintegration v3.3.0: a separate camera-aware ember transformation.
 // Money/Ice/Smoke/Toxic pipelines are intentionally not changed.
 let infernoCoverFrames=[],infernoErodeFrames=[],infernoSeal=null,infernoHalo=null;
-let infernoTongues=[],infernoTongueTex=[],infernoEmbers=[],infernoCoverage=0,infernoCoverageReport='';
+let infernoTongues=[],infernoTongueTex=[],infernoEmbers=[],infernoEmberSprites=[],infernoCoverage=0,infernoCoverageReport='';
 let infernoCoverSeconds=0;
+function makeInfernoEmber(hue){
+ const c=canvas2(32,64),g=c.getContext('2d');
+ const grad=g.createRadialGradient(16,45,1,16,40,23);
+ const colors=hue<.22?['255,247,205','255,166,48','255,67,24']:hue<.62?['255,250,218','255,207,87','255,107,28']:['255,255,232','255,226,131','255,142,43'];
+ grad.addColorStop(0,`rgba(${colors[0]},.96)`);grad.addColorStop(.19,`rgba(${colors[1]},.83)`);
+ grad.addColorStop(.52,`rgba(${colors[2]},.36)`);grad.addColorStop(1,`rgba(${colors[2]},0)`);
+ g.fillStyle=grad;g.fillRect(0,0,c.width,c.height);return c;
+}
 function fireNoise(x,y,seed=0){
  const v=Math.sin(x*127.1+y*311.7+seed*97.31)*43758.5453123;
  return v-Math.floor(v);
@@ -1464,6 +1472,7 @@ function makeInfernoTongue(seed){
 }
 function setupInferno(intensity){
  infernoCoverFrames=[];infernoErodeFrames=[];infernoTongues=[];infernoEmbers=[];infernoCoverage=0;
+ infernoEmberSprites=[makeInfernoEmber(.1),makeInfernoEmber(.4),makeInfernoEmber(.8)];
  infernoTongueTex=Array.from({length:9},(_,i)=>makeInfernoTongue(i+3));
  const b=field.bounds,quality=clamp(intensity/100,.15,1);
  const renderQuality=({Performance:.72,Balanced:.88,Cinematic:1,Ultra:1.16})[(job&&job.quality)||'Cinematic']||1;
@@ -1613,10 +1622,16 @@ function drawInfernoEmbers(progress,age,release=false,assemble=false){
    alpha*=q;
   }
   if(alpha<.004||x<-8||x>W+8||y<-8||y>H+8)continue;
-  ctx.globalAlpha=clamp(alpha*(.58+.42*e.hue));
-  ctx.fillStyle=e.hue>.6?'#ffe8aa':e.hue>.22?'#ffaf41':'#fb5622';
-  const s=e.size*(release?1+.30*progress:1);
-  ctx.fillRect(x-s*.5,y-s*.5,s,s*1.3);
+  const flicker=.83+.17*Math.sin(age*12.5+e.phase),s=e.size*(release?1+.30*progress:1);
+  const vx=release?e.vx:Math.sin(age*1.8+e.phase)*e.drift;
+  const vy=release?e.vy:-(17+e.size*16);
+  const angle=Math.atan2(vy,vx)-Math.PI*.5;
+  ctx.save();ctx.globalAlpha=clamp(alpha*(.58+.42*e.hue)*flicker);
+  ctx.translate(x,y);ctx.rotate(angle);
+  const sprite=infernoEmberSprites[e.hue>.66?2:e.hue>.28?1:0];
+  ctx.drawImage(sprite,-s*1.1,-s*3.2,s*2.2,s*6.4);
+  ctx.globalAlpha*=.78;ctx.fillStyle='#fff1c7';ctx.beginPath();ctx.ellipse(0,0,s*.30,s*.62,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
  }
  ctx.restore();
 }
@@ -1876,7 +1891,7 @@ if(demo){
   }cycle()
  })().catch(console.error)
 }else{
- async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.15.0-cinematic-plate-engine-rc1',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 raymarched 3D volume':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
+ async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.15.0-cinematic-plate-engine-rc1',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 raymarched gas and lens seal':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
  // A single adaptive poll loop prevents overlapping HTTP requests during OBS stalls.
  async function pollLoop(){await poll();setTimeout(pollLoop,stage==='idle'||stage==='done'?320:95)}
  setInterval(heartbeat,2000);heartbeat();pollLoop()
