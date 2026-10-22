@@ -4,7 +4,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // This follows MainStreamOverlay's 1920 x 1080 stage and the actual source
 // component dimensions: a 42px inset bar, 240px side panels, and a transparent
 // 1164px gameplay opening between them.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 10;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 11;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 8, y: 8, width: 1904, height: 42 },
@@ -131,6 +131,9 @@ function configureStreamerWidget(type, config, role, geometry) {
         { id: "casino", zone: "right" },
         { id: "cta", zone: "right" },
       ],
+      // The supplied header displays the casino mark, not the app-specific
+      // command label beside it. Keep the configured mark and data intact.
+      casinoCommand: "",
       showCTA: true,
       ctaText: "PLAY RESPONSIBLY",
     };
@@ -185,6 +188,15 @@ function configureStreamerWidget(type, config, role, geometry) {
 export function applyStreamerOverlayComposition(layout, user) {
   const instances = [...layout.instances];
   const used = new Set();
+  const navbarConfig = instances.find((instance) => instance.widgetType === "navbar")?.config || {};
+  const sourceStreamerName = [
+    navbarConfig.twitchUsername,
+    navbarConfig.streamerName,
+    navbarConfig.displayName,
+    navbarConfig.channelName,
+    user?.user_metadata?.full_name,
+    user?.user_metadata?.name,
+  ].find((value) => typeof value === "string" && value.trim() && value !== "YOUR CHANNEL");
 
   for (const { type, role, ...geometry } of STREAMER_OVERLAY_COMPOSITION) {
     let index = instances.findIndex(
@@ -214,6 +226,9 @@ export function applyStreamerOverlayComposition(layout, user) {
     used.add(index);
     const instance = instances[index];
     const config = configureStreamerWidget(type, instance.config, role, geometry);
+    if (role === "active_panel" && sourceStreamerName && !config.streamerName) {
+      config.streamerName = String(sourceStreamerName).trim();
+    }
     instances[index] = {
       ...instance,
       ...geometry,

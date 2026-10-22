@@ -1807,6 +1807,20 @@ function NavbarWidget({
           }), ...orbitalInstrument,
             ...(isCandyNavbar ? { background: 'linear-gradient(#ffb4e8,#ff39be 46%,#ec0e96)', color: '#fff', fontSize: 24, padding: '5px 24px', letterSpacing: '.06em', fontWeight: 800 } : {}),
             ...(isOrbitalNavbar ? { padding: '9px 26px', border: '1px solid #496c82', fontVariantNumeric: 'tabular-nums', letterSpacing: '.14em' } : {}),
+            ...(c.streamerOverlay?.role === "header" ? {
+              padding: "0 8px",
+              border: 0,
+              borderRadius: 0,
+              background: "transparent",
+              boxShadow: "none",
+              backdropFilter: "none",
+              color: "rgba(255,255,255,.9)",
+              fontFamily: "Rubik, Inter, ui-sans-serif, system-ui, sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: ".08em",
+              fontVariantNumeric: "tabular-nums",
+            } : {}),
           },
         )}
       >
@@ -2325,7 +2339,9 @@ function NavbarWidget({
           width: Math.max(1, Number(separatorWidth) || 1),
           height: Math.max(22, packageHeight * 0.46),
           marginLeft: push ? "auto" : 0,
-          background: `linear-gradient(180deg, transparent, ${alphaColor(packageBlue, 0.42)}, transparent)`,
+          background: streamerSourceHeader
+            ? "rgba(255,255,255,.2)"
+            : `linear-gradient(180deg, transparent, ${alphaColor(packageBlue, 0.42)}, transparent)`,
           opacity: separatorOpacity,
           flexShrink: 0,
         })}

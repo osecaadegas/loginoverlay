@@ -7152,6 +7152,17 @@ function LegacyBetterBackgroundStyle({ config }) {
           {...attrs("background", c, "media")}
         />
       ) : null}
+      {c.streamerOverlay?.role === "scene" && !externalBackground ? (
+        <div
+          aria-hidden="true"
+          style={{
+            ...layerBase,
+            backgroundImage: "radial-gradient(circle at 20% 50%, rgba(59,130,246,.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(147,51,234,.3) 0%, transparent 50%)",
+            opacity: 0.2,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
       {!externalBackground && <div
         style={subElementStyle(c, "tint", {
           ...layerBase,

@@ -262,6 +262,25 @@ try {
   assert.match(embeddedWinnerMarkup, /data-native-winner="true"/);
   assert.match(embeddedWinnerMarkup, /height:78px/);
   assert.match(embeddedWinnerMarkup, /width:min\(204px, 100%\)/);
+  const embeddedActiveGiveawayMarkup = renderToStaticMarkup(
+    React.createElement(embeddedGiveaway.default, {
+      config: {
+        isActive: true,
+        title: "Flash giveaway",
+        prize: "20EUR MBWay",
+        keyword: "!seca",
+        participants: [{ username: "viewer-1" }, { username: "viewer-2" }],
+        colourTheme: "neon",
+      },
+      layout: { streamerOverlay: { role: "chat" }, giveawayHeight: 80 },
+      children: React.createElement("div", null, "active giveaway canvas"),
+    }),
+  );
+  assert.match(embeddedActiveGiveawayMarkup, /Flash giveaway/);
+  assert.match(embeddedActiveGiveawayMarkup, /20EUR MBWay/);
+  assert.match(embeddedActiveGiveawayMarkup, /!seca/);
+  assert.match(embeddedActiveGiveawayMarkup, /2 entries/);
+  assert.doesNotMatch(embeddedActiveGiveawayMarkup, /active giveaway canvas/);
   const embeddedGiveawayCss = readFileSync(
     new URL("../src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.css", import.meta.url),
     "utf8",
