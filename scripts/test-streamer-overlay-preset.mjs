@@ -30,6 +30,55 @@ try {
   supabase.from = client.from;
   supabase.rpc = client.rpc;
 
+  // The imported scene must consume the owner's existing StreamersCenter
+  // overlay data; it must not create or depend on the source project's tables.
+  state.tables.overlay_instances = [
+    {
+      id: "live-overlay-admin-user",
+      user_id: "admin-user",
+      is_active: true,
+      created_at: "2026-10-22T00:00:00.000Z",
+    },
+  ];
+  state.tables.overlay_widgets = [
+    {
+      id: "bonus-hunt-live-widget",
+      user_id: "admin-user",
+      overlay_id: "live-overlay-admin-user",
+      widget_type: "bonus_hunt",
+      label: "Bonus Hunt",
+      is_visible: true,
+      config: { huntName: "Current Stream Hunt", totalSpent: 125 },
+      position_x: 0,
+      position_y: 0,
+      width: 400,
+      height: 300,
+      z_index: 1,
+    },
+    {
+      id: "chat-live-widget",
+      user_id: "admin-user",
+      overlay_id: "live-overlay-admin-user",
+      widget_type: "chat",
+      label: "Chat",
+      is_visible: true,
+      config: { chatStyle: "broadcast_chat" },
+      position_x: 0,
+      position_y: 0,
+      width: 400,
+      height: 300,
+      z_index: 2,
+    },
+  ];
+  state.tables.overlay_themes = [
+    {
+      id: "theme-admin-user",
+      user_id: "admin-user",
+      overlay_id: "live-overlay-admin-user",
+      theme_name: "emerald",
+    },
+  ];
+
   const layout = registry.createDefaultBetterLayout();
   const navbar = layout.instances.find((instance) => instance.widgetType === "navbar");
   navbar.config.streamerName = "Miguel Streamer";
@@ -113,6 +162,34 @@ try {
     "draft writes are owner scoped",
   );
 
+  const publicRecord = await service.getPublishedBetterOverlay(
+    state.tables.better_overlay_publications[0].public_overlay_id,
+  );
+  assert.equal(publicRecord.ownerUserId, "admin-user");
+  assert.equal(publicRecord.publishedLayout.name, "Miguel Streamer Overlay");
+
+  const liveSource = await service.getPublishedBetterLiveSource(
+    publicRecord.ownerUserId,
+  );
+  assert.equal(liveSource.overlayId, "live-overlay-admin-user");
+  assert.equal(
+    liveSource.widgets.find((item) => item.widget_type === "bonus_hunt")?.config
+      ?.totalSpent,
+    125,
+    "the OBS overlay resolves the owner's current bonus hunt data from StreamersCenter's live overlay tables",
+  );
+  assert.equal(
+    liveSource.widgets.find((item) => item.widget_type === "chat")?.config
+      ?.chatStyle,
+    "broadcast_chat",
+    "chat is loaded from the same owner's live overlay rows",
+  );
+  assert.equal(liveSource.theme?.theme_name, "emerald");
+
+  const appDatabaseTables = new Set(Object.keys(state.tables));
+  assert.equal(appDatabaseTables.has("bonus_hunts"), false);
+  assert.equal(appDatabaseTables.has("fever_tournaments"), false);
+
   const editorSource = readFileSync(
     new URL(
       "../src/components/OverlayCenter/editor/WidgetEditorPage.jsx",
@@ -122,8 +199,17 @@ try {
   );
   assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName\}/);
   assert.match(editorSource, /\{isAdmin && \([\s\S]*?getStreamerOverlayName\(layout, user\)/);
+  const appsSource = readFileSync(
+    new URL("../src/components/AppsPage/AppsPage.jsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    appsSource,
+    /\.\.\.\(isAdmin\s*\?\s*\[[\s\S]*?to: "\/editor"[\s\S]*?label: "Streamer Overlay \(Admin Beta\)"/,
+    "the website Apps page exposes the beta only to admins and opens the working editor route",
+  );
   console.log(
-    "Streamer Overlay checks passed: admin gate, live widget definitions, geometry, normalization, owner-scoped draft persistence, OBS publication, and embedded giveaway settings.",
+    "Streamer Overlay checks passed: admin gate, editable composition, owner-scoped draft persistence, public OBS publication, StreamersCenter live widget/theme reads, and embedded giveaway settings.",
   );
 } finally {
   await server.close();

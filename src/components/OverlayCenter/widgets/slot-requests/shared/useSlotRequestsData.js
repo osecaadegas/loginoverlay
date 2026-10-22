@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../../../../config/supabaseClient";
 
 const REQUEST_ACTION_WINDOW_MS = 20000;
+const PUBLIC_REQUEST_IDLE_POLL_MS = 10000;
+const PUBLIC_REQUEST_ACTIVE_POLL_MS = 5000;
 
 function normalizeRequestAction(row) {
   const status = row?.action || row?.status;
@@ -73,9 +75,7 @@ export function useSlotRequestsData({
           publicOverlayId,
           limit: String(maxDisplay),
         });
-        const response = await fetch(`/api/public-slot-requests?${params}`, {
-          cache: "no-store",
-        });
+        const response = await fetch(`/api/public-slot-requests?${params}`);
         if (!response.ok) throw new Error(`Request failed: ${response.status}`);
         const payload = await response.json();
         data = Array.isArray(payload.requests) ? payload.requests : [];
@@ -173,9 +173,12 @@ export function useSlotRequestsData({
 
   useEffect(() => {
     if (!enabled || previewRequests || !usePublicOverlayApi) return undefined;
-    const interval = window.setInterval(fetchRequests, 5000);
+    const pollInterval = requests.length
+      ? PUBLIC_REQUEST_ACTIVE_POLL_MS
+      : PUBLIC_REQUEST_IDLE_POLL_MS;
+    const interval = window.setInterval(fetchRequests, pollInterval);
     return () => window.clearInterval(interval);
-  }, [enabled, fetchRequests, previewRequests, usePublicOverlayApi]);
+  }, [enabled, fetchRequests, previewRequests, requests.length, usePublicOverlayApi]);
 
   useEffect(
     () => () => {
