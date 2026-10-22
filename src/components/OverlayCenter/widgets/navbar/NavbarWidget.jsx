@@ -2297,7 +2297,7 @@ function NavbarWidget({
       : c.startValue || "";
     const showStart = Boolean(c.showStartBalance && startValue);
     const rawCasinoCommand = c.casinoCommand || "";
-    const casinoCommand =
+    const casinoCommand = streamerSourceHeader ? "" :
       (c[BETTER_NAVBAR_OPTIONAL_CASINO_COMMAND_MARKER] !== true ||
         c[BETTER_NAVBAR_MANUAL_CASINO_COMMAND_MARKER] !== true) &&
       String(rawCasinoCommand || "")

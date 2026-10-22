@@ -169,6 +169,7 @@ try {
     "utf8",
   );
   assert.match(navbarWidgetSource, /const streamerSourceHeader = c\.streamerOverlay\?\.role === "header"/);
+  assert.match(navbarWidgetSource, /const casinoCommand = streamerSourceHeader \? ""/);
   assert.match(navbarWidgetSource, /linear-gradient\(90deg, rgba\(15,23,42,\.95\), rgba\(30,41,59,\.95\), rgba\(15,23,42,\.95\)\)/);
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,120}flex: "1 1 0%", width: "100%"/);
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,220}\? "1 1 0%"/);
