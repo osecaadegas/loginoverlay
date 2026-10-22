@@ -18,7 +18,12 @@ func TestProfessionalPlateScriptsBundled(t *testing.T) {
 func TestCinematicPlateRoutes(t *testing.T) {
 	base := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", base)
-	directory := filepath.Join(base, "SCWebTransitions", "CinematicPlates")
+	t.Setenv("LOCALAPPDATA", base)
+	cacheDirectory, err := os.UserCacheDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory := filepath.Join(cacheDirectory, "SCWebTransitions", "CinematicPlates")
 	if err := os.MkdirAll(directory, 0700); err != nil {
 		t.Fatal(err)
 	}
