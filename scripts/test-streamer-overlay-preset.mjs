@@ -31,6 +31,10 @@ try {
   const sourceBonusPanel = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx",
   );
+  const sourceBonusPanelSource = readFileSync(
+    new URL("../src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx", import.meta.url),
+    "utf8",
+  );
   const { supabase } = await server.ssrLoadModule(
     "/src/config/supabaseClient.js",
   );
@@ -164,6 +168,26 @@ try {
   assert.match(sourcePanelMarkup, /TOTAL PAYOUT/);
   assert.match(sourcePanelMarkup, /€5\.00/);
   assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
+  assert.match(sourceBonusPanelSource, /if \(isOpening \|\| resultSlots\.length < 2\) return undefined/);
+  assert.match(sourceBonusPanelSource, /resultSlot && !isOpening/);
+  const openingPanelMarkup = renderToStaticMarkup(
+    React.createElement(sourceBonusPanel.default, {
+      config: { streamerName: "Miguel", startMoney: 100, currency: "€", bonusOpening: true },
+      bonuses: [
+        { id: "opening-1", slotName: "Current Opening Slot", betSize: 1, opened: false },
+        { id: "next-1", slotName: "Next Slot", betSize: 1, opened: false },
+      ],
+      stats: { liveBE: 10, avgMulti: 5, totalWin: 5, bestSlot: { slotName: "Opened Slot", betSize: 1, payout: 5, _multi: 5 } },
+      currency: "€",
+    }),
+  );
+  assert.match(openingPanelMarkup, /BONUS OPENING/);
+  assert.match(openingPanelMarkup, /Current Opening Slot/);
+  assert.match(openingPanelMarkup, /TOTAL PAY/);
+  assert.match(openingPanelMarkup, /BE ATUAL/);
+  assert.match(openingPanelMarkup, /is-opening/);
+  assert.match(sourceBonusPanelSource, /top:50%;left:10px;right:10px;transform:translateY\(-50%\)/);
+  assert.doesNotMatch(openingPanelMarkup, /aria-label="Best opened bonus"/);
   const endedPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
