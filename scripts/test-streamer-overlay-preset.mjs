@@ -170,6 +170,7 @@ try {
   assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
   assert.match(sourceBonusPanelSource, /if \(isOpening \|\| resultSlots\.length < 2\) return undefined/);
   assert.match(sourceBonusPanelSource, /resultSlot && !isOpening/);
+  assert.match(sourceBonusPanelSource, /opening-counters \.streamer-source-bonus-counter span\{flex:1;min-width:0;gap:2px;overflow:hidden;font-size:6px;white-space:nowrap\}/);
   const openingPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€", bonusOpening: true },
