@@ -128,6 +128,7 @@ try {
   );
   assert.equal(chat.config.giveawayInChat, true);
   assert.equal(chat.config.giveawayHeight, 64);
+  assert.equal(chat.config.showHeader, true);
   const hunt = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "active_panel",
   );

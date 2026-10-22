@@ -115,7 +115,7 @@ function configureStreamerWidget(type, config, role, geometry) {
     next = {
       ...next,
       chatStyle: "broadcast_chat",
-      showHeader: false,
+      showHeader: true,
       showLegend: false,
       showAvatars: false,
       flow: "top-to-bottom",
