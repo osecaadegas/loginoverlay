@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getFeaturedOverlayThemes, isNewOverlayTheme, OVERLAY_SHOWCASE_CATALOG, OVERLAY_SHOWCASE_CATEGORIES } from './overlayShowcaseCatalog';
+import { getFeaturedOverlayThemes, isLandingShowcaseTheme, isNewOverlayTheme, OVERLAY_SHOWCASE_CATALOG, OVERLAY_SHOWCASE_CATEGORIES } from './overlayShowcaseCatalog';
 import './OverlayShowcase.css';
 
 export default function OverlayShowcase() {
@@ -12,7 +12,7 @@ export default function OverlayShowcase() {
   const returnFocusRef = useRef(null);
   const dialogRef = useRef(null);
   const visible = useMemo(() => {
-    const base = category === 'All' ? getFeaturedOverlayThemes(6) : OVERLAY_SHOWCASE_CATALOG.filter(item => item.published && item.thumbnail && item.fullPreview && item.category === category).sort((a,b)=>a.featuredRank-b.featuredRank);
+    const base = category === 'All' ? getFeaturedOverlayThemes(6) : OVERLAY_SHOWCASE_CATALOG.filter(item => isLandingShowcaseTheme(item) && item.category === category).sort((a,b)=>a.featuredRank-b.featuredRank);
     return base;
   }, [category]);
   const active = OVERLAY_SHOWCASE_CATALOG.find(item => item.id === activeId) || null;
@@ -54,7 +54,7 @@ export default function OverlayShowcase() {
       </button>
       <div className="lp-scene-card__body"><div><span className="lp-scene-card__category">{theme.category}</span><h3>{theme.name}</h3></div><Link to={theme.destination} className="lp-scene-card__use">Use this theme <ArrowUpRight size={15} aria-hidden="true" /></Link></div>
     </article>)}</div>
-    {category === 'All' && <div className="lp-overlay-showcase__footer"><span>Six full-scene previews · {OVERLAY_SHOWCASE_CATALOG.filter(item => item.published).length} published presets</span><Link to="/overlay-center">Open the full theme library <ChevronRight size={16} aria-hidden="true" /></Link></div>}
+    {category === 'All' && <div className="lp-overlay-showcase__footer"><span>{getFeaturedOverlayThemes(6).length} public full-scene previews</span><Link to="/overlay-center">Open the full theme library <ChevronRight size={16} aria-hidden="true" /></Link></div>}
     {active && <div className="lp-scene-lightbox" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setActiveId(null); }}><div className="lp-scene-lightbox__dialog" role="dialog" aria-modal="true" aria-labelledby="scene-dialog-title" tabIndex={-1} ref={dialogRef}>
       <div className="lp-scene-lightbox__top"><div><span>{active.category}</span><h2 id="scene-dialog-title">{active.name}</h2></div><button type="button" onClick={() => setActiveId(null)} aria-label="Close preview"><X /></button></div>
       <div className="lp-scene-lightbox__preview"><button type="button" onClick={() => { const i=visible.findIndex(item=>item.id===active.id); setActiveId(visible[(i-1+visible.length)%visible.length].id); }} aria-label="Previous theme"><ChevronLeft /></button><img src={active.fullPreview} alt={`${active.name} enlarged full-scene overlay preview`} width="1920" height="1080" loading="eager" decoding="async"/><button type="button" onClick={() => { const i=visible.findIndex(item=>item.id===active.id); setActiveId(visible[(i+1)%visible.length].id); }} aria-label="Next theme"><ChevronRight /></button></div>

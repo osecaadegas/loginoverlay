@@ -2,13 +2,16 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import puppeteer from 'puppeteer';
-import { OVERLAY_SHOWCASE_CATALOG, OVERLAY_SHOWCASE_CATEGORIES, getFeaturedOverlayThemes, isNewOverlayTheme } from '../src/components/LandingPage/overlayShowcaseCatalog.js';
+import { OVERLAY_SHOWCASE_CATALOG, OVERLAY_SHOWCASE_CATEGORIES, getFeaturedOverlayThemes, isLandingShowcaseTheme, isNewOverlayTheme } from '../src/components/LandingPage/overlayShowcaseCatalog.js';
 import { WIDGET_COLOUR_THEMES } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 
 const published = OVERLAY_SHOWCASE_CATALOG.filter(theme => theme.published);
 assert.equal(published.length, 6);
-assert.equal(getFeaturedOverlayThemes(6).length, 6);
+const landingThemes = OVERLAY_SHOWCASE_CATALOG.filter(isLandingShowcaseTheme);
+assert.equal(getFeaturedOverlayThemes(6).length, 5);
 assert.deepEqual(OVERLAY_SHOWCASE_CATEGORIES, ['All','Gaming','Casino','Custom']);
+assert.equal(landingThemes.some(theme => theme.id === 'solverde'), false, 'exclusive Solverde remains out of the public landing gallery');
+assert.equal(OVERLAY_SHOWCASE_CATALOG.find(theme => theme.id === 'solverde').published, true, 'Solverde stays published for the existing editor and overlay');
 const compositionFiles = {galactic_command:'galacticCommandComposition.js',starter_studio:'starterStudioComposition.js',street_art:'streetArtComposition.js',solverde:'solverdeComposition.js',candy:'candyComposition.js',volcanic:'volcanicComposition.js',orbital:'orbitalComposition.js'};
 for(const theme of OVERLAY_SHOWCASE_CATALOG){assert(WIDGET_COLOUR_THEMES.some(item=>item.key===theme.id),`${theme.id} is a real overlay theme id`);assert(existsSync(`src/components/OverlayCenter/editor/${compositionFiles[theme.id]}`),`${theme.id} has a real editor composition`);}
 const orbital = OVERLAY_SHOWCASE_CATALOG.find(theme => theme.id === 'orbital');
@@ -51,18 +54,19 @@ try {
     DOM.createRoot(document.getElementById('root')).render(React.createElement(router.MemoryRouter,null,React.createElement(Gallery)));
   });
   await page.waitForSelector('.lp-scene-card');
-  assert.equal(await page.$$eval('.lp-scene-card',cards=>cards.length),6);
+  assert.equal(await page.$$eval('.lp-scene-card',cards=>cards.length),5);
   assert(await page.$$eval('.lp-scene-card img',images=>images.every(image=>image.loading==='lazy')));
   const dimensions = await page.evaluate(async themes => Promise.all(themes.flatMap(theme => [theme.thumbnail,theme.fullPreview]).map(async url => { const img=new Image();img.src=url;await img.decode();return [img.naturalWidth,img.naturalHeight]; })), published);
   assert(dimensions.every(([width,height],index) => index % 2 === 0 ? width === 960 && height === 540 : width === 1920 && height === 1080), 'scene captures and 16:9 thumbnails decode at their declared dimensions');
   assert(await page.$eval('.lp-scene-card__image-button',button=>Math.abs(button.getBoundingClientRect().width/button.getBoundingClientRect().height-16/9)<0.02));
   for(const category of ['Casino','Gaming','Custom']){
     await page.$$eval('.lp-overlay-showcase__filters button', (buttons, label) => buttons.find(button => button.textContent.trim() === label)?.click(), category);
-    const count = published.filter(theme=>theme.category===category).length;
+    const count = landingThemes.filter(theme=>theme.category===category).length;
     assert.equal(await page.$$eval('.lp-scene-card',cards=>cards.length),count);
   }
   await page.$$eval('.lp-overlay-showcase__filters button', buttons => buttons.find(button => button.textContent.trim() === 'All')?.click());
-  assert.equal(await page.$$eval('.lp-scene-card',cards=>cards.length),6);
+  assert.equal(await page.$$eval('.lp-scene-card',cards=>cards.length),5);
+  assert.equal(await page.$$eval('.lp-scene-card h3',headings=>headings.some(heading=>heading.textContent.trim()==='Solverde')),false,'exclusive Solverde is not rendered in any landing gallery filter');
   await page.click('.lp-scene-card__image-button');
   await page.waitForSelector('[role="dialog"]');
   assert(await page.$eval('[role="dialog"] img',img=>img.naturalWidth>0));
@@ -83,5 +87,5 @@ try {
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`no horizontal overflow at ${width}px`);
   }
   assert.deepEqual(errors,[]);
-  console.log('PASS overlay showcase: six published scene captures, catalog filtering, WebP assets, modal keyboard and focus, editor destination, responsive widths, incomplete preview withheld.');
+  console.log('PASS overlay showcase: five public scene captures, exclusive Solverde withheld from homepage filters, catalog assets, modal keyboard and focus, editor destination, responsive widths, incomplete preview withheld.');
 } finally { await browser.close(); await server.close(); }
