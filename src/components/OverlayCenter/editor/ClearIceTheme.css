@@ -1,0 +1,134 @@
+/* Clear Ice keeps Arctic's existing layout, widget markup and ice artwork. It only
+   replaces the Arctic palette with the translucent Crystal Ice glass palette. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"] {
+  --ice-void: #0A2B4A;
+  --ice-deep: #0A2B4A;
+  --ice-panel: #123254;
+  --ice-raised: #296299;
+  --ice-crystal: #659CD2;
+  --ice-line: rgba(137, 217, 255, .65);
+  --ice-highlight: rgba(216, 243, 251, .65);
+  --ice-text: #EAF7FF;
+  --ice-muted: #A9CDE5;
+  --clear-ice-glass: linear-gradient(145deg, rgba(41, 98, 153, .42), rgba(18, 50, 84, .32) 45%, rgba(10, 43, 74, .48));
+  color: var(--ice-text);
+  color-scheme: dark;
+  text-shadow: 0 1px 3px rgba(0, 9, 17, .68);
+}
+
+/* Recolor the existing Arctic shells while retaining their frame geometry and
+   original ice-glass/crack layers. Semi-transparent fill preserves gameplay. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is([data-widget-element="container"]:not(.better-hunt-root), .better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-stage, .better-bets-stage, .better-tournament-stage, .better-slot-requests) {
+  border-color: var(--ice-line) !important;
+  border-width: 2px !important;
+  background-color: rgba(18, 50, 84, .35) !important;
+  background-image:
+    url("/theme-effects/ice/frost-edge.png"),
+    linear-gradient(180deg, rgba(216, 243, 251, .20), rgba(137, 217, 255, .035) 18%, transparent 42%),
+    linear-gradient(145deg, rgba(41, 98, 153, .18), rgba(18, 50, 84, .10) 45%, rgba(10, 43, 74, .2)) !important;
+  background-blend-mode: screen, normal, normal !important;
+  background-position: center, center, center !important;
+  background-size: 100% 100%, cover, cover !important;
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(8px) saturate(130%);
+  box-shadow:
+    0 0 0 1px rgba(216, 243, 251, .45),
+    inset 0 1px 0 rgba(255, 255, 255, .72),
+    inset 0 0 14px rgba(137, 217, 255, .2),
+    0 0 16px rgba(101, 156, 210, .48) !important;
+}
+
+/* The navbar and RTP rail use the same Arctic markup and bevels, with brighter
+   frosted highlights and navy glass underneath. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="navbar"] [data-widget-element="container"],
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+  border-color: rgba(137, 217, 255, .72) !important;
+  background-color: rgba(18, 50, 84, .35) !important;
+  background-image:
+    linear-gradient(180deg, rgba(216, 243, 251, .42), rgba(137, 217, 255, .12) 18%, rgba(10, 43, 74, .36) 78%, rgba(216, 243, 251, .2)),
+    url("/theme-effects/ice/frost-edge.png") !important;
+  background-blend-mode: normal, screen !important;
+  background-size: 100% 100%, 100% 100% !important;
+  box-shadow: inset 0 2px 1px rgba(216, 243, 251, .72), inset 0 -2px 1px rgba(137, 217, 255, .42), 0 0 16px rgba(101, 156, 210, .42) !important;
+}
+
+/* Clear glass remains especially transparent for chat, camera and slot source
+   openings. The actual source remains untouched behind the outline. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="camera"] :is([data-widget-element="container"], .camera-widget),
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="slot_window"] :is([data-widget-element="container"], .slot-window-frame) {
+  border: 2px solid rgba(137, 217, 255, .8) !important;
+  background-color: rgba(18, 50, 84, .12) !important;
+  background-image:
+    linear-gradient(145deg, rgba(41, 98, 153, .13), rgba(10, 43, 74, .12)),
+    url("/theme-effects/ice/ice-glass.webp") !important;
+  background-blend-mode: screen, soft-light !important;
+  background-size: cover, 440px 560px !important;
+  box-shadow: inset 0 0 12px rgba(216, 243, 251, .18), 0 0 16px rgba(101, 156, 210, .4) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: blur(10px) saturate(130%);
+}
+
+/* Nested stat and message cards take the supplied 70% navy glass treatment. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is([data-widget-element="header"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], .better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-better-element="statCard"], [data-better-element="message"]) {
+  border-color: rgba(137, 217, 255, .36) !important;
+  background-color: rgba(10, 43, 74, .7) !important;
+  background-image:
+    linear-gradient(145deg, rgba(41, 98, 153, .2), rgba(10, 43, 74, .42)) !important;
+  box-shadow: inset 0 1px 0 rgba(216, 243, 251, .22), inset 0 0 9px rgba(137, 217, 255, .08), 0 2px 8px rgba(0, 10, 19, .22) !important;
+}
+
+/* Bring the Arctic crack detail into Clear Ice without laying an opaque bitmap
+   over the game. The source artwork is dark, so screen blending keeps its
+   bright fissures and reflections while the low overlay opacity protects text. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"]) {
+  position: relative;
+  isolation: isolate;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("/theme-effects/ice/ice-glass.webp") center / 300px 300px repeat;
+  opacity: .2;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is([data-widget-element="title"], h1, h2, h3, .better-hunt-main-title, .better-gw-title, .sr-image-header > strong, .cg-title) {
+  color: #EAF7FF !important;
+  text-shadow: 0 1px 3px rgba(4, 21, 33, .88), 0 0 10px rgba(137, 217, 255, .28) !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is([data-widget-element="label"], .better-hunt-label, .cg-label, .better-navbar-brand-subtitle) {
+  color: #A9CDE5 !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget {
+  background-color: rgba(18, 50, 84, .12) !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(10, 43, 74, .08)) !important;
+  background-blend-mode: normal !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"] .ov-chat-widget :is(.ov-chat-header, .ov-chat-messages, .ov-chat-giveaway, .better-gw-roulette-viewport) {
+  background-color: rgba(18, 50, 84, .12) !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(10, 43, 74, .08)) !important;
+  background-blend-mode: normal !important;
+  color: #EAF7FF;
+}
+
+/* Keep artwork fully legible; only reuse Arctic's existing fine ice texture. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.cg-cover, .better-slideshow-frame__viewport, .better-shoutout-media)::before {
+  border-color: rgba(216, 243, 251, .72);
+  box-shadow: inset 0 0 12px rgba(137, 217, 255, .14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .better-widget-colour-scope[data-colour-theme="clear_ice"] * { scroll-behavior: auto !important; }
+}

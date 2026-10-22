@@ -2392,6 +2392,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
               widget={selectedLegacyWidget}
               allWidgets={legacyWidgets}
               user={user}
+              isAdmin={isAdmin}
               dataMode={dataMode}
             />
           )}

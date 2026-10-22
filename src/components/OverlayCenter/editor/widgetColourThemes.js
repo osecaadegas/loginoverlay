@@ -189,9 +189,20 @@ export function buildWidgetColourThemePatch(type, config, key) {
 export function getWidgetColourThemeTokens(type, config, key) {
   const palette = { ...widgetPalette(type, getWidgetColourTheme(key)) };
   const assigned = new Set();
+  // Older Clear Ice saves contain the first draft palette. Translate only those
+  // exact defaults so existing themed overlays pick up Crystal Ice while any
+  // custom per-widget colors continue to win.
+  const legacyClearIceColors = key === 'clear_ice' ? {
+    '#071827': '#0A2B4A', '#0D2A40': '#123254', '#153B56': '#0A2B4A',
+    '#8DE2FF': '#89D9FF', '#DDF7FF': '#D8F3FB', '#60C8F1': '#659CD2',
+    '#F3FAFF': '#EAF7FF', '#BDD6E4': '#A9CDE5', '#E9F7FA': '#0A2B4A',
+    '#D8EFF5': '#123254', '#F5FCFD': '#0A2B4A', '#78BFD1': '#89D9FF',
+  } : null;
   for (const [property, token] of Object.entries(COLOUR_KEYS[type] || {})) {
-    if (!assigned.has(token) && typeof config[property] === 'string' && config[property]) {
-      palette[token] = config[property];
+    const configuredColor = typeof config[property] === 'string' ? config[property] : '';
+    const migratedColor = legacyClearIceColors?.[configuredColor.toUpperCase()] || configuredColor;
+    if (!assigned.has(token) && configuredColor) {
+      palette[token] = migratedColor;
       assigned.add(token);
     }
   }

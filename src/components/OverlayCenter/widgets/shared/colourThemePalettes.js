@@ -72,6 +72,12 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
     accent: "#d8f8ff", secondary: "#63cceb", text: "#f3fbff", muted: "#aac9d6", hue: 195,
   },
   {
+    key: "clear_ice", name: "Clear Ice", icon: "arctic", adminOnly: true,
+    swatches: ["#0A2B4A", "#89D9FF", "#D8F3FB"],
+    background: "#0A2B4A", surface: "#123254", raised: "#0A2B4A", border: "#89D9FF",
+    accent: "#D8F3FB", secondary: "#659CD2", text: "#EAF7FF", muted: "#A9CDE5", hue: 202,
+  },
+  {
     key: "lime", name: "Lime", icon: "lime", swatches: ["#202914", "#98bf42", "#d5f68a"],
     background: "#13170c", surface: "#202914", raised: "#303c1d", border: "#728b3a",
     accent: "#d5f68a", secondary: "#98bf42", text: "#f6ffe7", muted: "#c4d5a6", hue: 82,
@@ -101,7 +107,7 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
 
 // Gallery organisation is visual metadata; existing asset access remains authoritative.
 export function getWidgetColourThemeGroups(canUse = () => true) {
-  const available = WIDGET_COLOUR_THEMES.filter(theme => canUse(theme.key));
+  const available = WIDGET_COLOUR_THEMES.filter(theme => canUse(theme.key, theme));
   return [
     { key: 'premium', name: 'Premium', themes: available.filter(theme => theme.thumbnail) },
     { key: 'palettes', name: 'Colour palettes', themes: available.filter(theme => !theme.thumbnail) },

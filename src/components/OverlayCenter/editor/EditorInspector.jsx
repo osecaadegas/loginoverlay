@@ -65,6 +65,7 @@ export default function EditorInspector({
   widget,
   allWidgets,
   user,
+  isAdmin = false,
   dataMode,
 }) {
   const [search, setSearch] = useState("");
@@ -249,6 +250,7 @@ export default function EditorInspector({
             allWidgets={allWidgets}
             user={user}
             userId={user?.id}
+            isAdmin={isAdmin}
           />
           <p className="editor-no-settings">No matching settings</p>
         </div>

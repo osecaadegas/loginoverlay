@@ -7993,6 +7993,7 @@ function ThemedBetterWidgetControls({
   config,
   normalizedConfig: c,
   onChange,
+  isAdmin = false,
   ...props
 }) {
   const access = useOverlayAssetAccess(props.userId || props.user?.id);
@@ -8006,7 +8007,7 @@ function ThemedBetterWidgetControls({
           {access.error && <p role="alert">Could not load theme access. <button onClick={access.retry}>Retry</button></p>}
           {access.loading && <p role="status">Loading themes…</p>}
           <div role="group" aria-label="Colour theme">
-          {getWidgetColourThemeGroups(key => access.canUse('theme', key)).map(group => <div key={group.key} className="bp-theme-group" data-theme-group={group.key}>
+          {getWidgetColourThemeGroups((key, theme) => (!theme?.adminOnly || isAdmin) && access.canUse('theme', key)).map(group => <div key={group.key} className="bp-theme-group" data-theme-group={group.key}>
             <div className="bp-theme-group-title">{group.key === 'premium' ? <Crown size={12} /> : <Palette size={12} />}{group.name}</div>
             <div className="bp-theme-grid">
             {group.themes.map((theme) => {

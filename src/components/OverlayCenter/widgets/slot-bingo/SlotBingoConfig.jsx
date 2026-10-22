@@ -1,4 +1,5 @@
 import { useOverlayAssetAccess } from '../../../../hooks/useOverlayAssetAccess';
+import { useAdmin } from '../../../../hooks/useAdmin';
 import { useState } from "react";
 import {
   Check,
@@ -60,6 +61,7 @@ const APPEARANCE_KEYS = [
 
 export default function SlotBingoConfig({ config = {}, onChange }) {
   const access = useOverlayAssetAccess();
+  const { isAdmin } = useAdmin();
   const c = normalizeSlotBingoConfig(config);
   const [activeTab, setActiveTab] = useState("board");
   const squareCount = getSlotBingoSquareCount(c.boardRows);
@@ -243,7 +245,7 @@ export default function SlotBingoConfig({ config = {}, onChange }) {
           <section className="slot-bingo-config__section">
             <div className="slot-bingo-config__section-head"><div><span>Quick themes</span><h3>Apply a complete colour palette</h3><p>The same shared themes are available across Streamers Center widgets.</p></div></div>
             <div className="slot-bingo-config__themes" role="list" aria-label="Colour themes">
-              {WIDGET_COLOUR_THEMES.filter(theme => access.canUse("theme", theme.key)).map((theme) => (
+              {WIDGET_COLOUR_THEMES.filter(theme => (!theme.adminOnly || isAdmin) && access.canUse("theme", theme.key)).map((theme) => (
                 <button key={theme.key} type="button" className={c.colourTheme === theme.key ? "is-active" : ""} onClick={() => applyColourTheme(theme.key)}>
                   <span className="slot-bingo-config__swatches" aria-hidden="true">{theme.swatches.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>
                   <strong>{theme.name}</strong>

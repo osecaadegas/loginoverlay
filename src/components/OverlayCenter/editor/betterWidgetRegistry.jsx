@@ -44,6 +44,7 @@ import { normalizeBetterCoordinate } from "./betterWidgetGeometry";
 import { STANDARD_BETTER_WIDGET_GEOMETRY } from "./standardWidgetPresets";
 import { scaleStandaloneWidgetConfig } from "./obsConfigScaling";
 import { EDITOR_WIDGET_METADATA } from "./editorWidgetMetadata";
+import "./ClearIceTheme.css";
 import {
   getHorizontalHuntHeight,
   getHorizontalHuntMinHeight,
@@ -1452,6 +1453,9 @@ export function renderBetterWidgetInstance({
   ).replace(/^theme_/, "");
   const greekArchitectureEnabled =
     widget.config.themeEffects?.greek?.architecture !== false;
+  const clearIceTokens = colourThemeKey === "clear_ice"
+    ? getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)
+    : null;
   return (
     <OverlayAssetGate userId={userId} config={widget.config} runtime={runtime} accessVerified={accessVerified}>
     <div
@@ -1460,7 +1464,7 @@ export function renderBetterWidgetInstance({
       data-greek-architecture={greekArchitectureEnabled ? "on" : "off"}
       data-widget-type={instance.widgetType}
       data-obs-render-scale={renderScale > 1 ? renderScale.toFixed(4) : undefined}
-      style={{ "--obs-render-scale": renderScale, ...(colourThemeKey==='galactic_command'?galacticVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey==='starter_studio'?starterStudioVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
+      style={{ "--obs-render-scale": renderScale, ...(clearIceTokens ? { "--clear-ice-background": clearIceTokens.background, "--clear-ice-surface": clearIceTokens.surface, "--clear-ice-raised": clearIceTokens.raised, "--clear-ice-border": clearIceTokens.border } : {}), ...(colourThemeKey==='galactic_command'?galacticVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey==='starter_studio'?starterStudioVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config):{}), ...(colourThemeKey === 'street_art' ? streetArtStyleVariables(getWidgetColourThemeTokens(instance.widgetType,widget.config,colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'solverde' ? solverdeStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey),widget.config) : {}), ...(colourThemeKey === 'volcanic' ? volcanicStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'candy' ? candyStyleVariables(getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey), widget.config) : {}), ...(colourThemeKey === 'orbital' ? orbitalStyleVariables(widget.config.themeEffects?.orbital, getWidgetColourThemeTokens(instance.widgetType, widget.config, colourThemeKey)) : {}) }}
     >
       {colourThemeKey==='galactic_command'?<GalacticCommandModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></GalacticCommandModule>:colourThemeKey==='starter_studio'?<StarterStudioModule type={instance.widgetType} config={widget.config} layout={normalizedLayout} runtime={runtime}><WidgetComponent {...commonProps}/></StarterStudioModule>:colourThemeKey === 'street_art' ? <StreetArtModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps}/></StreetArtModule> : colourThemeKey === 'candy' ? <CandyModule type={instance.widgetType} config={widget.config}><WidgetComponent {...commonProps} /></CandyModule> : <WidgetComponent {...commonProps} />}
       {colourThemeKey === 'volcanic' && (instance.widgetType === 'chat' || (instance.widgetType === 'navbar' && widget.config.displayStyle !== 'better_navbar')) && <VolcanicWidgetLife config={widget.config} />}

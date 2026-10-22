@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import puppeteer from 'puppeteer';
 import { createServer } from 'vite';
-import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
+import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme, getWidgetColourThemeGroups } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 import {
   countCompletedSlotBingoSquares,
   getSlotBingoSquareCount,
@@ -20,8 +20,27 @@ assert.equal(restoredBingo.squares[7].label, defaultBingo.squares[7].label, 'lay
 assert.equal(countCompletedSlotBingoSquares(compactBingo.squares, 3) <= 15, true, 'compact progress only counts visible squares');
 assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multiplier)), true, 'every Bingo option has a payout multiplier');
 
-const newThemes = ['gold', 'violet', 'rose', 'arctic', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
+const newThemes = ['gold', 'violet', 'rose', 'arctic', 'clear_ice', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
+const clearIceCss = readFileSync(new URL('../src/components/OverlayCenter/editor/ClearIceTheme.css', import.meta.url), 'utf8');
+const themeEffectsCss = readFileSync(new URL('../src/effects/ThemeEffects/ThemeEffects.css', import.meta.url), 'utf8');
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['galactic_command','starter_studio','street_art', 'solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
+assert.equal(getWidgetColourTheme('clear_ice').adminOnly, true, 'Clear Ice is marked as admin-only');
+assert(!getWidgetColourThemeGroups((key, theme) => !theme.adminOnly).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'non-admin theme catalog omits Clear Ice');
+assert(getWidgetColourThemeGroups((key, theme) => Boolean(theme.adminOnly)).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'admin theme catalog includes Clear Ice');
+assert.match(themeEffectsCss, /data-colour-theme="clear_ice"/, 'Clear Ice uses the shared production ice material rules');
+assert.match(clearIceCss, /rgba\(18, 50, 84, \.35\)/, 'Clear Ice uses the reference 35% glass shell');
+assert.match(clearIceCss, /rgba\(10, 43, 74, \.7\)/, 'Clear Ice uses the reference 70% inset glass');
+assert.equal(getWidgetColourTheme('clear_ice').background, '#0A2B4A', 'Clear Ice uses Deep Ice as its palette base');
+assert.equal(getWidgetColourTheme('clear_ice').surface, '#123254', 'Clear Ice uses Frozen Navy for panels');
+assert.equal(getWidgetColourTheme('clear_ice').raised, '#0A2B4A', 'Clear Ice uses Deep Ice to keep raised text readable');
+assert.equal(getWidgetColourTheme('clear_ice').border, '#89D9FF', 'Clear Ice uses Ice Glow for its borders');
+assert.equal(getWidgetColourTheme('clear_ice').secondary, '#659CD2', 'Clear Ice uses Crystal Blue as its supporting accent');
+assert.equal(getWidgetColourTheme('clear_ice').text, '#EAF7FF', 'Clear Ice uses the specified Frost White primary text');
+assert.equal(getWidgetColourTheme('clear_ice').muted, '#A9CDE5', 'Clear Ice uses the Crystal Ice secondary label color');
+assert.match(clearIceCss, /data-widget-type="camera"/, 'Clear Ice keeps source openings transparent');
+assert.match(clearIceCss, /ice-glass\.webp/, 'Clear Ice uses the existing glass texture');
+assert.match(clearIceCss, /mix-blend-mode:\s*screen/, 'Clear Ice blends fracture texture as a luminous overlay');
+assert.match(clearIceCss, /opacity:\s*\.2/, 'Clear Ice keeps surface fracture texture restrained');
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],
@@ -117,19 +136,19 @@ try {
           mediaText: '/player.webp|image|Live media', imageUrl: type === 'background' ? '/player.webp' : c.imageUrl,
         };
       },
-      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '' } = {}) {
+      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '', isAdmin = true } = {}) {
         const definition = registry.getBetterWidgetDefinition(type);
         const c = config || this.base(type);
-        this.current = { type, config: c, runtime, controls, width, search };
+        this.current = { type, config: c, runtime, controls, width, search, isAdmin };
         const instance = registry.normalizeBetterInstance(JSON.parse(JSON.stringify(registry.createBetterInstance(type, { config: c }))));
         this.instance = instance;
         root.render(React.createElement('main', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 16, padding: 12 } },
           React.createElement('aside', { style: { width, flexShrink: 0 } },
             React.createElement(EditorControlContext.Provider, { value: { mode: controls, tab: '__all', search,
               simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true }, onSection() {} } },
-              React.createElement(BetterWidgetControls, { type, config: c, widget: { ...instance, config: c }, onChange: next => {
+              React.createElement(BetterWidgetControls, { type, config: c, isAdmin, widget: { ...instance, config: c }, onChange: next => {
                 window.themeTest.lastConfig = next;
-                this.mount(type, next, { runtime, controls, width, search });
+                this.mount(type, next, { runtime, controls, width, search, isAdmin });
               } }))),
           React.createElement('div', { 'data-preview': type, style: { width: instance.width, height: instance.height, flexShrink: 0 } },
             registry.renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime }))));
@@ -157,6 +176,9 @@ try {
   };
   const types = await page.evaluate(() => window.themeTest.types);
   const themes = await page.evaluate(() => window.themeTest.themes);
+  await page.evaluate(() => window.themeTest.mount('chat', undefined, { isAdmin: false }));
+  await page.waitForSelector('.bp-theme-grid button');
+  assert.equal(await page.$('[data-colour-theme-key="clear_ice"]'), null, 'non-admin editor does not expose Clear Ice');
   assert.equal(types.length, 14);
   assert(types.includes('slot_requests'), 'Slot Requests participates in the palette regression matrix');
   const unit = await page.evaluate(() => {
@@ -212,6 +234,15 @@ try {
       const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.dataset.colourThemeKey }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
+      if (type === 'bonus_hunt' && theme === 'clear_ice') {
+        const texture = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {
+          const overlay = getComputedStyle(element, '::after');
+          return { image: overlay.backgroundImage, blend: overlay.mixBlendMode, opacity: Number(overlay.opacity) };
+        });
+        assert.match(texture.image, /ice-glass\.webp/, 'Clear Ice Bonus Hunt cards render the supplied fracture texture');
+        assert.equal(texture.blend, 'screen', 'Clear Ice texture is blended as a highlight overlay');
+        assert(texture.opacity > 0 && texture.opacity <= 0.25, 'Clear Ice texture stays subtle and preserves readability');
+      }
       if (theme === 'gladiator') {
         const typography = await page.$$eval(
           '.better-widget-colour-scope[data-colour-theme="gladiator"] *:not(svg):not(path)',
