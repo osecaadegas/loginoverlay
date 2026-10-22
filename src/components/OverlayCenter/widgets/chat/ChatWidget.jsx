@@ -1142,6 +1142,8 @@ function ChatWidget({
 
   /* Which features each style shows */
   const showHeader = shouldShowChatHeader(chatStyle, c);
+  const isStreamerOverlayChat = c.streamerOverlay?.role === "chat";
+  const showStyleHeader = showHeader && !isStreamerOverlayChat;
   const showLegend = shouldShowChatLegend(chatStyle, c);
   const showBadges = shouldShowChatBadges(chatStyle, c);
 
@@ -1630,7 +1632,33 @@ function ChatWidget({
         />
       ) : null}
 
-      {showHeader && chatStyle === "cards" && (
+      {showHeader && isStreamerOverlayChat && (
+        <div
+          className="ov-chat-header ov-chat-header--streamer-source"
+          {...partAttrs("header")}
+          style={headerPartStyle({
+            minHeight: 40,
+            padding: "0 14px",
+            background: headerBg,
+            color: headerText,
+            borderBottom: `${containerBorderWidth}px solid ${containerBorderColor}`,
+            display: "flex",
+            alignItems: "center",
+            gap: 9,
+          })}
+        >
+          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />
+          </svg>
+          <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>CHAT</span>
+          <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, color: badgeText, fontSize: 10, fontWeight: 800, letterSpacing: ".08em" }}>
+            <i aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 999, background: badgeText, boxShadow: `0 0 8px ${badgeText}`, display: "inline-block" }} />
+            LIVE
+          </span>
+        </div>
+      )}
+
+      {showStyleHeader && chatStyle === "cards" && (
         <div
           className="ov-cards-header"
           {...partAttrs("header")}
@@ -1650,7 +1678,7 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && chatStyle === "metal" && (
+      {showStyleHeader && chatStyle === "metal" && (
         <div
           {...partAttrs("header")}
           style={headerPartStyle({
@@ -1707,7 +1735,7 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && chatStyle === "glow_panel" && (
+      {showStyleHeader && chatStyle === "glow_panel" && (
         <div
           {...partAttrs("header")}
           style={headerPartStyle({
@@ -1748,7 +1776,7 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && chatStyle === "StyleSecaChat" && (
+      {showStyleHeader && chatStyle === "StyleSecaChat" && (
         <div
           {...partAttrs("header")}
           style={styleSecaStyle(
@@ -1805,7 +1833,7 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && chatStyle === "bh_stats" && (
+      {showStyleHeader && chatStyle === "bh_stats" && (
         <div
           {...partAttrs("header")}
           style={headerPartStyle({
@@ -1857,11 +1885,11 @@ function ChatWidget({
         </div>
       )}
 
-      {showHeader && isCommunity && (
+      {showStyleHeader && isCommunity && (
         <CommunityChatHeader config={c} chatHeaderName={chatHeaderName}
           recentBits={renderMessages.reduce((sum, msg) => sum + Math.max(0, Number(msg.bits) || 0), 0)} />
       )}
-      {showHeader && isBetterChat && !isCommunity && (
+      {showStyleHeader && isBetterChat && !isCommunity && (
         <BetterChatHeader
           config={c}
           chatHeaderName={chatHeaderName}
@@ -1870,7 +1898,7 @@ function ChatWidget({
         />
       )}
 
-      {showHeader &&
+      {showStyleHeader &&
         chatStyle !== "cards" &&
         chatStyle !== "metal" &&
         chatStyle !== "glow_panel" &&

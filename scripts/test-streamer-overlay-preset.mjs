@@ -129,6 +129,12 @@ try {
   assert.equal(chat.config.giveawayInChat, true);
   assert.equal(chat.config.giveawayHeight, 64);
   assert.equal(chat.config.showHeader, true);
+  const chatWidgetSource = readFileSync(
+    new URL("../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(chatWidgetSource, /const isStreamerOverlayChat = c\.streamerOverlay\?\.role === "chat"/);
+  assert.match(chatWidgetSource, /isStreamerOverlayChat && \([\s\S]{0,1400}>CHAT<\/span>/);
   const hunt = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "active_panel",
   );
