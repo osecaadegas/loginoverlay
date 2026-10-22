@@ -271,6 +271,24 @@ try {
     "neon",
     "the next version migration updates saved builds to the supplied overlay's panel position and styling",
   );
+  const versionFourLayout = {
+    ...applied,
+    instances: applied.instances.map((instance) => ({
+      ...instance,
+      config: {
+        ...instance.config,
+        streamerOverlay: { ...instance.config.streamerOverlay, compositionVersion: 4 },
+      },
+    })),
+  };
+  assert.equal(isLegacyStreamerOverlayComposition(versionFourLayout), true);
+  const versionFiveLayout = applyStreamerOverlayComposition(versionFourLayout);
+  assert.equal(hasStreamerOverlayComposition(versionFiveLayout), true);
+  assert.equal(
+    versionFiveLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "chat").config.showHeader,
+    true,
+    "version 4 saved builds migrate to the source chat header",
+  );
   assert.ok(
     state.calls.some(
       (call) =>
