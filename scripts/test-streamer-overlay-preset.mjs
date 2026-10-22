@@ -212,6 +212,7 @@ try {
   assert.match(sourcePanelMarkup, /BEST SLOT/);
   assert.match(sourcePanelMarkup, /TOTAL PAY/);
   assert.match(sourcePanelMarkup, /€5\.00/);
+  assert.match(sourcePanelMarkup, /<strong>5\.00x<\/strong>/, "missing stored multipliers fall back to the opened bonus payout divided by bet");
   assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
   assert.match(sourceBonusPanelSource, /const resultSlots = useMemo/);
   assert.match(sourceBonusPanelSource, /streamer-source-bonus-scroll 30s linear infinite/);

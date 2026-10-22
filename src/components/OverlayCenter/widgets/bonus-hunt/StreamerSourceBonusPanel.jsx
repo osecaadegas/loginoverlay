@@ -104,7 +104,16 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
   // The supplied overlay defines AVERAGE as the arithmetic mean of opened
   // bonus multipliers (rather than total payout divided by total stake).
   const openedMultipliers = opened
-    .map(({ item }) => Number(item?.multiplier ?? item?.multi ?? item?._multi ?? 0))
+    .map(({ item }) => {
+      const storedMultiplier = item?.multiplier ?? item?.multi ?? item?._multi;
+      if (storedMultiplier !== undefined && storedMultiplier !== null && storedMultiplier !== "") {
+        const multiplier = Number(storedMultiplier);
+        if (Number.isFinite(multiplier)) return multiplier;
+      }
+      const bet = Number(item?.betSize ?? item?.bet_size ?? item?.payment_amount ?? item?.payment ?? item?.bet_amount ?? item?.bet) || 0;
+      const payout = Number(item?.payout ?? item?.result ?? item?.win ?? item?.result_amount) || 0;
+      return bet > 0 ? payout / bet : 0;
+    })
     .filter(Number.isFinite);
   const average = openedMultipliers.length
     ? `${(openedMultipliers.reduce((sum, value) => sum + value, 0) / openedMultipliers.length).toFixed(2)}x`
