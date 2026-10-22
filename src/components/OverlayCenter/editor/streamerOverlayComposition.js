@@ -1,15 +1,16 @@
 import { createBetterInstance } from "./betterWidgetRegistry.jsx";
 import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 
-// This follows the supplied overlay's actual scene: a slim top bar, one active
-// stream panel on the left, an unobstructed gameplay opening, and chat on the
-// right. It deliberately does not add unrelated request, slideshow, or result
-// cards from the general StreamersCenter widget catalog.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 3;
+// This follows the supplied MainStreamOverlay scene: a slim top bar, its
+// 350px left rail with a 240px active panel aligned to the rail's right edge,
+// an unobstructed gameplay opening, and chat on the right.
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 4;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
-  { type: "bonus_hunt", role: "active_panel", x: 20, y: 60, width: 350, height: 720 },
+  // MainStreamOverlay reserves a 350px left rail, then its 240px active
+  // widget is right-aligned in that rail (110px inset from the scene edge).
+  { type: "bonus_hunt", role: "active_panel", x: 130, y: 60, width: 240, height: 720 },
   { type: "slot_window", role: "gameplay", x: 378, y: 60, width: 1164, height: 720 },
   { type: "chat", role: "chat", x: 1550, y: 60, width: 350, height: 720 },
 ]);

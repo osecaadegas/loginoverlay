@@ -28,6 +28,9 @@ try {
   const slotWindow = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/slot-window/SlotWindowWidget.jsx",
   );
+  const sourceBonusPanel = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx",
+  );
   const { supabase } = await server.ssrLoadModule(
     "/src/config/supabaseClient.js",
   );
@@ -128,8 +131,24 @@ try {
   const hunt = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "active_panel",
   );
+  assert.deepEqual([hunt.x, hunt.y, hunt.width, hunt.height], [130, 60, 240, 720]);
   assert.equal(hunt.config.orientation, "mainstream");
   assert.equal(hunt.config.colourTheme, "neon");
+  const sourcePanelMarkup = renderToStaticMarkup(
+    React.createElement(sourceBonusPanel.default, {
+      config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
+      bonuses: [
+        { id: "open-1", slotName: "Source Style Slot", betSize: 1, opened: false, isSuperBonus: true },
+        { id: "opened-1", slotName: "Opened Slot", betSize: 1, payout: 5, opened: true },
+      ],
+      stats: { liveBE: 10, avgMulti: 5 },
+      currency: "€",
+    }),
+  );
+  assert.match(sourcePanelMarkup, /BONUS HUNT/);
+  assert.match(sourcePanelMarkup, /Source Style Slot/);
+  assert.match(sourcePanelMarkup, /SUPER/);
+  assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
   const scene = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "scene",
   );
@@ -208,8 +227,8 @@ try {
       migrated.instances.find((instance) => instance.config.streamerOverlay?.role === "gameplay").x,
       migrated.instances.find((instance) => instance.config.streamerOverlay?.role === "chat").x,
     ],
-    [20, 378, 1550],
-    "legacy generic builds migrate to the supplied scene's intended columns",
+    [130, 378, 1550],
+    "legacy builds migrate to the supplied scene's exact widget positions",
   );
   const previousStyleLayout = {
     ...applied,
@@ -220,7 +239,7 @@ try {
         colourTheme: "galactic_command",
         streamerOverlay: {
           ...instance.config.streamerOverlay,
-          compositionVersion: 2,
+          compositionVersion: 3,
         },
       },
     })),
@@ -232,7 +251,7 @@ try {
   assert.equal(
     restyled.instances.find((instance) => instance.config.streamerOverlay?.role === "scene").config.colourTheme,
     "neon",
-    "the next version migration updates saved builds from the old theme to the supplied blue styling",
+    "the next version migration updates saved builds to the supplied overlay's panel position and styling",
   );
   assert.ok(
     state.calls.some(

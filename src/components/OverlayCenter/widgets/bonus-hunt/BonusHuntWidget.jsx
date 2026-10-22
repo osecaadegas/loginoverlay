@@ -9,6 +9,7 @@ import React, {
 import SlotImage from "../SlotImage";
 import { subValue } from "../shared/appearanceStyles";
 import { useBonusHuntRequestsData } from "./shared/useBonusHuntRequestsData";
+import StreamerSourceBonusPanel from "./StreamerSourceBonusPanel.jsx";
 import { BetterBonusHuntStyle } from "../shared/betterWidgetStyles";
 import { getAllSlots } from "../../../../utils/slotUtils";
 
@@ -415,6 +416,20 @@ function BonusHuntWidget({
         sortedConfig.showRequests !== false &&
         sortedConfig.showSlotRequests !== false,
     });
+
+  // The supplied MainStreamOverlay uses its own compact, full-height bonus
+  // panel. Keep its presentation while continuing to use the canonical
+  // StreamersCenter bonus configuration and calculations above.
+  if (sortedConfig.streamerOverlay?.role === "active_panel") {
+    return (
+      <StreamerSourceBonusPanel
+        config={sortedConfig}
+        bonuses={bonuses}
+        stats={stats}
+        currency={currency}
+      />
+    );
+  }
 
   /* Better Editor renderer. */
   if (isBetterBH) {
