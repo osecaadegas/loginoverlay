@@ -162,7 +162,12 @@ try {
   const header = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "header",
   );
-  assert.equal(header.config.barHeight, 42);
+  assert.equal(header.config.barHeight, 50);
+  assert.deepEqual(
+    [header.x, header.y, header.width, header.height],
+    [0, 0, 1920, 50],
+    "the supplied source header spans the canvas edge to edge at its native 50px height",
+  );
   assert.equal(header.config.socialDisplayStyle, "slide");
   const navbarWidgetSource = readFileSync(
     new URL("../src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx", import.meta.url),
@@ -260,6 +265,7 @@ try {
   assert.match(endedPanelMarkup, /BONUS ENDED/);
   assert.match(chatWidgetSource, /Match ChatOverlay's original 240 x 720 inset panel/);
   assert.match(chatWidgetSource, /linear-gradient\(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%\)/);
+  assert.match(chatWidgetSource, /const giveawayPosition = isStreamerOverlayChat \|\|/);
   assert.match(chatWidgetSource, /justifyContent: "center", gap: 8, marginBottom: 12/);
   const embeddedWinnerMarkup = renderToStaticMarkup(
     React.createElement(embeddedGiveaway.default, {

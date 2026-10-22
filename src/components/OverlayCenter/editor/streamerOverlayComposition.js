@@ -2,12 +2,12 @@ import { createBetterInstance } from "./betterWidgetRegistry.jsx";
 import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 
 // This follows MainStreamOverlay's 1920 x 1080 stage and the actual source
-// component dimensions: a 42px inset bar, 240px side panels, and a transparent
-// 1164px gameplay opening between them.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 11;
+// component dimensions: a full-width 50px header, 240px side widgets, and a
+// transparent 1164px gameplay opening between them.
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 12;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
-  { type: "navbar", role: "header", x: 8, y: 8, width: 1904, height: 42 },
+  { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
   // MainStreamOverlay reserves a 350px left rail, then its 240px active
   // widget is right-aligned in that rail (110px inset from the scene edge).
   { type: "bonus_hunt", role: "active_panel", x: 130, y: 60, width: 240, height: 720 },
@@ -103,15 +103,12 @@ function configureStreamerWidget(type, config, role, geometry) {
     next = {
       ...next,
       displayStyle: "better_navbar",
-      // The supplied source bar is a single 50px strip: identity and session
-      // values stay together, socials scroll in the middle, and the CTA owns
-      // the far edge. This avoids packing every saved navbar section into one
-      // flex zone, which caused the logo, start value and social handles to
-      // overlap in the 1920px preview.
-      barHeight: 42,
+      // MainStreamOverlay renders its header iframe at the full 1920px stage
+      // width and 50px height. Keep the source content in that exact envelope.
+      barHeight: 50,
       fontSize: 12,
-      borderRadius: 24,
-      radius: 24,
+      borderRadius: 12,
+      radius: 12,
       containerBorderWidth: 1,
       containerBorderColor: "rgba(255,255,255,.1)",
       containerBlur: 12,
