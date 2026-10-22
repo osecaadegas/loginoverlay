@@ -903,23 +903,63 @@
   max-height: 340px;
   overflow: auto;
 }
-.editor-build-picker .better-editor-builds__list > button {
+.editor-build-picker .better-editor-builds__list > .editor-build-row {
   display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: 1px solid rgba(66, 137, 227, 0.19);
+  border-radius: 11px;
+  background: rgba(3, 14, 31, 0.72);
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+.editor-build-picker .better-editor-builds__list > .editor-build-row:hover {
+  border-color: rgba(62, 219, 255, 0.42);
+  background: rgba(11, 33, 64, 0.78);
+  transform: translateY(-1px);
+}
+.editor-build-picker .better-editor-builds__list .editor-build-row__select {
+  display: flex;
+  flex: 1;
   gap: 12px;
   align-items: center;
-  padding: 9px;
-  border: 1px solid transparent;
+  padding: 10px;
+  border: 0;
   background: transparent;
   color: #e1edf0;
   text-align: left;
   cursor: pointer;
   height: auto;
-  width: 100%;
   min-width: 0;
 }
-.editor-build-picker .better-editor-builds__list > button[aria-current] {
-  background: #25433e;
-  border-color: #4e8075;
+.editor-build-picker .better-editor-builds__list .editor-build-row__select[aria-current] {
+  color: #f1f8ff;
+  background: linear-gradient(100deg, rgba(22, 135, 223, 0.25), rgba(8, 31, 57, 0.16));
+  box-shadow: inset 3px 0 #3edbff;
+}
+.editor-build-row__delete {
+  display: grid;
+  flex: 0 0 40px;
+  place-items: center;
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 8px 0 2px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #9db2ce;
+  background: transparent;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+.editor-build-row__delete:hover:not(:disabled) {
+  color: #ffc4cf;
+  border-color: rgba(255, 110, 139, 0.4);
+  background: rgba(178, 43, 79, 0.2);
+}
+.editor-build-row__delete:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
 }
 .editor-topbar .editor-build-copy {
   flex: 1;

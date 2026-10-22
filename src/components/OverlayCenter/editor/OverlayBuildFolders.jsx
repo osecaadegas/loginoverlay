@@ -6,10 +6,12 @@ import {
   FolderPlus,
   Pencil,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import {
   createBetterEditorOverlay,
+  deleteBetterEditorOverlay,
   listBetterEditorOverlays,
 } from "../../../services/betterOverlayService";
 import { BETTER_CANVAS } from "./betterWidgetRegistry";
@@ -110,6 +112,28 @@ export default function OverlayBuildFolders({
       if (mounted.current) setBusy(false);
     }
   };
+  const removeBuild = async (build, label, published) => {
+    if (busy || disabled || builds.length <= 1) return;
+    const selected = build.id === record.id;
+    const details = [
+      selected ? "Its unsaved changes will be discarded." : "",
+      published ? "Its published OBS link will be revoked." : "",
+      "This action cannot be undone.",
+    ].filter(Boolean).join("\n\n");
+    if (!window.confirm(`Delete “${label}”?\n\n${details}`)) return;
+    setBusy(true);
+    setError("");
+    try {
+      await deleteBetterEditorOverlay(userId, build.id);
+      const remaining = builds.filter((item) => item.id !== build.id);
+      setBuilds(remaining);
+      if (selected && remaining[0]) onSelect(remaining[0].id);
+    } catch (failure) {
+      if (mounted.current) setError(failure.message);
+    } finally {
+      if (mounted.current) setBusy(false);
+    }
+  };
   const rows = (
     builds.length ? builds : [{ id: record.id, name: layout.name }]
   ).filter((build) =>
@@ -201,40 +225,52 @@ export default function OverlayBuildFolders({
               ? record.publishedVersion > 0 && !record.hasUnpublishedChanges
               : build.published;
             return (
-              <button
-                key={build.id}
-                type="button"
-                title={label}
-                aria-current={selected ? "true" : undefined}
-                disabled={busy}
-                onClick={() => switchBuild(build.id)}
-              >
-                <span className="editor-build-thumbnail" aria-hidden="true">
-                  {preview?.length ? (
-                    preview.map((box, index) => (
-                      <i
-                        key={index}
-                        style={{
-                          left: `${(box.x / BETTER_CANVAS.width) * 100}%`,
-                          top: `${(box.y / BETTER_CANVAS.height) * 100}%`,
-                          width: `${(box.width / BETTER_CANVAS.width) * 100}%`,
-                          height: `${(box.height / BETTER_CANVAS.height) * 100}%`,
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <Folder size={24} />
-                  )}
-                </span>
-                <span className="editor-build-copy">
-                  <strong>{label}</strong>
-                  <small>
-                    {published ? "Published" : "Draft"}
-                    {build.updatedAt &&
-                      ` / ${new Date(build.updatedAt).toLocaleDateString()}`}
-                  </small>
-                </span>
-              </button>
+              <div className="editor-build-row" key={build.id}>
+                <button
+                  type="button"
+                  className="editor-build-row__select"
+                  title={label}
+                  aria-current={selected ? "true" : undefined}
+                  disabled={busy}
+                  onClick={() => switchBuild(build.id)}
+                >
+                  <span className="editor-build-thumbnail" aria-hidden="true">
+                    {preview?.length ? (
+                      preview.map((box, index) => (
+                        <i
+                          key={index}
+                          style={{
+                            left: `${(box.x / BETTER_CANVAS.width) * 100}%`,
+                            top: `${(box.y / BETTER_CANVAS.height) * 100}%`,
+                            width: `${(box.width / BETTER_CANVAS.width) * 100}%`,
+                            height: `${(box.height / BETTER_CANVAS.height) * 100}%`,
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <Folder size={24} />
+                    )}
+                  </span>
+                  <span className="editor-build-copy">
+                    <strong>{label}</strong>
+                    <small>
+                      {published ? "Published" : "Draft"}
+                      {build.updatedAt &&
+                        ` / ${new Date(build.updatedAt).toLocaleDateString()}`}
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="editor-build-row__delete"
+                  aria-label={`Delete build ${label}`}
+                  title={builds.length <= 1 ? "Keep at least one overlay build" : `Delete ${label}`}
+                  disabled={busy || disabled || builds.length <= 1}
+                  onClick={() => removeBuild(build, label, published)}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                </button>
+              </div>
             );
           })}
         </div>

@@ -129,3 +129,80 @@
   color: #fff;
   background: linear-gradient(125deg, #087fc5, #195ddd);
 }
+
+.editor-workspace .editor-build-picker {
+  color: var(--sc-page-text);
+  background: linear-gradient(155deg, #0b2140, #06162d 62%, #030d20);
+  border-color: rgba(62, 173, 255, 0.48);
+  border-radius: 16px;
+  box-shadow: 0 28px 90px rgba(0, 4, 15, 0.78), 0 0 38px rgba(22, 135, 223, 0.13);
+}
+
+.editor-build-picker > header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(66, 137, 227, 0.23);
+}
+
+.editor-build-picker > header h2 {
+  color: #edf5ff;
+  letter-spacing: -0.025em;
+}
+
+.editor-workspace .editor-build-picker .editor-search {
+  border-color: rgba(93, 149, 197, 0.34);
+  border-radius: 10px;
+  background: rgba(2, 11, 26, 0.72);
+  color: #91aeca;
+}
+
+.editor-workspace .editor-build-picker .editor-search:focus-within {
+  border-color: rgba(62, 219, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(62, 219, 255, 0.11);
+}
+
+.editor-workspace .editor-build-picker .editor-search input {
+  color: #edf5ff;
+}
+
+.editor-workspace .editor-build-picker .editor-build-actions button {
+  border-color: rgba(66, 137, 227, 0.31);
+  border-radius: 9px;
+  color: #d9ecff;
+  background: linear-gradient(145deg, rgba(11, 41, 72, 0.96), rgba(5, 22, 45, 0.96));
+}
+
+.editor-workspace .editor-build-picker .editor-build-actions button:hover:not(:disabled) {
+  border-color: rgba(62, 219, 255, 0.52);
+  background: rgba(22, 135, 223, 0.2);
+}
+
+.editor-workspace .editor-build-picker .editor-build-copy strong {
+  color: #edf5ff;
+}
+
+.editor-workspace .editor-build-picker .editor-build-copy small {
+  color: #9db2ce;
+}
+
+.editor-workspace .editor-build-picker .editor-build-thumbnail {
+  border-color: rgba(62, 173, 255, 0.48);
+  border-radius: 7px;
+  background: linear-gradient(145deg, #06172e, #0c2a49);
+  color: #60dff7;
+}
+
+.editor-workspace .editor-build-picker .editor-build-thumbnail i {
+  border-color: rgba(103, 223, 255, 0.75);
+  background: rgba(41, 116, 157, 0.62);
+}
+
+.editor-build-picker > p[role="alert"] {
+  color: #ffb6c4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-build-picker .editor-build-row,
+  .editor-build-picker .editor-build-row__delete {
+    transition: none;
+  }
+}

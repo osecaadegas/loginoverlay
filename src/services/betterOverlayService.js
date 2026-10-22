@@ -205,6 +205,17 @@ export async function listBetterEditorOverlays(userId) {
   }));
 }
 
+export async function deleteBetterEditorOverlay(userId, overlayId) {
+  if (!userId) throw new Error("A signed-in user is required to delete overlay builds.");
+  if (!overlayId) throw new Error("Choose an overlay build to delete.");
+  const { data, error } = await supabase.rpc("delete_better_editor_overlay", {
+    p_overlay_id: overlayId,
+  });
+  if (error) throw error;
+  if (data !== true) throw new Error("This overlay build is unavailable or has already been deleted.");
+  return true;
+}
+
 export async function createBetterEditorOverlay(userId, name, sourceLayout = null) {
   if (!userId) throw new Error("A signed-in user is required to create overlays.");
   const trimmedName = String(name || "").trim();

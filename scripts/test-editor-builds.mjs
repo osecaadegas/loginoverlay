@@ -17,6 +17,7 @@ try {
   const { supabase } = await server.ssrLoadModule('/src/config/supabaseClient.js');
   const { client, state } = createOverlayTestDatabase();
   supabase.from = client.from;
+  supabase.rpc = client.rpc;
   const first = await service.createBetterEditorOverlay('owner-a', 'Stream A');
   const second = await service.createBetterEditorOverlay('owner-a', 'Stream B', first.draftLayout);
   assert.notEqual(first.id, second.id);
@@ -52,8 +53,25 @@ try {
   assert.notEqual(regenerated.publicOverlayId, second.publicOverlayId);
   assert.ok(state.tables.better_overlay_publications.find((row) => row.public_overlay_id === second.publicOverlayId).revoked_at);
   assert.equal((await service.getOrCreateBetterEditorOverlay('owner-a', first.id)).publicOverlayId, first.publicOverlayId);
+  await assert.rejects(service.deleteBetterEditorOverlay('', second.id), /signed-in user/);
+  assert.equal(await service.deleteBetterEditorOverlay('owner-a', second.id), true);
+  assert.equal(state.tables.better_editor_overlays.some((row) => row.id === second.id), false, 'the requested build is removed');
+  assert.ok(state.tables.better_overlay_publications.find((row) => row.public_overlay_id === regenerated.publicOverlayId).revoked_at, 'deleting a published build revokes its active public URL');
+  assert.equal((await service.listBetterEditorOverlays('owner-a')).length, 1, 'the other build remains available');
+  assert.equal(await service.deleteBetterEditorOverlay('owner-a', second.id).catch(() => false), false, 'a deleted build cannot be deleted again');
   assert.equal(registry.normalizeBetterLayout(JSON.parse(JSON.stringify(draft))).name, 'Stream B');
-  console.log('Overlay build service checks passed: owner/build isolation, rename, copy, save, publish, reset, revert and URL rotation.');
+  const { default: OverlayBuildFolders } = await server.ssrLoadModule('/src/components/OverlayCenter/editor/OverlayBuildFolders.jsx');
+  const pickerMarkup = renderToStaticMarkup(createElement(OverlayBuildFolders, {
+    userId: 'owner-a', record: first, layout: first.draftLayout,
+    onSave: async () => first, onSelect() {}, onRename() {},
+  }));
+  assert.match(pickerMarkup, /class="editor-dialog editor-build-picker"/);
+  assert.match(pickerMarkup, /aria-label="Delete build Stream A"/);
+  assert.match(pickerMarkup, /title="Keep at least one overlay build"/, 'the last remaining build cannot be deleted');
+  const deleteMigration = readFileSync(new URL('../migrations/20261022120000_delete_better_editor_overlay.sql', import.meta.url), 'utf8');
+  assert.match(deleteMigration, /AND user_id = auth\.uid\(\)/);
+  assert.match(deleteMigration, /UPDATE public\.better_overlay_publications[\s\S]*revoked_at = now\(\)[\s\S]*DELETE FROM public\.better_editor_overlays/);
+  console.log('Overlay build service and picker checks passed: ownership-scoped atomic deletion, public URL revocation, per-build delete control and final-build protection.');
 
   const { BetterBonusHuntStyle } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx');
   const { getHorizontalHuntHeight } = await server.ssrLoadModule('/src/components/OverlayCenter/widgets/bonus-hunt/shared/betterHuntSizing.js');

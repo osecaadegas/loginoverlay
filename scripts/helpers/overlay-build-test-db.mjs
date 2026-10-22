@@ -67,6 +67,15 @@ export function createOverlayTestDatabase(initial = {}) {
           ? { data: { id: row.id, name: row.name, layout: structuredClone(row.layout), schemaVersion: row.schema_version }, error: null }
           : { data: null, error: new Error('This shared overlay is no longer available.') };
       }
+      if (name === 'delete_better_editor_overlay') {
+        if (state.failDelete) return { data: null, error: new Error('Test delete failed') };
+        const row = (tables.better_editor_overlays || []).find((item) => item.id === args.p_overlay_id);
+        if (!row) return { data: false, error: null };
+        const publication = (tables.better_overlay_publications || []).find((item) => item.public_overlay_id === row.public_overlay_id);
+        if (publication) publication.revoked_at = new Date().toISOString();
+        tables.better_editor_overlays = tables.better_editor_overlays.filter((item) => item.id !== row.id);
+        return { data: true, error: null };
+      }
       return { data: null, error: new Error(`Unsupported test RPC: ${name}`) };
     },
     channel() { const channel = { on: () => channel, subscribe: () => channel }; return channel; },
