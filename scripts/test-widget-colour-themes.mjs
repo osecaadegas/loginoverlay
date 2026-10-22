@@ -28,8 +28,8 @@ assert.equal(getWidgetColourTheme('clear_ice').adminOnly, true, 'Clear Ice is ma
 assert(!getWidgetColourThemeGroups((key, theme) => !theme.adminOnly).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'non-admin theme catalog omits Clear Ice');
 assert(getWidgetColourThemeGroups((key, theme) => Boolean(theme.adminOnly)).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'admin theme catalog includes Clear Ice');
 assert.doesNotMatch(themeEffectsCss, /clear_ice/, 'Clear Ice does not inherit Arctic-only dark material rules');
-assert.match(clearIceCss, /rgba\(18, 50, 84, \.35\)/, 'Clear Ice uses the reference 35% glass shell');
-assert.match(clearIceCss, /rgba\(10, 43, 74, \.7\)/, 'Clear Ice uses the reference 70% inset glass');
+assert.match(clearIceCss, /rgba\(18, 50, 84, \.22\)/, 'Clear Ice uses a translucent 22% outer glass shell');
+assert.match(clearIceCss, /rgba\(10, 43, 74, \.44\)/, 'Clear Ice keeps inset cards translucent at 44%');
 assert.equal(getWidgetColourTheme('clear_ice').background, '#0A2B4A', 'Clear Ice uses Deep Ice as its palette base');
 assert.equal(getWidgetColourTheme('clear_ice').surface, '#123254', 'Clear Ice uses Frozen Navy for panels');
 assert.equal(getWidgetColourTheme('clear_ice').raised, '#0A2B4A', 'Clear Ice uses Deep Ice to keep raised text readable');
@@ -40,17 +40,19 @@ assert.equal(getWidgetColourTheme('clear_ice').muted, '#A9CDE5', 'Clear Ice uses
 assert.match(clearIceCss, /data-widget-type="camera"/, 'Clear Ice keeps source openings transparent');
 assert.match(clearIceCss, /ice-glass\.webp/, 'Clear Ice uses the existing glass texture');
 assert.match(clearIceCss, /frost-corners\.png/, 'Clear Ice adds crystalline edge and corner texture');
-assert.match(clearIceCss, /brightness\(1\.55\)/, 'Clear Ice lifts the source ice texture into brighter highlights');
+assert.match(clearIceCss, /brightness\(1\.65\)/, 'Clear Ice lifts the source ice texture into brighter highlights');
 assert.match(clearIceCss, /\.bets-ov__card/, 'Clear Ice styles the dedicated bets widget surfaces');
 assert.match(clearIceCss, /\.better-bets-stage \.bet-widget/, 'Clear Ice frames the bets widget content instead of its full-stage wrapper');
 assert.match(clearIceCss, /\.better-bets-stage :is\(\.bet-option, \.bet-bar\)/, 'Clear Ice textures individual bet cards and bars');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear Ice textures the chat message surface');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
 assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*ice-glass\.webp/, 'Clear Ice textures the top navigation rail');
+assert.match(clearIceCss, /\.better-hunt-stats-panel[\s\S]*\.ov-chat-giveaway/, 'Clear Ice covers the inner hunt and chat surfaces with glass texture');
+assert.match(clearIceCss, /background-blend-mode:\s*normal, soft-light/, 'Clear Ice keeps texture detail subtle over translucent glass');
 assert.doesNotMatch(clearIceCss, /\.better-giveaway-stage,\s*\.better-bets-stage|\.better-tournament-stage/, 'Clear Ice leaves full-canvas stage wrappers borderless');
 assert.match(clearIceCss, /> \[data-widget-element="container"\]/, 'Clear Ice only applies generic container frames to the widget root');
 assert.match(clearIceCss, /mix-blend-mode:\s*screen/, 'Clear Ice blends fracture texture as a luminous overlay');
-assert.match(clearIceCss, /opacity:\s*\.34/, 'Clear Ice gives the fracture overlay enough strength to read');
+assert.match(clearIceCss, /opacity:\s*\.2/, 'Clear Ice keeps fracture texture restrained enough to see through');
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],
