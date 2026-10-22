@@ -31,6 +31,9 @@ try {
   const sourceBonusPanel = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx",
   );
+  const embeddedGiveaway = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.jsx",
+  );
   const sourceBonusPanelSource = readFileSync(
     new URL("../src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx", import.meta.url),
     "utf8",
@@ -131,20 +134,47 @@ try {
     (item) => item.config.streamerOverlay?.role === "chat",
   );
   assert.equal(chat.config.giveawayInChat, true);
-  assert.equal(chat.config.giveawayHeight, 64);
+  assert.equal(chat.config.giveawayHeight, 72);
   assert.equal(chat.config.showHeader, true);
+  assert.equal(chat.config.chatStyle, "broadcast_chat");
   const chatWidgetSource = readFileSync(
     new URL("../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx", import.meta.url),
     "utf8",
   );
+  const chatMessageSource = readFileSync(
+    new URL("../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx", import.meta.url),
+    "utf8",
+  );
   assert.match(chatWidgetSource, /const isStreamerOverlayChat = c\.streamerOverlay\?\.role === "chat"/);
   assert.match(chatWidgetSource, /isStreamerOverlayChat && \([\s\S]{0,1400}>CHAT<\/span>/);
+  assert.match(chatMessageSource, /streamerSourceChat && broadcast && \{/);
+  assert.match(chatMessageSource, /streamer-source-chat-row/);
   const hunt = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "active_panel",
   );
   assert.deepEqual([hunt.x, hunt.y, hunt.width, hunt.height], [130, 60, 240, 720]);
   assert.equal(hunt.config.orientation, "mainstream");
   assert.equal(hunt.config.colourTheme, "neon");
+  const header = normalized.instances.find(
+    (item) => item.config.streamerOverlay?.role === "header",
+  );
+  assert.equal(header.config.barHeight, 50);
+  assert.equal(header.config.socialDisplayStyle, "marquee");
+  assert.equal(header.config.showNowPlaying, false);
+  assert.deepEqual(header.config.sectionLayout, [
+    { id: "identity", zone: "left" },
+    { id: "badge", zone: "left" },
+    { id: "crypto", zone: "left" },
+    { id: "balance", zone: "left" },
+    { id: "clock", zone: "center" },
+    { id: "nowPlaying", zone: "center" },
+    { id: "socials", zone: "center" },
+    { id: "casino", zone: "right" },
+    { id: "cta", zone: "right" },
+  ]);
+  assert.equal(header.config.showCasino, false);
+  assert.equal(chat.config.fontSize, 12);
+  assert.equal(chat.config.containerRadius, 16);
   const sourcePanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
@@ -188,6 +218,7 @@ try {
   assert.match(openingPanelMarkup, /BE ATUAL/);
   assert.match(openingPanelMarkup, /is-opening/);
   assert.match(sourceBonusPanelSource, /top:50%;left:10px;right:10px;transform:translateY\(-50%\)/);
+  assert.doesNotMatch(openingPanelMarkup, /<footer class="streamer-source-bonus-progress"/);
   assert.doesNotMatch(openingPanelMarkup, /aria-label="Best opened bonus"/);
   const endedPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
@@ -198,6 +229,21 @@ try {
     }),
   );
   assert.match(endedPanelMarkup, /BONUS ENDED/);
+  const embeddedWinnerMarkup = renderToStaticMarkup(
+    React.createElement(embeddedGiveaway.default, {
+      config: {
+        winner: "Live Winner",
+        participants: [],
+        width: 420,
+        height: 270,
+        colourTheme: "neon",
+      },
+      layout: { streamerOverlay: { role: "chat" }, giveawayWinnerHeight: 116 },
+      children: React.createElement("div", null, "winner"),
+    }),
+  );
+  assert.match(embeddedWinnerMarkup, /data-streamer-source-chat="true"/);
+  assert.match(embeddedWinnerMarkup, /data-native-winner="true"/);
   const scene = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "scene",
   );

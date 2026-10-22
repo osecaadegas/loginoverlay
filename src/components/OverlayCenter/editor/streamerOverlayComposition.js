@@ -4,7 +4,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // This follows the supplied MainStreamOverlay scene: a slim top bar, its
 // 350px left rail with a 240px active panel aligned to the rail's right edge,
 // an unobstructed gameplay opening, and chat on the right.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 7;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 8;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
@@ -103,7 +103,29 @@ function configureStreamerWidget(type, config, role, geometry) {
     next = {
       ...next,
       displayStyle: "better_navbar",
-      showClock: true,
+      // The supplied source bar is a single 50px strip: identity and session
+      // values stay together, socials scroll in the middle, and the CTA owns
+      // the far edge. This avoids packing every saved navbar section into one
+      // flex zone, which caused the logo, start value and social handles to
+      // overlap in the 1920px preview.
+      barHeight: 50,
+      fontSize: 12,
+      showClock: false,
+      showNowPlaying: false,
+      showCasino: false,
+      socialDisplayStyle: "marquee",
+      socialMarqueeDuration: 24,
+      sectionLayout: [
+        { id: "identity", zone: "left" },
+        { id: "badge", zone: "left" },
+        { id: "crypto", zone: "left" },
+        { id: "balance", zone: "left" },
+        { id: "clock", zone: "center" },
+        { id: "nowPlaying", zone: "center" },
+        { id: "socials", zone: "center" },
+        { id: "casino", zone: "right" },
+        { id: "cta", zone: "right" },
+      ],
       showCTA: true,
       ctaText: "PLAY RESPONSIBLY",
     };
@@ -130,12 +152,21 @@ function configureStreamerWidget(type, config, role, geometry) {
       showLegend: false,
       showAvatars: false,
       flow: "top-to-bottom",
-      fontSize: 18,
-      msgSpacing: 3,
+      fontSize: 12,
+      msgSpacing: 4,
+      animation: "none",
+      stagger: 0,
+      containerRadius: 16,
+      containerBorderWidth: 1,
+      containerBorderColor: "rgba(96,165,250,.48)",
+      bgColor: "rgba(8,18,42,.96)",
+      headerBg: "rgba(7,17,40,.98)",
+      headerText: "#53c8ff",
+      textColor: "#f8fafc",
       giveawayInChat: true,
-      giveawayHeight: 64,
-      giveawayWinnerHeight: 112,
-      giveawayMargin: 2,
+      giveawayHeight: 72,
+      giveawayWinnerHeight: 116,
+      giveawayMargin: 10,
     };
   }
 

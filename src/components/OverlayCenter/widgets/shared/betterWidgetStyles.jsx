@@ -5672,6 +5672,7 @@ export function BetterChatMessage({
 }) {
   const c = context.config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
+  const streamerSourceChat = c.streamerOverlay?.role === "chat";
   const streetInline = (c.colourTheme==='street_art'&&c.streetArt?.compactChat)||(c.colourTheme==='starter_studio'&&c.studio?.compactChat)||(c.colourTheme==='galactic_command'&&c.galactic?.compactChat);
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";
@@ -5774,6 +5775,19 @@ export function BetterChatMessage({
       animation: animationName === "none" ? "none"
         : `${animationName} 260ms ease-out ${enterDelay}ms both`,
     }),
+    ...(streamerSourceChat && broadcast && {
+      display: "block",
+      margin: "2px 0",
+      padding: "4px 0",
+      border: 0,
+      borderLeft: 0,
+      borderRadius: 0,
+      background: "transparent",
+      boxShadow: "none",
+      maxHeight: "none",
+      overflow: "visible",
+      animation: "none",
+    }),
     ...(c.colourTheme === "orbital" && !emphasized && {
       borderRadius: 5,
       background: "linear-gradient(110deg,#143047c9,#030d19eb 65%)",
@@ -5791,7 +5805,7 @@ export function BetterChatMessage({
   return (
     <div
       ref={rootRef}
-      className={streetInline ? (['starter_studio','galactic_command'].includes(c.colourTheme)?"broadcast-chat-row studio-chat-inline":"broadcast-chat-row street-chat-inline") : broadcast ? "broadcast-chat-row" : undefined}
+      className={streetInline ? (['starter_studio','galactic_command'].includes(c.colourTheme)?"broadcast-chat-row studio-chat-inline":"broadcast-chat-row street-chat-inline") : streamerSourceChat && broadcast ? "broadcast-chat-row streamer-source-chat-row" : broadcast ? "broadcast-chat-row" : undefined}
       aria-hidden={!visible}
       {...attrs("chat", c, rowPart)}
       style={{ ...messageStyle,...(streetInline?{display:"block"}:{}), visibility: visible ? "visible" : "hidden" }}
