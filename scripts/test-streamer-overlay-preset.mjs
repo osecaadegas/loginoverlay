@@ -217,6 +217,20 @@ try {
   assert.match(sourceBonusPanelSource, /streamer-source-bonus-scroll 30s linear infinite/);
   assert.match(sourceBonusPanelSource, /source-overlay-bonus-list-title/);
   assert.match(sourceBonusPanelSource, /source-overlay-best-row/);
+  assert.match(sourceBonusPanelSource, /source-overlay-bonus-list-viewport/);
+  assert.match(sourceBonusPanelSource, /source-overlay-bonus-track\{display:flex;flex:none;flex-direction:column;gap:8px/);
+  const sourceAverageMarkup = renderToStaticMarkup(
+    React.createElement(sourceBonusPanel.default, {
+      config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
+      bonuses: [
+        { id: "average-1", slotName: "Small Bet", betSize: 1, payout: 2, multiplier: 2, opened: true },
+        { id: "average-2", slotName: "Large Bet", betSize: 9, payout: 36, multiplier: 4, opened: true },
+      ],
+      stats: { totalWin: 38, avgMulti: 3.8, bestSlot: { slotName: "Large Bet", betSize: 9, payout: 36, _multi: 4 } },
+      currency: "€",
+    }),
+  );
+  assert.match(sourceAverageMarkup, /<strong>3\.00x<\/strong>/, "source overlay average is the unweighted mean of opened bonus multipliers");
   const openingPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€", bonusOpening: true },

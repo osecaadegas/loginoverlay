@@ -101,8 +101,14 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
   const currencyUnit = currency || config.currency || "€";
   const startMoney = Number(config.startMoney) || 0;
   const totalPay = Number(stats.totalWin) || 0;
-  const totalBetOpened = opened.reduce((sum, { item }) => sum + (Number(item?.betSize ?? item?.bet_size ?? item?.payment_amount ?? item?.payment) || 0), 0);
-  const average = totalBetOpened > 0 ? `${(totalPay / totalBetOpened).toFixed(2)}x` : "0.00x";
+  // The supplied overlay defines AVERAGE as the arithmetic mean of opened
+  // bonus multipliers (rather than total payout divided by total stake).
+  const openedMultipliers = opened
+    .map(({ item }) => Number(item?.multiplier ?? item?.multi ?? item?._multi ?? 0))
+    .filter(Number.isFinite);
+  const average = openedMultipliers.length
+    ? `${(openedMultipliers.reduce((sum, value) => sum + value, 0) / openedMultipliers.length).toFixed(2)}x`
+    : "0.00x";
   const currentBreakEven = Number(stats.liveBE ?? stats.breakEven ?? 0);
   const initialBreakEven = Number(stats.breakEven ?? 0);
   const streamerName = config.streamerName || config.twitchUsername || config.brandName || config.huntName || "Live bonus session";
@@ -198,8 +204,9 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         .source-overlay-bonus-list{display:flex;min-height:0;flex:1;flex-direction:column;overflow:hidden;padding:16px 16px 8px}
         .source-overlay-bonus-list-title{display:flex;flex:none;align-items:center;gap:8px;margin:0 0 12px;color:#fbbf24;font-size:10px;font-weight:900;letter-spacing:.08em;line-height:1;text-transform:uppercase}
         .source-overlay-bonus-list-title i{width:4px;height:20px;flex:none;border-radius:99px;background:#fbbf24}
-        .source-overlay-bonus-track{display:grid;min-height:0;gap:8px;overflow:hidden}
-        .source-overlay-bonus-row{position:relative;min-height:58px;overflow:hidden;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+        .source-overlay-bonus-list-viewport{display:flex;min-height:0;flex:1;flex-direction:column;overflow:hidden}
+        .source-overlay-bonus-track{display:flex;flex:none;flex-direction:column;gap:8px;overflow:visible;will-change:transform}
+        .source-overlay-bonus-row{position:relative;min-height:58px;flex:none;overflow:hidden;border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
         .source-overlay-bonus-row-inner{position:relative;z-index:1;display:flex;min-height:58px;align-items:center}
         .source-overlay-bonus-blur{position:absolute;inset:0;transform:scale(1.1);background-position:center;background-size:cover;filter:blur(8px);opacity:.2}
         .source-overlay-bonus-art{display:flex;width:48px;height:58px;flex:none;align-items:center;justify-content:center;overflow:hidden;border-radius:0 12px 12px 0}
@@ -266,8 +273,15 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         <section className="source-overlay-bonus-list">
           <h2 className="source-overlay-bonus-list-title"><i />BONUS</h2>
           {items.length ? (
-            <div className="source-overlay-bonus-track" style={{ animation: items.length > 5 ? "streamer-source-bonus-scroll 30s linear infinite" : "none" }}>
-              {(items.length > 5 ? [...items, ...items] : items).map(renderBonus)}
+            <div className="source-overlay-bonus-list-viewport">
+              <div className="source-overlay-bonus-track" style={{ animation: items.length > 5 ? "streamer-source-bonus-scroll 30s linear infinite" : "none" }}>
+                {(items.length > 5 ? [...items, ...items] : items).map((entry, index) => (
+                  <React.Fragment key={`bonus-loop-${index}`}>
+                    {renderBonus(entry)}
+                    {items.length > 5 && (index + 1) % items.length === 0 ? <div key={`bonus-loop-spacer-${index}`} style={{ height: 8, flex: "none" }} /> : null}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="source-overlay-bonus-empty">No bonuses added yet</div>
