@@ -1142,12 +1142,29 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             ...applyStreamerOverlayComposition(fullBuild.draftLayout, user),
             name: fullBuild.name || overlayName,
           };
-          await saveBetterDraft(
+          const migratedRecord = await saveBetterDraft(
             user.id,
             migratedLayout,
             fullBuild.draftVersion,
             build.id,
           );
+          if (build.id === overlayId) {
+            const migratedCurrentLayout = normalizeBetterLayout(migratedRecord.draftLayout);
+            overlayRecordRef.current = migratedRecord;
+            draftVersionRef.current = migratedRecord.draftVersion;
+            setOverlayRecord(migratedRecord);
+            layoutRef.current = migratedCurrentLayout;
+            setLayout(migratedCurrentLayout);
+            setHistory([migratedCurrentLayout]);
+            dirtyRef.current = false;
+            setDirty(false);
+            setSavingState("saved");
+            setSelectedInstanceId(
+              migratedCurrentLayout.instances.find(
+                (instance) => instance.config?.streamerOverlay?.role === "active_panel",
+              )?.instanceId || "",
+            );
+          }
           nextOverlayId = build.id;
           break;
         }

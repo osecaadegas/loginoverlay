@@ -389,6 +389,7 @@ try {
   assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, isLegacyStreamerOverlayComposition\}/);
   assert.match(editorSource, /if \(isLegacyStreamerOverlayComposition\(fullBuild\?\.draftLayout\)\)/);
   assert.match(editorSource, /await saveBetterDraft\([\s\S]*?fullBuild\.draftVersion,[\s\S]*?build\.id,/);
+  assert.match(editorSource, /if \(build\.id === overlayId\) \{[\s\S]*?normalizeBetterLayout\(migratedRecord\.draftLayout\)[\s\S]*?setLayout\(migratedCurrentLayout\)/, "opening the already selected migrated build refreshes its visible geometry");
   assert.match(editorSource, /className="is-primary editor-streamer-overlay-action"/);
   assert.match(editorSource, /\{isAdmin && \([\s\S]{0,500}editor-streamer-overlay-action/);
   assert.match(editorSource, /<span>Open Streamer Overlay<\/span>/);
