@@ -83,6 +83,12 @@ const ProtectedPlayerRoute = lazy(
 const SlotDetectorDashboard = lazy(
   () => import("./features/slotDetector/SlotDetectorDashboard"),
 );
+const OpenSourceOverlayPage = lazy(
+  () => import("./components/OpenSourceOverlay/OpenSourceOverlayPage"),
+);
+const OpenSourceOverlayPreview = lazy(
+  () => import("./components/OpenSourceOverlay/OpenSourceOverlayPreview"),
+);
 
 function AppRuntimeHooks() {
   useSlotRequestListener(); // persistent chat listener for !sr commands
@@ -97,7 +103,8 @@ function RouteBoundServices() {
   const location = useLocation();
   if (
     location.pathname.startsWith("/overlay/") ||
-    location.pathname.startsWith("/obs/overlay/")
+    location.pathname.startsWith("/obs/overlay/") ||
+    location.pathname === "/opensource_preview"
   ) {
     return null;
   }
@@ -115,20 +122,21 @@ function LayoutWrapper({ children }) {
   const isWidgetRoute = location.pathname.startsWith("/widgets/");
   const isOBSOverlay = location.pathname.startsWith("/overlay/");
   const isBetterOBSOverlay = location.pathname.startsWith("/obs/overlay/");
+  const isOpenSourcePreview = location.pathname === "/opensource_preview";
   const isEditorRoute = location.pathname === "/editor";
   const isPremiumRoute = location.pathname === "/premium";
   const isSystemRoute = location.pathname === "/spotify-callback";
   const isMarketingHome = location.pathname === "/";
   const showTopNavigation =
-    !isWidgetRoute && !isOBSOverlay && !isBetterOBSOverlay && !isSystemRoute && !isMarketingHome;
+    !isWidgetRoute && !isOBSOverlay && !isBetterOBSOverlay && !isOpenSourcePreview && !isSystemRoute && !isMarketingHome;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);
   }, [location.pathname]);
 
   return (
-    <div className={`app-layout${isEditorRoute ? " app-layout--editor" : ""}`}>
-      {!isOBSOverlay && !isBetterOBSOverlay && <AppRuntimeHooks />}
+    <div className={`app-layout${isEditorRoute ? " app-layout--editor" : ""}${isOpenSourcePreview ? " app-layout--opensource-preview" : ""}`}>
+      {!isOBSOverlay && !isBetterOBSOverlay && !isOpenSourcePreview && <AppRuntimeHooks />}
       {showTopNavigation && <TopNavigation />}
       <div
         className={`main-content main-content--no-sidebar${isPremiumRoute ? " main-content--premium" : ""}${isEditorRoute ? " main-content--editor" : ""}`}
@@ -187,6 +195,22 @@ function App() {
                     <Route path="/chat-games" element={<ToolLandingPage />} />
                     <Route path="/offers" element={<OffersPage />} />
                     <Route path="/apps" element={<AppsPage />} />
+                    <Route
+                      path="/opensource"
+                      element={
+                        <ProtectedAdminRoute>
+                          <OpenSourceOverlayPage />
+                        </ProtectedAdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/opensource_preview"
+                      element={
+                        <ProtectedAdminRoute>
+                          <OpenSourceOverlayPreview />
+                        </ProtectedAdminRoute>
+                      }
+                    />
                     <Route path="/updates" element={<ProtectedAdminRoute allowPremium><UpdatesPage /></ProtectedAdminRoute>} />
 
                     <Route path="/profile" element={<ProfilePage />} />

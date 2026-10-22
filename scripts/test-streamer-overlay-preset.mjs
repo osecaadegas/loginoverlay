@@ -407,8 +407,8 @@ try {
   );
   assert.match(
     appsSource,
-    /\.\.\.\(isAdmin\s*\?\s*\[[\s\S]*?to: "\/editor"[\s\S]*?label: "Streamer Overlay \(Admin Beta\)"/,
-    "the website Apps page exposes the beta only to admins and opens the working editor route",
+    /\.\.\.\(isAdmin\s*\?\s*\[[\s\S]*?to: "\/opensource"[\s\S]*?label: "Open Source Overlay \(Admin Beta\)"/,
+    "the website Apps page exposes the source overlay hub only to admins",
   );
   console.log(
     "Streamer Overlay checks passed: supplied-scene widgets and layout, blue source styling, transparent empty gameplay frame, admin gate, legacy build migration, owner-scoped persistence, OBS publication, live data, and embedded giveaway settings.",

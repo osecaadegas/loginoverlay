@@ -65,9 +65,9 @@ export default function AppsPage() {
     ...(isAdmin
       ? [
           {
-            to: "/editor",
-            label: "Streamer Overlay (Admin Beta)",
-            desc: "Build a free scene with your live StreamersCenter data",
+            to: "/opensource",
+            label: "Open Source Overlay (Admin Beta)",
+            desc: "Manage and preview the imported overlay with live data",
             icon: SlidersHorizontal,
             tone: "teal",
             art: "editor",

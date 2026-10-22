@@ -74,6 +74,7 @@
     "test:galactic-command": "node scripts/test-galactic-command.mjs",
     "test:starter-studio": "node scripts/test-starter-studio.mjs",
     "test:streamer-overlay": "node scripts/test-streamer-overlay-preset.mjs",
+    "test:opensource-overlay": "node scripts/test-opensource-overlay-routes.mjs",
     "test:public-slot-requests-cache": "node scripts/test-public-slot-requests-cache.mjs"
   },
   "dependencies": {

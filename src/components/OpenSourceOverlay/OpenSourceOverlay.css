@@ -1,0 +1,58 @@
+.app-layout--opensource-preview,
+.app-layout--opensource-preview .main-content {
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.opensource-page {
+  min-height: 100vh;
+  padding: clamp(22px, 4vw, 56px) 24px 52px;
+  color: #eef4ff;
+  background:
+    radial-gradient(ellipse at 10% 0%, rgba(18, 104, 156, .16), transparent 36%),
+    radial-gradient(ellipse at 95% 15%, rgba(98, 63, 174, .12), transparent 32%),
+    #07101b;
+}
+
+.opensource-shell { width: min(1180px, 100%); margin: 0 auto; }
+.opensource-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 26px; }
+.opensource-eyebrow { margin: 0 0 10px; color: #58d9e7; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.opensource-header h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); line-height: 1.04; letter-spacing: -.04em; }
+.opensource-intro { max-width: 680px; margin: 12px 0 0; color: #9fb0c4; font-size: 15px; line-height: 1.6; }
+.opensource-header-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.opensource-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 0 15px; border: 1px solid #25374d; border-radius: 10px; color: #dceaff; background: #0d1a2a; text-decoration: none; font-size: 13px; font-weight: 750; cursor: pointer; }
+.opensource-button:disabled { opacity: .6; cursor: wait; }
+.opensource-button--primary { border-color: #148cb3; background: linear-gradient(120deg, #087ea3, #2945a7); color: white; }
+.opensource-button--quiet:hover, .opensource-control:hover { border-color: #3289a5; background-color: #102238; }
+.opensource-scene-card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding: 22px 24px; border: 1px solid #23415a; border-radius: 16px; background: linear-gradient(115deg, rgba(8, 29, 45, .96), rgba(13, 18, 36, .96)); box-shadow: 0 20px 55px rgba(0,0,0,.18); }
+.opensource-scene-card__copy { display: flex; align-items: flex-start; gap: 13px; }
+.opensource-live-dot { flex: none; width: 9px; height: 9px; margin-top: 7px; border-radius: 50%; background: #39e2bb; box-shadow: 0 0 14px rgba(57,226,187,.75); }
+.opensource-scene-card h2 { margin: 0; font-size: 18px; }
+.opensource-scene-card p { margin: 6px 0 0; color: #99acc0; font-size: 13px; line-height: 1.55; }
+.opensource-scene-card__meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.opensource-scene-card__meta span { padding: 7px 10px; border: 1px solid rgba(123, 161, 190, .2); border-radius: 999px; color: #b9c9d8; background: rgba(3, 11, 22, .44); font-size: 11px; font-weight: 750; }
+.opensource-text-link, .opensource-section__heading a, .opensource-footer a { display: inline-flex; align-items: center; gap: 5px; color: #55d7e8; text-decoration: none; font-size: 12px; font-weight: 750; }
+.opensource-retry { border: 0; color: #fff; background: transparent; cursor: pointer; }
+.opensource-section { margin-top: 28px; }
+.opensource-section__heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+.opensource-section__heading h2 { margin: 0; color: #dce8f5; font-size: 14px; letter-spacing: .04em; }
+.opensource-control-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.opensource-control { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 86px; padding: 14px; border: 1px solid #1e3044; border-radius: 13px; background: linear-gradient(145deg, #0c1725, #0a1320); color: #e5efff; text-decoration: none; transition: border-color .16s ease, background-color .16s ease, transform .16s ease; }
+.opensource-control:hover { transform: translateY(-1px); }
+.opensource-control--primary { border-color: #176284; background: linear-gradient(135deg, rgba(4, 93, 125, .34), rgba(15, 28, 54, .98)); }
+.opensource-control__icon { display: grid; place-items: center; flex: none; width: 39px; height: 39px; border: 1px solid currentColor; border-radius: 11px; background: rgba(0,0,0,.15); }
+.opensource-control__icon--blue { color: #64b5ff; }.opensource-control__icon--green { color: #52dfaa; }.opensource-control__icon--cyan { color: #49dbe6; }.opensource-control__icon--pink { color: #f07de3; }.opensource-control__icon--gold { color: #f2c16b; }.opensource-control__icon--purple { color: #ad93ff; }
+.opensource-control__text { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }
+.opensource-control__text strong { overflow: hidden; color: #f0f5ff; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.opensource-control__text small { color: #91a4b9; font-size: 11px; line-height: 1.4; }
+.opensource-control__arrow { flex: none; color: #64829d; }
+.opensource-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 28px; padding: 14px 0; border-top: 1px solid #1a2a3a; color: #8295a9; font-size: 11px; line-height: 1.5; }
+.opensource-footer a { margin-left: auto; }
+.opensource-spin { animation: opensource-spin .8s linear infinite; }
+@keyframes opensource-spin { to { transform: rotate(360deg); } }
+.opensource-preview-error { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; color: #e9f2ff; background: #07101b; font: 14px system-ui, sans-serif; }
+.opensource-preview-error button, .opensource-preview-error a { display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border: 1px solid #2b5875; border-radius: 8px; color: #d9f6ff; background: #10283c; text-decoration: none; cursor: pointer; }
+@media (max-width: 900px) { .opensource-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .opensource-header { align-items: flex-start; flex-direction: column; }.opensource-header-actions { width: 100%; }.opensource-header-actions > * { flex: 1; }.opensource-page { padding: 22px 15px 38px; }.opensource-control-grid { grid-template-columns: 1fr; }.opensource-scene-card { padding: 17px; }.opensource-footer a { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { .opensource-control { transition: none; }.opensource-control:hover { transform: none; }.opensource-spin { animation: none; } }
