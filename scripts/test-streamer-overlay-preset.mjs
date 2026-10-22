@@ -313,12 +313,33 @@ try {
     })),
   };
   assert.equal(isLegacyStreamerOverlayComposition(versionFourLayout), true);
-  const versionFiveLayout = applyStreamerOverlayComposition(versionFourLayout);
-  assert.equal(hasStreamerOverlayComposition(versionFiveLayout), true);
+  const versionFiveLayout = {
+    ...versionFourLayout,
+    instances: versionFourLayout.instances.map((instance) => ({
+      ...instance,
+      x: instance.config.streamerOverlay?.role === "active_panel" ? 40 : instance.x,
+      width: instance.config.streamerOverlay?.role === "active_panel" ? 282 : instance.width,
+      config: {
+        ...instance.config,
+        streamerOverlay: { ...instance.config.streamerOverlay, compositionVersion: 5 },
+      },
+    })),
+  };
+  assert.equal(isLegacyStreamerOverlayComposition(versionFiveLayout), true);
+  const migratedVersionFiveLayout = applyStreamerOverlayComposition(versionFiveLayout);
+  assert.equal(hasStreamerOverlayComposition(migratedVersionFiveLayout), true);
+  assert.deepEqual(
+    [
+      migratedVersionFiveLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "active_panel").x,
+      migratedVersionFiveLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "active_panel").width,
+    ],
+    [130, 240],
+    "version 5 builds recover the supplied source panel geometry",
+  );
   assert.equal(
-    versionFiveLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "chat").config.showHeader,
+    migratedVersionFiveLayout.instances.find((instance) => instance.config.streamerOverlay?.role === "chat").config.showHeader,
     true,
-    "version 4 saved builds migrate to the source chat header",
+    "version 5 saved builds retain the source chat header",
   );
   assert.ok(
     state.calls.some(

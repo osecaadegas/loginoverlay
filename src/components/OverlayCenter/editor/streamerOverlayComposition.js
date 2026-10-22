@@ -4,7 +4,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // This follows the supplied MainStreamOverlay scene: a slim top bar, its
 // 350px left rail with a 240px active panel aligned to the rail's right edge,
 // an unobstructed gameplay opening, and chat on the right.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 5;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 6;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
