@@ -42,6 +42,9 @@ assert.match(clearIceCss, /ice-glass\.webp/, 'Clear Ice uses the existing glass 
 assert.match(clearIceCss, /frost-corners\.png/, 'Clear Ice adds crystalline edge and corner texture');
 assert.match(clearIceCss, /brightness\(1\.55\)/, 'Clear Ice lifts the source ice texture into brighter highlights');
 assert.match(clearIceCss, /\.bets-ov__card/, 'Clear Ice styles the dedicated bets widget surfaces');
+assert.match(clearIceCss, /\.better-bets-stage \.bet-widget/, 'Clear Ice frames the bets widget content instead of its full-stage wrapper');
+assert.doesNotMatch(clearIceCss, /\.better-giveaway-stage,\s*\.better-bets-stage|\.better-tournament-stage/, 'Clear Ice leaves full-canvas stage wrappers borderless');
+assert.match(clearIceCss, /> \[data-widget-element="container"\]/, 'Clear Ice only applies generic container frames to the widget root');
 assert.match(clearIceCss, /mix-blend-mode:\s*screen/, 'Clear Ice blends fracture texture as a luminous overlay');
 assert.match(clearIceCss, /opacity:\s*\.34/, 'Clear Ice gives the fracture overlay enough strength to read');
 assert.deepEqual(

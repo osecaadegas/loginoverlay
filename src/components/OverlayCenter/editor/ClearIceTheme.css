@@ -19,7 +19,9 @@
 /* Recolor the existing Arctic shells while retaining their frame geometry and
    original ice-glass/crack layers. Semi-transparent fill preserves gameplay. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is([data-widget-element="container"]:not(.better-hunt-root), .better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-stage, .better-bets-stage, .better-tournament-stage, .better-slot-requests, .tw-root, .bets-ov) {
+  > [data-widget-element="container"]:not(.better-hunt-root),
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-widget, .better-bets-stage .bet-widget, .better-slot-requests, .tw-root, .bets-ov) {
   border-color: var(--ice-line) !important;
   border-width: 2px !important;
   background-color: rgba(18, 50, 84, .35) !important;
