@@ -27,7 +27,7 @@ assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['galactic_comman
 assert.equal(getWidgetColourTheme('clear_ice').adminOnly, true, 'Clear Ice is marked as admin-only');
 assert(!getWidgetColourThemeGroups((key, theme) => !theme.adminOnly).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'non-admin theme catalog omits Clear Ice');
 assert(getWidgetColourThemeGroups((key, theme) => Boolean(theme.adminOnly)).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'admin theme catalog includes Clear Ice');
-assert.match(themeEffectsCss, /data-colour-theme="clear_ice"/, 'Clear Ice uses the shared production ice material rules');
+assert.doesNotMatch(themeEffectsCss, /clear_ice/, 'Clear Ice does not inherit Arctic-only dark material rules');
 assert.match(clearIceCss, /rgba\(18, 50, 84, \.35\)/, 'Clear Ice uses the reference 35% glass shell');
 assert.match(clearIceCss, /rgba\(10, 43, 74, \.7\)/, 'Clear Ice uses the reference 70% inset glass');
 assert.equal(getWidgetColourTheme('clear_ice').background, '#0A2B4A', 'Clear Ice uses Deep Ice as its palette base');
@@ -39,8 +39,11 @@ assert.equal(getWidgetColourTheme('clear_ice').text, '#EAF7FF', 'Clear Ice uses 
 assert.equal(getWidgetColourTheme('clear_ice').muted, '#A9CDE5', 'Clear Ice uses the Crystal Ice secondary label color');
 assert.match(clearIceCss, /data-widget-type="camera"/, 'Clear Ice keeps source openings transparent');
 assert.match(clearIceCss, /ice-glass\.webp/, 'Clear Ice uses the existing glass texture');
+assert.match(clearIceCss, /frost-corners\.png/, 'Clear Ice adds crystalline edge and corner texture');
+assert.match(clearIceCss, /brightness\(1\.55\)/, 'Clear Ice lifts the source ice texture into brighter highlights');
+assert.match(clearIceCss, /\.bets-ov__card/, 'Clear Ice styles the dedicated bets widget surfaces');
 assert.match(clearIceCss, /mix-blend-mode:\s*screen/, 'Clear Ice blends fracture texture as a luminous overlay');
-assert.match(clearIceCss, /opacity:\s*\.2/, 'Clear Ice keeps surface fracture texture restrained');
+assert.match(clearIceCss, /opacity:\s*\.34/, 'Clear Ice gives the fracture overlay enough strength to read');
 assert.deepEqual(
   [getWidgetColourTheme('gladiator').background, getWidgetColourTheme('gladiator').raised, getWidgetColourTheme('gladiator').accent, getWidgetColourTheme('gladiator').text],
   ['#071018', '#d8a43a', '#7e1518', '#f4e3ba'],

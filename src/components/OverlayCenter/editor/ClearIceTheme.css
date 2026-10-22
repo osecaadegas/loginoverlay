@@ -19,17 +19,18 @@
 /* Recolor the existing Arctic shells while retaining their frame geometry and
    original ice-glass/crack layers. Semi-transparent fill preserves gameplay. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is([data-widget-element="container"]:not(.better-hunt-root), .better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-stage, .better-bets-stage, .better-tournament-stage, .better-slot-requests) {
+  :is([data-widget-element="container"]:not(.better-hunt-root), .better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-stage, .better-bets-stage, .better-tournament-stage, .better-slot-requests, .tw-root, .bets-ov) {
   border-color: var(--ice-line) !important;
   border-width: 2px !important;
   background-color: rgba(18, 50, 84, .35) !important;
   background-image:
     url("/theme-effects/ice/frost-edge.png"),
+    url("/theme-effects/ice/frost-corners.png"),
     linear-gradient(180deg, rgba(216, 243, 251, .20), rgba(137, 217, 255, .035) 18%, transparent 42%),
     linear-gradient(145deg, rgba(41, 98, 153, .18), rgba(18, 50, 84, .10) 45%, rgba(10, 43, 74, .2)) !important;
-  background-blend-mode: screen, normal, normal !important;
-  background-position: center, center, center !important;
-  background-size: 100% 100%, cover, cover !important;
+  background-blend-mode: screen, screen, normal, normal !important;
+  background-position: center, center, center, center !important;
+  background-size: 100% 100%, 100% 100%, cover, cover !important;
   -webkit-backdrop-filter: blur(8px) saturate(130%);
   backdrop-filter: blur(8px) saturate(130%);
   box-shadow:
@@ -72,33 +73,71 @@
 
 /* Nested stat and message cards take the supplied 70% navy glass treatment. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is([data-widget-element="header"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], .better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-better-element="statCard"], [data-better-element="message"]) {
+  :is([data-widget-element="header"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], .better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .tw-root [data-material-surface="panel"], .tw-root [data-material-surface="card"], [data-better-element="statCard"], [data-better-element="message"]) {
   border-color: rgba(137, 217, 255, .36) !important;
   background-color: rgba(10, 43, 74, .7) !important;
   background-image:
-    linear-gradient(145deg, rgba(41, 98, 153, .2), rgba(10, 43, 74, .42)) !important;
+    linear-gradient(145deg, rgba(41, 98, 153, .2), rgba(10, 43, 74, .42)),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-blend-mode: screen, soft-light !important;
   box-shadow: inset 0 1px 0 rgba(216, 243, 251, .22), inset 0 0 9px rgba(137, 217, 255, .08), 0 2px 8px rgba(0, 10, 19, .22) !important;
 }
 
-/* Bring the Arctic crack detail into Clear Ice without laying an opaque bitmap
-   over the game. The source artwork is dark, so screen blending keeps its
-   bright fissures and reflections while the low overlay opacity protects text. */
+/* Reuse the actual ice surface artwork and brighten it as a separate overlay.
+   The corner map adds crystalline edge detail while screen blending keeps the
+   dark source pixels transparent over gameplay and widget content. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"]) {
+  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .tw-root [data-material-surface="panel"], .tw-root [data-material-surface="card"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"]) {
   position: relative;
   isolation: isolate;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"])::after {
+  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .tw-root [data-material-surface="panel"], .tw-root [data-material-surface="card"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"])::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: url("/theme-effects/ice/ice-glass.webp") center / 300px 300px repeat;
-  opacity: .2;
+  background:
+    url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat,
+    url("/theme-effects/ice/ice-glass.webp") center / 300px 300px repeat;
+  opacity: .34;
+  filter: brightness(1.55) contrast(1.08) saturate(.68);
   mix-blend-mode: screen;
   pointer-events: none;
   z-index: -1;
+}
+
+/* The bets widget has its own CSS variables and default near-black surfaces;
+   give its existing parts the same glass material without changing its grid. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov {
+  --bets-bg: rgba(18, 50, 84, .34);
+  --bets-hdr-bg: rgba(41, 98, 153, .34);
+  --bets-bar-bg: rgba(10, 43, 74, .7);
+  --bets-card-bg: rgba(10, 43, 74, .7);
+  --bets-border: rgba(137, 217, 255, .42);
+  --bets-text: #EAF7FF;
+  --bets-hdr-txt: #EAF7FF;
+  background: var(--clear-ice-glass) !important;
+  background-image: url("/theme-effects/ice/frost-edge.png"), url("/theme-effects/ice/frost-corners.png"), var(--clear-ice-glass) !important;
+  background-size: 100% 100%, 100% 100%, cover !important;
+  background-blend-mode: screen, screen, normal !important;
+  border: 2px solid rgba(137, 217, 255, .72) !important;
+  box-shadow: inset 0 1px 0 rgba(216, 243, 251, .66), inset 0 0 14px rgba(137, 217, 255, .18), 0 0 16px rgba(101, 156, 210, .4) !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__header,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__stat,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__row,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__card {
+  background-color: rgba(10, 43, 74, .7) !important;
+  color: #EAF7FF;
+}
+
+/* Tournament surfaces opt into material attributes so preserve their semantic
+   transparencies while giving panels and cards a luminous ice face. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"] .tw-root[data-material-surface="transparent"] {
+  background: transparent !important;
+  border-color: rgba(137, 217, 255, .68) !important;
+  box-shadow: inset 0 0 12px rgba(216, 243, 251, .14), 0 0 14px rgba(101, 156, 210, .3) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
