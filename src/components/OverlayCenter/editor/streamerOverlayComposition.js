@@ -48,7 +48,7 @@ export function isLegacyStreamerOverlayComposition(layout) {
 }
 
 function configureStreamerWidget(type, config, role, geometry) {
-  let next = applyWidgetColourTheme(type, config, "galactic_command");
+  let next = applyWidgetColourTheme(type, config, "neon");
   next = {
     ...next,
     streamerOverlay: {
@@ -58,7 +58,28 @@ function configureStreamerWidget(type, config, role, geometry) {
     },
   };
 
-  if (type === "navbar") {
+  if (type === "background") {
+    next = {
+      ...next,
+      bgMode: "texture",
+      textureType: "gradient",
+      color1: "#111827",
+      color2: "#1e3a8a",
+      color3: "#111827",
+      gradientAngle: 135,
+      opacity: 100,
+      overlayColor: "",
+      overlayOpacity: 0,
+      texture: {
+        ...next.texture,
+        background: "#111827",
+        accentColor: "#1e3a8a",
+        fillColor: "#111827",
+        gradientAngle: 135,
+      },
+      themeEffects: { ...next.themeEffects, enabled: false },
+    };
+  } else if (type === "navbar") {
     next = {
       ...next,
       displayStyle: "better_navbar",
@@ -80,7 +101,7 @@ function configureStreamerWidget(type, config, role, geometry) {
       widgetHeight: geometry.height,
     };
   } else if (type === "slot_window") {
-    next = { ...next, transparent: true, showLabel: false };
+    next = { ...next, showLabel: false };
   } else if (type === "chat") {
     next = {
       ...next,

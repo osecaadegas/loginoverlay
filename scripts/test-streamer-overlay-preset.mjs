@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createServer } from "vite";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { createOverlayTestDatabase } from "./helpers/overlay-build-test-db.mjs";
 
 globalThis.window = { location: { origin: "http://localhost" } };
@@ -22,6 +24,9 @@ try {
     );
   const service = await server.ssrLoadModule(
     "/src/services/betterOverlayService.js",
+  );
+  const slotWindow = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/slot-window/SlotWindowWidget.jsx",
   );
   const { supabase } = await server.ssrLoadModule(
     "/src/config/supabaseClient.js",
@@ -124,7 +129,25 @@ try {
     (item) => item.config.streamerOverlay?.role === "active_panel",
   );
   assert.equal(hunt.config.orientation, "mainstream");
-  assert.equal(hunt.config.colourTheme, "galactic_command");
+  assert.equal(hunt.config.colourTheme, "neon");
+  const scene = normalized.instances.find(
+    (item) => item.config.streamerOverlay?.role === "scene",
+  );
+  assert.equal(scene.config.colourTheme, "neon");
+  assert.equal(scene.config.color1, "#111827");
+  assert.equal(scene.config.color2, "#1e3a8a");
+  const gameplay = normalized.instances.find(
+    (item) => item.config.streamerOverlay?.role === "gameplay",
+  );
+  const openingMarkup = renderToStaticMarkup(
+    React.createElement(slotWindow.default, {
+      config: gameplay.config,
+      runtime: "obs",
+    }),
+  );
+  assert.match(openingMarkup, /slot-window-widget--streamer-opening/);
+  assert.match(openingMarkup, /slot-window-widget__streamer-frame/);
+  assert.doesNotMatch(openingMarkup, /In ScreenSplit, isolate the slot/);
 
   const build = await service.createBetterEditorOverlay(
     "admin-user",
@@ -257,7 +280,7 @@ try {
     "the website Apps page exposes the beta only to admins and opens the working editor route",
   );
   console.log(
-    "Streamer Overlay checks passed: supplied-scene widget set and geometry, admin gate, editor entry, legacy build migration, owner-scoped persistence, OBS publication, live widget/theme reads, and embedded giveaway settings.",
+    "Streamer Overlay checks passed: supplied-scene widgets and layout, blue source styling, transparent empty gameplay frame, admin gate, legacy build migration, owner-scoped persistence, OBS publication, live data, and embedded giveaway settings.",
   );
 } finally {
   await server.close();

@@ -70,14 +70,15 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
   }, [sourceUrl]);
   const size = reported?.sourceUrl === sourceUrl ? reported : null;
   const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height) : null;
-  const showSetup = !sourceUrl && runtime !== "obs" && !['starter_studio','galactic_command'].includes(normalized.colourTheme);
+  const streamerOverlayOpening = config.streamerOverlay?.role === "gameplay";
+  const showSetup = !sourceUrl && !streamerOverlayOpening && runtime !== "obs" && !['starter_studio','galactic_command'].includes(normalized.colourTheme);
 
-  if (!sourceUrl && !showSetup) return null;
+  if (!sourceUrl && !showSetup && !streamerOverlayOpening) return null;
 
   return (
     <section
       ref={hostRef}
-      className="slot-window-widget"
+      className={`slot-window-widget${streamerOverlayOpening ? " slot-window-widget--streamer-opening" : ""}`}
       data-element-id="root"
       data-connected={sourceUrl ? "true" : "false"}
       data-mask-shape={normalized.maskShape}
@@ -96,10 +97,12 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
           referrerPolicy="no-referrer"
           scrolling="no"
           onLoad={() => iframeRef.current?.contentWindow?.postMessage({ type: 'streamerscenter:request-source-size' }, new URL(sourceUrl).origin)}
-          style={{ ...outerMaskStyle(normalized), ...(fitted ? { inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: fitted.width, height: fitted.height } : {}) }}
+          style={{ ...outerMaskStyle(normalized), ...(streamerOverlayOpening && !fitted ? { inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' } : {}), ...(fitted ? { inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: fitted.width, height: fitted.height } : {}) }}
         />
       ) : (
-        <div className="slot-window-widget__setup" data-element-id="emptyState">
+        streamerOverlayOpening ? (
+          <div className="slot-window-widget__streamer-frame" aria-hidden="true" />
+        ) : <div className="slot-window-widget__setup" data-element-id="emptyState">
           <span aria-hidden="true">▣</span>
           <strong>Slot Window</strong>
           <p>In ScreenSplit, isolate the slot and press Export.</p>
