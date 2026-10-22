@@ -198,7 +198,14 @@ try {
     "utf8",
   );
   assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName\}/);
-  assert.match(editorSource, /\{isAdmin && \([\s\S]*?getStreamerOverlayName\(layout, user\)/);
+  assert.match(editorSource, /className="is-primary editor-streamer-overlay-action"/);
+  assert.match(editorSource, /\{isAdmin && \([\s\S]{0,500}editor-streamer-overlay-action/);
+  assert.match(editorSource, /<span>Open Streamer Overlay<\/span>/);
+  assert.match(editorSource, /const openStreamerOverlay = useCallback\(async \(\) =>/);
+  assert.match(editorSource, /listBetterEditorOverlays\(user\.id\)/);
+  assert.match(editorSource, /createBetterEditorOverlay\([\s\S]*?composed\.name,[\s\S]*?composed,/);
+  assert.match(editorSource, /Open your saved Streamer Overlay build, or create a separate one/);
+  assert.match(editorSource, /editor-streamer-overlay-action/);
   const appsSource = readFileSync(
     new URL("../src/components/AppsPage/AppsPage.jsx", import.meta.url),
     "utf8",
@@ -209,7 +216,7 @@ try {
     "the website Apps page exposes the beta only to admins and opens the working editor route",
   );
   console.log(
-    "Streamer Overlay checks passed: admin gate, editable composition, owner-scoped draft persistence, public OBS publication, StreamersCenter live widget/theme reads, and embedded giveaway settings.",
+    "Streamer Overlay checks passed: admin gate, prominent editor entry, separate open-or-create build action, editable composition, owner-scoped draft persistence, public OBS publication, live widget/theme reads, and embedded giveaway settings.",
   );
 } finally {
   await server.close();

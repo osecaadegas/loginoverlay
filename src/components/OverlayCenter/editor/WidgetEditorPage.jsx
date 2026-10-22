@@ -57,6 +57,8 @@ import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
   getBetterEditorLiveSource,
   getOrCreateBetterEditorOverlay,
+  createBetterEditorOverlay,
+  listBetterEditorOverlays,
   publishBetterOverlay,
   regenerateBetterPublicOverlayId,
   resetBetterDraftLayout,
@@ -1113,6 +1115,44 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
     }
   }, [announceEditorRecord, user?.id]);
 
+  const openStreamerOverlay = useCallback(async () => {
+    if (!user?.id || operationRef.current || previewing) return;
+    operationRef.current = true;
+    setOperation("Opening Streamer Overlay");
+    setError(null);
+    let nextOverlayId = null;
+    try {
+      await flushDraft();
+      const overlayName = getStreamerOverlayName(layoutRef.current, user);
+      const builds = await listBetterEditorOverlays(user.id);
+      const existing = builds.find(
+        (build) => build.name?.trim().toLocaleLowerCase() === overlayName.toLocaleLowerCase(),
+      );
+      if (existing) {
+        nextOverlayId = existing.id;
+      } else {
+        const composed = applyStreamerOverlayComposition(layoutRef.current, user);
+        const created = await createBetterEditorOverlay(
+          user.id,
+          composed.name,
+          composed,
+        );
+        nextOverlayId = created.id;
+      }
+      operationRef.current = false;
+      setOperation(null);
+      onSelectBuild(nextOverlayId);
+    } catch (failure) {
+      setSavingState("error");
+      setError(failure);
+    } finally {
+      if (operationRef.current) {
+        operationRef.current = false;
+        setOperation(null);
+      }
+    }
+  }, [flushDraft, onSelectBuild, previewing, user]);
+
   useEffect(() => {
     if (!loadedRef.current || !dirty || !user?.id) return undefined;
     const timeout = window.setTimeout(async () => {
@@ -1703,6 +1743,18 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           onRename={(name) => commitLayout((current) => ({ ...current, name }))}
           disabled={Boolean(operation)}
         />
+        {isAdmin && (
+          <button
+            type="button"
+            className="is-primary editor-streamer-overlay-action"
+            disabled={Boolean(operation) || previewing}
+            title="Open your saved Streamer Overlay build, or create a separate one from your live StreamersCenter widgets. Your current build stays unchanged."
+            onClick={openStreamerOverlay}
+          >
+            <Scan size={16} />
+            <span>Open Streamer Overlay</span>
+          </button>
+        )}
         <div className="editor-history-actions">
           <button
             type="button"
@@ -1739,17 +1791,6 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           <small>{publicationStatus}</small>
         </div>
         <div className="editor-publish-actions">
-          {isAdmin && (
-            <button
-              type="button"
-              disabled={Boolean(operation) || previewing}
-              title={`Apply the free ${getStreamerOverlayName(layout, user)} layout using StreamersCenter live widgets. Undo is available.`}
-              onClick={() => commitLayout((current) => applyStreamerOverlayComposition(current, user))}
-            >
-              <Scan size={16} />
-              <span>{getStreamerOverlayName(layout, user)} open-source beta</span>
-            </button>
-          )}
           {layout.instances.some(i=>i.config?.colourTheme==='galactic_command')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Galactic Command 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyGalacticCommandComposition)}><Scan size={16}/><span>Galactic Command reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='starter_studio')&&<button type="button" disabled={Boolean(operation)||previewing} title="Apply the Starter Studio 1920 × 1080 layout. Undo is available." onClick={()=>commitLayout(applyStarterStudioComposition)}><Scan size={16}/><span>Starter Studio reference layout</span></button>}
           {layout.instances.some(i=>i.config?.colourTheme==='street_art') && <button type="button" disabled={Boolean(operation)||previewing} title="Apply the Street Art 1920 × 1080 reference preset. Existing data is preserved. Undo is available." onClick={()=>commitLayout(applyStreetArtComposition)}><Scan size={16}/><span>Street Art reference layout</span></button>}

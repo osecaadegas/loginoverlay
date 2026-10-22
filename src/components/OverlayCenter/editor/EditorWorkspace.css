@@ -76,6 +76,18 @@
   color: #09251d;
   border-color: #58d2b6;
 }
+.editor-topbar .editor-streamer-overlay-action {
+  min-height: 38px;
+  padding: 0 13px;
+  border-color: #27d9c1;
+  background: linear-gradient(135deg, #087d72, #075a70);
+  color: #f2fffd;
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.16), 0 4px 18px rgba(0, 207, 193, 0.14);
+}
+.editor-topbar .editor-streamer-overlay-action:hover:not(:disabled) {
+  background: linear-gradient(135deg, #099889, #087393);
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2), 0 6px 22px rgba(0, 207, 193, 0.22);
+}
 .editor-save-status {
   min-width: 0;
   margin-left: auto;
