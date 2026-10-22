@@ -1,18 +1,18 @@
 import { createBetterInstance } from "./betterWidgetRegistry.jsx";
 import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 
-// This follows the supplied MainStreamOverlay scene: a slim top bar, its
-// 350px left rail with a 240px active panel aligned to the rail's right edge,
-// an unobstructed gameplay opening, and chat on the right.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 9;
+// This follows MainStreamOverlay's 1920 x 1080 stage and the actual source
+// component dimensions: a 42px inset bar, 240px side panels, and a transparent
+// 1164px gameplay opening between them.
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 10;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
-  { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
+  { type: "navbar", role: "header", x: 8, y: 8, width: 1904, height: 42 },
   // MainStreamOverlay reserves a 350px left rail, then its 240px active
   // widget is right-aligned in that rail (110px inset from the scene edge).
   { type: "bonus_hunt", role: "active_panel", x: 130, y: 60, width: 240, height: 720 },
   { type: "slot_window", role: "gameplay", x: 378, y: 60, width: 1164, height: 720 },
-  { type: "chat", role: "chat", x: 1550, y: 60, width: 350, height: 720 },
+  { type: "chat", role: "chat", x: 1550, y: 60, width: 240, height: 720 },
 ]);
 
 export function getStreamerOverlayName(layout, user) {
@@ -108,13 +108,18 @@ function configureStreamerWidget(type, config, role, geometry) {
       // the far edge. This avoids packing every saved navbar section into one
       // flex zone, which caused the logo, start value and social handles to
       // overlap in the 1920px preview.
-      barHeight: 50,
+      barHeight: 42,
       fontSize: 12,
-      showClock: false,
+      borderRadius: 24,
+      radius: 24,
+      containerBorderWidth: 1,
+      containerBorderColor: "rgba(255,255,255,.1)",
+      containerBlur: 12,
+      showClock: true,
       showNowPlaying: false,
-      showCasino: false,
-      socialDisplayStyle: "marquee",
-      socialMarqueeDuration: 24,
+      showCasino: true,
+      socialDisplayStyle: "slide",
+      socialIntervalMs: 3000,
       sectionLayout: [
         { id: "identity", zone: "left" },
         { id: "badge", zone: "left" },
@@ -151,8 +156,10 @@ function configureStreamerWidget(type, config, role, geometry) {
       showHeader: true,
       showLegend: false,
       showAvatars: false,
+      showBadges: false,
+      useNativeColors: true,
       flow: "top-to-bottom",
-      fontSize: 12,
+      fontSize: 11,
       msgSpacing: 4,
       animation: "none",
       stagger: 0,

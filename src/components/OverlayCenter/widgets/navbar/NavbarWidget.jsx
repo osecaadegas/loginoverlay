@@ -2242,6 +2242,7 @@ function NavbarWidget({
   if(c.colourTheme==='galactic_command')return <GalacticNavbar config={c} time={time} allWidgets={allWidgets}/>;
   if(c.colourTheme==='starter_studio'&&c.studio?.masthead)return <StarterStudioNavbar config={c} time={time}/>;
   if (isBetterNavbar) {
+    const streamerSourceHeader = c.streamerOverlay?.role === "header";
     const packageBlue = c.accentBlue || "#2563eb";
     const packageGold = c.accentGold || accentColor || "#f97316";
     const packageBgTop = c.navbarTopColor || "#0a152e";
@@ -2734,6 +2735,7 @@ function NavbarWidget({
             filter: "blur(60px)",
             borderRadius: 999,
             pointerEvents: "none",
+            display: streamerSourceHeader ? "none" : undefined,
           }}
         />
         <div
@@ -2747,17 +2749,17 @@ function NavbarWidget({
             ...(isOrbitalNavbar ? { padding: '9px 12px' } : {}),
             display: "flex",
             alignItems: "center",
-            border: `${Math.max(1, Number(borderWidth) || 1)}px solid ${alphaColor(packageBorder, 0.5)}`,
+            border: streamerSourceHeader ? "1px solid rgba(255,255,255,.1)" : `${Math.max(1, Number(borderWidth) || 1)}px solid ${alphaColor(packageBorder, 0.5)}`,
             borderRadius: `${packageRadius}px`,
-            background: c.colourTheme === 'volcanic' ? volcanicSurfaceBackground(c, packageBgTop, packageBgBottom) : `linear-gradient(180deg, ${packageBgTop}, ${packageBgBottom})`,
+            background: streamerSourceHeader
+              ? "linear-gradient(90deg, rgba(15,23,42,.95), rgba(30,41,59,.95), rgba(15,23,42,.95))"
+              : c.colourTheme === 'volcanic' ? volcanicSurfaceBackground(c, packageBgTop, packageBgBottom) : `linear-gradient(180deg, ${packageBgTop}, ${packageBgBottom})`,
             color: textColor,
             fontFamily: containerFontFamily,
             overflow: "hidden",
             position: "relative",
             zIndex: 1,
-            boxShadow:
-              containerShadow ||
-              (isOrbitalNavbar ? 'var(--orbital-hud-shadow)' : `0 0 25px ${alphaColor(packageBlue, 0.25)}, inset 0 1px 0 rgba(255,255,255,0.06)`),
+            boxShadow: streamerSourceHeader ? "none" : containerShadow || (isOrbitalNavbar ? 'var(--orbital-hud-shadow)' : `0 0 25px ${alphaColor(packageBlue, 0.25)}, inset 0 1px 0 rgba(255,255,255,0.06)`),
             filter: needsFilter ? filterStr : "none",
             transform: `scale(${widgetScale})`,
             transformOrigin: "center",
@@ -2777,6 +2779,7 @@ function NavbarWidget({
               background: `linear-gradient(90deg, transparent, ${alphaColor(packageBlue, 0.86)}, transparent)`,
               opacity: 0.5,
               pointerEvents: "none",
+              display: streamerSourceHeader ? "none" : undefined,
             }}
           />
           <div
@@ -2789,6 +2792,7 @@ function NavbarWidget({
                 "linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.055) 46%, transparent 58%)",
               animation: "better-nav-package-sheen 6s linear infinite",
               pointerEvents: "none",
+              display: streamerSourceHeader ? "none" : undefined,
             }}
           />
 

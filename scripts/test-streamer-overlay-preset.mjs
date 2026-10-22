@@ -162,12 +162,14 @@ try {
   const header = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "header",
   );
-  assert.equal(header.config.barHeight, 50);
-  assert.equal(header.config.socialDisplayStyle, "marquee");
+  assert.equal(header.config.barHeight, 42);
+  assert.equal(header.config.socialDisplayStyle, "slide");
   const navbarWidgetSource = readFileSync(
     new URL("../src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx", import.meta.url),
     "utf8",
   );
+  assert.match(navbarWidgetSource, /const streamerSourceHeader = c\.streamerOverlay\?\.role === "header"/);
+  assert.match(navbarWidgetSource, /linear-gradient\(90deg, rgba\(15,23,42,\.95\), rgba\(30,41,59,\.95\), rgba\(15,23,42,\.95\)\)/);
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,120}flex: "1 1 0%", width: "100%"/);
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,220}\? "1 1 0%"/);
   assert.match(navbarWidgetSource, /const sourceSocialOrder = \["twitch", "kick", "youtube", "x", "instagram", "discord", "tiktok"\]/);
@@ -183,8 +185,9 @@ try {
     { id: "casino", zone: "right" },
     { id: "cta", zone: "right" },
   ]);
-  assert.equal(header.config.showCasino, false);
-  assert.equal(chat.config.fontSize, 12);
+  assert.equal(header.config.showClock, true);
+  assert.equal(header.config.showCasino, true);
+  assert.equal(chat.config.fontSize, 11);
   assert.equal(chat.config.containerRadius, 16);
   const sourcePanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
@@ -205,13 +208,14 @@ try {
   assert.match(sourcePanelMarkup, /BONUS HUNT/);
   assert.match(sourcePanelMarkup, /Source Style Slot/);
   assert.match(sourcePanelMarkup, /SUPER/);
-  assert.match(sourcePanelMarkup, /BEST RESULT/);
-  assert.match(sourcePanelMarkup, /TOTAL PAYOUT/);
+  assert.match(sourcePanelMarkup, /BEST SLOT/);
+  assert.match(sourcePanelMarkup, /TOTAL PAY/);
   assert.match(sourcePanelMarkup, /€5\.00/);
   assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
-  assert.match(sourceBonusPanelSource, /if \(isOpening \|\| resultSlots\.length < 2\) return undefined/);
-  assert.match(sourceBonusPanelSource, /resultSlot && !isOpening/);
-  assert.match(sourceBonusPanelSource, /opening-counters \.streamer-source-bonus-counter\{min-width:0;min-height:36px;flex-direction:column;justify-content:center;gap:2px;padding:4px 3px\}/);
+  assert.match(sourceBonusPanelSource, /const resultSlots = useMemo/);
+  assert.match(sourceBonusPanelSource, /streamer-source-bonus-scroll 30s linear infinite/);
+  assert.match(sourceBonusPanelSource, /source-overlay-bonus-list-title/);
+  assert.match(sourceBonusPanelSource, /source-overlay-best-row/);
   const openingPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€", bonusOpening: true },
@@ -226,11 +230,9 @@ try {
   assert.match(openingPanelMarkup, /BONUS OPENING/);
   assert.match(openingPanelMarkup, /Current Opening Slot/);
   assert.match(openingPanelMarkup, /TOTAL PAY/);
-  assert.match(openingPanelMarkup, /BE ATUAL/);
-  assert.match(openingPanelMarkup, /is-opening/);
-  assert.match(sourceBonusPanelSource, /top:50%;left:10px;right:10px;transform:translateY\(-50%\)/);
-  assert.match(openingPanelMarkup, /<footer class="streamer-source-bonus-progress"/);
-  assert.doesNotMatch(openingPanelMarkup, /aria-label="Best opened bonus"/);
+  assert.match(openingPanelMarkup, /BE INICIAL/);
+  assert.doesNotMatch(openingPanelMarkup, /NOW OPENING/);
+  assert.doesNotMatch(openingPanelMarkup, /TOTAL PAYOUT/);
   const endedPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
       config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
@@ -240,6 +242,9 @@ try {
     }),
   );
   assert.match(endedPanelMarkup, /BONUS ENDED/);
+  assert.match(chatWidgetSource, /Match ChatOverlay's original 240 x 720 inset panel/);
+  assert.match(chatWidgetSource, /linear-gradient\(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%\)/);
+  assert.match(chatWidgetSource, /justifyContent: "center", gap: 8, marginBottom: 12/);
   const embeddedWinnerMarkup = renderToStaticMarkup(
     React.createElement(embeddedGiveaway.default, {
       config: {

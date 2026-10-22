@@ -1003,6 +1003,9 @@ function normalizeZIndexes(instances) {
 
 export function getBetterInstanceConstraints(instance = {}) {
   const constraints = SIZE_CONSTRAINTS[instance.widgetType] || {};
+  if (instance.widgetType === "navbar" && instance.config?.streamerOverlay?.role === "header") {
+    return { ...constraints, minWidth: 720, minHeight: 42, maxWidth: 1920, maxHeight: 160 };
+  }
   if (instance.widgetType === "bonus_hunt" && instance.config?.streamerOverlay?.role === "active_panel") {
     return { ...constraints, minWidth: 240, minHeight: 320, maxWidth: 1280, maxHeight: 1080 };
   }

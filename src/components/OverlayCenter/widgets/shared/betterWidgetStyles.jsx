@@ -5877,6 +5877,7 @@ export function BetterChatMessage({
             fontSize: 10,
             position: "relative",
           }),
+          ...(streamerSourceChat && { display: "none" }),
         })}
       >
         {avatarUrl ? (
@@ -5900,13 +5901,13 @@ export function BetterChatMessage({
       </span>
       <span style={{ minWidth: 0, ...(broadcast && { position: "relative" }) }}>
         <span
-          style={{ display: streetInline ? "inline" : "flex", alignItems: "center", gap: 6, minWidth: 0, ...(broadcast && { flexWrap: "wrap", rowGap: 3 }) }}
+          style={{ display: streetInline || streamerSourceChat ? "inline" : "flex", alignItems: "center", gap: 6, minWidth: 0, ...(broadcast && { flexWrap: "wrap", rowGap: 3 }) }}
         >
           <strong
             {...attrs("chat", c, "username")}
             style={context.usernameStyle({
               color: nameColor,
-              fontSize: cssPx(context.usernameSize),
+              fontSize: streamerSourceChat ? 11 : cssPx(context.usernameSize),
               fontWeight: 900,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -5954,9 +5955,10 @@ export function BetterChatMessage({
         <span
           {...attrs("chat", c, "messageText")}
           style={context.messageTextStyle({
-            display: "block",
+            display: streamerSourceChat ? "inline" : "block",
             marginTop: 2,
             color: context.textColor,
+            fontSize: streamerSourceChat ? 11 : undefined,
             lineHeight: context.msgLineHeight,
             overflowWrap: "anywhere",
             ...(broadcast && { whiteSpace: "pre-wrap", letterSpacing: 0 }),
