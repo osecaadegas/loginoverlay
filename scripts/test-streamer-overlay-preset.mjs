@@ -170,6 +170,7 @@ try {
   );
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,120}flex: "1 1 0%", width: "100%"/);
   assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,220}\? "1 1 0%"/);
+  assert.match(navbarWidgetSource, /const sourceSocialOrder = \["twitch", "kick", "youtube", "x", "instagram", "discord", "tiktok"\]/);
   assert.equal(header.config.showNowPlaying, false);
   assert.deepEqual(header.config.sectionLayout, [
     { id: "identity", zone: "left" },
@@ -228,7 +229,7 @@ try {
   assert.match(openingPanelMarkup, /BE ATUAL/);
   assert.match(openingPanelMarkup, /is-opening/);
   assert.match(sourceBonusPanelSource, /top:50%;left:10px;right:10px;transform:translateY\(-50%\)/);
-  assert.doesNotMatch(openingPanelMarkup, /<footer class="streamer-source-bonus-progress"/);
+  assert.match(openingPanelMarkup, /<footer class="streamer-source-bonus-progress"/);
   assert.doesNotMatch(openingPanelMarkup, /aria-label="Best opened bonus"/);
   const endedPanelMarkup = renderToStaticMarkup(
     React.createElement(sourceBonusPanel.default, {
@@ -254,6 +255,13 @@ try {
   );
   assert.match(embeddedWinnerMarkup, /data-streamer-source-chat="true"/);
   assert.match(embeddedWinnerMarkup, /data-native-winner="true"/);
+  assert.match(embeddedWinnerMarkup, /height:78px/);
+  assert.match(embeddedWinnerMarkup, /width:min\(204px, 100%\)/);
+  const embeddedGiveawayCss = readFileSync(
+    new URL("../src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(embeddedGiveawayCss, /grid-template-columns:46px minmax\(0,1fr\)/);
   const scene = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "scene",
   );

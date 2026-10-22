@@ -1570,7 +1570,15 @@ function NavbarWidget({
   /* ─── Dynamic section layout ─── */
   const layout = normalizeNavbarSectionLayout(c.sectionLayout);
   const getZoneSections = (zone) => layout.filter((s) => s.zone === zone);
-  const socialItems = resolveNavbarSocialItems(c);
+  const resolvedSocialItems = resolveNavbarSocialItems(c);
+  const sourceSocialOrder = ["twitch", "kick", "youtube", "x", "instagram", "discord", "tiktok"];
+  const socialItems = c.streamerOverlay?.role === "header"
+    ? [...resolvedSocialItems].sort((a, b) => {
+      const aIndex = sourceSocialOrder.indexOf(a.id);
+      const bIndex = sourceSocialOrder.indexOf(b.id);
+      return (aIndex < 0 ? sourceSocialOrder.length : aIndex) - (bIndex < 0 ? sourceSocialOrder.length : bIndex);
+    })
+    : resolvedSocialItems;
   const socialMode = ["marquee", "slide", "fade"].includes(c.socialDisplayStyle)
     ? c.socialDisplayStyle
     : "handles";

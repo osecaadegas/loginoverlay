@@ -22,13 +22,16 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const hasWinner = Boolean(config.winner);
   const drawing = !hasWinner && Boolean(config.spinningWinner);
   const streamerSourceChat = layout?.streamerOverlay?.role === "chat";
+  const compactSourceWinner = streamerSourceChat && hasWinner;
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
   const nativeWinner = hasWinner && (streamerSourceChat || ['orbital', 'arctic', 'candy', 'volcanic', 'solverde','old_rome','street_art','starter_studio','galactic_command'].includes(winnerTheme));
   const premium=['orbital','arctic','candy','volcanic','solverde','old_rome','street_art','starter_studio','galactic_command'].includes(winnerTheme);
   const regularFrameHeight = bounded(premium&&(!layout.giveawayHeight||layout.giveawayHeight===250)?96:layout.giveawayHeight, ['street_art','starter_studio','galactic_command'].includes(winnerTheme) ? 44 : 80, 600, 250);
-  const winnerFrameHeight = bounded(premium&&(!layout.giveawayWinnerHeight||layout.giveawayWinnerHeight===180)?116:layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
+  const winnerFrameHeight = compactSourceWinner
+    ? 78
+    : bounded(premium&&(!layout.giveawayWinnerHeight||layout.giveawayWinnerHeight===180)?116:layout.giveawayWinnerHeight, 110, 320, winnerTheme === 'candy' ? 120 : 180);
   const frameHeight = hasWinner ? winnerFrameHeight : drawing ? Math.max(190,regularFrameHeight) : regularFrameHeight;
   const canvasHeight = hasWinner ? 190 : height;
   const margin = bounded(layout.giveawayMargin, 0, 30, 4);
@@ -55,8 +58,8 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       '--gw-embedded-reel': config.reelColor || config.panelLo || config.bgColor,
       position: "relative", minWidth: 0, minHeight: 0, flex: `0 1 ${frameHeight}px`,
       height: frameHeight, maxHeight: `${bounded(layout.giveawayMaxHeight, 20, 80, 60)}%`,
-      overflow: "hidden", margin: `${margin}px 0`, alignSelf: "stretch",
-      width: "100%",
+      overflow: "hidden", margin: compactSourceWinner ? `${Math.max(18, margin)}px auto 10px` : `${margin}px 0`, alignSelf: compactSourceWinner ? "center" : "stretch",
+      width: compactSourceWinner ? "min(204px, 100%)" : "100%",
     }}>
       <div className="ov-chat-giveaway-canvas" data-native-winner={nativeWinner || undefined} data-streamer-source-chat={streamerSourceChat || undefined} style={drawing || nativeWinner || streamerSourceChat || (premium&&!config.spinningWinner) || ['volcanic','solverde'].includes(winnerTheme) ? {
         position: 'absolute', inset: 0, width: '100%', height: '100%', containerType: 'size',

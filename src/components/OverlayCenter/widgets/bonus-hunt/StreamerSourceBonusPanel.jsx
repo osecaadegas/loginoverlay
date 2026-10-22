@@ -131,13 +131,11 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
           <div className="streamer-source-bonus-summary-value"><b>{money(resultSlot.payout ?? resultSlot._payout, amountUnit)}</b><small>{Number(resultSlot._multi || 0).toFixed(1)}x</small></div>
         </div>
       )}
-      {!isOpening && (
-        <footer className="streamer-source-bonus-progress">
-          <div className="streamer-source-bonus-total"><span>TOTAL PAYOUT</span><b>{money(stats.totalWin, amountUnit)}</b></div>
-          <div className="streamer-source-bonus-progress-label"><span>OPENED <b>{opened.length} / {bonuses.length}</b></span><b>{progress}%</b></div>
-          <div className="streamer-source-bonus-progress-track"><i style={{ width: `${progress}%` }} /></div>
-        </footer>
-      )}
+      <footer className="streamer-source-bonus-progress">
+        <div className="streamer-source-bonus-total"><span>TOTAL PAYOUT</span><b>{money(stats.totalWin, amountUnit)}</b></div>
+        <div className="streamer-source-bonus-progress-label"><span>OPENED <b>{opened.length} / {bonuses.length}</b></span><b>{progress}%</b></div>
+        <div className="streamer-source-bonus-progress-track"><i style={{ width: `${progress}%` }} /></div>
+      </footer>
     </section>
   );
 }
