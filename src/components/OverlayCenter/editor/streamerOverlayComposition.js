@@ -1,20 +1,17 @@
 import { createBetterInstance } from "./betterWidgetRegistry.jsx";
 import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 
-// Streamer Overlay is delivered as an editable composition of StreamersCenter's
-// existing live widgets. Each role gets its own instance so users can move,
-// resize, restyle, or remove it independently in the editor.
+// This follows the supplied overlay's actual scene: a slim top bar, one active
+// stream panel on the left, an unobstructed gameplay opening, and chat on the
+// right. It deliberately does not add unrelated request, slideshow, or result
+// cards from the general StreamersCenter widget catalog.
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 2;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
-  { type: "navbar", role: "header", x: 18, y: 18, width: 1884, height: 60 },
-  { type: "bonus_hunt", role: "hunt", x: 18, y: 94, width: 370, height: 430 },
-  { type: "slot_requests", role: "requests", x: 18, y: 532, width: 370, height: 530 },
-  { type: "slot_window", role: "gameplay", x: 398, y: 94, width: 1124, height: 700 },
-  { type: "rtp_stats", role: "stats", x: 398, y: 802, width: 1124, height: 72 },
-  { type: "current_slot", role: "current_game", x: 398, y: 886, width: 1124, height: 176 },
-  { type: "slideshow_frame", role: "slideshow", x: 1532, y: 94, width: 370, height: 270 },
-  { type: "giveaway", role: "winner", x: 1532, y: 374, width: 370, height: 180 },
-  { type: "chat", role: "chat", x: 1532, y: 562, width: 370, height: 500 },
+  { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
+  { type: "bonus_hunt", role: "active_panel", x: 20, y: 60, width: 350, height: 720 },
+  { type: "slot_window", role: "gameplay", x: 378, y: 60, width: 1164, height: 720 },
+  { type: "chat", role: "chat", x: 1550, y: 60, width: 350, height: 720 },
 ]);
 
 export function getStreamerOverlayName(layout, user) {
@@ -33,17 +30,33 @@ export function getStreamerOverlayName(layout, user) {
 export function hasStreamerOverlayComposition(layout) {
   const instances = Array.isArray(layout?.instances) ? layout.instances : [];
   return STREAMER_OVERLAY_COMPOSITION.every(({ type, role }) =>
-    instances.some(
-      (instance) =>
-        instance.widgetType === type &&
-        instance.config?.streamerOverlay?.role === role,
-    ),
+      instances.some(
+        (instance) =>
+          instance.widgetType === type &&
+          instance.config?.streamerOverlay?.role === role &&
+          instance.config?.streamerOverlay?.compositionVersion === STREAMER_OVERLAY_COMPOSITION_VERSION,
+      ),
+    );
+}
+
+export function isLegacyStreamerOverlayComposition(layout) {
+  const instances = Array.isArray(layout?.instances) ? layout.instances : [];
+  const roles = new Set(
+    instances.map((instance) => instance.config?.streamerOverlay?.role).filter(Boolean),
   );
+  return roles.has("header") && roles.has("hunt") && roles.has("gameplay") && roles.has("chat");
 }
 
 function configureStreamerWidget(type, config, role, geometry) {
-  let next = applyWidgetColourTheme(type, config, "emerald");
-  next = { ...next, streamerOverlay: { ...next.streamerOverlay, role } };
+  let next = applyWidgetColourTheme(type, config, "galactic_command");
+  next = {
+    ...next,
+    streamerOverlay: {
+      ...next.streamerOverlay,
+      role,
+      compositionVersion: STREAMER_OVERLAY_COMPOSITION_VERSION,
+    },
+  };
 
   if (type === "navbar") {
     next = {
@@ -51,7 +64,7 @@ function configureStreamerWidget(type, config, role, geometry) {
       displayStyle: "better_navbar",
       showClock: true,
       showCTA: true,
-      ctaText: "18+ PLAY RESPONSIBLY",
+      ctaText: "PLAY RESPONSIBLY",
     };
   } else if (type === "bonus_hunt") {
     next = {
@@ -66,21 +79,8 @@ function configureStreamerWidget(type, config, role, geometry) {
       widgetWidth: geometry.width,
       widgetHeight: geometry.height,
     };
-  } else if (type === "slot_requests") {
-    next = {
-      ...next,
-      displayStyle: "image_cards",
-      visibleRequests: 5,
-      rowHeight: 84,
-      artworkWidth: 104,
-      artworkHeight: 68,
-      showAvatars: false,
-      showPositions: false,
-    };
-  } else if (type === "current_slot") {
-    next = { ...next, displayStyle: "immersive_current", showBackdrop: false };
-  } else if (type === "giveaway") {
-    next = { ...next, displayStyle: "better_giveaway" };
+  } else if (type === "slot_window") {
+    next = { ...next, transparent: true, showLabel: false };
   } else if (type === "chat") {
     next = {
       ...next,
@@ -139,13 +139,14 @@ export function applyStreamerOverlayComposition(layout, user) {
       ...geometry,
       config,
       visible: true,
-      label: role === "gameplay" ? "Gameplay" : role.replaceAll("_", " "),
+      label: ({ scene: "Scene Background", header: "Top Bar", active_panel: "Active Stream Panel", gameplay: "Gameplay Opening", chat: "Live Chat" })[role],
     };
   }
 
   return {
     ...layout,
     name: getStreamerOverlayName(layout, user),
+    streamerOverlayCompositionVersion: STREAMER_OVERLAY_COMPOSITION_VERSION,
     instances: instances.map((instance, index) =>
       used.has(index) || instance.locked ? instance : { ...instance, visible: false },
     ),

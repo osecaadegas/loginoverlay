@@ -1,6 +1,6 @@
 import {applyGalacticCommandComposition} from './galacticCommandComposition.js';
 import {applyStarterStudioComposition} from './starterStudioComposition.js';
-import {applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition} from './streamerOverlayComposition.js';
+import {applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, isLegacyStreamerOverlayComposition} from './streamerOverlayComposition.js';
 import React, {
   useCallback,
   useEffect,
@@ -1134,6 +1134,20 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       for (const build of possibleStreamerBuilds) {
         const fullBuild = await getBetterEditorOverlay(user.id, build.id);
         if (hasStreamerOverlayComposition(fullBuild?.draftLayout)) {
+          nextOverlayId = build.id;
+          break;
+        }
+        if (isLegacyStreamerOverlayComposition(fullBuild?.draftLayout)) {
+          const migratedLayout = {
+            ...applyStreamerOverlayComposition(fullBuild.draftLayout, user),
+            name: fullBuild.name || overlayName,
+          };
+          await saveBetterDraft(
+            user.id,
+            migratedLayout,
+            fullBuild.draftVersion,
+            build.id,
+          );
           nextOverlayId = build.id;
           break;
         }

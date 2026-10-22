@@ -16,7 +16,7 @@ try {
   const registry = await server.ssrLoadModule(
     "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
   );
-  const { applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, STREAMER_OVERLAY_COMPOSITION } =
+  const { applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, isLegacyStreamerOverlayComposition, STREAMER_OVERLAY_COMPOSITION } =
     await server.ssrLoadModule(
       "/src/components/OverlayCenter/editor/streamerOverlayComposition.js",
     );
@@ -84,10 +84,11 @@ try {
   navbar.config.streamerName = "Miguel Streamer";
   const applied = applyStreamerOverlayComposition(layout);
   assert.equal(hasStreamerOverlayComposition(applied), true);
+  assert.equal(isLegacyStreamerOverlayComposition(layout), false);
   assert.equal(
-    hasStreamerOverlayComposition({ instances: applied.instances.filter((item) => ["scene", "winner"].includes(item.config.streamerOverlay?.role)) }),
+    hasStreamerOverlayComposition({ ...applied, instances: applied.instances.filter((item) => ["scene", "active_panel"].includes(item.config.streamerOverlay?.role)) }),
     false,
-    "an older partial build with a matching name must not be mistaken for a complete streamer overlay",
+    "a partial layout must not be mistaken for a complete supplied-overlay scene",
   );
   assert.equal(getStreamerOverlayName(layout), "Miguel Streamer Overlay");
   assert.equal(applied.name, "Miguel Streamer Overlay");
@@ -95,7 +96,7 @@ try {
     JSON.parse(JSON.stringify(applied)),
   );
 
-  assert.equal(STREAMER_OVERLAY_COMPOSITION.length, 10);
+  assert.equal(STREAMER_OVERLAY_COMPOSITION.length, 5);
   for (const spec of STREAMER_OVERLAY_COMPOSITION) {
     const instance = normalized.instances.find(
       (item) =>
@@ -120,10 +121,10 @@ try {
   assert.equal(chat.config.giveawayInChat, true);
   assert.equal(chat.config.giveawayHeight, 64);
   const hunt = normalized.instances.find(
-    (item) => item.config.streamerOverlay?.role === "hunt",
+    (item) => item.config.streamerOverlay?.role === "active_panel",
   );
   assert.equal(hunt.config.orientation, "mainstream");
-  assert.equal(hunt.config.colourTheme, "emerald");
+  assert.equal(hunt.config.colourTheme, "galactic_command");
 
   const build = await service.createBetterEditorOverlay(
     "admin-user",
@@ -148,7 +149,7 @@ try {
     state.tables.better_editor_overlays[0].draft_layout.instances.find(
       (item) => item.config.streamerOverlay?.role === "gameplay",
     ).width,
-    1124,
+    1164,
     "the editor draft stores the composed gameplay frame",
   );
   assert.equal(
@@ -160,6 +161,33 @@ try {
   );
   assert.equal(published.publishedVersion, published.draftVersion);
   assert.equal(state.tables.better_editor_overlays[0].draft_layout.name, "Miguel Streamer Overlay");
+  const legacyLayout = {
+    ...applied,
+    streamerOverlayCompositionVersion: 1,
+    instances: applied.instances.map((instance) => ({
+      ...instance,
+      config: {
+        ...instance.config,
+        streamerOverlay: {
+          ...instance.config.streamerOverlay,
+          role: ({ scene: "scene", header: "header", active_panel: "hunt", gameplay: "gameplay", chat: "chat" })[instance.config.streamerOverlay?.role],
+        },
+      },
+    })),
+  };
+  assert.equal(isLegacyStreamerOverlayComposition(legacyLayout), true);
+  assert.equal(hasStreamerOverlayComposition(legacyLayout), false);
+  const migrated = applyStreamerOverlayComposition(legacyLayout);
+  assert.equal(hasStreamerOverlayComposition(migrated), true);
+  assert.deepEqual(
+    [
+      migrated.instances.find((instance) => instance.config.streamerOverlay?.role === "active_panel").x,
+      migrated.instances.find((instance) => instance.config.streamerOverlay?.role === "gameplay").x,
+      migrated.instances.find((instance) => instance.config.streamerOverlay?.role === "chat").x,
+    ],
+    [20, 378, 1550],
+    "legacy generic builds migrate to the supplied scene's intended columns",
+  );
   assert.ok(
     state.calls.some(
       (call) =>
@@ -205,7 +233,9 @@ try {
     ),
     "utf8",
   );
-  assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition\}/);
+  assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, isLegacyStreamerOverlayComposition\}/);
+  assert.match(editorSource, /if \(isLegacyStreamerOverlayComposition\(fullBuild\?\.draftLayout\)\)/);
+  assert.match(editorSource, /await saveBetterDraft\([\s\S]*?fullBuild\.draftVersion,[\s\S]*?build\.id,/);
   assert.match(editorSource, /className="is-primary editor-streamer-overlay-action"/);
   assert.match(editorSource, /\{isAdmin && \([\s\S]{0,500}editor-streamer-overlay-action/);
   assert.match(editorSource, /<span>Open Streamer Overlay<\/span>/);
@@ -227,7 +257,7 @@ try {
     "the website Apps page exposes the beta only to admins and opens the working editor route",
   );
   console.log(
-    "Streamer Overlay checks passed: admin gate, prominent editor entry, separate open-or-create build action, editable composition, owner-scoped draft persistence, public OBS publication, live widget/theme reads, and embedded giveaway settings.",
+    "Streamer Overlay checks passed: supplied-scene widget set and geometry, admin gate, editor entry, legacy build migration, owner-scoped persistence, OBS publication, live widget/theme reads, and embedded giveaway settings.",
   );
 } finally {
   await server.close();
