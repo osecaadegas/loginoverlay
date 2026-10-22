@@ -43,6 +43,10 @@ assert.match(clearIceCss, /frost-corners\.png/, 'Clear Ice adds crystalline edge
 assert.match(clearIceCss, /brightness\(1\.55\)/, 'Clear Ice lifts the source ice texture into brighter highlights');
 assert.match(clearIceCss, /\.bets-ov__card/, 'Clear Ice styles the dedicated bets widget surfaces');
 assert.match(clearIceCss, /\.better-bets-stage \.bet-widget/, 'Clear Ice frames the bets widget content instead of its full-stage wrapper');
+assert.match(clearIceCss, /\.better-bets-stage :is\(\.bet-option, \.bet-bar\)/, 'Clear Ice textures individual bet cards and bars');
+assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear Ice textures the chat message surface');
+assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
+assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*ice-glass\.webp/, 'Clear Ice textures the top navigation rail');
 assert.doesNotMatch(clearIceCss, /\.better-giveaway-stage,\s*\.better-bets-stage|\.better-tournament-stage/, 'Clear Ice leaves full-canvas stage wrappers borderless');
 assert.match(clearIceCss, /> \[data-widget-element="container"\]/, 'Clear Ice only applies generic container frames to the widget root');
 assert.match(clearIceCss, /mix-blend-mode:\s*screen/, 'Clear Ice blends fracture texture as a luminous overlay');
