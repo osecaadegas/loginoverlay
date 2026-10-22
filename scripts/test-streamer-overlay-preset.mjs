@@ -141,14 +141,31 @@ try {
         { id: "open-1", slotName: "Source Style Slot", betSize: 1, opened: false, isSuperBonus: true },
         { id: "opened-1", slotName: "Opened Slot", betSize: 1, payout: 5, opened: true },
       ],
-      stats: { liveBE: 10, avgMulti: 5 },
+      stats: {
+        liveBE: 10,
+        avgMulti: 5,
+        totalWin: 5,
+        bestSlot: { slotName: "Opened Slot", betSize: 1, payout: 5, _multi: 5 },
+      },
       currency: "€",
     }),
   );
   assert.match(sourcePanelMarkup, /BONUS HUNT/);
   assert.match(sourcePanelMarkup, /Source Style Slot/);
   assert.match(sourcePanelMarkup, /SUPER/);
+  assert.match(sourcePanelMarkup, /BEST RESULT/);
+  assert.match(sourcePanelMarkup, /TOTAL PAYOUT/);
+  assert.match(sourcePanelMarkup, /€5\.00/);
   assert.match(sourcePanelMarkup, /streamer-source-bonus-panel/);
+  const endedPanelMarkup = renderToStaticMarkup(
+    React.createElement(sourceBonusPanel.default, {
+      config: { streamerName: "Miguel", startMoney: 100, currency: "€" },
+      bonuses: [{ id: "ended-1", slotName: "Finished Slot", betSize: 1, payout: 5, opened: true }],
+      stats: { totalWin: 5, bestSlot: { slotName: "Finished Slot", betSize: 1, payout: 5, _multi: 5 } },
+      currency: "€",
+    }),
+  );
+  assert.match(endedPanelMarkup, /BONUS ENDED/);
   const scene = normalized.instances.find(
     (item) => item.config.streamerOverlay?.role === "scene",
   );
