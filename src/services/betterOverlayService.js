@@ -190,6 +190,11 @@ export async function getOrCreateBetterEditorOverlay(userId, overlayId = null) {
   return normalizeEditorRow(row);
 }
 
+export async function getBetterEditorOverlay(userId, overlayId) {
+  if (!userId || !overlayId) return null;
+  return normalizeEditorRow(await fetchOwnedBetterOverlayRow(userId, overlayId));
+}
+
 export async function listBetterEditorOverlays(userId) {
   if (!userId) return [];
   const { data, error } = await supabase.from(EDITOR_TABLE)

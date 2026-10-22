@@ -1,6 +1,6 @@
 import {applyGalacticCommandComposition} from './galacticCommandComposition.js';
 import {applyStarterStudioComposition} from './starterStudioComposition.js';
-import {applyStreamerOverlayComposition, getStreamerOverlayName} from './streamerOverlayComposition.js';
+import {applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition} from './streamerOverlayComposition.js';
 import React, {
   useCallback,
   useEffect,
@@ -56,6 +56,7 @@ import { useAdmin } from "../../../hooks/useAdmin";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
   getBetterEditorLiveSource,
+  getBetterEditorOverlay,
   getOrCreateBetterEditorOverlay,
   createBetterEditorOverlay,
   listBetterEditorOverlays,
@@ -1125,13 +1126,32 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       await flushDraft();
       const overlayName = getStreamerOverlayName(layoutRef.current, user);
       const builds = await listBetterEditorOverlays(user.id);
-      const existing = builds.find(
-        (build) => build.name?.trim().toLocaleLowerCase() === overlayName.toLocaleLowerCase(),
-      );
-      if (existing) {
-        nextOverlayId = existing.id;
-      } else {
-        const composed = applyStreamerOverlayComposition(layoutRef.current, user);
+      const baseName = overlayName.toLocaleLowerCase();
+      const possibleStreamerBuilds = builds.filter((build) => {
+        const name = build.name?.trim().toLocaleLowerCase() || "";
+        return name === baseName || name.startsWith(`${baseName} (`);
+      });
+      for (const build of possibleStreamerBuilds) {
+        const fullBuild = await getBetterEditorOverlay(user.id, build.id);
+        if (hasStreamerOverlayComposition(fullBuild?.draftLayout)) {
+          nextOverlayId = build.id;
+          break;
+        }
+      }
+      if (!nextOverlayId) {
+        const usedNames = new Set(
+          builds.map((build) => build.name?.trim().toLocaleLowerCase()).filter(Boolean),
+        );
+        let buildName = overlayName;
+        let suffix = 2;
+        while (usedNames.has(buildName.toLocaleLowerCase())) {
+          buildName = `${overlayName} (${suffix})`;
+          suffix += 1;
+        }
+        const composed = {
+          ...applyStreamerOverlayComposition(layoutRef.current, user),
+          name: buildName,
+        };
         const created = await createBetterEditorOverlay(
           user.id,
           composed.name,

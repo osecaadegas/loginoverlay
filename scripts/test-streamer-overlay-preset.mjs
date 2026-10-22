@@ -16,7 +16,7 @@ try {
   const registry = await server.ssrLoadModule(
     "/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx",
   );
-  const { applyStreamerOverlayComposition, getStreamerOverlayName, STREAMER_OVERLAY_COMPOSITION } =
+  const { applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition, STREAMER_OVERLAY_COMPOSITION } =
     await server.ssrLoadModule(
       "/src/components/OverlayCenter/editor/streamerOverlayComposition.js",
     );
@@ -83,6 +83,12 @@ try {
   const navbar = layout.instances.find((instance) => instance.widgetType === "navbar");
   navbar.config.streamerName = "Miguel Streamer";
   const applied = applyStreamerOverlayComposition(layout);
+  assert.equal(hasStreamerOverlayComposition(applied), true);
+  assert.equal(
+    hasStreamerOverlayComposition({ instances: applied.instances.filter((item) => ["scene", "winner"].includes(item.config.streamerOverlay?.role)) }),
+    false,
+    "an older partial build with a matching name must not be mistaken for a complete streamer overlay",
+  );
   assert.equal(getStreamerOverlayName(layout), "Miguel Streamer Overlay");
   assert.equal(applied.name, "Miguel Streamer Overlay");
   const normalized = registry.normalizeBetterLayout(
@@ -124,6 +130,8 @@ try {
     normalized.name,
     normalized,
   );
+  const fetchedBuild = await service.getBetterEditorOverlay("admin-user", build.id);
+  assert.equal(hasStreamerOverlayComposition(fetchedBuild.draftLayout), true);
   const saved = await service.saveBetterDraft(
     "admin-user",
     normalized,
@@ -197,13 +205,16 @@ try {
     ),
     "utf8",
   );
-  assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName\}/);
+  assert.match(editorSource, /import \{applyStreamerOverlayComposition, getStreamerOverlayName, hasStreamerOverlayComposition\}/);
   assert.match(editorSource, /className="is-primary editor-streamer-overlay-action"/);
   assert.match(editorSource, /\{isAdmin && \([\s\S]{0,500}editor-streamer-overlay-action/);
   assert.match(editorSource, /<span>Open Streamer Overlay<\/span>/);
   assert.match(editorSource, /const openStreamerOverlay = useCallback\(async \(\) =>/);
   assert.match(editorSource, /listBetterEditorOverlays\(user\.id\)/);
+  assert.match(editorSource, /getBetterEditorOverlay\(user\.id, build\.id\)/);
+  assert.match(editorSource, /hasStreamerOverlayComposition\(fullBuild\?\.draftLayout\)/);
   assert.match(editorSource, /createBetterEditorOverlay\([\s\S]*?composed\.name,[\s\S]*?composed,/);
+  assert.match(editorSource, /let buildName = overlayName;/);
   assert.match(editorSource, /Open your saved Streamer Overlay build, or create a separate one/);
   assert.match(editorSource, /editor-streamer-overlay-action/);
   const appsSource = readFileSync(

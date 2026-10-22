@@ -30,6 +30,17 @@ export function getStreamerOverlayName(layout, user) {
   return `${name} Overlay`;
 }
 
+export function hasStreamerOverlayComposition(layout) {
+  const instances = Array.isArray(layout?.instances) ? layout.instances : [];
+  return STREAMER_OVERLAY_COMPOSITION.every(({ type, role }) =>
+    instances.some(
+      (instance) =>
+        instance.widgetType === type &&
+        instance.config?.streamerOverlay?.role === role,
+    ),
+  );
+}
+
 function configureStreamerWidget(type, config, role, geometry) {
   let next = applyWidgetColourTheme(type, config, "emerald");
   next = { ...next, streamerOverlay: { ...next.streamerOverlay, role } };
