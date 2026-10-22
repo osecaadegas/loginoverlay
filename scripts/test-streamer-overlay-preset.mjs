@@ -211,6 +211,29 @@ try {
     [20, 378, 1550],
     "legacy generic builds migrate to the supplied scene's intended columns",
   );
+  const previousStyleLayout = {
+    ...applied,
+    instances: applied.instances.map((instance) => ({
+      ...instance,
+      config: {
+        ...instance.config,
+        colourTheme: "galactic_command",
+        streamerOverlay: {
+          ...instance.config.streamerOverlay,
+          compositionVersion: 2,
+        },
+      },
+    })),
+  };
+  assert.equal(isLegacyStreamerOverlayComposition(previousStyleLayout), true);
+  assert.equal(hasStreamerOverlayComposition(previousStyleLayout), false);
+  const restyled = applyStreamerOverlayComposition(previousStyleLayout);
+  assert.equal(hasStreamerOverlayComposition(restyled), true);
+  assert.equal(
+    restyled.instances.find((instance) => instance.config.streamerOverlay?.role === "scene").config.colourTheme,
+    "neon",
+    "the next version migration updates saved builds from the old theme to the supplied blue styling",
+  );
   assert.ok(
     state.calls.some(
       (call) =>

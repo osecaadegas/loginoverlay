@@ -5,7 +5,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // stream panel on the left, an unobstructed gameplay opening, and chat on the
 // right. It deliberately does not add unrelated request, slideshow, or result
 // cards from the general StreamersCenter widget catalog.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 2;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 3;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
@@ -44,7 +44,15 @@ export function isLegacyStreamerOverlayComposition(layout) {
   const roles = new Set(
     instances.map((instance) => instance.config?.streamerOverlay?.role).filter(Boolean),
   );
-  return roles.has("header") && roles.has("hunt") && roles.has("gameplay") && roles.has("chat");
+  const legacyWidgetScene = roles.has("header") && roles.has("hunt") && roles.has("gameplay") && roles.has("chat");
+  const previousSuppliedScene =
+    roles.has("header") && roles.has("active_panel") && roles.has("gameplay") && roles.has("chat") &&
+    instances.some(
+      (instance) =>
+        instance.config?.streamerOverlay?.role === "active_panel" &&
+        Number(instance.config?.streamerOverlay?.compositionVersion) < STREAMER_OVERLAY_COMPOSITION_VERSION,
+    );
+  return legacyWidgetScene || previousSuppliedScene;
 }
 
 function configureStreamerWidget(type, config, role, geometry) {
