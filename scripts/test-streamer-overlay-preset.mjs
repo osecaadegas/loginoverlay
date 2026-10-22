@@ -134,6 +134,8 @@ try {
     (item) => item.config.streamerOverlay?.role === "chat",
   );
   assert.equal(chat.config.giveawayInChat, true);
+  assert.equal(chat.config.showEmptyState, true);
+  assert.equal(chat.config.emptyMessage, "Sem mensagens ainda...");
   assert.equal(chat.config.giveawayHeight, 72);
   assert.equal(chat.config.showHeader, true);
   assert.equal(chat.config.chatStyle, "broadcast_chat");
@@ -146,6 +148,8 @@ try {
     "utf8",
   );
   assert.match(chatWidgetSource, /const isStreamerOverlayChat = c\.streamerOverlay\?\.role === "chat"/);
+  assert.match(chatWidgetSource, /STREAMER_SOURCE_CHAT_EMPTY_MESSAGE = "Sem mensagens ainda\.\.\."/);
+  assert.match(chatWidgetSource, /minHeight: isStreamerOverlayChat \? 320 : "100%"/);
   assert.match(chatWidgetSource, /isStreamerOverlayChat && \([\s\S]{0,1400}>CHAT<\/span>/);
   assert.match(chatMessageSource, /streamerSourceChat && broadcast && \{/);
   assert.match(chatMessageSource, /streamer-source-chat-row/);
@@ -160,6 +164,12 @@ try {
   );
   assert.equal(header.config.barHeight, 50);
   assert.equal(header.config.socialDisplayStyle, "marquee");
+  const navbarWidgetSource = readFileSync(
+    new URL("../src/components/OverlayCenter/widgets/navbar/NavbarWidget.jsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,120}flex: "1 1 0%", width: "100%"/);
+  assert.match(navbarWidgetSource, /c\.streamerOverlay\?\.role === "header"[\s\S]{0,220}\? "1 1 0%"/);
   assert.equal(header.config.showNowPlaying, false);
   assert.deepEqual(header.config.sectionLayout, [
     { id: "identity", zone: "left" },

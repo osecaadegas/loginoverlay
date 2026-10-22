@@ -2032,7 +2032,14 @@ function NavbarWidget({
           minWidth: 0,
           flexShrink: 0,
           maxWidth:
-            socialMode === "marquee" ? (compact ? 300 : 460) : undefined,
+            socialMode === "marquee"
+              ? c.streamerOverlay?.role === "header"
+                ? "100%"
+                : compact ? 300 : 460
+              : undefined,
+          ...(c.streamerOverlay?.role === "header" && socialMode === "marquee"
+            ? { flex: "1 1 0%", width: "100%" }
+            : {}),
           overflow: socialMode === "marquee" ? "hidden" : "visible",
         })}
       >
@@ -2664,7 +2671,14 @@ function NavbarWidget({
             gap: 10,
             height: "100%",
             minWidth: 0,
-            flex: zone === "center" ? "0 1 auto" : "1 1 0",
+            flex:
+              zone === "center"
+                ? c.streamerOverlay?.role === "header"
+                  ? "1 1 0%"
+                  : "0 1 auto"
+                : c.streamerOverlay?.role === "header"
+                  ? zone === "left" ? "0 1 auto" : "0 0 auto"
+                  : "1 1 0",
             paddingLeft:
               zone === "left"
                 ? Math.max(14, Number(containerPadding) || 20)

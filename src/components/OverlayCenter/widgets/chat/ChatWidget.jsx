@@ -68,6 +68,7 @@ const MESSAGE_TTL_MS = 120 * 1000;
 const HIDDEN_BOTS = new Set(["streamelements", "nightbot", "moobot"]);
 const BETTER_CHAT_EMPTY_MESSAGE =
   "Hey you dont you think this chat its too quiet ?";
+const STREAMER_SOURCE_CHAT_EMPTY_MESSAGE = "Sem mensagens ainda...";
 const BTTV_EMOTES_API_URL = "/api/chat/emotes/bttv";
 const BTTV_CDN_URL = "https://cdn.betterttv.net/emote";
 const TWITCH_EMOTE_CDN_URL = "https://static-cdn.jtvnw.net/emoticons/v2";
@@ -1965,7 +1966,7 @@ function ChatWidget({
             <div
               className="ov-chat-empty ov-chat-empty--better"
               style={subElementStyle(c, "emptyState", {
-                minHeight: "100%",
+                minHeight: isStreamerOverlayChat ? 320 : "100%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1978,7 +1979,9 @@ function ChatWidget({
               })}
               {...partAttrs("emptyState")}
             >
-              {c.emptyMessage || BETTER_CHAT_EMPTY_MESSAGE}
+              {c.emptyMessage || (isStreamerOverlayChat
+                ? STREAMER_SOURCE_CHAT_EMPTY_MESSAGE
+                : BETTER_CHAT_EMPTY_MESSAGE)}
             </div>
           )}
         {renderMessages.map((msg, msgIdx) => {

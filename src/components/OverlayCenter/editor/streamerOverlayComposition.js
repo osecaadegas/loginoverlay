@@ -4,7 +4,7 @@ import { applyWidgetColourTheme } from "./widgetColourThemes.js";
 // This follows the supplied MainStreamOverlay scene: a slim top bar, its
 // 350px left rail with a 240px active panel aligned to the rail's right edge,
 // an unobstructed gameplay opening, and chat on the right.
-export const STREAMER_OVERLAY_COMPOSITION_VERSION = 8;
+export const STREAMER_OVERLAY_COMPOSITION_VERSION = 9;
 export const STREAMER_OVERLAY_COMPOSITION = Object.freeze([
   { type: "background", role: "scene", x: 0, y: 0, width: 1920, height: 1080 },
   { type: "navbar", role: "header", x: 0, y: 0, width: 1920, height: 50 },
@@ -167,6 +167,8 @@ function configureStreamerWidget(type, config, role, geometry) {
       giveawayHeight: 72,
       giveawayWinnerHeight: 116,
       giveawayMargin: 10,
+      showEmptyState: true,
+      emptyMessage: "Sem mensagens ainda...",
     };
   }
 
