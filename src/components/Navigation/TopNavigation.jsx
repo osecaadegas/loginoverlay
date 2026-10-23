@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { BellRing, Grid3X3 } from "lucide-react";
 import "./TopNavigation.css";
 import { useAdmin } from "../../hooks/useAdmin";
+import PremiumInstallButton from "./PremiumInstallButton";
 
 const AUDIENCE_OPTIONS = [
   { audience: "player", label: "Gamblers", defaultTo: "/player" },
@@ -100,6 +101,7 @@ export default function TopNavigation() {
           <Grid3X3 size={17} />
           <span>Apps</span>
         </NavLink>
+        <PremiumInstallButton />
       </div>
     </header>
   );

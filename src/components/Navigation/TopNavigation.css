@@ -146,6 +146,10 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.topnav-install {
+  font-family: inherit;
+}
+
 .topnav-shell :is(a, button):focus-visible {
   outline: 3px solid rgba(45, 212, 191, 0.84);
   outline-offset: 3px;

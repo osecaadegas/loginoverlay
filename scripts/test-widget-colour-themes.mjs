@@ -24,6 +24,7 @@ assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multipl
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'clear_ice', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
 const clearIceCss = readFileSync(new URL('../src/components/OverlayCenter/editor/ClearIceTheme.css', import.meta.url), 'utf8');
 const chatWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx', import.meta.url), 'utf8');
+const embeddedGiveawaySource = readFileSync(new URL('../src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.jsx', import.meta.url), 'utf8');
 const currentSlotWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/current-slot/CurrentSlotWidget.jsx', import.meta.url), 'utf8');
 const themeEffectsCss = readFileSync(new URL('../src/effects/ThemeEffects/ThemeEffects.css', import.meta.url), 'utf8');
 const clearIceGlass = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-glass-20.png', import.meta.url));
@@ -78,6 +79,12 @@ assert.match(clearIceCss, /data-widget-type="rtp_stats"\][\s\S]*:is\(\.rtp-stats
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\][\s\S]*:is\(\.rtp-stats-item--bestwin, \[data-better-element="personalBest"\]\)\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;/, 'Clear Ice overrides the inline-styled personalBest appearance element');
 assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-widget > :is\(\[data-better-element="header"\], \.ov-chat-header, \.ov-cards-header\)[\s\S]*clear-ice-fractures\.png/, 'Clear Ice textures the actual Better Chat LIVE header element');
 assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-widget \.ov-chat-giveaway\s*\{[\s\S]*width:\s*calc\(100% - 16px\) !important;[\s\S]*margin:\s*2px auto 4px !important;[\s\S]*align-self:\s*center !important;/, 'Clear Ice embedded giveaway overrides inline sizing and is horizontally centred');
+assert.match(embeddedGiveawaySource, /const clearIceChatGiveaway = streamerSourceChat && winnerTheme === "clear_ice" && !hasWinner && !drawing;/, 'Clear Ice active chat giveaway is identified for its dedicated reference-card layout');
+assert.match(embeddedGiveawaySource, /data-clear-ice-chat-giveaway=\{clearIceChatGiveaway \? "true" : undefined\}/, 'Clear Ice active chat giveaway applies its layout marker to the frame');
+assert.match(embeddedGiveawaySource, /ov-chat-giveaway-clear-ice-heading[\s\S]*ov-chat-giveaway-clear-ice-prize[\s\S]*ov-chat-giveaway-clear-ice-stats/, 'Clear Ice active giveaway shows heading, centered prize and keyword/entry stats');
+assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-giveaway\[data-clear-ice-chat-giveaway="true"\]\s*\{[\s\S]*flex:\s*0 1 136px !important;[\s\S]*min-height:\s*min\(120px, 26%\) !important;/, 'Clear Ice active giveaway reserves responsive height for readable details');
+assert.match(clearIceCss, /\.ov-chat-giveaway-clear-ice-prize\s*\{[\s\S]*font-size:\s*19px;/, 'Clear Ice giveaway prize uses larger type');
+assert.match(clearIceCss, /\.ov-chat-giveaway-clear-ice-stats\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/, 'Clear Ice giveaway stats use two readable columns');
 assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-player-rail[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice styles Connect Four player rails with the shared glass texture');
 assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-board[\s\S]*clear-ice-fractures\.png/, 'Clear Ice styles the Connect Four board with the fracture texture');
 assert.match(clearIceCss, /\.slot-bingo-widget__square/, 'Clear Ice covers Slot Bingo square surfaces');

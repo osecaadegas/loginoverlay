@@ -26,6 +26,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
   const winnerTheme = String(config.colourTheme || layout.colourTheme || '').replace(/^theme_/, '');
+  const clearIceChatGiveaway = streamerSourceChat && winnerTheme === "clear_ice" && !hasWinner && !drawing;
   const nativeWinner = hasWinner && (streamerSourceChat || ['orbital', 'arctic', 'candy', 'volcanic', 'solverde','old_rome','street_art','starter_studio','galactic_command'].includes(winnerTheme));
   const premium=['orbital','arctic','candy','volcanic','solverde','old_rome','street_art','starter_studio','galactic_command'].includes(winnerTheme);
   const regularFrameHeight = bounded(premium&&(!layout.giveawayHeight||layout.giveawayHeight===250)?96:layout.giveawayHeight, ['street_art','starter_studio','galactic_command'].includes(winnerTheme) ? 44 : 80, 600, 250);
@@ -62,7 +63,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   // Height remains independently configurable and clips only when deliberately reduced.
   const scale = size.width > 0 ? Math.min(size.width / width,size.height/canvasHeight) : 1;
   return (
-    <section ref={frameRef} className="ov-chat-giveaway" data-streamer-source-chat={streamerSourceChat || undefined} data-giveaway-theme={winnerTheme || undefined} data-giveaway-state={hasWinner ? "winner" : drawing ? "drawing" : "active"} aria-label="Giveaway" style={{
+    <section ref={frameRef} className="ov-chat-giveaway" data-clear-ice-chat-giveaway={clearIceChatGiveaway ? "true" : undefined} data-streamer-source-chat={streamerSourceChat || undefined} data-giveaway-theme={winnerTheme || undefined} data-giveaway-state={hasWinner ? "winner" : drawing ? "drawing" : "active"} aria-label="Giveaway" style={{
       '--gw-result-surface': config.bgColor,
       '--gw-result-raised': config.panelHi,
       '--gw-result-background': config.panelLo,
@@ -79,6 +80,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
       {streamerSourceChat && !drawing ? (
         <div
           className="ov-chat-giveaway-source-card"
+          data-clear-ice-chat-giveaway={clearIceChatGiveaway ? "true" : undefined}
           data-native-winner={nativeWinner || undefined}
           role={hasWinner ? "status" : undefined}
           aria-live={hasWinner ? "polite" : undefined}
@@ -109,6 +111,19 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
               </div>
             </>
           ) : (
+            clearIceChatGiveaway ? (
+            <>
+              <div className="ov-chat-giveaway-clear-ice-heading">
+                <span aria-hidden="true">🎁</span>
+                <strong>{config.title || "Flash giveaway"}</strong>
+              </div>
+              <strong className="ov-chat-giveaway-clear-ice-prize">{sourcePrize || "Giveaway"}</strong>
+              <div className="ov-chat-giveaway-clear-ice-stats">
+                <span><small>Keyword</small><strong>{sourceKeyword ? sourceKeyword.replace(/^!/, "") : "—"}</strong></span>
+                <span><small>Entries</small><strong>{sourceEntryCount}</strong></span>
+              </div>
+            </>
+            ) : (
             <>
               <span aria-hidden="true" style={{ flex: "0 0 auto", fontSize: 21 }}>🎁</span>
               <div style={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column", gap: 3 }}>
@@ -117,6 +132,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
                 <span style={{ color: "#38bdf8", fontSize: 8, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>{sourceKeyword ? `${sourceKeyword.startsWith("!") ? sourceKeyword : `!${sourceKeyword}`}  ·  ` : ""}{sourceEntryCount} {sourceEntryCount === 1 ? "entry" : "entries"}</span>
               </div>
             </>
+            )
           )}
         </div>
       ) : (
