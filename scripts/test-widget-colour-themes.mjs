@@ -63,6 +63,10 @@ assert.match(clearIceCss, /\.bets-ov__card/, 'Clear Ice styles the dedicated bet
 assert.match(clearIceCss, /\.better-bets-stage \.bet-widget/, 'Clear Ice frames the bets widget content instead of its full-stage wrapper');
 assert.match(clearIceCss, /\.better-bets-stage :is\(\.bet-option, \.bet-bar\)/, 'Clear Ice textures individual bet cards and bars');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear Ice textures the chat message surface');
+assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway-source-card[\s\S]*clear-ice-fractures\.png/, 'Clear Ice overrides the inline-styled giveaway card embedded in streamer chat');
+assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway-canvas \.better-gw-metric-panel[\s\S]*rgba\(10, 43, 74, \.7\)/, 'Clear Ice giveaway metric tiles keep the deep glass treatment inside chat');
+assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-player-rail[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice styles Connect Four player rails with the shared glass texture');
+assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-board[\s\S]*clear-ice-fractures\.png/, 'Clear Ice styles the Connect Four board with the fracture texture');
 assert.match(clearIceCss, /\.slot-bingo-widget__square/, 'Clear Ice covers Slot Bingo square surfaces');
 assert.match(clearIceCss, /\.better-navbar-zone/, 'Clear Ice covers navbar zones');
 assert.match(clearIceCss, /\.bhh-stats-panel/, 'Clear Ice covers Bonus Hunt stats surfaces');
@@ -85,6 +89,10 @@ assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-row--im
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-stat-label\s*\{\s*font-size:\s*\.98em !important;/, 'Clear Ice Bonus Hunt stat labels use larger overlay-scale type');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-total-head > strong\s*\{\s*font-size:\s*1\.4em !important;/, 'Clear Ice Bonus Hunt total pay uses larger type');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-progress,\s*\.better-widget-colour-scope[\s\S]*\.better-hunt-progress-summary\s*\{\s*background-color:\s*transparent !important;\s*background-image:\s*none !important;/, 'Clear Ice progress copy sits on a clean surface without texture stripes');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\]\s*:is\([\s\S]*\.better-hunt-stat,[\s\S]*\.better-hunt-image-stats-panel,[\s\S]*\.better-hunt-row--image[\s\S]*border-radius:\s*12px !important;/, 'Clear Ice Bonus Hunt stats and carousel cards have rounded corners');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-list::before,[\s\S]*backdrop-filter:\s*blur\(3px\)[\s\S]*data-widget-type="bonus_hunt"\] \.better-hunt-list::after\s*\{[\s\S]*bottom:\s*0;/, 'Clear Ice fades and blurs the top and bottom edges of the slot carousel');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-progress-summary > span\s*\{\s*display:\s*none !important;/, 'Clear Ice progress shows the count without the Opened label');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-track > span\s*\{\s*border-radius:\s*inherit !important;\s*background:\s*linear-gradient\(90deg, #39bfff, #89d9ff 68%, #d8f3fb\) !important;\s*box-shadow:\s*0 0 7px rgba\(70, 195, 255, \.95\), 0 0 16px rgba\(70, 195, 255, \.72\) !important;/, 'Clear Ice progress fill uses a luminous blue gradient and glow');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-mini-stat:nth-child\(2\) > \*\s*\{\s*color:\s*#89d9ff !important;/, 'Clear Ice carousel multiplier label and value share a cyan identity');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-mini-stat--best \.better-hunt-mini-best-value > small\s*\{\s*color:\s*#89d9ff !important;/, 'Clear Ice Best multiplier uses cyan while Best payout remains white');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\]\s*:is\([\s\S]*\.better-hunt-result-face--best \.better-hunt-result,[\s\S]*\.better-hunt-result-face--worst \.better-hunt-result[\s\S]*background:\s*linear-gradient\(180deg, #0a2b4a, #123254\) !important;/, 'Clear Ice Best and Worst outer faces use the same deep-glass treatment as carousel cards');
