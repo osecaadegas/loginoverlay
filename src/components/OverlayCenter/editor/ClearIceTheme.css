@@ -664,6 +664,27 @@
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary > span {
   display: none !important;
 }
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary {
+  order: 2;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin-left: auto;
+  text-align: right;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-track {
+  order: 1;
+  flex: 1 1 auto;
+  grid-column: auto;
+  grid-row: auto;
+  min-width: 0;
+  height: 5px !important;
+  margin: 0 !important;
+}
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary strong {
   color: #eaf7ff !important;
   text-shadow: 0 0 8px rgba(137, 217, 255, .75) !important;
