@@ -261,11 +261,11 @@
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-giveaway-clear-ice-stats > span {
   display: flex;
   min-width: 0;
-  min-height: 34px;
+  min-height: 54px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2px 6px;
+  padding: 5px 10px;
   overflow: hidden;
   border: 1px solid rgba(216, 243, 251, .52);
   border-radius: 999px;
@@ -273,7 +273,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 0 8px rgba(137, 217, 255, .12);
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-giveaway-clear-ice-stats small {
-  font-size: 9px;
+  font-size: 14px !important;
   font-weight: 800;
   letter-spacing: .08em;
   line-height: 1.05;
@@ -282,7 +282,7 @@
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-giveaway-clear-ice-stats strong {
   max-width: 100%;
   overflow: hidden;
-  font-size: 14px !important;
+  font-size: 22px !important;
   font-weight: 900;
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -1016,4 +1016,25 @@
   .ov-chat-messages > [data-better-element="highlightedMessage"] > span[aria-hidden="true"] > span {
   animation: none !important;
   opacity: 0 !important;
+}
+
+/* Light transmission on Clear Ice betting and request surfaces. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"] :is(.bets-ov__header,.bets-ov__stat,.bets-ov__row,.bets-ov__card,.bet-option,.bet-bar,.sr-image-header,.sr-image-card,.sr-image-players,.sr-image-position) {
+ background: linear-gradient(145deg,rgba(216,243,251,.12),rgba(101,156,210,.06)) !important;
+ box-shadow: inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+
+/* Feather media into the glass without blurring the banner's lettering. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-slideshow-frame__viewport {
+ -webkit-mask-image: linear-gradient(to right,transparent,#000 8px,#000 calc(100% - 8px),transparent),linear-gradient(to bottom,transparent,#000 8px,#000 calc(100% - 8px),transparent);
+ -webkit-mask-composite: source-in;
+ mask-image: linear-gradient(to right,transparent,#000 8px,#000 calc(100% - 8px),transparent),linear-gradient(to bottom,transparent,#000 8px,#000 calc(100% - 8px),transparent);
+ mask-composite: intersect;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget,
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-panel {
+ background-color: rgba(18,50,84,.035) !important;
+ background-image: linear-gradient(145deg,rgba(216,243,251,.035),rgba(10,43,74,.02)),url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+ background-blend-mode: soft-light,soft-light !important;
+ background-size: cover !important;
 }
