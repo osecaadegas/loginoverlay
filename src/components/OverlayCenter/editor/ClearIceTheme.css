@@ -363,3 +363,11 @@
   --bets-text: #000;
   --bets-hdr-txt: #000;
 }
+
+/* Navbar zones are layout wrappers, not inset cards. Keep them transparent so
+   the navbar shell shows the same uninterrupted ice material as the RTP rail. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="navbar"] :is(.better-navbar-content, .better-navbar-zone) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}

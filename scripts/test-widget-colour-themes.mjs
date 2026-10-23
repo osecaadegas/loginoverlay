@@ -72,6 +72,7 @@ assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-sc
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
 assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass-20\.png/, 'Clear Ice textures the top navigation rail with reduced opacity');
 assert.match(clearIceCss, /background-blend-mode:\s*soft-light, soft-light, soft-light[\s\S]*background-size:\s*100% 100%, cover, cover/, 'Clear Ice navbar and RTP rail share one glass and fracture texture treatment');
+assert.match(clearIceCss, /data-widget-type="navbar"\]\s*:is\(\.better-navbar-content, \.better-navbar-zone\)\s*\{\s*background:\s*transparent !important;/, 'Clear Ice navbar layout wrappers stay transparent so they cannot wash out the shared rail material');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \[data-better-element="statCard"\][\s\S]*background:\s*transparent !important/, 'Clear Ice RTP stat cards reveal the continuous parent bar texture');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt shell stays highly transparent');
 assert.match(clearIceCss, /better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\]\[data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt opacity wins over the widget skin material');
