@@ -74,6 +74,7 @@ assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="co
 assert.match(clearIceCss, /background-blend-mode:\s*soft-light, soft-light, soft-light[\s\S]*background-size:\s*100% 100%, cover, cover/, 'Clear Ice navbar and RTP rail share one glass and fracture texture treatment');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \[data-better-element="statCard"\][\s\S]*background:\s*transparent !important/, 'Clear Ice RTP stat cards reveal the continuous parent bar texture');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt shell stays highly transparent');
+assert.match(clearIceCss, /better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\]\[data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt opacity wins over the widget skin material');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-widget,[\s\S]*data-widget-type="bonus_hunt"\][\s\S]*background-blend-mode:\s*soft-light, soft-light, soft-light/, 'Clear Ice Chat and Bonus Hunt use softened shell textures');
 assert.match(clearIceCss, /\.better-hunt-stats-panel[\s\S]*\.ov-chat-giveaway/, 'Clear Ice covers the inner hunt and chat surfaces with glass texture');
 assert.match(clearIceCss, /background-blend-mode:\s*normal, soft-light/, 'Clear Ice keeps texture detail subtle over translucent glass');

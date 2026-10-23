@@ -344,6 +344,21 @@
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"] :is(svg, svg *) {
   color: #000 !important;
 }
+
+/* Bonus Hunt's own skin and nested-surface rules have higher cascade weight
+   than the shared shell material above, so pin the requested low-opacity glass
+   on its actual panel after the theme-wide surface rules. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-panel {
+  background-color: rgba(18, 50, 84, .08) !important;
+  background-image:
+    linear-gradient(145deg, rgba(216, 243, 251, .08), rgba(10, 43, 74, .035) 48%, rgba(10, 43, 74, .08)),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: soft-light, soft-light, soft-light !important;
+  background-size: cover, cover, 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov {
   --bets-text: #000;
   --bets-hdr-txt: #000;
