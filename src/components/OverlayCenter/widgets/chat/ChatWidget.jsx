@@ -1610,8 +1610,8 @@ function ChatWidget({
     <div
       className={`ov-chat-widget${modeClass}`}
       data-premium-chat={premiumPalette?"true":undefined}
-      data-giveaway-active={giveawayVisible ? "true" : undefined}
-      data-giveaway-position={giveawayVisible ? giveawayPosition : undefined}
+      data-giveaway-active={giveawayVisible && !embeddedShoutoutActive ? "true" : undefined}
+      data-giveaway-position={giveawayVisible && !embeddedShoutoutActive ? giveawayPosition : undefined}
       {...partAttrs("container")}
       style={rootStyle}
     >
