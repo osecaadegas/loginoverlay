@@ -267,6 +267,45 @@
   z-index: -1;
 }
 
+/* Keep the navigation and RTP rail on precisely the same Clear Ice material.
+   RTP metric items are transparent so the parent bar reads as one continuous
+   textured strip instead of a row of separate tiles. Chat and Bonus Hunt use
+   lighter shell fills and softer texture blends so more of the scene shows. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="navbar"] [data-widget-element="container"],
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+  background-color: var(--clear-ice-shell-surface) !important;
+  background-image:
+    linear-gradient(180deg, rgba(216, 243, 251, .32), rgba(137, 217, 255, .08) 18%, rgba(10, 43, 74, .2) 78%, rgba(216, 243, 251, .14)),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+  background-blend-mode: soft-light, soft-light, soft-light !important;
+  background-size: 100% 100%, cover, cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item::after {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item::after {
+  content: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-panel {
+  background-color: rgba(18, 50, 84, .08) !important;
+  background-image:
+    linear-gradient(145deg, rgba(216, 243, 251, .08), rgba(10, 43, 74, .035) 48%, rgba(10, 43, 74, .08)),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: soft-light, soft-light, soft-light !important;
+  background-size: cover, cover, 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .46), inset 0 0 10px rgba(137, 217, 255, .12), 0 0 12px rgba(101, 156, 210, .28) !important;
+}
+
 /* Align widget shells and nested data cards to one light glass material. These
    shared tokens prevent a mix of dark navy, opaque white and missing textures
    across widgets while retaining each widget's geometry and semantic accents. */
