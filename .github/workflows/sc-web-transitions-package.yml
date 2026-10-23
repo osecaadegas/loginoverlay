@@ -34,6 +34,10 @@ jobs:
         with:
           node-version: "24"
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Test transition controller
         working-directory: .codex-dev/sc-web-transitions-v3.15-source
         run: go test ./...
@@ -41,6 +45,8 @@ jobs:
       - name: Check renderer JavaScript and inline overlay syntax
         working-directory: .codex-dev/sc-web-transitions-v3.15-source
         run: |
+          node --check money-vfx3d.js
+          node --check ice-vfx3d.js
           node --check gas-vfx3d.js
           node --check gpu-vfx3d.js
           node --check expansion-effects.js
@@ -52,17 +58,18 @@ jobs:
         shell: pwsh
         working-directory: .codex-dev/sc-web-transitions-v3.15-source
         run: |
+          python build_icon_resource.py
           $env:GOOS = "windows"
           $env:GOARCH = "amd64"
           $env:CGO_ENABLED = "0"
-          go build -trimpath -ldflags="-s -w -H windowsgui" -o "$env:RUNNER_TEMP\SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_RC1.exe" .
+          go build -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "$env:RUNNER_TEMP\SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe" .
 
       - name: Package current executable and source for the Apps download
         shell: pwsh
         run: |
           ./scripts/package-sc-web-transitions.ps1 `
             -RepoRoot "$env:GITHUB_WORKSPACE" `
-            -ExecutablePath "$env:RUNNER_TEMP\SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_RC1.exe"
+            -ExecutablePath "$env:RUNNER_TEMP\SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe"
 
       - name: Publish refreshed website package
         shell: pwsh

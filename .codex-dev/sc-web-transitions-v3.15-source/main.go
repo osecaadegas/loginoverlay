@@ -28,7 +28,7 @@ var static embed.FS
 
 const rendererPort = 18767
 const sceneFX = "SC Web Transitions | FX"
-const appVersion = "3.15.0-cinematic-plate-engine-rc1"
+const appVersion = "3.16.0-cinematic-gpu"
 
 type EffectTuning struct {
 	Accent string  `json:"accent"`
@@ -100,6 +100,15 @@ func broadcastQuality(requested string, tier int, enabled bool) string {
 	return names[index]
 }
 
+// Heartbeats contain actual rAF interval P95, not JS submission duration.
+// A healthy 60 Hz renderer reports about 16.67 ms, never <10 ms.
+func rendererFrameHealth(fps, p95 float64) (slow, healthy bool) {
+	if fps <= 0 || fps > 240 || p95 <= 0 || p95 >= 1000 {
+		return false, false
+	}
+	return p95 > 21 || fps < 46, fps >= 57 && p95 <= 18.5
+}
+
 type SceneItem struct {
 	SourceName  string `json:"sourceName"`
 	SceneItemID int    `json:"sceneItemId"`
@@ -116,6 +125,7 @@ type Scene struct {
 type Job struct {
 	ID           int          `json:"job_id"`
 	Phase        string       `json:"phase"`
+	State        string       `json:"transition_state"`
 	Effect       string       `json:"effect"`
 	Direction    string       `json:"direction"`
 	Duration     float64      `json:"duration"`
@@ -126,44 +136,47 @@ type Job struct {
 	Tuning       EffectTuning `json:"tuning"`
 }
 type App struct {
-	mu              sync.Mutex
-	obsPassword     string
-	settings        Settings
-	scene           Scene
-	sources         []string
-	connected       bool
-	active          bool
-	recoveryArmed   bool
-	status          string
-	history         []string
-	job             *Job
-	seq             int
-	frame           []byte
-	lastFrame       []byte
-	ready           chan struct{}
-	covered         chan struct{}
-	reveal          chan struct{}
-	done            chan struct{}
-	errored         chan string
-	rendererSeen    time.Time
-	rendererVersion string
-	rendererFPS     float64
-	rendererP95     float64
-	rendererEffect  string
-	rendererStage   string
-	rendererMode    string
-	rendererID      string
-	performanceTier int
-	slowBeats       int
-	healthyBeats    int
-	revealAck       bool
-	renderError     string
-	server          *http.Server
-	nonce           string
+	mu               sync.Mutex
+	obsPassword      string
+	settings         Settings
+	scene            Scene
+	sources          []string
+	connected        bool
+	active           bool
+	recoveryArmed    bool
+	transitionState  string
+	transitionCancel chan struct{}
+	acknowledged     map[string]bool
+	status           string
+	history          []string
+	job              *Job
+	seq              int
+	frame            []byte
+	lastFrame        []byte
+	ready            chan struct{}
+	covered          chan struct{}
+	reveal           chan struct{}
+	done             chan struct{}
+	errored          chan string
+	rendererSeen     time.Time
+	rendererVersion  string
+	rendererFPS      float64
+	rendererP95      float64
+	rendererEffect   string
+	rendererStage    string
+	rendererMode     string
+	rendererID       string
+	performanceTier  int
+	slowBeats        int
+	healthyBeats     int
+	revealAck        bool
+	renderError      string
+	server           *http.Server
+	nonce            string
 }
 
 func newApp() *App {
-	a := &App{settings: loadSettings(), status: "Ready. Open OBS, connect and select your webcam."}
+	a := &App{settings: loadSettings(), transitionState: "IDLE", status: "Ready. Open OBS, connect and select your webcam."}
 	random := make([]byte, 18)
 	rand.Read(random)
 	a.nonce = base64.RawURLEncoding.EncodeToString(random)
@@ -253,7 +266,7 @@ func (a *App) statusJSON() any {
 		t := *a.job
 		j = t
 	}
-	return map[string]any{"version": appVersion, "connected": a.connected, "scene": a.scene.Name, "camera": a.scene.Camera, "sources": a.sources, "busy": a.active, "status": a.status, "history": a.history, "settings": a.settings, "job": j, "rendererAlive": !a.rendererSeen.IsZero() && time.Since(a.rendererSeen) < 6*time.Second, "rendererVersion": a.rendererVersion, "rendererEffect": a.rendererEffect, "rendererMode": a.rendererMode, "rendererStage": a.rendererStage, "rendererFPS": a.rendererFPS, "rendererP95": a.rendererP95, "rendererID": a.rendererID, "adaptiveQuality": a.performanceTier, "renderError": a.renderError}
+	return map[string]any{"version": appVersion, "connected": a.connected, "scene": a.scene.Name, "camera": a.scene.Camera, "sources": a.sources, "busy": a.active, "transitionState": a.transitionState, "status": a.status, "history": a.history, "settings": a.settings, "job": j, "rendererAlive": !a.rendererSeen.IsZero() && time.Since(a.rendererSeen) < 6*time.Second, "rendererVersion": a.rendererVersion, "rendererEffect": a.rendererEffect, "rendererMode": a.rendererMode, "rendererStage": a.rendererStage, "rendererFPS": a.rendererFPS, "rendererP95": a.rendererP95, "rendererID": a.rendererID, "adaptiveQuality": a.performanceTier, "renderError": a.renderError}
 }
 func (a *App) credentials() (string, int, string) {
 	a.mu.Lock()
@@ -515,13 +528,19 @@ func (a *App) visible(o *OBS, scene Scene) (bool, error) {
 // This call is not considered successful until OBS reports the requested
 // camera state. Log the target and use fresh IDs on retries.
 func (a *App) changeVisible(o *OBS, scene Scene, enabled bool) error {
+	return a.changeVisibleForJob(o, scene, enabled, 0)
+}
+func (a *App) changeVisibleForJob(o *OBS, scene Scene, enabled bool, id int) error {
+	a.mu.Lock()
+	sceneTarget := a.settings.SceneTarget
+	a.mu.Unlock()
 	target := "OFF"
 	if enabled {
 		target = "ON"
 	}
 	var last error
 	for attempt := 1; attempt <= 3; attempt++ {
-		currentScene, err := getScene(o, a.settings.SceneTarget)
+		currentScene, err := getScene(o, sceneTarget)
 		if err != nil {
 			return fmt.Errorf("cannot resolve OBS Program/Preview scene: %w", err)
 		}
@@ -531,6 +550,11 @@ func (a *App) changeVisible(o *OBS, scene Scene, enabled bool) error {
 		fresh, err := resolveCameraAndFX(o, scene)
 		if err != nil {
 			return err
+		}
+		if id != 0 {
+			if err := a.checkTransition(id); err != nil {
+				return err
+			}
 		}
 		_, err = o.Request("SetSceneItemEnabled", map[string]any{"sceneName": fresh.Name, "sceneItemId": fresh.CamID, "sceneItemEnabled": enabled})
 		if err != nil {
@@ -546,6 +570,11 @@ func (a *App) changeVisible(o *OBS, scene Scene, enabled bool) error {
 			// Confirmation may require a render tick; bounded polling is much safer
 			// than assuming WebSocket RPC success means the video changed state.
 			for check := 0; check < 5; check++ {
+				if id != 0 {
+					if err := a.checkTransition(id); err != nil {
+						return err
+					}
+				}
 				r, e := o.Request("GetSceneItemEnabled", map[string]any{"sceneName": fresh.Name, "sceneItemId": fresh.CamID})
 				if e == nil {
 					actual, fe := field[bool](r, "sceneItemEnabled")
@@ -740,32 +769,79 @@ func solidPixels(b []byte) (float64, error) {
 	}
 	return float64(opaque) / float64(n), nil
 }
-func (a *App) verifyOBSOverlay(o *OBS, sc Scene) error {
-	// A browser ready ACK alone cannot prove the OBS source actually conceals
-	// the camera. Read the REAL OBS FX source alpha over the camera foreground.
+
+// checkTransition prevents late renderer ACKs and recovery requests from racing
+// an OBS visibility change. The cancel channel exists before PREPARING starts.
+func (a *App) checkTransition(id int) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if !a.active || a.job == nil || a.job.ID != id {
+		return errors.New("transition is no longer current")
+	}
+	select {
+	case <-a.transitionCancel:
+		return errors.New("Camera recovery requested")
+	default:
+	}
+	return nil
+}
+
+func (a *App) setTransitionState(id int, state string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.job != nil && a.job.ID == id {
+		a.job.State = state
+		a.transitionState = state
+	}
+}
+
+func (a *App) verifyOBSOverlay(o *OBS, sc Scene, id int, refreshLive bool) error {
+	// Check both the prepared silhouette and the current live frame. The user
+	// can move while coverage builds; the original silhouette alone is unsafe.
 	a.mu.Lock()
 	camera := append([]byte(nil), a.frame...)
 	a.mu.Unlock()
 	var detail string
+	consecutive := 0
 	for i := 0; i < 9; i++ {
+		if err := a.checkTransition(id); err != nil {
+			return err
+		}
+		current := camera
+		if refreshLive {
+			var err error
+			current, err = a.capture(o, sc)
+			if err != nil {
+				return fmt.Errorf("cannot verify current live silhouette: %w", err)
+			}
+		}
 		fx, e := a.captureSource(o, sceneFX, sc.Width, sc.Height)
 		if e == nil {
-			coverage, ce := effectiveFXCoverage(camera, fx)
-			if ce == nil && coverage >= .985 {
-				a.log(fmt.Sprintf("OBS composited FX coverage verified: %.2f%% of camera silhouette.", coverage*100))
-				return nil
-			}
-			if ce != nil {
-				detail = ce.Error()
+			original, ce := measureFXCoverage(camera, fx)
+			live, le := measureFXCoverage(current, fx)
+			if ce == nil && le == nil && original.Safe() && live.Safe() {
+				consecutive++
+				if consecutive >= 2 {
+					a.log(fmt.Sprintf("OBS FX coverage verified twice: %.2f%% original, %.2f%% live; worst occupied tile %.2f%%.", original.Coverage*100, live.Coverage*100, live.MinimumTile*100))
+					return nil
+				}
 			} else {
-				detail = fmt.Sprintf("only %.2f%% opaque source pixels over silhouette", coverage*100)
+				consecutive = 0
+				if ce != nil {
+					detail = ce.Error()
+				} else if le != nil {
+					detail = le.Error()
+				} else {
+					detail = fmt.Sprintf("original %.2f%%, live %.2f%%, local minimum %.2f%%", original.Coverage*100, live.Coverage*100, live.MinimumTile*100)
+				}
 			}
 		} else {
+			consecutive = 0
 			detail = e.Error()
 		}
-		time.Sleep(110 * time.Millisecond)
+		time.Sleep(70 * time.Millisecond)
 	}
-	return fmt.Errorf("OBS FX COVERAGE FAILED in scene %q, FX input %q (%s). Camera deliberately stays ON. In OBS use View > Docks > Stats and ensure the FX browser source is visible, above the webcam, and aligned; click Install / realign, then inspect the application's Activity log", sc.Name, sceneFX, detail)
+	return fmt.Errorf("OBS FX COVERAGE FAILED in scene %q (%s). Camera switch cancelled. Ensure the FX source is visible, above the camera and aligned; Install / realign if needed", sc.Name, detail)
 }
 
 // waitForUsableCameraFrame checks camera pixels AFTER enabling the source.
@@ -792,6 +868,29 @@ func (a *App) waitForUsableCameraFrame(o *OBS, sc Scene) error {
 	return fmt.Errorf("camera could not provide usable pixels after enabling it: %w", last)
 }
 
+func (a *App) verifyFXCleared(o *OBS, sc Scene, id int) error {
+	var last error
+	for attempt := 0; attempt < 5; attempt++ {
+		if err := a.checkTransition(id); err != nil {
+			return err
+		}
+		frame, err := a.captureSource(o, sceneFX, sc.Width, sc.Height)
+		if err == nil {
+			clear, decodeErr := effectIsClear(frame)
+			if decodeErr == nil && clear {
+				return nil
+			}
+			err = decodeErr
+			if err == nil {
+				err = errors.New("renderer still contains visible pixels after completion")
+			}
+		}
+		last = err
+		time.Sleep(70 * time.Millisecond)
+	}
+	return fmt.Errorf("FX completion cleanup failed: %w", last)
+}
+
 func (a *App) startTransition(effect, direction string, duration float64, density int) error {
 	a.mu.Lock()
 	if a.active {
@@ -804,6 +903,8 @@ func (a *App) startTransition(effect, direction string, duration float64, densit
 	}
 	sc := a.scene
 	a.active = true
+	a.transitionState = "PREPARING"
+	a.transitionCancel = make(chan struct{})
 	a.recoveryArmed = false
 	a.mu.Unlock()
 	go func() {
@@ -818,16 +919,19 @@ func (a *App) startTransition(effect, direction string, duration float64, densit
 			armed := a.recoveryArmed
 			a.mu.Unlock()
 			if transitionErr != nil {
+				a.mu.Lock()
+				a.transitionState = "RECOVERING"
+				a.mu.Unlock()
 				if !armed {
 					a.log("Transition rejected before camera/FX changes: " + transitionErr.Error())
 				} else {
 					recovery := ""
 					if obs, connErr := a.obs(); connErr == nil {
-						if fxErr := a.clearFX(obs, sc); fxErr != nil {
-							recovery += "; FX cleanup: " + fxErr.Error()
-						}
 						if camErr := a.changeVisible(obs, sc, true); camErr != nil {
 							recovery += "; camera restore: " + camErr.Error()
+						}
+						if fxErr := a.clearFX(obs, sc); fxErr != nil {
+							recovery += "; FX cleanup: " + fxErr.Error()
 						}
 						obs.Close()
 					} else {
@@ -838,6 +942,11 @@ func (a *App) startTransition(effect, direction string, duration float64, densit
 			}
 			a.mu.Lock()
 			a.recoveryArmed = false
+			if transitionErr != nil {
+				a.transitionState = "ERROR"
+			} else {
+				a.transitionState = "COMPLETE"
+			}
 			a.active = false
 			a.job = nil
 			a.frame = nil
@@ -848,17 +957,38 @@ func (a *App) startTransition(effect, direction string, duration float64, densit
 	return nil
 }
 func (a *App) runTransition(sc Scene, effect, direction string, duration float64, density int) error {
+	a.mu.Lock()
+	sceneTarget := a.settings.SceneTarget
+	a.mu.Unlock()
 	o, err := a.obs()
 	if err != nil {
 		return err
 	}
 	defer o.Close()
-	current, err := getScene(o, a.settings.SceneTarget)
+	// Abort a blocked screenshot/RPC as well as channel waits. Otherwise a
+	// recovery request could sit behind several nine-second screenshot timeouts.
+	a.mu.Lock()
+	cancel := a.transitionCancel
+	a.mu.Unlock()
+	watchDone := make(chan struct{})
+	defer close(watchDone)
+	go func() {
+		deadline := time.NewTimer(time.Duration(duration*float64(time.Second)) + 30*time.Second)
+		defer deadline.Stop()
+		select {
+		case <-cancel:
+			o.Close()
+		case <-deadline.C:
+			o.Close()
+		case <-watchDone:
+		}
+	}()
+	current, err := getScene(o, sceneTarget)
 	if err != nil {
 		return err
 	}
 	if current != sc.Name {
-		return fmt.Errorf("Active OBS %s scene is %q, installed scene is %q. Select the correct scene and Install / realign", a.settings.SceneTarget, current, sc.Name)
+		return fmt.Errorf("Active OBS %s scene is %q, installed scene is %q. Select the correct scene and Install / realign", sceneTarget, current, sc.Name)
 	}
 	sc, err = resolveCameraAndFX(o, sc)
 	if err != nil {
@@ -924,9 +1054,11 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 	a.seq++
 	id := a.seq
 	tune := a.settings.EffectOptions[effect]
-	selectedQuality := broadcastQuality(a.settings.Quality, a.performanceTier, a.settings.AutoPerformance)
+	requestedQuality := a.settings.Quality
+	selectedQuality := broadcastQuality(requestedQuality, a.performanceTier, a.settings.AutoPerformance)
 	a.revealAck = false
-	a.job = &Job{ID: id, Phase: "prepare", Effect: effect, Direction: direction, Duration: duration, Density: density, CameraReady: false, Quality: selectedQuality, RendererMode: a.settings.RendererMode, Tuning: tune}
+	a.acknowledged = make(map[string]bool)
+	a.job = &Job{ID: id, Phase: "prepare", State: "PREPARING", Effect: effect, Direction: direction, Duration: duration, Density: density, CameraReady: false, Quality: selectedQuality, RendererMode: a.settings.RendererMode, Tuning: tune}
 	a.frame = frame
 	a.ready = make(chan struct{}, 1)
 	a.covered = make(chan struct{}, 1)
@@ -934,10 +1066,11 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 	a.done = make(chan struct{}, 1)
 	a.errored = make(chan string, 1)
 	a.mu.Unlock()
-	a.log(fmt.Sprintf("Preparing %s %s, renderer quality %s (requested %s)", effect, direction, selectedQuality, a.settings.Quality))
+	a.log(fmt.Sprintf("Preparing %s %s, renderer quality %s (requested %s)", effect, direction, selectedQuality, requestedQuality))
 	wait := func(ch <-chan struct{}, timeout time.Duration, stage string) error {
 		a.mu.Lock()
 		errCh := a.errored
+		cancel := a.transitionCancel
 		a.mu.Unlock()
 		timer := time.NewTimer(timeout)
 		ticker := time.NewTicker(400 * time.Millisecond)
@@ -946,7 +1079,9 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 		for {
 			select {
 			case <-ch:
-				return nil
+				return a.checkTransition(id)
+			case <-cancel:
+				return errors.New("Camera recovery requested")
 			case e := <-errCh:
 				return errors.New("Renderer: " + e)
 			case <-timer.C:
@@ -966,16 +1101,28 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 	}
 	if direction == "out" {
 		a.setPhase(id, "cover")
+		a.setTransitionState(id, "COVER_BUILDING")
 		if err = wait(a.covered, 6*time.Second, "confirming visual concealment before camera-off"); err != nil {
 			return err
 		}
-		if err = a.verifyOBSOverlay(o, sc); err != nil {
+		if err = a.verifyOBSOverlay(o, sc, id, true); err != nil {
 			return err
 		}
-		if err = a.changeVisible(o, sc, false); err != nil {
+		a.setTransitionState(id, "COVER_VERIFIED")
+		if err = a.checkTransition(id); err != nil {
 			return err
 		}
+		a.setTransitionState(id, "CAMERA_SWITCHING")
+		if err = a.changeVisibleForJob(o, sc, false, id); err != nil {
+			return err
+		}
+		a.setTransitionState(id, "CAMERA_STATE_CONFIRMED")
 	} // IN starts with webcam hidden. No stale frozen webcam displayed during banknote assembly.
+	if direction == "in" {
+		a.setTransitionState(id, "COVER_BUILDING")
+	} else {
+		a.setTransitionState(id, "DISPERSING")
+	}
 	a.setPhase(id, "play")
 	a.log(fmt.Sprintf("Playing %s %s (%.1fs) after renderer coverage", effect, direction, duration))
 	if direction == "in" {
@@ -983,6 +1130,7 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 		revealCh := a.reveal
 		doneCh := a.done
 		errCh := a.errored
+		cancel := a.transitionCancel
 		a.mu.Unlock()
 		timer := time.NewTimer(time.Duration((duration + 5) * float64(time.Second)))
 		ticker := time.NewTicker(400 * time.Millisecond)
@@ -998,12 +1146,19 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 				if time.Since(last) > 4500*time.Millisecond {
 					return errors.New("IN renderer heartbeat lost; attempting safe camera recovery")
 				}
+			case <-cancel:
+				return errors.New("Camera recovery requested")
 			case <-revealCh:
 				if !revealed {
-					if err = a.verifyOBSOverlay(o, sc); err != nil {
+					if err = a.verifyOBSOverlay(o, sc, id, false); err != nil {
 						return fmt.Errorf("IN concealment not confirmed before camera-on: %w", err)
 					}
-					if err = a.changeVisible(o, sc, true); err != nil {
+					a.setTransitionState(id, "COVER_VERIFIED")
+					if err = a.checkTransition(id); err != nil {
+						return err
+					}
+					a.setTransitionState(id, "CAMERA_SWITCHING")
+					if err = a.changeVisibleForJob(o, sc, true, id); err != nil {
 						return err
 					}
 					// Keep all effects fully concealing the camera until
@@ -1011,12 +1166,21 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 					if err = a.waitForUsableCameraFrame(o, sc); err != nil {
 						return err
 					}
+					// Recheck the now-live silhouette before releasing concealment.
+					if err = a.verifyOBSOverlay(o, sc, id, true); err != nil {
+						return err
+					}
+					if err = a.checkTransition(id); err != nil {
+						return err
+					}
+					a.setTransitionState(id, "CAMERA_STATE_CONFIRMED")
 					revealed = true
 					a.mu.Lock()
 					if a.job != nil && a.job.ID == id {
 						a.job.CameraReady = true
 					}
 					a.mu.Unlock()
+					a.setTransitionState(id, "DISPERSING")
 				}
 			case <-doneCh:
 				if !revealed {
@@ -1024,6 +1188,9 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 				}
 				if visible, e := a.visible(o, sc); e != nil || !visible {
 					return fmt.Errorf("IN completed but OBS camera is not confirmed visible: visible=%v err=%v", visible, e)
+				}
+				if err = a.verifyFXCleared(o, sc, id); err != nil {
+					return err
 				}
 				a.log("Camera visible. IN complete.")
 				return nil
@@ -1043,6 +1210,9 @@ func (a *App) runTransition(sc Scene, effect, direction string, duration float64
 	if visible, e := a.visible(o, sc); e != nil || visible {
 		return fmt.Errorf("OUT completed but OBS camera is not confirmed hidden: visible=%v err=%v", visible, e)
 	}
+	if err = a.verifyFXCleared(o, sc, id); err != nil {
+		return err
+	}
 	a.log("Camera hidden. OUT complete.")
 	return nil
 }
@@ -1053,14 +1223,32 @@ func (a *App) setPhase(id int, phase string) {
 		a.job.Phase = phase
 	}
 }
+
+// Renderer requests may be retried after the response is lost. Accepted signals
+// are idempotent for this job, but never refresh the liveness of a stale job.
 func (a *App) ack(id int, action, reason string, coverage float64) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.job == nil || a.job.ID != id {
 		return false
 	}
-	a.rendererSeen = time.Now() // a valid renderer signal is itself a liveness proof
+	select {
+	case <-a.transitionCancel:
+		return false
+	default:
+	}
+	if a.acknowledged[action] {
+		return true
+	}
 	var ch chan struct{}
+	fail := func(reason string) bool {
+		select {
+		case a.errored <- reason:
+		default:
+		}
+		return true
+	}
+	validCoverage := func() bool { return coverage >= minimumCoverage && coverage <= 1 }
 	switch action {
 	case "ready":
 		if a.job.Phase != "prepare" {
@@ -1068,25 +1256,19 @@ func (a *App) ack(id int, action, reason string, coverage float64) bool {
 		}
 		ch = a.ready
 	case "covered":
-		if a.job.Phase == "cover" && (a.job.Effect == "money" || a.job.Effect == "ice" || a.job.Effect == "smoke" || a.job.Effect == "toxic" || a.job.Effect == "inferno" || expansionEffects[a.job.Effect]) {
-			// Visual hide requires verified alpha coverage, including partial
-			// transparency in the smoke/toxic compositing layers.
-			if coverage < .985 || coverage > 1 || coverage != coverage {
-				select {
-				case a.errored <- fmt.Sprintf("%s coverage failed: %.2f%% (98.5%% required)", a.job.Effect, coverage*100):
-				default:
-				}
-				return true
-			}
-			a.history = append(a.history, fmt.Sprintf("%s coverage verified: %.2f%%", a.job.Effect, coverage*100))
-		}
 		if a.job.Phase != "cover" {
 			return false
 		}
+		if !validCoverage() {
+			return fail(fmt.Sprintf("%s coverage failed: %.2f%% (99.5%% required)", a.job.Effect, coverage*100))
+		}
 		ch = a.covered
 	case "reveal":
-		if a.job.Phase != "play" || a.job.Direction != "in" || a.revealAck {
+		if a.job.Phase != "play" || a.job.Direction != "in" {
 			return false
+		}
+		if !validCoverage() {
+			return fail(fmt.Sprintf("%s reveal coverage failed: %.2f%% (99.5%% required)", a.job.Effect, coverage*100))
 		}
 		a.revealAck = true
 		ch = a.reveal
@@ -1095,22 +1277,25 @@ func (a *App) ack(id int, action, reason string, coverage float64) bool {
 			return false
 		}
 		if a.job.Direction == "in" && !a.revealAck {
-			select {
-			case a.errored <- "IN finished without a reveal acknowledgement":
-			default:
-			}
-			return true
+			return fail("IN finished without a reveal acknowledgement")
+		}
+		if a.job.Direction == "in" && !a.job.CameraReady {
+			return fail("IN finished before OBS confirmed a usable camera frame")
 		}
 		ch = a.done
 	case "error":
-		select {
-		case a.errored <- reason:
-		default:
-		}
-		return true
+		return fail(reason)
 	default:
 		return false
 	}
+	if ch == nil {
+		return false
+	}
+	if a.acknowledged == nil {
+		a.acknowledged = make(map[string]bool)
+	}
+	a.acknowledged[action] = true
+	a.rendererSeen = time.Now()
 	select {
 	case ch <- struct{}{}:
 	default:
@@ -1121,7 +1306,7 @@ func (a *App) stateJSON() any {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.job == nil {
-		return map[string]any{"job_id": 0, "phase": "idle"}
+		return map[string]any{"job_id": 0, "phase": "idle", "transition_state": a.transitionState}
 	}
 	copyJob := *a.job
 	return copyJob
@@ -1213,6 +1398,13 @@ func (a *App) apiHandler(w http.ResponseWriter, r *http.Request) {
 		// outside the transition state machine.
 		a.mu.Lock()
 		sc := a.scene
+		if a.active && a.transitionCancel != nil {
+			select {
+			case <-a.transitionCancel:
+			default:
+				close(a.transitionCancel)
+			}
+		}
 		if a.active && a.errored != nil {
 			select {
 			case a.errored <- "Camera recovery requested":
@@ -1236,19 +1428,35 @@ func (a *App) apiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		a.mu.Lock()
 		busy := a.active
+		if !busy {
+			// Reserve the controller until recovery finishes. A hotkey pressed
+			// during recovery must not start a job while clearFX is in flight.
+			a.active = true
+			a.transitionState = "RECOVERING"
+		}
 		a.mu.Unlock()
 		if busy {
 			err = errors.New("Transition has not stopped; retry recovery after OBS responds")
 			break
 		}
+		defer func() {
+			a.mu.Lock()
+			a.active = false
+			if err != nil {
+				a.transitionState = "ERROR"
+			} else {
+				a.transitionState = "IDLE"
+			}
+			a.mu.Unlock()
+		}()
 		var obs *OBS
 		obs, err = a.obs()
 		if err != nil {
 			break
 		}
-		err = a.clearFX(obs, sc)
+		err = a.changeVisible(obs, sc, true)
 		if err == nil {
-			err = a.changeVisible(obs, sc, true)
+			err = a.clearFX(obs, sc)
 		}
 		if err == nil {
 			var v bool
@@ -1259,6 +1467,9 @@ func (a *App) apiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		obs.Close()
 		if err == nil {
+			a.mu.Lock()
+			a.transitionState = "IDLE"
+			a.mu.Unlock()
 			a.log("Recovery successful: FX cleared, camera visible")
 			data = map[string]any{"cameraVisible": true, "fxCleared": true}
 		}
@@ -1458,6 +1669,9 @@ func (a *App) routes() http.Handler {
 		w.Header().Set("Cache-Control", "no-store")
 		w.Write(b)
 	})
+	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		a.serveAsset(w, "sc.ico", "image/x-icon")
+	})
 	mux.HandleFunc("/api/", a.apiHandler)
 	mux.HandleFunc("/overlay.html", func(w http.ResponseWriter, r *http.Request) {
 		a.serveAsset(w, "overlay.html", "text/html; charset=utf-8")
@@ -1612,8 +1826,7 @@ func (a *App) routes() http.Handler {
 			a.rendererP95 = beat.RenderP95
 		}
 		if a.active && a.job != nil && (beat.Stage == "play" || beat.Stage == "cover") && a.settings.AutoPerformance && a.settings.RendererMode == "gpu" {
-			slow := (beat.RenderP95 > 21 && beat.RenderP95 < 1000) || (beat.FPS > 8 && beat.FPS < 46 && beat.RenderP95 > 14)
-			healthy := beat.FPS >= 57 && beat.RenderP95 > 0 && beat.RenderP95 < 10
+			slow, healthy := rendererFrameHealth(beat.FPS, beat.RenderP95)
 			if slow {
 				a.slowBeats++
 				a.healthyBeats = 0
@@ -1821,6 +2034,10 @@ func launchWindow() {
 	exec.Command("xdg-open", url).Start()
 }
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
+		fmt.Println(appVersion)
+		return
+	}
 	// One EXE acts as first-run installer AND future launcher.
 	if runtime.GOOS == "windows" && len(os.Args) > 1 && os.Args[1] == "--install" {
 		if err := installSelf(); err != nil && err != errInstalled {

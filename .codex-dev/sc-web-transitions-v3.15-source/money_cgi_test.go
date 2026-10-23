@@ -12,7 +12,8 @@ func TestMoneyCGIEmbeddedAndBoundToSafeHandoff(t *testing.T) {
 	app := &App{nonce: "test"}
 	mux := app.routes()
 	for _, c := range []struct{ path, body, mime string }{
-		{"/money-vfx3d.js", "/* SC Web Transitions v3.10", "text/javascript"},
+		{"/favicon.ico", "\x00\x00\x01\x00", "image/x-icon"},
+		{"/money-vfx3d.js", "/* SC Web Transitions v3.16", "text/javascript"},
 		{"/vfx-assets/golden_sheep_paper_normal.png", "\x89PNG", "image/png"},
 		{"/vfx-assets/golden_sheep_paper_roughness.png", "\x89PNG", "image/png"},
 		{"/vfx-assets/hero_bill_softcurl.glb", "glTF", "model/gltf-binary"},
@@ -34,7 +35,7 @@ func TestMoneyCGIEmbeddedAndBoundToSafeHandoff(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := string(html)
-	for _, fragment := range []string{"moneyGPUActive()", "moneyCGI.draw", "moneyCoverage", "ratio>=.985", "moneyAssembled(1)", "money-vfx3d.js"} {
+	for _, fragment := range []string{"moneyGPUActive()", "moneyCGI.draw", "moneyCoverage", "lastMeasuredCoverage>=.995", "moneyAssembled(1)", "money-vfx3d.js"} {
 		if !strings.Contains(s, fragment) {
 			t.Fatalf("money renderer or safety check missing: %s", fragment)
 		}

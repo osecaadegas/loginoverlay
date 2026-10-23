@@ -29,6 +29,23 @@ func TestAdaptiveQualityNeverIncreasesRequestedBudget(t *testing.T) {
 	}
 }
 
+func TestFrameHealthUsesPresentationIntervalNotDrawTime(t *testing.T) {
+	cases := []struct {
+		fps, p95      float64
+		slow, healthy bool
+	}{
+		{60, 16.67, false, true}, {58, 18.2, false, true}, {55, 19, false, false},
+		{60, 33.3, true, false}, {30, 33.3, true, false}, {6, 160, true, false},
+		{0, 0, false, false},
+	}
+	for _, tc := range cases {
+		slow, healthy := rendererFrameHealth(tc.fps, tc.p95)
+		if slow != tc.slow || healthy != tc.healthy {
+			t.Errorf("fps=%v p95=%v: slow=%v healthy=%v", tc.fps, tc.p95, slow, healthy)
+		}
+	}
+}
+
 func TestCannotFinishIncomingWithoutReveal(t *testing.T) {
 	a := newApp()
 	a.job = &Job{ID: 17, Phase: "play", Effect: "money", Direction: "in"}
@@ -54,6 +71,7 @@ func TestCannotFinishIncomingWithoutReveal(t *testing.T) {
 	if !a.ack(17, "reveal", "", 1) {
 		t.Fatal("valid reveal rejected")
 	}
+	a.job.CameraReady = true
 	if !a.ack(17, "done", "", 1) {
 		t.Fatal("completion after reveal rejected")
 	}

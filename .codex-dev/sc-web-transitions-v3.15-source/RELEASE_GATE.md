@@ -1,15 +1,7 @@
-# Public Release Gate — NO-GO
+# Release validation — 3.16.0
 
-**v3.0.0 RC1 is a working technical preview, not a 10/10 Hollywood-quality commercial release.** It passes software and simulated-OBS checks but cannot honestly be certified without a Windows OBS physical-camera session.
+This release contains implemented WebGL2 rendering and OBS synchronization improvements, a rebuilt Windows executable, repeatable automated checks and recorded RTX 4070 SUPER browser measurements. See `QA_3.16.0_CINEMATIC_GPU.md` for the exact final validation results.
 
-- Functional Go and mock OBS tests: PASS.
-- Synthetic 2D Money, Smoke, Toxic and Ice renderer checks: PASS.
-- Updated desktop executable: COMPILED, not Windows-executed here.
-- Native per-frame alpha tracking: NOT IMPLEMENTED in the shipping application.
-- Native OBS DLL: feasibility source only; UNBUILT, UNTESTED, NOT INSTALLED.
-- True fresh-camera-frame synchronization: PARTIAL (source availability check only).
-- 1080p60 with OBS and concurrent gameplay: PENDING and software benchmark currently above budget.
-- Signed installer, rollback and uninstall on physical Windows: PENDING.
-- Independent professional 9/10 visual approval: NOT ACHIEVED.
+The Windows executable retains the existing self-install/update behavior and is unsigned. No claim is made that simulated OBS checks establish physical-camera behavior. A real OBS session at 1080p60 under concurrent encoding/game load remains the release's hardware validation limitation. Do not represent this release as an offline CGI render or as a certified zero-drop streaming benchmark.
 
-Do not distribute publicly before all critical items have been demonstrated with real recordings and measurements.
+IN/OUT naming remains compatible: IN shows the camera; OUT hides it. An incomplete optical seal must reject the camera switch and recover rather than expose a cut.

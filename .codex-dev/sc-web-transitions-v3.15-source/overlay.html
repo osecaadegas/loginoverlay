@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v3.14.0 Raymarched Gas RC1</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v3.16.0 Cinematic GPU</title>
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}canvas{width:100%;height:100%;display:block;background:transparent!important}</style></head><body><canvas id="fx"></canvas><script src="/money-vfx3d.js"></script><script src="/ice-vfx3d.js"></script><script src="/gas-vfx3d.js"></script><script src="/cinematic-plates.js"></script><script src="/premium-vfx-meshes.js"></script><script src="/premium-crystal-accents.js"></script><script src="/crystal-hero3d.js"></script><script src="/gpu-vfx3d.js"></script><script src="/expansion-effects.js"></script><script>
 'use strict';
 // All geometry is in the native, uncropped camera source coordinates. OBS mirrors
@@ -10,7 +10,7 @@ let expansion=null,expansionGPU=null,gpuCoverage=0,gpuUnavailable="";
 let moneyCGI=null,moneyNormal=null,moneyRoughness=null,moneyGPUError="";
 let iceGPU=null,iceGPUError="",iceCoverage=0;
 let gasGPU=null,gasGPUError='',cinematicPlates=null,cinematicPlateError='';
-function plateActive(){return !!(cinematicPlates&&cinematicPlates.isReady&&job&&(job.effect==='smoke'||job.effect==='toxic'))}
+function plateActive(){return !!(!gasGPUActive()&&cinematicPlates&&cinematicPlates.isReady&&job&&(job.effect==='smoke'||job.effect==='toxic'))}
 function disposePlates(){if(cinematicPlates){try{cinematicPlates.dispose()}catch(e){console.warn('Cinematic plate dispose',e)}cinematicPlates=null}}
 function gasGPUActive(){return !!(job&&(job.effect==='smoke'||job.effect==='toxic')&&gasGPU&&gasGPU.isReady&&job.renderer_mode!=='2d')}
 function disposeGasGPU(){if(gasGPU){try{gasGPU.dispose()}catch(_){}gasGPU.canvas.remove();gasGPU=null}}
@@ -19,14 +19,49 @@ let billParts=[],billMosaic=null,moneyMatte=null,hero=null,shards=[],clouds=[],s
 let ackCovered=false,ackReveal=false,ackDone=false,previewEpoch=0,smokeReleaseAge=0,smokeCoverAge=0;
 let smokeCanvas=null,smokeCtx=null,smokeBufferScale=1,smokeVolume=null,smokeVolCtx=null,gasSeal=null,gasCoverage=0,gasCoverageReport='',gasInReleaseAt=0,gasInArmed=false;
 let renderSamples=[],fpsSamples=[],sampleStart=0,framesThisSample=0,measuredFPS=0,measuredP95=0;
-let idleCanvasClear=false;
+let idleCanvasClear=false,prepareEpoch=0,visualSeconds=0,lastFrame=0,frameIntervals=[],cpuSamples=[],missedFrames=0;
+let lastCoverageCheck=0,coverageWaitStarted=0,coverageProbe=null,coverageContext=null;
+const signalRequests=new Map(),MONEY_IN_BUILD=.60,MONEY_IN_RELEASE=.63;
+function hideRenderers(){for(const r of [moneyCGI,iceGPU,gasGPU,expansionGPU,cinematicPlates])if(r)r.hide()}
+function resetMetrics(){sampleStart=0;framesThisSample=0;lastFrame=0;frameIntervals=[];cpuSamples=[];missedFrames=0;renderSamples=[];measuredFPS=0;measuredP95=0;lastCoverageCheck=0;coverageWaitStarted=0}
+function releaseTransient(){
+ hideRenderers();ctx.clearRect(0,0,W,H);idleCanvasClear=true;
+ subject=field=null;billParts=[];shards=[];clouds=[];smokeSprites=[];smokeWispSprites=[];frostFrames=[];iceGrowthFrames=[];
+ moneyMatte=moneyCoverageLayer=moneyMaskLayer=billMosaic=frostMap=iceFrozenLayer=smokeMatte=gasSeal=null;
+ if(expansion){expansion.dispose();expansion=null}
+ // GPU programs/immutable textures stay warm. Job-specific buffers are replaced by prepare().
+}
+function renderCoverage(){
+ if(!field)return 0;
+ if(job.effect==='smoke'||job.effect==='toxic'){
+  gasCoverage=plateActive()?cinematicPlates.measureCoverage(field):gasGPUActive()?gasGPU.measureCoverage(field):gasOpacityCoverage();
+  gasCoverageReport='Rendered optical coverage '+(gasCoverage*100).toFixed(2)+'%';return gasCoverage;
+ }
+ if(isExpansion(job.effect)&&expansionGPU&&expansionGPU.ready){gpuCoverage=expansionGPU.measureCoverage(field);return gpuCoverage}
+ if(!coverageProbe){coverageProbe=canvas2();coverageContext=coverageProbe.getContext('2d',{willReadFrequently:true})}
+ const w=field.mw,h=field.mh;
+ if(coverageProbe.width!==w||coverageProbe.height!==h){coverageProbe.width=w;coverageProbe.height=h}
+ const g=coverageContext;g.clearRect(0,0,w,h);g.drawImage(cvs,0,0,w,h);
+ const gpu=job.effect==='money'?moneyCGI:job.effect==='ice'?iceGPU:null;
+ if(gpu&&gpu.isReady&&gpu.canvas.style.display!=='none')g.drawImage(gpu.canvas,0,0,w,h);
+ const data=g.getImageData(0,0,w,h).data;let hit=0,total=0;
+ for(let k=3;k<data.length;k+=4)if(field.map[k]>=196){total++;if(data[k]>=254)hit++}
+ const result=total?hit/total:0;
+ if(job.effect==='money')moneyCoverage=result;if(job.effect==='ice')iceCoverage=result;
+ return result;
+}
+
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const reached=(progress,threshold)=>progress+1e-7>=threshold;
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const ease=x=>1-Math.pow(1-clamp(x),3),mix=(a,b,p)=>a+(b-a)*p,rand=(a,b)=>a+Math.random()*(b-a);
 const fract=x=>x-Math.floor(x);
 function resize(){const w=Math.max(1,Math.round(innerWidth)),h=Math.max(1,Math.round(innerHeight));if(w===W&&h===H)return;W=w;H=h;DPR=demo?Math.min(devicePixelRatio||1,1.5):1; /* OBS composites at native pixel size; no oversampling. */cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0)}
 addEventListener('resize',resize);resize();
-function image(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Cannot load image: '+url));im.src=url})}
+function image(url){return new Promise((resolve,reject)=>{
+ const im=new Image();const timer=setTimeout(()=>{im.onload=im.onerror=null;im.src='';reject(Error('Image loading timed out: '+url))},6000);
+ im.onload=()=>{clearTimeout(timer);resolve(im)};im.onerror=()=>{clearTimeout(timer);reject(Error('Cannot load image: '+url))};im.src=url;
+})}
 function keyed(r,g,b){return g>72&&g-r>34&&g-b>29&&g>r*1.26&&g>b*1.24}
 function silhouette(img){
  const c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d',{willReadFrequently:true});q.drawImage(img,0,0,W,H);
@@ -167,6 +202,12 @@ function moneyGPURecord(n,x,y,age,alpha,scale=1,heroFlag=0,extras=null){
   phase:n.phase,wave:v.wave??(v.airborne?1.12:.28),yaw:v.yaw??(Math.sin(n.phase+age*2.2)*(.24+.48*!!v.airborne)+(v.airborne?n.spin*age*.16:0)),
   pitch:v.pitch??(Math.sin(n.phase*1.4+age*3.4)*(.16+.26*!!v.airborne)),hero:heroFlag};
 }
+function livingPile(records,age,weight=1){
+ for(let i=0;i<billParts.length;i++){const n=billParts[i];
+  records.push(moneyGPURecord(n,n.x+Math.sin(age*.72+n.phase)*1.1,n.y+Math.sin(age*.95+n.phase)*1.3,age,weight,1,0,
+   {depth:-3-(i%5)*.7,rot:n.rot,yaw:Math.sin(age*.8+n.phase)*.045,pitch:Math.sin(age*1.1+n.phase)*.055,wave:.10}));
+ }
+}
 function drawMoneyCoverCGI(p){
  // The same note positions and settle curve as the measured original Money effect.
  // Settled banknotes revert to the EXACT measured pixel layer by p=1 so the
@@ -183,7 +224,8 @@ function drawMoneyCoverCGI(p){
   if(1-landed>.003)airborne.push(moneyGPURecord(n,x,y,fall*.32,1-landed,1,0,{airborne:true,depth:-64*(1-q),wave:.6+q*.16}));
  }
  if(p>=1){g.clearRect(0,0,W,H);g.drawImage(moneyCoverageLayer,0,0)}
- moneyCGI.draw(airborne,p*2.1);
+ if(p>.92)livingPile(airborne,visualSeconds,smoother((p-.92)/.08));
+ moneyCGI.draw(airborne,visualSeconds);
 }
 function moneyHeroCGI(p,duration,records){
  const q=clamp((p-.27)/.73);if(q<=0||q>=1)return;
@@ -242,8 +284,8 @@ function drawMoneyCGI(t,dir,duration){
   }
   moneyHeroCGI(p,duration,records);
  }else{
-  const buildEnd=.77,holdEnd=.915;
-  if(p<buildEnd){
+  const buildEnd=MONEY_IN_BUILD,holdEnd=MONEY_IN_RELEASE;
+  if(!reached(p,buildEnd)){
    const build=clamp(p/buildEnd);
    for(const n of billParts){
     const pose=moneyInPose(n,build);if(!pose)continue;
@@ -252,18 +294,20 @@ function drawMoneyCGI(t,dir,duration){
    }
    // Keep the rain readable almost until the silhouette is fully rebuilt, then
    // switch to the exact measured money layer for the webcam reveal.
-   if(p>=buildEnd-.030){ctx.clearRect(0,0,W,H);moneyAssembled(1);records.length=0}
-  }else if(p<holdEnd){moneyAssembled(1)}
+   if(p>=buildEnd-.030){ctx.clearRect(0,0,W,H);moneyAssembled(1);records.length=0;livingPile(records,visualSeconds,smoother((p-buildEnd+.030)/.030))}
+  }else if(p<holdEnd){moneyAssembled(1);livingPile(records,visualSeconds)}
   else{
    const burst=clamp((p-holdEnd)/(1-holdEnd));
    for(const n of billParts){
+    if(n===hero.note&&burst>=.27)continue;
     const v=moneyInRevealPose(n,burst,duration);
     if(v.q<=0){moneyNote(n,ctx,n.x,n.y,0,1,1);continue}
     if(v.alpha>.003&&v.x>-280&&v.x<W+280&&v.y>-260&&v.y<H+260)records.push(moneyGPURecord(n,v.x,v.y,v.sec,v.alpha,v.scale,0,{airborne:true,depth:v.depth,wave:.26+n.peelLift*.55}));
    }
+   moneyHeroCGI(burst,duration*(1-holdEnd),records);
   }
  }
- moneyCGI.draw(records,p*duration);
+ moneyCGI.draw(records,visualSeconds);
 }
 function createMoneyTextureCache(){
  moneyTex=[];
@@ -311,7 +355,7 @@ function coverageOf(canvas,probe){
  const c=canvas2(probe.w,probe.h),g=c.getContext('2d',{willReadFrequently:true});
  g.drawImage(canvas,0,0,probe.w,probe.h);const d=g.getImageData(0,0,probe.w,probe.h).data;
  let hit=0,all=0;const holes=[];
- for(const k of probe.cells){all++;if(d[k*4+3]>243)hit++;else holes.push(k)}
+ for(const k of probe.cells){all++;if(d[k*4+3]>=254)hit++;else holes.push(k)}
  return {ratio:hit/Math.max(1,all),holes};
 }
 function createMoneyNote(x,y,w,tier,seedDelay=0){
@@ -342,7 +386,7 @@ function setupMoney(intensity){
   og.drawImage(bill,-n.w*sx*.5,-n.w*.454*sy*.5,n.w*sx,n.w*.454*sy);og.restore();
  }
  function current(){const im=og.getImageData(0,0,probe.w,probe.h).data,holes=[];let hit=0;
-  for(const k of probe.cells){if(im[k*4+3]>246)hit++;else holes.push(k)}
+  for(const k of probe.cells){if(im[k*4+3]>=254)hit++;else holes.push(k)}
   return {ratio:hit/Math.max(1,probe.cells.length),holes};
  }
  // Primary notes: use three explicit size bands and nonuniform positions.
@@ -384,7 +428,7 @@ function setupMoney(intensity){
  // or camera screenshot. It works at silhouette-mask resolution, in preparation.
  let data=current(),fallback=false,added=0;
  const limit=Math.round(mix(195,270,quality)*(probe.cells.length/7800)**.30);
- while(data.ratio<.987 && billParts.length<limit && data.holes.length){
+ while(data.ratio<.998 && billParts.length<limit && data.holes.length){
   const sample=data.holes[Math.floor(rng()*data.holes.length)];
   const px=((sample%probe.w)+.5)/probe.w*W,py=(Math.floor(sample/probe.w)+.5)/probe.h*H;
   const tier=(added%4===0)?0:(added%9===0)?2:1;
@@ -393,10 +437,10 @@ function setupMoney(intensity){
   if(added%4===0)data=current();
  }
  data=current();
- if(data.ratio<.985){
+ if(data.ratio<.995){
   // Tight final holes need narrow paper strips; still individual real bills.
   fallback=true;
-  while(data.ratio<.987&&billParts.length<limit+135&&data.holes.length){
+  while(data.ratio<.998&&billParts.length<limit+135&&data.holes.length){
    const sample=data.holes[Math.floor(rng()*data.holes.length)];
    const x=((sample%probe.w)+.5)/probe.w*W,y=(Math.floor(sample/probe.w)+.5)/probe.h*H;
    place(createMoneyNote(x,y,widths[1]*rr(.80,1.05),1,rr(.35,.61)));
@@ -408,7 +452,7 @@ function setupMoney(intensity){
  // Verify coverage on the final alpha-clipped, composited image (not merely
  // the planning bitmap). Fill remaining anti-aliased edge gaps with bills.
  let finalAdds=0;
- while(actual.ratio<.989 && actual.holes.length && finalAdds<180){
+ while(actual.ratio<.998 && actual.holes.length && finalAdds<180){
   const sample=actual.holes[Math.floor(rng()*actual.holes.length)];
   const x=((sample%probe.w)+.5)/probe.w*W,y=(Math.floor(sample/probe.w)+.5)/probe.h*H;
   billParts.push(createMoneyNote(x,y,widths[1]*rr(.76,1.12),1,rr(.24,.55)));
@@ -419,7 +463,7 @@ function setupMoney(intensity){
  fallback=fallback||finalAdds>0;
  moneyCoverage=actual.ratio;
  moneyCoverageReport=`${(moneyCoverage*100).toFixed(2)}% (${billParts.length} individual notes; adaptive fill ${fallback?'yes':'no'})`;
- if(moneyCoverage<.985)throw Error('Money coverage only '+moneyCoverageReport+'; source stays visible. Adjust webcam mask or increase density.');
+ if(moneyCoverage<.995)throw Error('Money coverage only '+moneyCoverageReport+'; source stays visible. Adjust webcam mask or increase density.');
  // The final live-cover sprite is the exact cached final configuration.
  moneyMatte=moneyCoverageLayer;
  const anchorX=b.x+b.w*.53,anchorY=b.y+b.h*.40;
@@ -535,8 +579,8 @@ function drawMoney(t,dir,duration){
   }
   drawHeroBill(p);
  }else{
-  const buildEnd=.77,holdEnd=.915;
-  if(p<buildEnd){
+  const buildEnd=MONEY_IN_BUILD,holdEnd=MONEY_IN_RELEASE;
+  if(!reached(p,buildEnd)){
    const build=clamp(p/buildEnd);
    for(const n of billParts){
     const pose=moneyInPose(n,build);
@@ -565,13 +609,11 @@ let iceCrackCanvas=null,iceCrackCtx=null,iceGrowthFrames=[],iceGrowthDebug=null;
 const ICE_IN_BUILD=.55,ICE_IN_BREAK=.72,ICE_OUT_BREAK=.35;
 function buildIceMaterial(){
  const c=canvas2(),g=c.getContext('2d',{alpha:true});
- g.drawImage(subject,0,0,W,H);
- g.globalCompositeOperation='source-atop';
  const b=field.bounds,grad=g.createLinearGradient(b.x,b.y,b.x+b.w*.13,b.y+b.h);
- grad.addColorStop(0,'rgba(226,245,255,.78)');
- grad.addColorStop(.29,'rgba(150,210,246,.48)');
- grad.addColorStop(.70,'rgba(77,142,203,.48)');
- grad.addColorStop(1,'rgba(202,239,255,.64)');
+ grad.addColorStop(0,'#b7e3f3');
+ grad.addColorStop(.29,'#548eac');
+ grad.addColorStop(.70,'#22536d');
+ grad.addColorStop(1,'#91c4d8');
  g.fillStyle=grad;g.fillRect(0,0,W,H);
  // Mottled semi-transparent subsurface refraction, only on actual subject pixels.
  g.globalCompositeOperation='source-atop';
@@ -597,7 +639,9 @@ function buildIceMaterial(){
  const edgeCanvas=canvas2(sw,sh);edgeCanvas.getContext('2d').putImageData(edge,0,0);
  g.drawImage(edgeCanvas,0,0,W,H);
  // Ensure no decorative light or particles ever produce a rectangular webcam frame.
- g.globalCompositeOperation='destination-in';g.drawImage(subject,0,0,W,H);g.globalCompositeOperation='source-over';
+ const pad=canvas2(),pg=pad.getContext('2d');
+ for(const [dx,dy] of [[0,0],[-3,0],[3,0],[0,-3],[0,3]])pg.drawImage(subject,dx,dy,W,H);
+ g.globalCompositeOperation='destination-in';g.drawImage(pad,0,0);g.globalCompositeOperation='source-over';
  return c;
 }
 function iceClipPolygon(poly,a,b,c){
@@ -921,8 +965,7 @@ function buildOrganicIceGrowth(){
  iceGrowthDebug={width,height,frameCount,seedInterval:interval,activePixels:active.length,fronts,completed:true};
 }
 function drawIceClosure(p){
- // The camera is intentionally a keyed still for Ice OUT: no rectangular matte.
- ctx.drawImage(subject,0,0,W,H);
+ // Only generated frost is drawn: the actual OBS camera stays live underneath.
  if(!iceGrowthFrames.length)return;
  const progress=clamp((p-.015)/.765),idx=progress*(iceGrowthFrames.length-1),a=Math.floor(idx),f=idx-a;
  ctx.save();ctx.drawImage(iceGrowthFrames[a],0,0,W,H);
@@ -931,7 +974,7 @@ function drawIceClosure(p){
  // Frost is complete before the crack network starts growing.
  if(p>=.78){ctx.drawImage(iceFrozenLayer,0,0,W,H);drawIceCracks(smoother((p-.78)/.21),1,0);}
 }
-function drawIceCover(p){if(iceGPU)iceGPU.hide();drawIceClosure(p)}
+function drawIceCover(p){drawIceClosure(p);if(iceGPUActive()&&iceGPU.drawGrowth)iceGPU.drawGrowth(p,visualSeconds)}
 function drawIce(t,dir,dur){
  const p=clamp(t/dur);
  if(iceGPU && (dir==='out'&&p<ICE_OUT_BREAK || dir==='in'&&p>=.47&&p<ICE_IN_BREAK))iceGPU.hide();
@@ -942,6 +985,7 @@ function drawIce(t,dir,dur){
    ctx.drawImage(iceFrozenLayer,0,0,W,H);
    drawIceCracks(crackBuild,1,crackFlash);
    if(crackFlash>.001)drawIceFlash(crackFlash);
+   if(iceGPUActive()&&iceGPU.drawGrowth)iceGPU.drawGrowth(1,visualSeconds);
    return;
   }
   const explode=clamp((p-ICE_OUT_BREAK)/(1-ICE_OUT_BREAK));
@@ -954,16 +998,15 @@ function drawIce(t,dir,dur){
   }
   iceFragments(explode,false,1);
  }else{
-  if(p<.47){
-   // Shattered pieces travel back along exactly their former trajectories.
-   const rewind=1-smoother(p/.47);
-   iceFragments(rewind,true,1);
+  if(p<ICE_IN_BUILD){
+   drawIceCover(p/ICE_IN_BUILD);
    return;
   }
   if(p<ICE_IN_BREAK){
    // One coherent new figure, held opaque over camera activation.
    ctx.drawImage(iceFrozenLayer,0,0,W,H);
    drawIceCracks(smoother((p-ICE_IN_BUILD)/(.70-ICE_IN_BUILD)),1,0);
+   if(iceGPUActive()&&iceGPU.drawGrowth)iceGPU.drawGrowth(1,visualSeconds);
    return;
   }
   const burst=clamp((p-ICE_IN_BREAK)/(1-ICE_IN_BREAK));
@@ -1651,20 +1694,20 @@ function drawInferno(t,dir,duration){
   drawInfernoEmbers(clear,age,true,false);
  }else{
   const buildEnd=.61,breakEnd=.73;
-  if(p<buildEnd){
+  if(!reached(p,buildEnd)){
    const grow=clamp(p/buildEnd);
    drawInfernoCore(grow,'build');
-   drawInfernoEmbers(grow,t,false,true);
-   drawInfernoFlames(grow,t,false);
+   drawInfernoEmbers(grow,visualSeconds,false,true);
+   drawInfernoFlames(grow,visualSeconds,false);
   }else if(p<breakEnd){
    drawInfernoCore(1,'build');
-   drawInfernoFlames(1,t,false);
-   drawInfernoEmbers(1,t,false,false);
+   drawInfernoFlames(1,visualSeconds,false);
+   drawInfernoEmbers(1,visualSeconds,false,false);
   }else{
    const clear=clamp((p-breakEnd)/(1-breakEnd));
    drawInfernoCore(clear,'release');
-   drawInfernoFlames(clear,t,true);
-   drawInfernoEmbers(clear,t,true,false);
+   drawInfernoFlames(clear,visualSeconds,true);
+   drawInfernoEmbers(clear,visualSeconds,true,false);
   }
  }
 }
@@ -1705,150 +1748,171 @@ function playEffect(t){
 }
 window.__sc3dData=()=>({job,field,subject,bill,billParts,moneyMatte,billMosaic,hero,shards,clouds,smokeSprites,smokeMatte,frostMap});
 async function prepare3D(){
+ const prepareID=prepareEpoch;
+ hideRenderers();gasGPUError='';cinematicPlateError='';
  if(job.effect==='smoke'||job.effect==='toxic'){
-  disposePlates();disposeGasGPU();gasGPUError='';cinematicPlateError='';
-  {
-   // Prefer professionally simulated, pre-rendered alpha footage when the
-   // streamer installs it. Missing/corrupt footage falls back automatically.
-   if(window.SCCinematicPlates){
-    try{
-     cinematicPlates=new window.SCCinematicPlates.Renderer();
-     await cinematicPlates.prepare(job.effect,W,H);
-     console.info('Professional cinematic simulation plates active',cinematicPlates.diagnostics());
-    }catch(e){cinematicPlateError=String(e);disposePlates()}
-   }
-   if(!plateActive()&&job.renderer_mode!=='2d'){
-    try{
-     if(!window.SCGasVolume)throw Error('Volumetric gas module unavailable');
-     gasGPU=new window.SCGasVolume.Renderer();
-     gasGPU.prepare(subject,W,H,job.quality||'Cinematic',job.effect,job.intensity);
-     console.info('Procedural gas fallback prepared',gasGPU.diagnostics());
-    }catch(e){gasGPUError=String(e);console.warn('Gas WebGL2 unavailable, retaining 2D gas engine',e);disposeGasGPU()}
-   }
+  // Live raymarched motion is the default. Imported clips remain an explicit
+  // compatibility option because a clip's last frame cannot animate an OBS hold.
+  if(job.renderer_mode!=='2d'){
+   try{
+    if(!window.SCGasVolume)throw Error('Volumetric gas module unavailable');
+    if(!gasGPU)gasGPU=new window.SCGasVolume.Renderer();
+    gasGPU.prepare(subject,W,H,job.quality||'Cinematic',job.effect,job.intensity);
+    gasGPU.draw(0,true,0);gasGPU.hide();return;
+   }catch(e){gasGPUError=String(e);disposeGasGPU()}
+  }
+  if(window.SCCinematicPlates){
+   let candidate=null;
+   try{candidate=new window.SCCinematicPlates.Renderer();await candidate.prepare(job.effect,W,H);if(prepareID!==prepareEpoch){candidate.dispose();return}disposePlates();cinematicPlates=candidate}
+   catch(e){if(candidate)candidate.dispose();if(prepareID!==prepareEpoch)return;cinematicPlateError=String(e);disposePlates()}
   }
   return;
  }
- disposePlates();
- disposeGasGPU();
  if(job.effect==='money'&&job.renderer_mode!=='2d'){
   try{
    if(!window.SCMoneyCGI)throw Error('Money 3D renderer unavailable');
-   if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove()}
-   moneyCGI=new window.SCMoneyCGI.Renderer();
-   if(!moneyNormal)moneyNormal=await image('/vfx-assets/golden_sheep_paper_normal.png');
-   if(!moneyRoughness)moneyRoughness=await image('/vfx-assets/golden_sheep_paper_roughness.png');
+   const moneyMaps=await Promise.all([moneyNormal||image('/vfx-assets/golden_sheep_paper_normal.png'),moneyRoughness||image('/vfx-assets/golden_sheep_paper_roughness.png')]);
+   if(prepareID!==prepareEpoch||!job)return;
+   [moneyNormal,moneyRoughness]=moneyMaps;
+   if(!moneyCGI)moneyCGI=new window.SCMoneyCGI.Renderer();
    moneyCGI.prepare(bill,moneyNormal,W,H,job.quality||'Cinematic',moneyRoughness);
-   moneyGPUError='';console.info('SC Money CGI prepared',moneyCGI.diagnostics());
-  }catch(e){moneyGPUError=String(e);console.warn('Money CGI unavailable; preserving Money 2D:',e);if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}}
+   moneyCGI.draw([],0);moneyCGI.hide();moneyGPUError='';
+  }catch(e){if(prepareID!==prepareEpoch)return;moneyGPUError=String(e);if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}}
   return;
  }
- if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}
  if(job.effect==='ice'&&job.renderer_mode!=='2d'){
   try{
    if(!window.SCIceUltra)throw Error('Ice Shatter Ultra module unavailable');
-   if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove()}
-   iceGPU=new window.SCIceUltra.Renderer();
+   if(!iceGPU)iceGPU=new window.SCIceUltra.Renderer();
    iceGPU.prepare(shards,iceFrozenLayer,W,H,job.quality||'Cinematic');
-   iceGPUError='';console.info('SC Ice Shatter Ultra prepared',iceGPU.diagnostics());
-  }catch(e){iceGPUError=String(e);console.warn('Ice 3D unavailable; retaining keyed 2D shard engine:',e);
-   if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}}
+   iceGPU.draw(1,false,0);iceGPU.hide();iceGPUError='';
+  }catch(e){iceGPUError=String(e);if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}}
   return;
  }
- if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}
  if(isExpansion(job.effect)&&job.renderer_mode!=='2d'){
   try{
    if(!window.SCGPU3D)throw Error('GPU 3D module unavailable');
    if(!expansionGPU)expansionGPU=new window.SCGPU3D.Renderer();
    expansionGPU.prepare(expansion);gpuUnavailable='';
-   console.info('SC 3D active',expansionGPU.diagnostics());
-  }catch(e){gpuUnavailable=String(e);console.warn('WebGL2 unavailable; Canvas2D fallback:',e);if(expansionGPU)expansionGPU.hide()}
- }else if(expansionGPU){expansionGPU.dispose();expansionGPU.hide()}
+  }catch(e){gpuUnavailable=String(e);if(expansionGPU)expansionGPU.hide()}
+ }
 }
-async function signal(action,id,reason=''){try{const coverageParam=action==='covered'&&job?(job.effect==='money'?'&coverage='+moneyCoverage.toFixed(5):job.effect==='inferno'?'&coverage='+infernoCoverage.toFixed(5):isExpansion(job.effect)?'&coverage='+expansion.coverage.toFixed(5):job.effect==='smoke'||job.effect==='toxic'?'&coverage='+gasCoverage.toFixed(5):job.effect==='ice'?'&coverage='+iceCoverage.toFixed(5):''):'';const r=await fetch('/'+action+'?rid='+encodeURIComponent(RID)+'&id='+id+coverageParam+(reason?'&reason='+encodeURIComponent(reason):''),{method:'POST',cache:'no-store'});if(!r.ok)console.warn('Bridge rejected',action,r.status)}catch(err){console.warn(action,err)}}
-function animate(now){const renderBegin=performance.now();resize();
- const inactive=!demo&&['idle','done','loading','prepared'].includes(stage);
- if(!inactive||!idleCanvasClear){ctx.clearRect(0,0,W,H);idleCanvasClear=inactive}
- if(expansionGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared')&&expansionGPU.canvas.style.display!=='none')expansionGPU.hide();
- if(moneyCGI&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))moneyCGI.hide();
- if(iceGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))iceGPU.hide();
- if(gasGPU&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))gasGPU.hide();
- if(cinematicPlates&&(stage==='idle'||stage==='done'||stage==='loading'||stage==='prepared'))cinematicPlates.hide();
- if(!sampleStart)sampleStart=now;framesThisSample++;
- if(stage==='cover'&&job){const p=clamp((now-coverStarted)/coverTime(job.effect));smokeCoverAge=(now-coverStarted)/1000;drawCover(p);
-   if(p>=1&&!ackCovered){
-    let ratio=job.effect==='money'?moneyCoverage:job.effect==='inferno'?infernoCoverage:isExpansion(job.effect)?expansion.coverage:(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?cinematicPlates.measureCoverage(field):gasGPUActive()?gasGPU.measureCoverage(field):gasOpacityCoverage()):job.effect==='ice'?iceCoverage:1;
-    if(isExpansion(job.effect)&&expansionGPU&&expansionGPU.current&&expansionGPU.ready){
-     try{gpuCoverage=expansionGPU.measureCoverage(field);ratio=gpuCoverage;expansion.coverage=ratio}
-     catch(e){gpuUnavailable='GPU coverage readback failed: '+String(e);console.error(gpuUnavailable);ratio=0}
-    }
-    if(job.effect==='smoke'||job.effect==='toxic'){gasCoverage=ratio;gasCoverageReport='GPU optical coverage '+(ratio*100).toFixed(2)+'%'}
-    if(ratio>=.985){ackCovered=true;if(!demo)signal('covered',jobId)}
-    else{ackCovered=true;if(!demo)signal('error',jobId,`Effect coverage ${(ratio*100).toFixed(2)}% below safe 98.5% threshold`)}
-   }}
- else if(stage==='play'&&job){
+async function signal(action,id,reason=''){
+ if(demo)return true;
+ const key=id+':'+action;if(signalRequests.has(key))return signalRequests.get(key);
+ const fraction=(action==='covered'||action==='reveal')?'&coverage='+lastMeasuredCoverage.toFixed(5):'';
+ const url='/'+action+'?rid='+encodeURIComponent(RID)+'&id='+id+fraction+(reason?'&reason='+encodeURIComponent(reason):'');
+ const request=(async()=>{
+  for(let attempt=0;attempt<5&&id===jobId;attempt++){
+   const abort=new AbortController(),timeout=setTimeout(()=>abort.abort(),1200);
+   try{const response=await fetch(url,{method:'POST',cache:'no-store',signal:abort.signal});
+    if(response.ok)return true;
+    if(response.status===409||response.status===410)return false;
+   }catch(e){console.warn('Bridge retry',action,attempt+1,String(e))}finally{clearTimeout(timeout)}
+   await new Promise(resolve=>setTimeout(resolve,100*Math.pow(2,attempt)));
+  }
+  return false;
+ })();signalRequests.set(key,request);
+ try{return await request}finally{signalRequests.delete(key)}
+}
+let lastMeasuredCoverage=0;
+function tryCoverageAck(action,now){
+ if(now-lastCoverageCheck<80)return;
+ lastCoverageCheck=now;if(!coverageWaitStarted)coverageWaitStarted=now;
+ lastMeasuredCoverage=renderCoverage();
+ if(lastMeasuredCoverage>=.995){
+  if(action==='covered')ackCovered=true;else ackReveal=true;
+  if(demo){if(action==='reveal'){gasInArmed=true;gasInReleaseAt=now+80}}
+  else signal(action,jobId);
+ }else if(now-coverageWaitStarted>1400){
+  if(action==='covered')ackCovered=true;else ackReveal=true;
+  if(!demo)signal('error',jobId,`Rendered coverage ${(lastMeasuredCoverage*100).toFixed(2)}% below safe 99.5% threshold`);
+  else {console.error('Coverage verification failed',job.effect,lastMeasuredCoverage);stage='error'}
+ }
+}
+function animate(now){
+ const renderBegin=performance.now();resize();
+ const inactive=['idle','done','loading','prepared','error'].includes(stage);
+ try{
+  if(!inactive||!idleCanvasClear){ctx.clearRect(0,0,W,H);idleCanvasClear=inactive}
+  if(inactive){hideRenderers();lastFrame=0}
+  else{
+   if(lastFrame){const delta=now-lastFrame;frameIntervals.push(delta);if(frameIntervals.length>8192)frameIntervals.shift();missedFrames+=Math.max(0,Math.round(delta/(1000/60))-1)}
+   lastFrame=now;if(!sampleStart)sampleStart=now;framesThisSample++;
+  }
+  visualSeconds=stage==='cover'?Math.max(0,(now-coverStarted)/1000):smokeReleaseAge+Math.max(0,(now-started)/1000);
+  if(stage==='cover'&&job){
+   const p=clamp((now-coverStarted)/coverTime(job.effect));smokeCoverAge=(now-coverStarted)/1000;drawCover(p);
+   if(p>=1&&!ackCovered)tryCoverageAck('covered',now);
+  }else if(stage==='play'&&job){
    const incoming=job.direction==='in';
-   // ALL incoming effects establish concealment first. Their timeline does
-   // not expose the webcam until OBS has validated a source screenshot.
-   // Smoke's texture/time field keeps moving while visual reveal is gated.
    if(incoming&&job.camera_ready&&!gasInArmed){gasInArmed=true;gasInReleaseAt=now+80}
    let t;
-   if(incoming&&(job.effect==='money'||job.effect==='ice'||isExpansion(job.effect))){
-     const buildSeconds=job.duration*(job.effect==='ice'?ICE_IN_BUILD:isExpansion(job.effect)?window.SCExpansion.TYPES[job.effect].inBuild:.57);
-     // Animate the descending bills BEFORE requesting camera activation.
-     // Hold the completed silhouette while OBS waits for a fresh live frame.
-     t=gasInArmed?buildSeconds+Math.max(0,(now-gasInReleaseAt)/1000):
-       Math.min((now-started)/1000,buildSeconds);
-   }else{
-     t=incoming?(gasInArmed?Math.max(0,(now-gasInReleaseAt)/1000):0):clamp((now-started)/1000,0,job.duration);
-   }
+   if(incoming&&(job.effect==='money'||job.effect==='ice'||job.effect==='inferno'||isExpansion(job.effect))){
+    const buildSeconds=job.duration*(job.effect==='ice'?ICE_IN_BUILD:job.effect==='inferno'?.61:isExpansion(job.effect)?window.SCExpansion.TYPES[job.effect].inBuild:MONEY_IN_BUILD);
+    t=gasInArmed?buildSeconds+Math.max(0,(now-gasInReleaseAt)/1000):Math.min((now-started)/1000,buildSeconds);
+   }else t=incoming?(gasInArmed?Math.max(0,(now-gasInReleaseAt)/1000):0):clamp((now-started)/1000,0,job.duration);
    playEffect(clamp(t,0,job.duration));
    const p=clamp(t/job.duration);
-   if(incoming&&!ackReveal&&(job.effect==='ice'?p>=ICE_IN_BUILD:job.effect==='money'?p>=.57:isExpansion(job.effect)?p>=window.SCExpansion.TYPES[job.effect].inBuild:true)){
-     ackReveal=true;
-     if(!demo)signal('reveal',jobId);
-     else {gasInArmed=true;gasInReleaseAt=now+80}
+   if(incoming&&!ackReveal&&(job.effect==='ice'?reached(p,ICE_IN_BUILD):job.effect==='money'?reached(p,MONEY_IN_BUILD):job.effect==='inferno'?reached(p,.61):isExpansion(job.effect)?reached(p,window.SCExpansion.TYPES[job.effect].inBuild):true))tryCoverageAck('reveal',now);
+   if(p>=1&&!ackDone){
+    ackDone=true;stage='done';ctx.clearRect(0,0,W,H);hideRenderers();
+    const completedId=jobId;
+    // Let two actual frames reach the OBS browser compositor before completion.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{if(completedId===jobId&&!demo)signal('done',completedId)}));
    }
-   if(p>=1&&!ackDone){ackDone=true;stage='done';if(!demo)signal('done',jobId)}
+  }
+  if(!inactive){
+   cpuSamples.push(performance.now()-renderBegin);if(cpuSamples.length>8192)cpuSamples.shift();
+   if(now-sampleStart>=1000){
+    measuredFPS=Math.round(framesThisSample*1000/Math.max(1,now-sampleStart));
+    const sorted=frameIntervals.slice().sort((a,b)=>a-b);
+    measuredP95=sorted.length?Math.round(sorted[Math.min(sorted.length-1,Math.floor(sorted.length*.95))]*10)/10:0;
+    sampleStart=now;framesThisSample=0;
+   }
+  }
+ }catch(e){
+  console.error('Renderer failed safely',e);stage='error';ctx.clearRect(0,0,W,H);hideRenderers();
+  if(!demo)signal('error',jobId,String(e));
+ }finally{
+  if(inactive)setTimeout(()=>requestAnimationFrame(animate),100);else requestAnimationFrame(animate);
  }
- renderSamples.push(performance.now()-renderBegin);if(renderSamples.length>180)renderSamples.shift();
- if(now-sampleStart>=1000){const sorted=renderSamples.slice().sort((a,b)=>a-b);
-  measuredFPS=Math.round(framesThisSample*1000/Math.max(1,now-sampleStart));
-  measuredP95=sorted.length?Math.round(sorted[Math.min(sorted.length-1,Math.floor(sorted.length*.95))]*10)/10:0;
-  sampleStart=now;framesThisSample=0;}
- // Avoid clearing a full-resolution canvas 60-144 times/second while idle.
- if(inactive)setTimeout(()=>requestAnimationFrame(animate),100);
- else requestAnimationFrame(animate)
 }
 requestAnimationFrame(animate);
-async function prepare(state){const id=state.job_id;loading=true;stage='loading';jobId=id;
+async function prepare(state){
+ const id=state.job_id,epoch=++prepareEpoch;loading=true;stage='loading';jobId=id;hideRenderers();
  try{
-  rngReset(id);
-  const img=await image('/frame.png?rid='+encodeURIComponent(RID)+'&job='+id+'&nonce='+Date.now());field=silhouette(img);subject=field.image;
-  job=state;
-  if(state.effect==='money'){if(!bill)bill=await image('./bill.png');setupMoney(state.intensity)}
+  rngReset(id);const img=await image('/frame.png?rid='+encodeURIComponent(RID)+'&job='+id+'&nonce='+Date.now());
+  if(epoch!==prepareEpoch)return;
+  field=silhouette(img);subject=field.image;job=state;
+  if(state.effect==='money'){if(!bill){const loadedBill=await image('./bill.png');if(epoch!==prepareEpoch)return;bill=loadedBill}if(epoch!==prepareEpoch)return;setupMoney(state.intensity)}
   else if(state.effect==='ice')setupIce(state.intensity);
   else if(state.effect==='inferno')setupInferno(state.intensity);
   else if(isExpansion(state.effect))setupExpansion(state.effect,state.intensity);
   else setupCloud(state.effect,state.intensity);
-  await prepare3D();
-  stage='prepared';ackCovered=ackReveal=ackDone=false;
+  await prepare3D();if(epoch!==prepareEpoch)return
+  stage='prepared';ackCovered=ackReveal=ackDone=false;resetMetrics();
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-  if(stage==='prepared')await signal('ready',id)
- }catch(e){stage='idle';job=null;await signal('error',id,e.message||String(e));console.error(e)}finally{loading=false}
+  if(stage==='prepared'&&epoch===prepareEpoch)await signal('ready',id);
+ }catch(e){if(epoch===prepareEpoch){stage='error';await signal('error',id,e.message||String(e));console.error(e)}}
+ finally{if(epoch===prepareEpoch)loading=false}
 }
-async function poll(){if(demo||loading)return;
- try{const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),2500);let response;
+async function poll(){if(demo)return;
+ try{
+  const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),2500);let response;
   try{response=await fetch('/state?rid='+encodeURIComponent(RID)+'&ts='+Date.now(),{cache:'no-store',signal:abort.signal})}finally{clearTimeout(timer)}
   if(!response.ok)throw Error('Renderer state HTTP '+response.status);
   const s=await response.json();
-  if(s.phase==='idle'){if(stage!=='idle'){stage='idle';job=null;subject=null;if(expansion){expansion.dispose();expansion=null}if(expansionGPU){expansionGPU.dispose();expansionGPU.hide()}if(moneyCGI){moneyCGI.dispose();moneyCGI.canvas.remove();moneyCGI=null}if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}disposeGasGPU();disposePlates()}}
-  else if(s.phase==='prepare'&&s.job_id!==jobId){await prepare(s)}
-  else if(s.job_id===jobId&&s.phase==='cover'&&stage==='prepared'){job=s;stage='cover';coverStarted=performance.now();sampleStart=0;framesThisSample=0;renderSamples.length=0;measuredFPS=0;smokeReleaseAge=0;ackCovered=false}
-  else if(s.job_id===jobId&&s.phase==='play'&&['cover','prepared'].includes(stage)){
+  if(s.phase==='idle'){
+   if(stage!=='idle'){prepareEpoch++;loading=false;stage='idle';job=null;releaseTransient()}
+  }else if(s.phase==='prepare'&&s.job_id!==jobId&&!loading){prepare(s)}
+  else if(s.job_id===jobId&&s.phase==='cover'&&stage==='prepared'){
+   job=s;stage='cover';coverStarted=performance.now();resetMetrics();smokeReleaseAge=0;ackCovered=false;
+  }else if(s.job_id===jobId&&s.phase==='play'&&['cover','prepared'].includes(stage)){
    const fromCover=stage==='cover';job=s;stage='play';smokeReleaseAge=fromCover?Math.max(0,(performance.now()-coverStarted)/1000):0;infernoCoverSeconds=smokeReleaseAge;
-   started=performance.now();sampleStart=0;framesThisSample=0;renderSamples.length=0;measuredFPS=0;gasInArmed=false;gasInReleaseAt=0;ackReveal=ackDone=false;
-  }else if(s.job_id===jobId&&s.phase==='play'&&stage==='play'&&job){job.camera_ready=!!s.camera_ready}
- }catch(e){/* local engine may be starting up */}
+   started=performance.now();if(!fromCover)resetMetrics();lastCoverageCheck=coverageWaitStarted=0;gasInArmed=false;gasInReleaseAt=0;ackReveal=ackDone=false;
+  }else if(s.job_id===jobId&&s.phase==='play'&&stage==='play'&&job)job.camera_ready=!!s.camera_ready;
+ }catch(e){/* Recovery remains owned by the controller's bounded renderer watchdog. */}
 }
 if(demo){
  // Demonstration is a MOVING person behind the same FX canvas used by OBS.
@@ -1885,16 +1949,16 @@ if(demo){
   job={effect,direction:params.get('direction')==='in'?'in':'out',duration:+params.get('duration')||3,intensity:+params.get('intensity')||75,quality:params.get('quality')||'Cinematic',renderer_mode:params.get('gpu')==='0'?'2d':'gpu',tuning:{accent:params.get('tuneColor')||'',motion:+params.get('tuneMotion')||1,detail:+params.get('tuneDetail')||1}};
   if(effect==='money'){bill=await image('./bill.png');setupMoney(job.intensity)}else if(effect==='ice')setupIce(job.intensity);else if(effect==='inferno')setupInferno(job.intensity);else if(isExpansion(effect))setupExpansion(effect,job.intensity);else setupCloud(effect,job.intensity);
   await prepare3D();
-  function cycle(){ackCovered=ackDone=ackReveal=false;stage=job.direction==='out'?'cover':'play';coverStarted=performance.now();started=performance.now();
+  function cycle(){ackCovered=ackDone=ackReveal=false;gasInArmed=false;gasInReleaseAt=0;resetMetrics();smokeReleaseAge=0;stage=job.direction==='out'?'cover':'play';coverStarted=performance.now();started=performance.now();
    setTimeout(()=>{if(stage==='cover'){smokeReleaseAge=(performance.now()-coverStarted)/1000;infernoCoverSeconds=smokeReleaseAge;stage='play';started=performance.now()}},coverTime(effect)+170);
-   setTimeout(cycle,(job.direction==='out'?coverTime(effect)+170:0)+job.duration*1000+700)
+   if(params.get('once')!=='1')setTimeout(cycle,(job.direction==='out'?coverTime(effect)+170:0)+job.duration*1000+1000)
   }cycle()
  })().catch(console.error)
 }else{
- async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.15.0-cinematic-plate-engine-rc1',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 raymarched gas and lens seal':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
+ async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.16.0-cinematic-gpu',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 lit volumetric gas':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
  // A single adaptive poll loop prevents overlapping HTTP requests during OBS stalls.
  async function pollLoop(){await poll();setTimeout(pollLoop,stage==='idle'||stage==='done'?320:95)}
  setInterval(heartbeat,2000);heartbeat();pollLoop()
 }
-window.__scDebug=()=>({iceGrowth:iceGrowthDebug,moneyCoverage,moneyCoverageReport,iceCoverage,gasCoverage,gasCoverageReport,gasInArmed,stage,jobId,effect:job&&job.effect,mask:field&&{bounds:field.bounds,coverage:field.coverage},bills:billParts.length,shards:shards.length,puffs:clouds.length,infernoCoverage,infernoCoverageReport,infernoEmbers:infernoEmbers.length,covered:ackCovered,measuredFPS,measuredP95,expansion:expansion&&expansion.getState(),renderMode:plateActive()?cinematicPlates.diagnostics():moneyGPUActive()?moneyCGI.diagnostics():iceGPUActive()?iceGPU.diagnostics():gasGPUActive()?gasGPU.diagnostics():expansionGPU&&expansionGPU.current?expansionGPU.diagnostics():{mode:'2D volumetric compatibility',reason:moneyGPUError||gpuUnavailable||'legacy baseline'},moneyGPUError,iceGPUError,gasGPUError,cinematicPlateError,gpuCoverage,gpuUnavailable});
+window.__scDebug=()=>({iceGrowth:iceGrowthDebug,moneyCoverage,moneyCoverageReport,iceCoverage,gasCoverage,gasCoverageReport,gasInArmed,stage,jobId,effect:job&&job.effect,mask:field&&{bounds:field.bounds,coverage:field.coverage},bills:billParts.length,shards:shards.length,puffs:clouds.length,infernoCoverage,infernoCoverageReport,infernoEmbers:infernoEmbers.length,covered:ackCovered,reveal:ackReveal,lastMeasuredCoverage,visualSeconds,frameIntervals:frameIntervals.slice(),cpuSamples:cpuSamples.slice(),missedFrames,measuredFPS,measuredP95,expansion:expansion&&expansion.getState(),renderMode:plateActive()?cinematicPlates.diagnostics():moneyGPUActive()?moneyCGI.diagnostics():iceGPUActive()?iceGPU.diagnostics():gasGPUActive()?gasGPU.diagnostics():expansionGPU&&expansionGPU.current?expansionGPU.diagnostics():{mode:'2D volumetric compatibility',reason:moneyGPUError||gpuUnavailable||'legacy baseline'},moneyGPUError,iceGPUError,gasGPUError,cinematicPlateError,gpuCoverage,gpuUnavailable});
 </script></body></html>

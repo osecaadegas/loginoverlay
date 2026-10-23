@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import puppeteer from 'puppeteer';
-import { fileURLToPath } from 'node:url';
+
 
 const root = new URL('./', import.meta.url);
 const source = await readFile(new URL('gas-vfx3d.js', root), 'utf8');
@@ -52,7 +52,7 @@ try {
         alphaYWeight += a * y / 540;
         if (mask[(y * 960 + x) * 4 + 3] >= 196) {
           subjectPixels++;
-          if (a >= 250) opaqueSubject++;
+          if (a >= 254) opaqueSubject++;
           colors.add(`${pixels[i] >> 4},${pixels[i + 1] >> 4},${pixels[i + 2] >> 4}`);
         } else if (a >= 128) outsideAlpha++;
       }
@@ -66,7 +66,7 @@ try {
         cornerAlpha,
       };
     };
-    const output = [];
+    const output = [], captures=[];
     for (const effect of ['smoke', 'toxic']) {
       const renderer = new SCGasVolume.Renderer();
       renderer.prepare(subject, 960, 540, 'Cinematic', effect, 78);
@@ -74,33 +74,56 @@ try {
       if (!renderer.maskBoundsFound) throw new Error(`${effect}: camera matte bounds were not found`);
       renderer.draw(.42, true, .9);
       const earlyBuild = summarize(read(renderer));
+      captures.push({effect,stage:'building',data:renderer.canvas.toDataURL('image/png')});
       renderer.draw(.72, true, 1.6);
       const developedBuild = summarize(read(renderer));
+      captures.push({effect,stage:'growing',data:renderer.canvas.toDataURL('image/png')});
       renderer.draw(1, true, 2.2);
       const handoff = read(renderer);
       const handoffSummary = summarize(handoff);
+      captures.push({effect,stage:'covered',data:renderer.canvas.toDataURL('image/png')});
+      const sampledCoverage = renderer.measureCoverage({mw:960,mh:540,map:mask});
       output.push({ effect, diagnostics: renderer.diagnostics(), earlyBuild,
-        developedBuild, handoff: handoffSummary,
+        developedBuild, handoff: handoffSummary, sampledCoverage,
         handoffPng: renderer.canvas.toDataURL('image/png') });
       renderer.draw(0, false, 2.2);
-      const releaseStart = summarize(read(renderer));
+      const releaseFrame = read(renderer);
+      const releaseStart = summarize(releaseFrame);
+      let handoffDifference=0;for(let i=0;i<handoff.pixels.length;i++)handoffDifference+=Math.abs(handoff.pixels[i]-releaseFrame.pixels[i]);
+      output[output.length-1].handoffDifference=handoffDifference;
+      renderer.draw(0,false,2.4);const movingHold=read(renderer);
+      let holdDifference=0;for(let i=0;i<movingHold.pixels.length;i++)holdDifference+=Math.abs(movingHold.pixels[i]-releaseFrame.pixels[i]);
+      output[output.length-1].holdDifference=holdDifference;
+      captures.push({effect,stage:'switch-hold',data:renderer.canvas.toDataURL('image/png')});
+      renderer.draw(.5,false,3.1);captures.push({effect,stage:'dispersion',data:renderer.canvas.toDataURL('image/png')});
+      renderer.draw(.999,false,3.998);const almostReleased=read(renderer);let lateAlpha=0;for(let i=3;i<almostReleased.pixels.length;i+=4)lateAlpha=Math.max(lateAlpha,almostReleased.pixels[i]);
+      output[output.length-1].lateMaxAlpha=lateAlpha;
       renderer.draw(1, false, 4.0);
       const released = read(renderer);
+      captures.push({effect,stage:'idle',data:renderer.canvas.toDataURL('image/png')});
       let remainingAlpha = 0;
       for (let i=3;i<released.pixels.length;i+=4) if(released.pixels[i]) remainingAlpha++;
       output[output.length-1].releaseStart = releaseStart;
       output[output.length-1].remainingAlphaAfterRelease = remainingAlpha;
+      const cachedProgram=renderer.program,cachedNoise=renderer.noise;
+      renderer.prepare(subject,960,540,'Balanced',effect,78);
+      output[output.length-1].resourcesReused=cachedProgram===renderer.program&&cachedNoise===renderer.noise;
+      renderer.draw(1,true,2.2);
+      output[output.length-1].repeatCoverage=renderer.measureCoverage({mw:960,mh:540,map:mask});
       renderer.dispose();
+      output[output.length-1].canvasRemoved=!renderer.canvas.isConnected;
     }
-    return output;
+    return {output,captures};
   }, source);
 
-  for (const result of results) {
+  for (const capture of results.captures) await writeFile(new URL(`gas-render-evidence/${capture.effect}-${capture.stage}.png`,root),Buffer.from(capture.data.split(',')[1],'base64'));
+  for (const result of results.output) {
+    await writeFile(new URL(`gas-render-evidence/${result.effect}-volume.png`, root), Buffer.from(result.handoffPng.split(',')[1], 'base64'));
     assert.ok(result.earlyBuild.alphaCentroidY !== null,
       `${result.effect}: plume did not emit during early bottom-up buildup`);
     assert.ok(result.developedBuild.alphaCentroidY < result.earlyBuild.alphaCentroidY,
       `${result.effect}: plume did not develop upward from its lower source`);
-    assert.ok(result.handoff.coverage >= .985,
+    assert.ok(result.handoff.coverage >= .995,
       `${result.effect}: unsafe optical handoff coverage ${result.handoff.coverage}`);
     assert.ok(result.handoff.texturedColors >= 20,
       `${result.effect}: covered vapor lacks visible material variation`);
@@ -108,16 +131,24 @@ try {
       `${result.effect}: lens billow did not expand beyond the camera matte`);
     assert.ok(result.handoff.cornerAlpha.every(alpha => alpha < 8),
       `${result.effect}: render introduced a rectangular alpha background`);
-    assert.ok(result.releaseStart.coverage >= .985,
+    assert.ok(result.releaseStart.coverage >= .995,
       `${result.effect}: release does not start from the covered handoff`);
     assert.equal(result.remainingAlphaAfterRelease, 0,
       `${result.effect}: release left stale alpha pixels`);
+    assert.ok(result.sampledCoverage>=.995,`${result.effect}: sampled coverage was unsafe`);
+    assert.equal(result.handoffDifference,0,`${result.effect}: cover/release changed appearance at identical time`);
+    assert.ok(result.holdDifference>1000,`${result.effect}: covered waiting volume froze`);
+    assert.ok(result.lateMaxAlpha<=1,`${result.effect}: volume popped at final cleanup`);
+    assert.ok(result.resourcesReused,`${result.effect}: repeated prepare did not reuse GPU resources`);
+    assert.ok(result.repeatCoverage>=.995,`${result.effect}: reused renderer failed cover`);
+    assert.ok(result.canvasRemoved,`${result.effect}: dispose left a canvas`);
     const { handoffPng, ...report } = result;
     await writeFile(new URL(`gas-render-evidence/${result.effect}-lens-seal.png`, root),
       Buffer.from(handoffPng.split(',')[1], 'base64'));
     console.log(JSON.stringify(report));
   }
-  console.log('PASS: smoke/toxic shader compile, textured lens seal, alpha coverage, expanded plume, transparent corners and clear release');
+  await writeFile(new URL('gas-render-evidence/regression.json',root),JSON.stringify({environment:'Headless Chrome SwiftShader software renderer, 960x540 synthetic silhouette; no OBS',results:results.output.map(({handoffPng,...r})=>r)},null,2));
+  console.log('PASS: real smoke/toxic GLSL draw, strict 99.5% optical coverage, continuous handoff and hold, transparent corners, no final pop, repeated prepare and clean disposal');
   await page.close();
 } finally {
   await browser.close();

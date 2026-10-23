@@ -1,6 +1,8 @@
-# SC Web Transitions v3.15.0 — Cinematic Plate Engine
+# SC Web Transitions v3.16.0 — Cinematic GPU
 
 SC Web Transitions is a Windows 10/11 64-bit controller for OBS webcam transitions. The Go application serves an embedded HTML/Canvas2D/WebGL2 renderer and communicates with OBS through obs-websocket. Camera video stays in OBS; the browser renderer receives a captured silhouette for effect choreography and coverage checks.
+
+Current release: [changes](CHANGELOG_3.16.0_CINEMATIC_GPU.md), [validation and limitations](QA_3.16.0_CINEMATIC_GPU.md), [asset pipeline](ASSET_PIPELINE_3.16.md).
 
 ## Build
 
@@ -8,7 +10,7 @@ Requires Go 1.23.2 or newer. From this directory in PowerShell:
 
 ```powershell
 $env:GOOS='windows'; $env:GOARCH='amd64'; $env:CGO_ENABLED='0'
-go build -trimpath -ldflags='-s -w -H windowsgui' -o SC_Web_Transitions_v3.15.0.exe .
+go build -trimpath -buildvcs=false -ldflags='-s -w -H windowsgui' -o SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe .
 ```
 
 The application embeds UI, renderer scripts and `vfx_assets`. Optional installer recipe `SC_Web_Transitions.iss` needs Inno Setup 6. A GitHub Actions workflow builds the portable Windows executable and publishes it as a workflow artifact on pushes.

@@ -10,12 +10,14 @@ $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$sourceName = "SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_Source"
-$releaseName = "SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_Release"
-$executableName = "SC_Web_Transitions_v3.15.0_Cinematic_Plate_Engine_RC1.exe"
+$sourceName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU_Source"
+$releaseName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU_Release"
+$executableName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe"
 $sourceDirectory = Join-Path $RepoRoot ".codex-dev\sc-web-transitions-v3.15-source"
 $releaseFiles = @(
-  "CHANGELOG_3.15.0_CINEMATIC_PLATE_ENGINE.md",
+  "CHANGELOG_3.16.0_CINEMATIC_GPU.md",
+  "QA_3.16.0_CINEMATIC_GPU.md",
+  "ASSET_PIPELINE_3.16.md",
   "CINEMATIC_PLATES_GUIDE.md",
   "INSTALL_CINEMATIC_PLATES.ps1",
   "QA_3.15.0_CINEMATIC_PLATES.md"
@@ -48,7 +50,18 @@ $stagingSource = Join-Path $stagingRoot $sourceName
 $stagedZip = "$outputFullPath.$([guid]::NewGuid().ToString('N')).tmp"
 try {
   New-Item -ItemType Directory -Force -Path $stagingRelease, $stagingSource | Out-Null
-  Copy-Item -Path (Join-Path $sourceDirectory "*") -Destination $stagingSource -Recurse -Force
+  # Package the reviewed Git index, excluding local captures, binaries and caches.
+  # Stage intended source before packaging; this also works in a clean CI checkout.
+  $sourcePrefix = ".codex-dev/sc-web-transitions-v3.15-source/"
+  $sourceFiles = @(git -C $RepoRoot ls-files -- $sourcePrefix)
+  if ($LASTEXITCODE -ne 0 -or $sourceFiles.Count -lt 10) { throw "Cannot enumerate reviewed source files" }
+  foreach ($trackedPath in $sourceFiles) {
+    $relativePath = $trackedPath.Substring($sourcePrefix.Length)
+    if ($relativePath -match '(^|/)(__pycache__|node_modules|[^/]*-evidence|build|dist)(/|$)' -or $relativePath -match '\.(exe|zip|log|pyc)$') { continue }
+    $destination = Join-Path $stagingSource $relativePath
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+    Copy-Item -LiteralPath (Join-Path $RepoRoot $trackedPath) -Destination $destination -Force
+  }
   Copy-Item -LiteralPath $ExecutablePath -Destination (Join-Path $stagingRelease $executableName) -Force
   foreach ($file in $releaseFiles) {
     Copy-Item -LiteralPath (Join-Path $sourceDirectory $file) -Destination (Join-Path $stagingRelease $file) -Force
@@ -99,5 +112,11 @@ try {
   Write-Output "PACKAGE VERIFIED: $outputFullPath"
 } finally {
   if (Test-Path -LiteralPath $stagedZip) { Remove-Item -LiteralPath $stagedZip -Force }
-  if (Test-Path -LiteralPath $stagingRoot) { Remove-Item -LiteralPath $stagingRoot -Recurse -Force }
+  if (Test-Path -LiteralPath $stagingRoot) {
+    $resolvedStaging = (Resolve-Path -LiteralPath $stagingRoot).Path
+    $expectedStaging = [System.IO.Path]::GetFullPath($stagingRoot)
+    $tempParent = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd('\') + '\'
+    if ($resolvedStaging -ne $expectedStaging -or -not $resolvedStaging.StartsWith($tempParent, [System.StringComparison]::OrdinalIgnoreCase) -or (Split-Path -Leaf $resolvedStaging) -notlike 'sc-web-transitions-package-*') { throw "Unsafe packaging cleanup path" }
+    Remove-Item -LiteralPath $resolvedStaging -Recurse -Force
+  }
 }

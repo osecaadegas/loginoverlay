@@ -16,7 +16,7 @@ func TestIceUltraEmbeddedAndCoverGate(t *testing.T) {
 	}
 	data, _ := static.ReadFile("overlay.html")
 	s := string(data)
-	for _, need := range []string{"iceGPUActive()", "iceGPU.prepare(shards,iceFrozenLayer", "iceOpticalCoverage()", "job.effect==='ice'?iceCoverage", "ratio>=.985", "ice-vfx3d.js"} {
+	for _, need := range []string{"iceGPUActive()", "iceGPU.prepare(shards,iceFrozenLayer", "iceOpticalCoverage()", "job.effect==='ice')iceCoverage=result", "lastMeasuredCoverage>=.995", "ice-vfx3d.js"} {
 		if !strings.Contains(s, need) {
 			t.Errorf("Ice safety or renderer missing: %s", need)
 		}
