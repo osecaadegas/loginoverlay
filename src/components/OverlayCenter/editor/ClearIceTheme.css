@@ -802,7 +802,8 @@
   min-height: 0 !important;
   padding-block: 0 !important;
 }
-.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin {
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"]
+  :is(.rtp-stats-item--bestwin, [data-better-element="personalBest"]) {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -810,7 +811,7 @@
   box-shadow: none !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"]
-  :is(.rtp-stats-item--bestwin, .rtp-stats-item--bestwin *) {
+  :is(.rtp-stats-item--bestwin, [data-better-element="personalBest"], .rtp-stats-item--bestwin *, [data-better-element="personalBest"] *) {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
