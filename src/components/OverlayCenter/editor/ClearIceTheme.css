@@ -384,3 +384,94 @@
   border-radius: 10px !important;
   box-shadow: inset 0 1px 0 rgba(169, 205, 229, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
 }
+
+/* Keep Bonus Hunt carousel cards on the same deep-glass material as its main
+   giveaway-style stats card, while leaving the slot artwork fully opaque. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row--image {
+  background-color: #0a2b4a !important;
+  background-image: linear-gradient(180deg, #0a2b4a, #123254) !important;
+  border: 1px solid rgba(137, 217, 255, .55) !important;
+  border-radius: 10px !important;
+  box-shadow: inset 0 1px 0 rgba(169, 205, 229, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
+}
+
+/* Improve small overlay-scale labels and values without changing the hunt's
+   configured dimensions or card layout. Keep progress copy on a clean surface
+   so no texture stripe runs behind the text. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-stat-label {
+  font-size: .76em !important;
+  letter-spacing: .12em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-stat strong {
+  font-size: 1.12em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-image-stats-title h3 {
+  font-size: 1.3em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-image-row strong {
+  font-size: 1.04em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress,
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary {
+  font-size: .96em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary > span {
+  font-size: .9em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary strong {
+  font-size: 1.04em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-track {
+  background: rgba(10, 43, 74, .84) !important;
+  background-image: none !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-track::before,
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-track::after {
+  content: none !important;
+  display: none !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-total-head > span {
+  font-size: .82em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-total-head > strong {
+  font-size: 1.4em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat {
+  font-size: .9em !important;
+  line-height: 1.16 !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-label {
+  font-size: .76em !important;
+  letter-spacing: .06em !important;
+}
+
+/* Give each carousel metric a deliberate ice-tinted identity. The Best payout
+   stays white while its multiplier uses the same crystal cyan as Multi. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(1) {
+  color: #eaf7ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(1) > * {
+  color: #eaf7ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(2) {
+  color: #89d9ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(2) > * {
+  color: #89d9ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(3) {
+  color: #d8f3fb !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat:nth-child(3) > * {
+  color: #d8f3fb !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat--best .better-hunt-mini-best-value > span {
+  color: #eaf7ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat--best .better-hunt-mini-best-value > small {
+  color: #89d9ff !important;
+}
