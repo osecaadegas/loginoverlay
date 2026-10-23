@@ -4207,10 +4207,22 @@ try {
     ),
     "utf8",
   );
+  const betterWidgetPackagesSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/editor/BetterWidgetPackages.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   assert.match(
     builtinWidgetsSource,
     /type: "tournament"[\s\S]*?styles: \[\s*\{ id: "vertical"[\s\S]*?\{ id: "esports"[\s\S]*?\],\s*defaults: \{\s*layout: "vertical"/,
     "Tournament's main style picker exposes only Vertical and Esports",
+  );
+  assert.match(
+    betterWidgetPackagesSource,
+    /const TOURNAMENT_LAYOUTS = \[\s*\{ key: "vertical", name: "Vertical" \},\s*\{ key: "esports", name: "Esports" \},\s*\];/,
+    "Tournament quick settings expose only Vertical and Esports",
   );
   assert.match(
     tournamentRendererSource,

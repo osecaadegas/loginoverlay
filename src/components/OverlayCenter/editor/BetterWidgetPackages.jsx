@@ -6426,12 +6426,8 @@ function BetterSlideshowFrameControls({
 }
 
 const TOURNAMENT_LAYOUTS = [
-  { key: "grid", name: "Grid" },
   { key: "vertical", name: "Vertical" },
-  { key: "minimal", name: "Minimal" },
-  { key: "arena", name: "Arena" },
   { key: "esports", name: "Esports" },
-  { key: "scoreboard", name: "Scoreboard" },
 ];
 
 const TOURNAMENT_FONTS = [
