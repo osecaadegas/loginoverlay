@@ -74,8 +74,8 @@ export const WIDGET_COLOUR_THEMES = Object.freeze([
   {
     key: "clear_ice", name: "Clear Ice", icon: "arctic", adminOnly: true,
     swatches: ["#0A2B4A", "#89D9FF", "#D8F3FB"],
-    background: "#0A2B4A", surface: "#123254", raised: "#0A2B4A", border: "#89D9FF",
-    accent: "#D8F3FB", secondary: "#659CD2", text: "#EAF7FF", muted: "#A9CDE5", hue: 202,
+    background: "#D8F3FB", surface: "#B7DDED", raised: "#89D9FF", border: "#296299",
+    accent: "#0A2B4A", secondary: "#123254", text: "#000000", muted: "#000000", hue: 202,
   },
   {
     key: "lime", name: "Lime", icon: "lime", swatches: ["#202914", "#98bf42", "#d5f68a"],

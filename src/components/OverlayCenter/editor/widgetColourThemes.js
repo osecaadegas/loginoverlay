@@ -195,8 +195,10 @@ export function getWidgetColourThemeTokens(type, config, key) {
   const legacyClearIceColors = key === 'clear_ice' ? {
     '#071827': '#0A2B4A', '#0D2A40': '#123254', '#153B56': '#0A2B4A',
     '#8DE2FF': '#89D9FF', '#DDF7FF': '#D8F3FB', '#60C8F1': '#659CD2',
-    '#F3FAFF': '#EAF7FF', '#BDD6E4': '#A9CDE5', '#E9F7FA': '#0A2B4A',
+    '#F3FAFF': '#000000', '#EAF7FF': '#000000', '#BDD6E4': '#000000', '#A9CDE5': '#000000', '#E9F7FA': '#0A2B4A',
     '#D8EFF5': '#123254', '#F5FCFD': '#0A2B4A', '#78BFD1': '#89D9FF',
+    '#0A2B4A': '#D8F3FB', '#123254': '#B7DDED', '#296299': '#89D9FF',
+    '#659CD2': '#123254', '#89D9FF': '#296299', '#D8F3FB': '#0A2B4A',
   } : null;
   for (const [property, token] of Object.entries(COLOUR_KEYS[type] || {})) {
     const configuredColor = typeof config[property] === 'string' ? config[property] : '';
