@@ -23,6 +23,8 @@ assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multipl
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'clear_ice', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
 const clearIceCss = readFileSync(new URL('../src/components/OverlayCenter/editor/ClearIceTheme.css', import.meta.url), 'utf8');
+const chatWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx', import.meta.url), 'utf8');
+const currentSlotWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/current-slot/CurrentSlotWidget.jsx', import.meta.url), 'utf8');
 const themeEffectsCss = readFileSync(new URL('../src/effects/ThemeEffects/ThemeEffects.css', import.meta.url), 'utf8');
 const clearIceGlass = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-glass-20.png', import.meta.url));
 const clearIceFractures = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-fractures.png', import.meta.url));
@@ -65,6 +67,13 @@ assert.match(clearIceCss, /\.better-bets-stage :is\(\.bet-option, \.bet-bar\)/, 
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear Ice textures the chat message surface');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway-source-card[\s\S]*clear-ice-fractures\.png/, 'Clear Ice overrides the inline-styled giveaway card embedded in streamer chat');
 assert.match(clearIceCss, /data-colour-theme="clear_ice"\] \.better-gw-metric-panel\s*\{[\s\S]*background-color:\s*var\(--clear-ice-card-surface\) !important;[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice giveaway metric tiles use the shared translucent glass surface');
+assert.match(chatWidgetSource, /\['clear_ice','volcanic','solverde','street_art','starter_studio','galactic_command'\]\.includes\(c\.colourTheme\) \? 'top'/, 'Clear Ice keeps the embedded giveaway directly beneath the chat header');
+assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;[\s\S]*box-shadow:\s*none !important;/, 'Clear Ice removes the duplicate frame behind the embedded giveaway');
+assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway::after\s*\{\s*display:\s*none !important;\s*content:\s*none !important;/, 'Clear Ice removes the duplicate fracture layer behind the embedded giveaway');
+assert.match(currentSlotWidgetSource, /\['arctic', 'candy', 'clear_ice'\]\.includes/, 'Clear Ice Current Game renders provider artwork from the shared provider catalogue');
+assert.match(clearIceCss, /data-widget-type="current_slot"\] \.cg-current\s*\{[\s\S]*font-size:\s*calc\(17 \* var\(--cg-px\)\)/, 'Clear Ice Current Game label is larger and top aligned');
+assert.match(clearIceCss, /data-widget-type="rtp_stats"\] :is\(\.rtp-stats-inner, \.rtp-stats-bar--better\)\s*\{[\s\S]*height:\s*min\(100%, 38px\) !important;[\s\S]*padding-block:\s*0 !important;/, 'Clear Ice RTP bar stays slim with no vertical padding');
+assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item--bestwin\s*\{\s*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;[\s\S]*box-shadow:\s*none !important;/, 'Clear Ice Best Win inherits the parent RTP glass instead of old navy');
 assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-player-rail[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice styles Connect Four player rails with the shared glass texture');
 assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-board[\s\S]*clear-ice-fractures\.png/, 'Clear Ice styles the Connect Four board with the fracture texture');
 assert.match(clearIceCss, /\.slot-bingo-widget__square/, 'Clear Ice covers Slot Bingo square surfaces');

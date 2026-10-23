@@ -47,7 +47,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
     ? c.__previewPersonalBest
     : liveBest;
   const art = c.artworkBySlot?.[slot.id] || {};
-  const hasProviderArtwork = ['arctic', 'candy'].includes(String(c.colourTheme || '').replace(/^theme_/, ''));
+  const hasProviderArtwork = ['arctic', 'candy', 'clear_ice'].includes(String(c.colourTheme || '').replace(/^theme_/, ''));
   const cover = safeArtworkUrl(subValue(c, 'slotImage', 'imageUrl', (['galactic_scanner','galactic_info'].includes(c.displayStyle)?art.portraitCoverUrl:'') || art.coverUrl || slot.image || ''));
   const backdrop = safeArtworkUrl(subValue(c, 'backdrop', 'imageUrl', art.backgroundUrl || slot.image || ''));
   const logo = safeArtworkUrl(subValue(c, 'titleImage', 'imageUrl', art.titleUrl || ''));

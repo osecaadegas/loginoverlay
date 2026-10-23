@@ -1527,7 +1527,7 @@ function ChatWidget({
   // The supplied MainStreamOverlay always places embedded giveaway content
   // immediately below the chat header. Keep that source-scene placement even
   // if the saved generic chat preference puts giveaways at the bottom.
-  const giveawayPosition = isStreamerOverlayChat || ['volcanic','solverde','street_art','starter_studio','galactic_command'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
+  const giveawayPosition = isStreamerOverlayChat || ['clear_ice','volcanic','solverde','street_art','starter_studio','galactic_command'].includes(c.colourTheme) ? 'top' : c.giveawayPosition === "bottom" ? "bottom" : "top";
   const embeddedGiveaway = giveawayVisible && !embeddedShoutoutActive ? (
     <GiveawayWidget
       embedded
