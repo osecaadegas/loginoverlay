@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import puppeteer from 'puppeteer';
 import { createServer } from 'vite';
 import { WIDGET_COLOUR_THEMES, getWidgetColourTheme, getHuntColourTheme, getWidgetColourThemeGroups } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
@@ -23,7 +24,7 @@ assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multipl
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'clear_ice', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
 const clearIceCss = readFileSync(new URL('../src/components/OverlayCenter/editor/ClearIceTheme.css', import.meta.url), 'utf8');
 const themeEffectsCss = readFileSync(new URL('../src/effects/ThemeEffects/ThemeEffects.css', import.meta.url), 'utf8');
-const clearIceGlass = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-glass.png', import.meta.url));
+const clearIceGlass = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-glass-40.png', import.meta.url));
 const clearIceFractures = readFileSync(new URL('../public/theme-effects/clear-ice/clear-ice-fractures.png', import.meta.url));
 assert.deepEqual(WIDGET_COLOUR_THEMES.map(theme => theme.key), ['galactic_command','starter_studio','street_art', 'solverde', 'volcanic', 'candy', 'neon', 'metallic', 'sunset', 'cyberpunk', 'crimson', 'emerald', ...newThemes]);
 assert.equal(getWidgetColourTheme('clear_ice').adminOnly, true, 'Clear Ice is marked as admin-only');
@@ -40,11 +41,19 @@ assert.equal(getWidgetColourTheme('clear_ice').secondary, '#123254', 'Clear Ice 
 assert.equal(getWidgetColourTheme('clear_ice').text, '#000000', 'Clear Ice primary text is black');
 assert.equal(getWidgetColourTheme('clear_ice').muted, '#000000', 'Clear Ice muted text is also black');
 assert.match(clearIceCss, /data-widget-type="camera"/, 'Clear Ice keeps source openings transparent');
-assert.match(clearIceCss, /clear-ice-glass\.png/, 'Clear Ice uses its original clear-glass texture');
+assert.match(clearIceCss, /clear-ice-glass-40\.png/, 'Clear Ice uses the reduced-opacity glass texture');
 assert.match(clearIceCss, /clear-ice-fractures\.png/, 'Clear Ice uses its original fracture texture');
 assert.doesNotMatch(clearIceCss, /theme-effects\/ice\//, 'Clear Ice no longer references the Arctic material assets');
 assert.equal(clearIceGlass.toString('ascii', 1, 4), 'PNG', 'Clear Ice glass surface is a PNG texture');
 assert.equal(clearIceGlass.readUInt32BE(16), 1254, 'Clear Ice glass texture has full-resolution width');
+assert.equal(clearIceGlass[25], 6, 'Clear Ice opacity texture uses an alpha channel');
+const glassData = [];
+for (let offset = 8; offset < clearIceGlass.length;) {
+  const length = clearIceGlass.readUInt32BE(offset);
+  if (clearIceGlass.toString('ascii', offset + 4, offset + 8) === 'IDAT') glassData.push(clearIceGlass.subarray(offset + 8, offset + 8 + length));
+  offset += length + 12;
+}
+assert.equal(inflateSync(Buffer.concat(glassData))[4], 102, 'Clear Ice texture artwork is baked at 40% opacity');
 assert.equal(clearIceFractures.toString('ascii', 1, 4), 'PNG', 'Clear Ice fracture overlay is a PNG texture');
 assert.equal(clearIceFractures[25], 6, 'Clear Ice fracture texture retains true RGBA transparency');
 assert.equal(clearIceFractures.readUInt32BE(16), 1254, 'Clear Ice fracture overlay has full-resolution width');
@@ -57,7 +66,7 @@ assert.match(clearIceCss, /\.better-navbar-zone/, 'Clear Ice covers navbar zones
 assert.match(clearIceCss, /\.bhh-stats-panel/, 'Clear Ice covers Bonus Hunt stats surfaces');
 assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\] \*:not\(svg\):not\(path\)\s*\{\s*color:\s*#000 !important/s, 'Clear Ice forces scoped text to black with theme-local precedence');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
-assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass\.png/, 'Clear Ice textures the top navigation rail');
+assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass-40\.png/, 'Clear Ice textures the top navigation rail with reduced opacity');
 assert.match(clearIceCss, /\.better-hunt-stats-panel[\s\S]*\.ov-chat-giveaway/, 'Clear Ice covers the inner hunt and chat surfaces with glass texture');
 assert.match(clearIceCss, /background-blend-mode:\s*normal, soft-light/, 'Clear Ice keeps texture detail subtle over translucent glass');
 assert.doesNotMatch(clearIceCss, /\.better-giveaway-stage,\s*\.better-bets-stage|\.better-tournament-stage/, 'Clear Ice leaves full-canvas stage wrappers borderless');

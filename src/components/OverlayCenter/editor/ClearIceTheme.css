@@ -29,7 +29,7 @@
     url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     linear-gradient(180deg, rgba(216, 243, 251, .20), rgba(137, 217, 255, .035) 18%, transparent 42%),
     linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(18, 50, 84, .06) 45%, rgba(10, 43, 74, .12)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: screen, normal, normal, soft-light !important;
   background-position: center !important;
   background-size: 100% 100%, cover, cover, cover !important;
@@ -52,7 +52,7 @@
   background-image:
     linear-gradient(180deg, rgba(216, 243, 251, .32), rgba(137, 217, 255, .08) 18%, rgba(10, 43, 74, .2) 78%, rgba(216, 243, 251, .14)),
     url("/theme-effects/clear-ice/clear-ice-fractures.png"),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: soft-light, soft-light !important;
   background-size: 100% 100%, cover !important;
   background-repeat: no-repeat !important;
@@ -60,7 +60,7 @@
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item {
   background-color: rgba(10, 43, 74, .44) !important;
-  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -75,7 +75,7 @@
   background-color: rgba(18, 50, 84, .08) !important;
   background-image:
     linear-gradient(145deg, rgba(41, 98, 153, .13), rgba(10, 43, 74, .12)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png"),
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png"),
     url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
   background-blend-mode: screen, soft-light, soft-light !important;
   background-size: cover, cover, 100% 100% !important;
@@ -92,7 +92,7 @@
   background-color: rgba(10, 43, 74, .44) !important;
   background-image:
     linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(10, 43, 74, .24)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: screen, soft-light !important;
   box-shadow: inset 0 1px 0 rgba(216, 243, 251, .22), inset 0 0 9px rgba(137, 217, 255, .08), 0 2px 8px rgba(0, 10, 19, .22) !important;
 }
@@ -130,7 +130,7 @@
   --bets-hdr-txt: #EAF7FF;
   background: var(--clear-ice-glass) !important;
   background-color: rgba(18, 50, 84, .22) !important;
-  background-image: url("/theme-effects/clear-ice/clear-ice-fractures.png"), var(--clear-ice-glass), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-image: url("/theme-effects/clear-ice/clear-ice-fractures.png"), var(--clear-ice-glass), url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-size: 100% 100%, cover, cover !important;
   background-repeat: no-repeat !important;
   background-blend-mode: soft-light, normal, soft-light !important;
@@ -164,28 +164,28 @@
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget {
   background-color: rgba(18, 50, 84, .08) !important;
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass-40.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
   background-blend-mode: normal, soft-light, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"] .ov-chat-widget :is(.ov-chat-header, .ov-chat-messages, .ov-chat-giveaway, .better-gw-roulette-viewport) {
   background-color: rgba(18, 50, 84, .08) !important;
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: normal, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
   color: #EAF7FF;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-messages {
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: normal, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"] .better-bets-stage :is(.bet-option, .bet-bar) {
   background-color: rgba(10, 43, 74, .44) !important;
-  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass-40.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
   background-blend-mode: normal, soft-light, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -199,7 +199,7 @@
   background-color: rgba(10, 43, 74, .24) !important;
   background-image:
     linear-gradient(145deg, rgba(216, 243, 251, .05), rgba(10, 43, 74, .04)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: normal, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -227,7 +227,7 @@
   background-color: rgba(216, 243, 251, .42) !important;
   background-image:
     linear-gradient(145deg, rgba(255, 255, 255, .28), rgba(137, 217, 255, .10) 42%, rgba(10, 43, 74, .08)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -239,7 +239,7 @@
   background-color: rgba(216, 243, 251, .38) !important;
   background-image:
     linear-gradient(145deg, rgba(255, 255, 255, .24), rgba(137, 217, 255, .08) 46%, rgba(10, 43, 74, .06)),
-    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass-40.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
