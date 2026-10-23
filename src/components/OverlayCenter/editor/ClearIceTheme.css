@@ -223,12 +223,12 @@
   background-size: cover, cover, 100% 100% !important;
   background-repeat: no-repeat !important;
 }
-.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-giveaway-canvas .better-gw-metric-panel {
-  border-color: rgba(137, 217, 255, .55) !important;
-  background-color: rgba(10, 43, 74, .7) !important;
-  background-image: linear-gradient(180deg, rgba(10, 43, 74, .94), rgba(18, 50, 84, .92)), url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
-  background-blend-mode: normal, soft-light !important;
-  box-shadow: inset 0 1px 0 rgba(216, 243, 251, .18), 0 0 8px rgba(101, 156, 210, .18) !important;
+.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-gw-metric-panel {
+  border-color: rgba(137, 217, 255, .68) !important;
+  background-color: var(--clear-ice-card-surface) !important;
+  background-image: linear-gradient(145deg, rgba(216, 243, 251, .13), rgba(101, 156, 210, .08) 52%, rgba(18, 50, 84, .06)), url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+  background-blend-mode: screen, soft-light !important;
+  box-shadow: inset 0 1px 0 rgba(216, 243, 251, .32), inset 0 0 9px rgba(137, 217, 255, .1), 0 2px 8px rgba(0, 10, 19, .18) !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-giveaway-canvas .better-gw-rule {
   background: linear-gradient(90deg, transparent, rgba(137, 217, 255, .72), transparent) !important;
@@ -452,7 +452,7 @@
 /* Use the giveaway's deep-blue glass field on every compact stats tile. The
    RTP strip intentionally stays seamless, with its labels over the rail. */
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.better-hunt-stat, .better-hunt-image-stats-panel, .better-hunt-total, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .bets-ov__stat, .bets-ov__card, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
+  :is(.better-hunt-stat, .better-hunt-image-stats-panel, .better-hunt-total, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
   background-color: transparent !important;
   background-image: linear-gradient(180deg, #0a2b4a, #123254) !important;
   border: 1px solid rgba(137, 217, 255, .55) !important;
