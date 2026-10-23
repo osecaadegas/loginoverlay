@@ -841,11 +841,11 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28) !important;
 }
 
-/* PremiumChat.css gives the giveaway fixed side margins. Override those
+/* EmbeddedGiveaway applies inline side margins and width. Override those
    theme-independently applied dimensions only in Clear Ice so every giveaway
    state remains optically centred in the chat column. */
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
-  .ov-chat-widget[data-premium-chat="true"] .ov-chat-giveaway {
+  .ov-chat-widget .ov-chat-giveaway {
   box-sizing: border-box !important;
   width: calc(100% - 16px) !important;
   margin: 2px auto 4px !important;
