@@ -40,9 +40,9 @@ for(const type of kinds){
   const queryAfterFirst=uniformQueries;
   for(let i=0;i<30;i++)renderer.render('out',.4,i/30);
   assert.strictEqual(uniformQueries,queryAfterFirst,'GPU uniforms were looked up repeatedly');
-  const diag=renderer.diagnostics();assert(type==='crystal'?diag.mode==='WebGL2 fitted crystal + authored GPU meshes':diag.mode==='WebGL2 instanced 3D');
-  if(type==='crystal'){assert(diag.facets>12&&diag.triangles>100,'Crystal must have 3D Voronoi tessellation');assert(diag.authoredMeshes>=1&&diag.authoredInstances>=9, 'Crystal must render authored premium meshes');}
-  else assert(diag.instances===particles.length);
+  const diag=renderer.diagnostics();assert.equal(diag.mode,'WebGL2 instanced 3D');
+  if(type==='crystal')assert(renderer.geo.crystal.length/8>=72,'Crystal must have closed hexagonal sides and termination facets');
+  assert(diag.instances===particles.length);
   renderer.dispose();
   console.log('PASS',type,'render API / uniform cache');
 }

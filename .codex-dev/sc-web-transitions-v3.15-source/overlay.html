@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v3.16.0 Cinematic GPU</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SC Web Transitions FX v3.17.0 Cinematic GPU</title>
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important}canvas{width:100%;height:100%;display:block;background:transparent!important}</style></head><body><canvas id="fx"></canvas><script src="/money-vfx3d.js"></script><script src="/ice-vfx3d.js"></script><script src="/gas-vfx3d.js"></script><script src="/cinematic-plates.js"></script><script src="/premium-vfx-meshes.js"></script><script src="/premium-crystal-accents.js"></script><script src="/crystal-hero3d.js"></script><script src="/gpu-vfx3d.js"></script><script src="/expansion-effects.js"></script><script>
 'use strict';
 // All geometry is in the native, uncropped camera source coordinates. OBS mirrors
@@ -37,7 +37,7 @@ function renderCoverage(){
   gasCoverage=plateActive()?cinematicPlates.measureCoverage(field):gasGPUActive()?gasGPU.measureCoverage(field):gasOpacityCoverage();
   gasCoverageReport='Rendered optical coverage '+(gasCoverage*100).toFixed(2)+'%';return gasCoverage;
  }
- if(isExpansion(job.effect)&&expansionGPU&&expansionGPU.ready){gpuCoverage=expansionGPU.measureCoverage(field);return gpuCoverage}
+ if((isExpansion(job.effect)||job.effect==='inferno')&&expansionGPU&&expansionGPU.current&&expansionGPU.ready){gpuCoverage=expansionGPU.measureCoverage(field);return gpuCoverage}
  if(!coverageProbe){coverageProbe=canvas2();coverageContext=coverageProbe.getContext('2d',{willReadFrequently:true})}
  const w=field.mw,h=field.mh;
  if(coverageProbe.width!==w||coverageProbe.height!==h){coverageProbe.width=w;coverageProbe.height=h}
@@ -45,7 +45,8 @@ function renderCoverage(){
  const gpu=job.effect==='money'?moneyCGI:job.effect==='ice'?iceGPU:null;
  if(gpu&&gpu.isReady&&gpu.canvas.style.display!=='none')g.drawImage(gpu.canvas,0,0,w,h);
  const data=g.getImageData(0,0,w,h).data;let hit=0,total=0;
- for(let k=3;k<data.length;k+=4)if(field.map[k]>=196){total++;if(data[k]>=254)hit++}
+ // Match the controller's inclusion of translucent hair and soft camera edges.
+ for(let k=3;k<data.length;k+=4)if(field.map[k]>=16){total++;if(data[k]>=254)hit++}
  const result=total?hit/total:0;
  if(job.effect==='money')moneyCoverage=result;if(job.effect==='ice')iceCoverage=result;
  return result;
@@ -640,7 +641,14 @@ function buildIceMaterial(){
  g.drawImage(edgeCanvas,0,0,W,H);
  // Ensure no decorative light or particles ever produce a rectangular webcam frame.
  const pad=canvas2(),pg=pad.getContext('2d');
- for(const [dx,dy] of [[0,0],[-3,0],[3,0],[0,-3],[0,3]])pg.drawImage(subject,dx,dy,W,H);
+ // A translucent camera pixel is still visible. The final frost seal must
+ // extinguish its transmission rather than copy its original transparency.
+ const opticalMask=canvas2(),og=opticalMask.getContext('2d',{willReadFrequently:true});
+ og.drawImage(subject,0,0,W,H);
+ const opticalPixels=og.getImageData(0,0,W,H);
+ for(let k=3;k<opticalPixels.data.length;k+=4)opticalPixels.data[k]=opticalPixels.data[k]>=16?255:0;
+ og.putImageData(opticalPixels,0,0);
+ for(const [dx,dy] of [[0,0],[-3,0],[3,0],[0,-3],[0,3],[-3,-3],[3,-3],[-3,3],[3,3]])pg.drawImage(opticalMask,dx,dy,W,H);
  g.globalCompositeOperation='destination-in';g.drawImage(pad,0,0);g.globalCompositeOperation='source-over';
  return c;
 }
@@ -944,13 +952,13 @@ function buildOrganicIceGrowth(){
   for(const k of active){
    const pos=k*4,a=original[pos+3],when=arrival[k];
    // Smooth emerging crystal edge with cold specular rim, clipped to alpha.
-   const coverage=smoother((progress-when+.032)/.064);
+   const coverage=f===frameCount-1?1:smoother((progress-when+.032)/.064);
    if(coverage<=.001)continue;
    const ridge=(1-smoother(Math.abs(progress-when)/.055))*.48;
    dst[pos]=Math.min(255,frozenData[pos]+ridge*65);
    dst[pos+1]=Math.min(255,frozenData[pos+1]+ridge*49);
    dst[pos+2]=Math.min(255,frozenData[pos+2]+ridge*34);
-   dst[pos+3]=Math.round(Math.min(a,frozenData[pos+3])*coverage);
+   dst[pos+3]=Math.round(frozenData[pos+3]*coverage);
   }
   const frame=canvas2(width,height);frame.getContext('2d').putImageData(mask,0,0);
   iceGrowthFrames.push(frame);
@@ -1731,7 +1739,7 @@ function drawCover(p){
   else drawMoneyCover(p);
  }
  else if(job.effect==='ice')drawIceCover(p);
- else if(job.effect==='inferno')drawInfernoCover(p,smokeCoverAge);
+ else if(job.effect==='inferno'){if(!renderGPU('cover',p,visualSeconds))drawInfernoCover(p,smokeCoverAge);}
  else drawSmokeCover(p,smokeCoverAge)
 }
 function playEffect(t){
@@ -1743,7 +1751,7 @@ function playEffect(t){
   else drawMoney(t,job.direction,job.duration);
  }
  else if(job.effect==='ice')drawIce(t,job.direction,job.duration);
- else if(job.effect==='inferno')drawInferno(t,job.direction,job.duration);
+ else if(job.effect==='inferno'){if(!renderGPU(job.direction,clamp(t/job.duration),visualSeconds))drawInferno(t,job.direction,job.duration);}
  else drawSmoke(t,job.direction,job.duration)
 }
 window.__sc3dData=()=>({job,field,subject,bill,billParts,moneyMatte,billMosaic,hero,shards,clouds,smokeSprites,smokeMatte,frostMap});
@@ -1789,11 +1797,18 @@ async function prepare3D(){
   }catch(e){iceGPUError=String(e);if(iceGPU){iceGPU.dispose();iceGPU.canvas.remove();iceGPU=null}}
   return;
  }
- if(isExpansion(job.effect)&&job.renderer_mode!=='2d'){
+ if((isExpansion(job.effect)||job.effect==='inferno')&&job.renderer_mode!=='2d'){
   try{
+   if(job.effect==='inferno'){
+    setupExpansion('shadow',job.intensity);
+    expansion.type='inferno';expansion.config={...expansion.config,inBuild:.61,color:'#ff7832'};
+   }
    if(!window.SCGPU3D)throw Error('GPU 3D module unavailable');
    if(!expansionGPU)expansionGPU=new window.SCGPU3D.Renderer();
    expansionGPU.prepare(expansion);gpuUnavailable='';
+   // Execute the material/mesh pipeline while PREPARING, including coverage
+   // readback, so first-use driver compilation cannot stall the handoff.
+   expansionGPU.render('cover',1,0);expansionGPU.measureCoverage(field);expansionGPU.hide();
   }catch(e){gpuUnavailable=String(e);if(expansionGPU)expansionGPU.hide()}
  }
 }
@@ -1955,7 +1970,7 @@ if(demo){
   }cycle()
  })().catch(console.error)
 }else{
- async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.16.0-cinematic-gpu',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 lit volumetric gas':'Canvas2D gas fallback'):isExpansion(job&&job.effect)?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
+ async function heartbeat(){try{await fetch('/heartbeat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:'3.17.0-cinematic-gpu',effect:job&&job.effect||'idle',rendererID:RID,fps:measuredFPS,renderP95:measuredP95,stage:stage,rendererMode:job&&job.effect==='money'?(moneyGPUActive()?'Money CGI Ultra WebGL2 3D':'Money Canvas2D volumetric compatibility'):job&&job.effect==='ice'?(iceGPUActive()?'Ice Shatter Ultra WebGL2 3D':'Ice Canvas2D compatibility'):job&&(job.effect==='smoke'||job.effect==='toxic')?(plateActive()?'Cinematic simulated RGBA plates':gasGPUActive()?'WebGL2 lit volumetric gas':'Canvas2D gas fallback'):(isExpansion(job&&job.effect)||(job&&job.effect==='inferno'))?(expansionGPU&&expansionGPU.current&&expansionGPU.ready?'WebGL2 instanced 3D':'Canvas2D volumetric compatibility'):'2D approved baseline'}),cache:'no-store'})}catch(e){}}
  // A single adaptive poll loop prevents overlapping HTTP requests during OBS stalls.
  async function pollLoop(){await poll();setTimeout(pollLoop,stage==='idle'||stage==='done'?320:95)}
  setInterval(heartbeat,2000);heartbeat();pollLoop()

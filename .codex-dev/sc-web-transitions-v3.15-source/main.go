@@ -28,7 +28,7 @@ var static embed.FS
 
 const rendererPort = 18767
 const sceneFX = "SC Web Transitions | FX"
-const appVersion = "3.16.0-cinematic-gpu"
+const appVersion = "3.17.0-cinematic-gpu"
 
 type EffectTuning struct {
 	Accent string  `json:"accent"`

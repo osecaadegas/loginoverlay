@@ -10,11 +10,13 @@ $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$sourceName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU_Source"
-$releaseName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU_Release"
-$executableName = "SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe"
+$sourceName = "SC_Web_Transitions_v3.17.0_Cinematic_GPU_Source"
+$releaseName = "SC_Web_Transitions_v3.17.0_Cinematic_GPU_Release"
+$executableName = "SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe"
 $sourceDirectory = Join-Path $RepoRoot ".codex-dev\sc-web-transitions-v3.15-source"
 $releaseFiles = @(
+  "CHANGELOG_3.17.0_CINEMATIC_GPU.md",
+  "QA_3.17.0_CINEMATIC_GPU.md",
   "CHANGELOG_3.16.0_CINEMATIC_GPU.md",
   "QA_3.16.0_CINEMATIC_GPU.md",
   "ASSET_PIPELINE_3.16.md",

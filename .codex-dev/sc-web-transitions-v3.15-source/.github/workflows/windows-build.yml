@@ -27,9 +27,9 @@ jobs:
           $env:GOOS = "windows"
           $env:GOARCH = "amd64"
           $env:CGO_ENABLED = "0"
-          go build -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe .
+          go build -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe .
       - uses: actions/upload-artifact@v4
         with:
           name: SC-Web-Transitions-Windows-x64
-          path: SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe
+          path: SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe
           if-no-files-found: error

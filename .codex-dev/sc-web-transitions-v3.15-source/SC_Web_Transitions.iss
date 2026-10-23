@@ -1,14 +1,14 @@
 ; Optional Windows installer recipe. Build using Inno Setup 6 on Windows.
 ; This installer script and its resulting executable are NOT code signed.
 #define AppName "SC Web Transitions"
-#define AppVersion "3.16.0 Cinematic GPU"
+#define AppVersion "3.17.0 Cinematic GPU"
 [Setup]
 AppId={{76D75B12-5E8F-44F3-A604-69768D8ED87A}
 AppName={#AppName}
 AppVersion={#AppVersion}
 DefaultDirName={localappdata}\Programs\SC Web Transitions
 DefaultGroupName=SC Web Transitions
-OutputBaseFilename=SC_Web_Transitions_v3.16.0_Cinematic_GPU_Setup
+OutputBaseFilename=SC_Web_Transitions_v3.17.0_Cinematic_GPU_Setup
 Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=lowest
@@ -18,7 +18,7 @@ DisableProgramGroupPage=yes
 SetupIconFile=sc.ico
 UninstallDisplayIcon={app}\SC Web Transitions.exe
 [Files]
-Source: "SC_Web_Transitions_v3.16.0_Cinematic_GPU.exe"; DestDir: "{app}"; DestName: "SC Web Transitions.exe"; Flags: ignoreversion
+Source: "SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe"; DestDir: "{app}"; DestName: "SC Web Transitions.exe"; Flags: ignoreversion
 Source: "sc.ico"; DestDir: "{app}"; DestName: "SC Web Transitions.ico"; Flags: ignoreversion
 [Icons]
 Name: "{autoprograms}\SC Web Transitions"; Filename: "{app}\SC Web Transitions.exe"; Parameters: "--run"

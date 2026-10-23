@@ -6,7 +6,81 @@
 (function(root){'use strict';
 const TWO=Math.PI*2, clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 const TYPES=['glitch','lightning','shadow','holy','sand','crystal','petal','plasma'];
-const NAMES={glitch:0,lightning:1,shadow:2,holy:3,sand:4,crystal:5,petal:6,plasma:7};
+const NAMES={glitch:0,lightning:1,shadow:2,holy:3,sand:4,crystal:5,petal:6,plasma:7,inferno:8};
+// Source RGB never enters this shader: an opaque recoloured camera snapshot
+// is not concealment. Integrate extinction and emitted/scattered radiance.
+const fsVolume=`#version 300 es
+precision highp float;
+in vec2 vUV;out vec4 outColor;
+uniform sampler2D uSeal;uniform float uProgress,uClock,uKind,uSteps;
+uniform vec3 uAccent;uniform vec4 uBounds;
+float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
+float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+1.),f.x),f.y),f.z);}
+float fbm(vec3 p){return noise(p)*.57+noise(p*2.03+7.1)*.28+noise(p*4.13+13.7)*.15;}
+vec3 film(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
+void main(){
+ float p=clamp(uProgress,0.,1.);if(p<.001){outColor=vec4(0);return;}
+ vec2 uv=(vUV-uBounds.xy)/max(uBounds.zw,vec2(.01));
+ vec2 center=uv-.5;float t=uClock;float T=1.;vec3 L=vec3(0);
+ float mask=texture(uSeal,vUV).a;
+ for(int i=0;i<56;i++){
+  if(float(i)>=uSteps)break;
+  float z=(float(i)+.5)/uSteps;
+  vec3 q=vec3(center*(.85+z*.3),z-.5);
+  vec3 flow=q*4.+vec3(sin(t*.31+q.y*4.)*.45,t*.38,cos(t*.23)*.3);
+  float n=fbm(flow+vec3(noise(flow+3.),noise(flow+9.),noise(flow+17.))*.65);
+  float radius=length(q.xy);float density=0.;vec3 color=vec3(0);
+  if(uKind>7.5){
+   // Buoyant combustion: folded tongues, soot and temperature-dependent light.
+   float fire=fbm(vec3(q.x*6.,q.y*3.+t*1.1,q.z*5.)+n*1.7);
+   float front=1.-p*1.75+(.5-fire)*.32;
+   density=smoothstep(front-.2,front+.15,uv.y)*( .24+fire*1.7);
+   float heat=clamp((fire-.29)*2.6+(1.-uv.y)*.16,0.,1.);
+   color=mix(vec3(.025,.018,.016),mix(vec3(1.6,.12,.008),vec3(4.5,3.1,1.2),heat*heat),smoothstep(.16,.68,heat));
+  }else if(uKind<2.5&&uKind>1.5){
+   float tendril=sin(atan(q.y,q.x)*7.+z*9.-t*.8+n*4.);
+   density=smoothstep(1.1-p*1.6,1.3-p*1.6,radius+n*.3)*(.35+n*1.8)+p*p*.4;
+   density*=.8+.2*tendril;color=vec3(.012,.016,.025)+vec3(.08,.065,.14)*pow(n,3.);
+  }else if(uKind>2.5&&uKind<3.5){
+   float theta=atan(q.y+.65,q.x);float rays=pow(.5+.5*sin(theta*19.+n*1.5+t*.12),8.);
+   float halo=exp(-abs(length(vec2(q.x,q.y*1.2))-.34)*70.);
+   density=(rays*.65+halo*.4+n*.18)*p+p*p*p*.9;
+   color=vec3(2.2,1.85,1.12)*( .6+rays+halo);
+  }else if(uKind>3.5&&uKind<4.5){
+   float gust=fbm(q*vec3(4.,10.,5.)+vec3(t*1.3,sin(t*.5),0));
+   density=smoothstep(1.-p*1.6,1.25-p*1.6,uv.x+gust*.4)*(.3+gust*1.4);
+   color=mix(vec3(.12,.065,.025),vec3(.8,.57,.29),n)*(.65+.6*z);
+  }else if(uKind>4.5&&uKind<5.5){
+   vec3 cell=fract(q*4.+vec3(n,noise(q*3.+5.),noise(q*3.+11.))*.8+.5)-.5;
+   float facet=abs(cell.x)+abs(cell.y)*.6+abs(cell.z)*.8;
+   density=(1.-smoothstep(.48-p*.5,.66-p*.5,facet))*(.4+p);
+   color=mix(vec3(.08,.025,.21),uAccent*1.7,pow(n,.6))+pow(1.-facet,18.)*3.;
+  }else if(uKind>5.5&&uKind<6.5){
+   float angle=atan(q.y,q.x)+t*.5+z*6.;
+   float curl=sin(angle*9.+radius*22.+n*3.);
+   density=smoothstep(.8-p*1.3,1.-p*1.3,curl*.25+n*.45)*( .3+p);
+   color=mix(uAccent*.22,vec3(1.,.48,.61),n)*(.6+.5*z);
+  }else if(uKind>6.5){
+   float torus=length(vec2(length(q.xy)-(.35+.08*sin(z*12.+t)),q.z*.3));
+   float ribbon=exp(-torus*25.)*(.5+.5*sin(atan(q.y,q.x)*12.-t*3.+z*8.));
+   density=ribbon*p*2.+pow(p,4.)*(.5+n);
+   color=mix(vec3(.05,.3,.6),uAccent*3.,ribbon)+ribbon*1.4;
+  }else{
+   float plasma=pow(max(0.,1.-length(q)*1.3),3.);
+   density=plasma*p*2.+pow(p,5.)*(.5+n);
+   color=mix(vec3(.12,.3,.8),vec3(3.,4.,5.),plasma)*(.75+.25*sin(t*19.+z*13.));
+  }
+  // Pressure/energy saturation is part of each material's optical event.
+  // A source-alpha mask bounds the opaque event, never source RGB.
+  float pressureEnvelope=1.-smoothstep(.82,1.12,length(center));
+  density+=smoothstep(.78,1.,p)*max(step(.045,mask),pressureEnvelope)*1.5;
+  density*=1.-smoothstep(.72,1.02,length(vec3(center,q.z*.35)));
+  density*=smoothstep(0.,.09,z)*(1.-smoothstep(.88,1.,z));
+  float segment=1.-exp(-max(0.,density)*22./uSteps);
+  L+=color*segment*T;T*=1.-segment;if(T<.0001)break;
+ }
+ float a=1.-T;outColor=vec4(film(L/max(a,.00001)),a);
+}`;
 const vsSeal=`#version 300 es
 precision highp float;
 layout(location=0) in vec2 aPosition;
@@ -137,7 +211,8 @@ void main(){
  float focal=max(uResolution.x*.7,720.);
  float inv=clamp(focal/(focal+world.z),.19,5.);
  vec2 coord=(world.xy-uResolution*.5)*inv+uResolution*.5;
- gl_Position=vec4(coord.x/uResolution.x*2.-1.,1.-coord.y/uResolution.y*2.,clamp(world.z/4000.,-.9,.9),1.);
+ float clipW=max(.2,(focal+world.z)/focal);
+ gl_Position=vec4(vec2(coord.x/uResolution.x*2.-1.,1.-coord.y/uResolution.y*2.)*clipW,clamp(world.z/4000.,-.9,.9)*clipW,clipW);
  vUV=aUV;vNormal=normalize(rotation*aNormal);vOpacity=alpha;vDepth=world.z;vSeed=phase;
 }`;
 const fsMesh=`#version 300 es
@@ -148,6 +223,7 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.54);}
 void main(){
  vec2 c=vUV-.5;float k=uKind;
  vec3 normal=normalize(vNormal);
+ if(!gl_FrontFacing)normal=-normal;
  float light=.40+.60*max(0.,dot(normal,normalize(vec3(-.45,-.68,1.0))));
  float edge=pow(1.-abs(normal.z),2.2);
  float a=1.; vec3 color=uAccent;
@@ -185,6 +261,9 @@ void main(){
   a=1.;
   color=mix(uAccent*.48,vec3(1.,.78,.81),clamp(1.-side,0.,1.)*.47+max(0.,normal.z)*.15);
   float vein=exp(-abs(c.x)*28.)*(.10+.06*sin(uTime*1.2+vSeed*17.));color+=vec3(vein);
+ }else if(k>7.5){
+  color=mix(vec3(1.,.18,.015),vec3(1.,.85,.35),.5+.5*sin(vSeed*17.+uTime*2.));
+  a=1.;
  }else{
   float filament=pow(clamp(1.-abs(c.x)*2.,0.,1.),3.2);
   filament*=.82+.18*sin(uTime*5.+vSeed*23.);
@@ -221,6 +300,21 @@ function program(gl,vsrc,fsrc){function compile(type,src){const s=gl.createShade
 function grid(){const v=[];for(let y=0;y<5;y++)for(let x=0;x<8;x++){const uvx=x/7,uvy=y/4,xx=uvx-.5,yy=uvy-.5;v.push(xx,yy,0,0,0,1,uvx,uvy)}
  const ix=[];for(let y=0;y<4;y++)for(let x=0;x<7;x++){const a=y*8+x;ix.push(a,a+1,a+8,a+1,a+9,a+8)}return expand(v,ix);}
 function expand(v,inds){const f=[];for(const i of inds)f.push(...v.slice(i*8,i*8+8));return new Float32Array(f)}
+function petalMesh(){
+ const v=[],ix=[],nx=16,ny=20;
+ for(let y=0;y<=ny;y++)for(let x=0;x<=nx;x++){
+  const u=x/nx,t=y/ny,s=u*2-1,width=Math.pow(Math.sin(Math.PI*t),.7)*.43;
+  v.push(s*width,t-.5,.18*s*s+.12*Math.sin(t*Math.PI)-.09*t*t,-.36*s,0,1,u,t);
+ }
+ for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const a=y*(nx+1)+x;ix.push(a,a+1,a+nx+1,a+1,a+nx+2,a+nx+1)}
+ return expand(v,ix);
+}
+function crystalMesh(){
+ const v=[];const ring=(i,y,r)=>[Math.cos(i*Math.PI/3)*r,y,Math.sin(i*Math.PI/3)*r];
+ function tri(a,b,c){const u=b.map((x,i)=>x-a[i]),w=c.map((x,i)=>x-a[i]);let n=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]],l=Math.hypot(...n);n=n.map(x=>x/l);for(const [p,uv]of [[a,[0,0]],[b,[1,0]],[c,[.5,1]]])v.push(...p,...n,...uv)}
+ for(let i=0;i<6;i++){const a=ring(i,-.32,.23),b=ring(i+1,-.32,.23),c=ring(i,.29,.28),d=ring(i+1,.29,.28);tri(a,b,c);tri(b,d,c);tri(c,d,[.06,.7,.03]);tri(b,a,[0,-.5,0]);}
+ return new Float32Array(v);
+}
 function cube(){const v=[];function face(a,b,c,d,n){for(const [pt,uv] of [[a,[0,0]],[b,[1,0]],[c,[1,1]],[a,[0,0]],[c,[1,1]],[d,[0,1]]])v.push(...pt,...n,...uv)}
  const k=.43;face([-k,-k,k],[k,-k,k],[k,k,k],[-k,k,k],[0,0,1]);face([k,-k,-k],[-k,-k,-k],[-k,k,-k],[k,k,-k],[0,0,-1]);
  face([-k,-k,-k],[-k,-k,k],[-k,k,k],[-k,k,-k],[-1,0,0]);face([k,-k,k],[k,-k,-k],[k,k,-k],[k,k,k],[1,0,0]);
@@ -242,9 +336,9 @@ class Renderer{
   // WebGL uniform locations are constant for a linked program. Cache them once
   // instead of synchronously querying the driver on every animation frame.
   this.uniformLocations=new Map();
-  this.seal=program(gl,vsSeal,fsSeal);this.mesh=program(gl,vsMesh,fsMesh);this.arcs=program(gl,vsArc,fsArc);
+  this.seal=program(gl,vsSeal,fsVolume);this.legacySeal=program(gl,vsSeal,fsSeal);this.mesh=program(gl,vsMesh,fsMesh);this.arcs=program(gl,vsArc,fsArc);
   this.geo={grid:grid(),cube:cube(),octa:octa(),
-   petal:root.SCPremiumMeshes?root.SCPremiumMeshes.get('petal_00'):grid(),
+   petal:petalMesh(),crystal:crystalMesh(),
    feather:root.SCPremiumMeshes?root.SCPremiumMeshes.get('feather_00'):grid()};
   this.vbo={};for(const [name,points] of Object.entries(this.geo)){const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,points,gl.STATIC_DRAW);this.vbo[name]=buf}
   this.quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,1,0,1,1,0,1]),gl.STATIC_DRAW);
@@ -260,17 +354,17 @@ class Renderer{
   if(!locations.has(name))locations.set(name,gl.getUniformLocation(p,name));
   const l=locations.get(name);if(l===null)return;
   if(type==='1f')gl.uniform1f(l,val[0]);else if(type==='2f')gl.uniform2f(l,...val);
-  else if(type==='3f')gl.uniform3f(l,...val);else if(type==='1i')gl.uniform1i(l,val[0]);
+  else if(type==='3f')gl.uniform3f(l,...val);else if(type==='4f')gl.uniform4f(l,...val);else if(type==='1i')gl.uniform1i(l,val[0]);
  }
  size(w,h){const c=this.canvas,gl=this.gl;if(c.width!==w||c.height!==h){c.width=w;c.height=h}gl.viewport(0,0,w,h)}
  prepare(fx){if(!this.ready)throw Error('3D GPU context is not ready');this.dispose();const gl=this.gl;
   const maxTex=gl.getParameter(gl.MAX_TEXTURE_SIZE);
   if(fx.W>maxTex||fx.H>maxTex)throw Error('Camera frame exceeds WebGL2 texture size; select Canvas2D volumetric compatibility');
   this.current=fx;this.kind=NAMES[fx.type];this.accent=rgb(fx.tuning.accent||fx.config.color);this.motion=fx.motion;
-  if(fx.type==='crystal'&&root.SCCrystalHero){this.crystalHero=new root.SCCrystalHero.CrystalHero(gl,fx);this.canvas.style.display='block';this.size(fx.W,fx.H);return;}
-  this.texture=tex(gl,fx.seal);
+  this.steps=({Performance:16,Balanced:24,Cinematic:36,Ultra:56})[fx.quality]||36;
+  this.texture=tex(gl,fx.type==='glitch'?fx.seal:fx.subject);
   const rows=[];
-  const mult=fx.type==='sand'?.012:fx.type==='petal'?.082:fx.type==='shadow'?.072:fx.type==='crystal'?.095:fx.type==='glitch'?.095:fx.type==='holy'?.048:fx.type==='lightning'?.055:.066;
+  const mult=fx.type==='inferno'?.004:fx.type==='sand'?.012:fx.type==='petal'?.082:fx.type==='shadow'?.072:fx.type==='crystal'?.095:fx.type==='glitch'?.095:fx.type==='holy'?.005:fx.type==='lightning'?.008:.022;
   for(const a of fx.particles){const size=clamp(fx.b.w*mult*a.size,fx.type==='sand'?1.1:5,fx.type==='crystal'?135:fx.type==='sand'?12:95);
    rows.push(a.x,a.y,(a.depth-1)*180,size,a.tx,a.ty,a.spin,a.phase,a.delay,a.spin*.18,a.depth,.7+a.size*.2);}
   this.instances=rows.length/12;
@@ -282,12 +376,26 @@ class Renderer{
  createArcs(fx){if(!['lightning','plasma','holy'].includes(fx.type))return new Float32Array(0);
   const verts=[],b=fx.b,paths=fx.type==='lightning'?fx.arcs.map(a=>a.pts):fx.type==='plasma'?Array.from({length:9},(_,i)=>Array.from({length:60},(_,j)=>{
    const y=j/59,cx=b.x+b.w*.5,cy=b.y+b.h*.53,k=i/9*6.28318+y*12;return [cx+Math.cos(k)*b.w*(.26+.09*Math.sin(y*8+i)),b.y+b.h*(1.15-y*1.30)]})):Array.from({length:18},(_,i)=>Array.from({length:12},(_,j)=>[b.x+b.w*(i+.5)/18,b.y+b.h*(1.12-j/11*1.45)]));
-  for(const path of paths){if(path.length<2)continue;for(let j=1;j<path.length;j++){
+  if(fx.type==='lightning'){
+   const leaders=paths.slice();
+   for(let i=0;i<leaders.length;i++){const path=leaders[i];for(let j=2;j<path.length-2;j+=3){
+    const root=path[j],side=((j+i)%2?1:-1);
+    paths.push(Array.from({length:7},(_,k)=>[root[0]+side*k*b.w*.027+Math.sin(k*2.7+i)*k*2,root[1]-k*b.h*.025+Math.cos(k*1.9)*k]));
+   }}
+  }
+  let pathID=0;
+  for(const path of paths){pathID++;if(path.length<2)continue;for(let j=1;j<path.length;j++){
    const p=path[j-1],q=path[j],dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;
-   const wide=fx.type==='plasma'?4.0:fx.type==='holy'?3.4:2.5;
-   const P=[p[0]+nx*wide,p[1]+ny*wide],Q=[p[0]-nx*wide,p[1]-ny*wide],R=[q[0]+nx*wide,q[1]+ny*wide],S=[q[0]-nx*wide,q[1]-ny*wide];
-   const z=(j%5)*14,uv0=(j-1)/(path.length-1),uv1=j/(path.length-1);
-   for(const [pt,u,v] of [[P,0,uv0],[Q,1,uv0],[R,0,uv1],[R,0,uv1],[Q,1,uv0],[S,1,uv1]])verts.push(pt[0],pt[1],z,u,v);
+   const wide=(fx.type==='plasma'?5:fx.type==='holy'?3.4:2.5)*(1-.65*j/path.length);
+   const uv0=(j-1)/(path.length-1),uv1=j/(path.length-1);
+   const z0=Math.sin(uv0*5+pathID*2.4)*b.w*.25,z1=Math.sin(uv1*5+pathID*2.4)*b.w*.25;
+   const sides=fx.quality==='Performance'?4:8;
+   for(let s=0;s<sides;s++){
+    const a=s/sides*TWO,c=(s+1)/sides*TWO;
+    const point=(r,z,angle)=>[r[0]+nx*Math.cos(angle)*wide,r[1]+ny*Math.cos(angle)*wide,z+Math.sin(angle)*wide];
+    const P=point(p,z0,a),Q=point(p,z0,c),R=point(q,z1,a),S=point(q,z1,c);
+    for(const [pt,u,v] of [[P,.25,uv0],[Q,.75,uv0],[R,.25,uv1],[R,.25,uv1],[Q,.75,uv0],[S,.75,uv1]])verts.push(...pt,u,v);
+   }
   }}return new Float32Array(verts)}
  hide(){this.canvas.style.display='none';this.clear()}
  dispose(){if(this.crystalHero){this.crystalHero.dispose();this.crystalHero=null}if(this.texture){this.gl.deleteTexture(this.texture);this.texture=null}this.current=null;this.instances=0;this.arcData=null;this.clear()}
@@ -305,24 +413,28 @@ class Renderer{
   }
   plate=clamp(plate);
   if(plate>.003)this.drawSeal(plate,age);
-  if(this.instances)this.drawInstances(moveStage,moveP,age);
-  if(this.arcData&&this.arcData.length>0&&energy>.008)this.drawArcs(energy,age);
+  if(this.instances&&this.kind!==2)this.drawInstances(moveStage,moveP,age);
+  if(this.arcData&&this.arcData.length>0&&energy>.008&&this.kind!==3)this.drawArcs(energy,age);
   return true;
  }
- drawSeal(p,age){const gl=this.gl,pr=this.seal;gl.useProgram(pr);gl.bindBuffer(gl.ARRAY_BUFFER,this.quad);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,8,0);
+ drawSeal(p,age){const gl=this.gl,pr=this.kind===0?this.legacySeal:this.seal;gl.useProgram(pr);gl.bindBuffer(gl.ARRAY_BUFFER,this.quad);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,8,0);
   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.texture);
   this.uniform(pr,'uSeal','1i',0);this.uniform(pr,'uProgress','1f',p);this.uniform(pr,'uClock','1f',age);this.uniform(pr,'uKind','1f',this.kind);this.uniform(pr,'uAccent','3f',...this.accent);
+  this.uniform(pr,'uSteps','1f',this.steps);
+  const b=this.current.b;this.uniform(pr,'uBounds','4f',b.x/this.current.W,b.y/this.current.H,b.w/this.current.W,b.h/this.current.H);
   gl.drawArrays(gl.TRIANGLES,0,6);
  }
  drawInstances(stage,p,age){const gl=this.gl,pr=this.mesh,kind=this.kind;
-  gl.useProgram(pr);const name=kind===6?'petal':kind===2?'feather':kind===0?'cube':kind===4||kind===5?'octa':'grid';const geo=this.geo[name];gl.bindBuffer(gl.ARRAY_BUFFER,this.vbo[name]);
+  gl.useProgram(pr);const name=kind===6?'petal':kind===5?'crystal':kind===2?'feather':kind===0?'cube':[1,3,4,8].includes(kind)?'octa':'grid';const geo=this.geo[name];gl.bindBuffer(gl.ARRAY_BUFFER,this.vbo[name]);
   for(const [idx,size,off] of [[0,3,0],[1,3,3],[2,2,6]]){gl.enableVertexAttribArray(idx);gl.vertexAttribPointer(idx,size,gl.FLOAT,false,32,off*4);gl.vertexAttribDivisor(idx,0)}
   gl.bindBuffer(gl.ARRAY_BUFFER,this.inst);
   for(const [idx,offset] of [[3,0],[4,4],[5,8]]){gl.enableVertexAttribArray(idx);gl.vertexAttribPointer(idx,4,gl.FLOAT,false,48,offset*4);gl.vertexAttribDivisor(idx,1)}
   this.uniform(pr,'uResolution','2f',this.current.W,this.current.H);this.uniform(pr,'uTime','1f',age);this.uniform(pr,'uProgress','1f',p);this.uniform(pr,'uStage','1f',stage);
   this.uniform(pr,'uMotion','1f',this.motion);this.uniform(pr,'uKind','1f',kind);this.uniform(pr,'uAccent','3f',...this.accent);
   if([1,3,7].includes(kind)){gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE,gl.ONE,gl.ONE_MINUS_SRC_ALPHA)}
+  if([0,4,5,6].includes(kind)){gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
   gl.drawArraysInstanced(gl.TRIANGLES,0,geo.length/8,this.instances);
+  gl.disable(gl.DEPTH_TEST);
   gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
   for(let i=3;i<=5;i++)gl.vertexAttribDivisor(i,0);
  }
@@ -334,11 +446,12 @@ class Renderer{
  }
  measureCoverage(field){if(!this.ready||!this.current)return 0;
   const gl=this.gl,w=this.current.W,h=this.current.H;
-  const px=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  if(!this.coveragePixels||this.coveragePixels.length!==w*h*4)this.coveragePixels=new Uint8Array(w*h*4);
+  const px=this.coveragePixels;gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
   const map=field.map,mw=field.mw,mh=field.mh;let all=0,hit=0;
-  for(let y=1;y<mh-1;y+=2)for(let x=1;x<mw-1;x+=2){const a=map[(y*mw+x)*4+3];if(a<196)continue;
+  for(let y=0;y<mh;y++)for(let x=0;x<mw;x++){const a=map[(y*mw+x)*4+3];if(a<16)continue;
     const ix=clamp(Math.floor((x+.5)/mw*w),0,w-1),iy=clamp(Math.floor((y+.5)/mh*h),0,h-1);
-    all++;if(px[((h-1-iy)*w+ix)*4+3]>=248)hit++;
+    all++;if(px[((h-1-iy)*w+ix)*4+3]>=254)hit++;
   }return all?hit/all:0;
  }
  diagnostics(){const gl=this.gl;if(this.crystalHero)return {...this.crystalHero.diagnostics(),renderer:String(gl.getParameter(gl.RENDERER)||'')};return {mode:this.ready?'WebGL2 instanced 3D':'WebGL2 context lost',instances:this.instances||0,triangles:(this.instances||0)*16,renderer:String(gl.getParameter(gl.RENDERER)||''),maxTexture:gl.getParameter(gl.MAX_TEXTURE_SIZE)};}
