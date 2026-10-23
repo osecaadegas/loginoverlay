@@ -328,21 +328,23 @@
   border-color: var(--clear-ice-card-line) !important;
 }
 
-/* Clear Ice is the light palette: make every textual descendant consistently
-   black while keeping theme scope isolated from all other widget themes. */
+/* Clear Ice is the light palette: use white lettering with a dark contour
+   while keeping the typography change isolated from all other widget themes. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"] {
-  --ice-text: #000;
-  --ice-muted: rgba(0, 0, 0, .72);
-  color: #000 !important;
+  --ice-text: #fff;
+  --ice-muted: #fff;
+  color: #fff !important;
   color-scheme: light;
-  text-shadow: none !important;
+  -webkit-text-stroke: .3px rgba(0, 0, 0, .96) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .88) !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"] *:not(svg):not(path) {
-  color: #000 !important;
-  text-shadow: none !important;
+  color: #fff !important;
+  -webkit-text-stroke: .3px rgba(0, 0, 0, .96) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .88) !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"] :is(svg, svg *) {
-  color: #000 !important;
+  color: #fff !important;
 }
 
 /* Bonus Hunt's own skin and nested-surface rules have higher cascade weight
@@ -370,4 +372,14 @@
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
+}
+
+/* Use the giveaway's deep-blue glass field on every compact stats tile. The
+   RTP strip intentionally stays seamless, with its labels over the rail. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-stat, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .bets-ov__stat, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
+  background-color: transparent !important;
+  background-image: linear-gradient(180deg, #0a2b4a, #123254) !important;
+  border-color: rgba(137, 217, 255, .55) !important;
+  box-shadow: inset 0 1px 0 rgba(169, 205, 229, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
 }

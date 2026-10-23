@@ -40,8 +40,8 @@ assert.equal(getWidgetColourTheme('clear_ice').surface, '#B7DDED', 'Clear Ice us
 assert.equal(getWidgetColourTheme('clear_ice').raised, '#89D9FF', 'Clear Ice uses ice glow for readable raised surfaces');
 assert.equal(getWidgetColourTheme('clear_ice').border, '#296299', 'Clear Ice uses Glacier Blue for its borders');
 assert.equal(getWidgetColourTheme('clear_ice').secondary, '#123254', 'Clear Ice uses Frozen Navy as its supporting accent');
-assert.equal(getWidgetColourTheme('clear_ice').text, '#000000', 'Clear Ice primary text is black');
-assert.equal(getWidgetColourTheme('clear_ice').muted, '#000000', 'Clear Ice muted text is also black');
+assert.equal(getWidgetColourTheme('clear_ice').text, '#FFFFFF', 'Clear Ice primary text is white');
+assert.equal(getWidgetColourTheme('clear_ice').muted, '#FFFFFF', 'Clear Ice muted text is white');
 assert.match(clearIceCss, /data-widget-type="camera"/, 'Clear Ice keeps source openings transparent');
 assert.match(clearIceCss, /clear-ice-glass-20\.png/, 'Clear Ice uses the reduced-opacity glass texture');
 assert.match(clearIceCss, /clear-ice-fractures\.png/, 'Clear Ice uses its original fracture texture');
@@ -68,11 +68,13 @@ assert.match(clearIceCss, /\.better-navbar-zone/, 'Clear Ice covers navbar zones
 assert.match(clearIceCss, /\.bhh-stats-panel/, 'Clear Ice covers Bonus Hunt stats surfaces');
 assert.match(clearIceCss, /\.bhh-stats-header[\s\S]*\.cg-info/, 'Clear Ice aligns Bonus Hunt and current-game card materials');
 assert.match(clearIceCss, /\.better-giveaway-widget[\s\S]*\.ov-chat-messages[\s\S]*\.bets-ov__card/, 'Clear Ice gives giveaway, chat and bet cards the shared glass material');
-assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\] \*:not\(svg\):not\(path\)\s*\{\s*color:\s*#000 !important/s, 'Clear Ice forces scoped text to black with theme-local precedence');
+assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\] \*:not\(svg\):not\(path\)\s*\{\s*color:\s*#fff !important;\s*-webkit-text-stroke:\s*\.3px rgba\(0, 0, 0, \.96\) !important/s, 'Clear Ice forces scoped white text with a dark contour');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
 assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass-20\.png/, 'Clear Ice textures the top navigation rail with reduced opacity');
 assert.match(clearIceCss, /background-blend-mode:\s*soft-light, soft-light, soft-light[\s\S]*background-size:\s*100% 100%, cover, cover/, 'Clear Ice navbar and RTP rail share one glass and fracture texture treatment');
 assert.match(clearIceCss, /data-widget-type="navbar"\]\s*:is\(\.better-navbar-content, \.better-navbar-zone\)\s*\{\s*background:\s*transparent !important;/, 'Clear Ice navbar layout wrappers stay transparent so they cannot wash out the shared rail material');
+assert.match(clearIceCss, /better-hunt-stat, \.bhh-stat, \.bht-stat-box[\s\S]*background-image:\s*linear-gradient\(180deg, #0a2b4a, #123254\) !important/, 'Clear Ice stat tiles use the giveaway deep-blue glass surface');
+assert.match(clearIceCss, /data-colour-theme="clear_ice"\]\s*\*:not\(svg\):not\(path\)\s*\{\s*color:\s*#fff !important;\s*-webkit-text-stroke:\s*\.3px rgba\(0, 0, 0, \.96\) !important;/, 'Clear Ice uses white text with a black contour');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \[data-better-element="statCard"\][\s\S]*background:\s*transparent !important/, 'Clear Ice RTP stat cards reveal the continuous parent bar texture');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt shell stays highly transparent');
 assert.match(clearIceCss, /better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\]\[data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt opacity wins over the widget skin material');
@@ -97,7 +99,7 @@ const luminance = color => color.slice(1).match(/../g).map(hex => {
   const channel = parseInt(hex, 16) / 255;
   return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
-for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'volcanic', 'sunset', 'cyberpunk','street_art','starter_studio'].includes(theme.key) && theme.key !== 'gladiator')) {
+for (const theme of WIDGET_COLOUR_THEMES.filter(theme => [...newThemes, 'volcanic', 'sunset', 'cyberpunk','street_art','starter_studio'].includes(theme.key) && !['gladiator', 'clear_ice'].includes(theme.key))) {
   for (const token of ['text', 'muted', 'accent']) {
     for (const surface of ['background', 'surface', 'raised']) {
       const values = [luminance(theme[token]), luminance(theme[surface])].sort((a, b) => b - a);
@@ -277,6 +279,14 @@ try {
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
       if (type === 'bonus_hunt' && theme === 'clear_ice') {
+        const statMaterial = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {
+          const style = getComputedStyle(element);
+          const text = getComputedStyle(element.querySelector('span'));
+          return { image: style.backgroundImage, color: text.color, stroke: text.webkitTextStrokeWidth };
+        });
+        assert.match(statMaterial.image, /linear-gradient\(.*10, 43, 74.*18, 50, 84/, 'Clear Ice hunt stats use the same dark glass fill as giveaway fields');
+        assert.equal(statMaterial.color, 'rgb(255, 255, 255)', 'Clear Ice hunt stat text is white');
+        assert.notEqual(statMaterial.stroke, '0px', 'Clear Ice hunt stat text has a black outline');
         const texture = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {
           const overlay = getComputedStyle(element, '::after');
           return { image: overlay.backgroundImage, blend: overlay.mixBlendMode, opacity: Number(overlay.opacity) };
