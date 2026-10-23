@@ -399,23 +399,36 @@
    configured dimensions or card layout. Keep progress copy on a clean surface
    so no texture stripe runs behind the text. */
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-stat-label {
-  font-size: .76em !important;
+  font-size: .98em !important;
   letter-spacing: .12em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-stat strong {
-  font-size: 1.12em !important;
+  font-size: 1.42em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-image-stats-title h3 {
   font-size: 1.3em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-image-row strong {
-  font-size: 1.04em !important;
+  font-size: 1.24em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row-main .better-hunt-slot-marquee {
-  font-size: 1.08em !important;
+  font-size: 1.24em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row-main em {
-  font-size: .82em !important;
+  font-size: .98em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row--image .better-hunt-mini-stats .better-hunt-mini-stat {
+  font-size: 1.16em !important;
+  line-height: 1.18 !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row--image .better-hunt-mini-label {
+  font-size: .98em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row--image .better-hunt-mini-best-value > span {
+  font-size: 1.16em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row--image .better-hunt-mini-best-value > small {
+  font-size: 1.04em !important;
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress,
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary {
@@ -514,17 +527,17 @@
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-payout > span,
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-row > span {
-  font-size: .76em !important;
-}
-.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-head em {
-  font-size: .76em !important;
-}
-.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-slot {
-  font-size: .88em !important;
-}
-.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-payout > strong {
   font-size: 1.12em !important;
 }
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-head em {
+  font-size: 1.12em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-slot {
+  font-size: 1.3em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-payout > strong {
+  font-size: 1.8em !important;
+}
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-row > strong {
-  font-size: .98em !important;
+  font-size: 1.52em !important;
 }
