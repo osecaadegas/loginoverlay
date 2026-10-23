@@ -202,17 +202,7 @@ try {
   const runtimeStyleCoverage = {
     bonus_hunt: ["v3", "v5_horizontal", "v11_fever", "v12_classic_sr"],
     current_slot: ["immersive_current", "portrait_card"],
-    tournament: [
-      "grid",
-      "showcase",
-      "vertical",
-      "bracket",
-      "neon",
-      "minimal",
-      "arena",
-      "futuristic",
-      "esports",
-    ],
+    tournament: ["vertical", "esports"],
     giveaway: ["v1", "v2", "v3", "v4", "metal", "bh_stats", "v12"],
     navbar: ["v1", "metallic", "StyleSecaNav", "glass", "retro"],
     chat: [
@@ -266,6 +256,14 @@ try {
       );
     }
   }
+  assert.equal(
+    appearanceModel.getWidgetActiveStyleId(
+      { id: "legacy-tournament", widget_type: "tournament", config: {} },
+      { widgets: { "legacy-tournament": { activeStyleId: "arena" } } },
+    ),
+    "vertical",
+    "retired Tournament styles resolve to Vertical for saved overlays",
+  );
   assert.ok(
     registryModule.getWidgetAppearanceCapability("bonus_hunt").elements.slotRow,
     "bonus hunt declares real slot row element",
@@ -4194,6 +4192,35 @@ try {
       import.meta.url,
     ),
     "utf8",
+  );
+  const tournamentConfigSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/tournament/TournamentConfig.jsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const builtinWidgetsSource = readFileSync(
+    new URL(
+      "../src/components/OverlayCenter/widgets/builtinWidgets.js",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(
+    builtinWidgetsSource,
+    /type: "tournament"[\s\S]*?styles: \[\s*\{ id: "vertical"[\s\S]*?\{ id: "esports"[\s\S]*?\],\s*defaults: \{\s*layout: "vertical"/,
+    "Tournament's main style picker exposes only Vertical and Esports",
+  );
+  assert.match(
+    tournamentRendererSource,
+    /const layout = c\.layout === "esports" \? "esports" : "vertical";/,
+    "retired Tournament renderer layouts fall back to Vertical",
+  );
+  assert.match(
+    tournamentConfigSource,
+    /const currentStyle = c\.layout === "esports" \? "esports" : "vertical";/,
+    "Tournament configuration edits legacy style values using the Vertical schema",
   );
   assertRendererPartTargets(tournamentRendererSource, "Tournament", [
     "container",

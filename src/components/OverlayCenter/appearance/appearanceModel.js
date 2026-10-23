@@ -1287,7 +1287,12 @@ export function getWidgetActiveStyleId(widget, appearance) {
   const normalized = normalizeAppearance(appearance);
   const entry = normalized.widgets?.[widget.id] || {};
   const key = getWidgetStyleConfigKey(widget.widget_type);
-  return entry.activeStyleId || widget.config?.[key] || getWidgetDef(widget.widget_type)?.styles?.[0]?.id || 'default';
+  const activeStyleId = entry.activeStyleId || widget.config?.[key];
+  if (widget.widget_type === 'tournament' && activeStyleId) {
+    if (entry.customStyles?.[activeStyleId]) return activeStyleId;
+    if (!['vertical', 'esports'].includes(activeStyleId)) return 'vertical';
+  }
+  return activeStyleId || getWidgetDef(widget.widget_type)?.styles?.[0]?.id || 'default';
 }
 
 export function getWidgetStyleRenderId(widget, styleId, appearance) {

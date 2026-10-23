@@ -82,7 +82,7 @@ function NumInput({
 export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const { user } = useAuth();
   const c = config || {};
-  const currentStyle = c.layout || "grid";
+  const currentStyle = c.layout === "esports" ? "esports" : "vertical";
   const { set, setMulti } = makePerStyleSetters(
     onChange,
     c,
@@ -185,27 +185,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
   /* ─── Built-in presets ─── */
   const BUILTIN_PRESETS = [
     {
-      name: "🖼️ Showcase (Large Images)",
-      builtin: true,
-      values: {
-        layout: "vertical",
-        showBg: false,
-        cardBg: "#1a1d2e",
-        cardBorder: "rgba(255,255,255,0.1)",
-        cardRadius: 14,
-        cardBorderWidth: 1,
-        nameSize: 18,
-        multiSize: 20,
-        slotNameSize: 13,
-        showSlotName: true,
-        swordSize: 28,
-        containerPadding: 6,
-        cardGap: 6,
-        eliminatedOpacity: 0.3,
-      },
-    },
-    {
-      name: "📋 Vertical Stack",
+      name: "📋 Vertical",
       builtin: true,
       values: {
         layout: "vertical",
@@ -225,29 +205,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
       },
     },
     {
-      name: "⚔️ Battle Arena",
-      builtin: true,
-      values: {
-        layout: "arena",
-        showBg: true,
-        bgColor: "#1a1040",
-        cardRadius: 10,
-        nameSize: 15,
-        multiSize: 16,
-        showSlotName: false,
-        containerPadding: 8,
-        cardGap: 10,
-        eliminatedOpacity: 0.55,
-        borderRadius: 14,
-        borderWidth: 0,
-        arenaAccent: "#eab308",
-        arenaWinColor: "#dbe2e8",
-        arenaCardBg: "#1e1550",
-        arenaCurrency: "$",
-      },
-    },
-    {
-      name: "🎮 Cyberpunk Esports",
+      name: "🎮 Esports",
       builtin: true,
       values: {
         layout: "esports",
@@ -268,31 +226,6 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
         esBg: "#030712",
         esCardBg: "rgba(15,23,42,0.75)",
         esBorder: "rgba(0,229,255,0.18)",
-      },
-    },
-    {
-      name: "🏆 Bo3 Scoreboard",
-      builtin: true,
-      values: {
-        layout: "scoreboard",
-        showBg: true,
-        bgColor: "#0f1120",
-        borderRadius: 10,
-        borderWidth: 0,
-        containerPadding: 6,
-        cardGap: 6,
-        cardRadius: 8,
-        cardBorder: "rgba(255,255,255,0.08)",
-        sbAccent: "#3b82f6",
-        sbHeaderBg: "rgba(0,0,0,0.85)",
-        sbCardBg: "#1a1d2e",
-        sbTextColor: "#ffffff",
-        sbPayColor: "#e2e8f0",
-        sbMultiColor: "#facc15",
-        sbWinColor: "#dbe2e8",
-        sbLoseColor: "#ef4444",
-        sbTabBg: "rgba(0,0,0,0.6)",
-        sbTabActive: "#3b82f6",
       },
     },
   ];

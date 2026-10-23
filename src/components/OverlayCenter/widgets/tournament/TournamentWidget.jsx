@@ -54,10 +54,8 @@ function partAttrs(partId) {
  * TournamentWidget — OBS overlay display for the unified tournament engine.
  * Reads match data from config.data (tournament blob created by TournamentConfig).
  *
- * Four layout modes:
+ * Available layout modes:
  *   vertical  → matches stacked top-to-bottom, horizontal rows
- *   minimal   → compact vertical rows (same renderer as vertical)
- *   arena     → Battle Arena style: large fighters, VS badge, WINNER
  *   esports   → Cyberpunk 3D glass panels, bracket grid + current match
  */
 function TournamentWidget({ config, theme }) {
@@ -117,9 +115,11 @@ function TournamentWidget({ config, theme }) {
   }, [winnersKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Layout mode ─── */
-  const layout = c.layout || "esports";
-  const isMinimalLayout = layout === "minimal";
-  const isArenaLayout = layout === "arena";
+  // Existing saved overlays may still contain retired layout IDs. Keep those
+  // overlays readable by mapping every retired value to the supported Vertical
+  // layout while preserving Esports as the only alternate visual system.
+  const layout = c.layout === "esports" ? "esports" : "vertical";
+  const isMinimalLayout = false;
 
   /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
   const [flipperTick, setFlipperTick] = React.useState(0);

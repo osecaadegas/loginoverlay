@@ -86,7 +86,7 @@ export const STANDARD_BETTER_WIDGET_CONTROLS = Object.freeze({
     fontFamily: "'Rajdhani', sans-serif",
   },
   tournament: {
-    layout: "grid",
+    layout: "vertical",
     showBg: true,
     panelHi: "#0c1c40",
     bgColor: "#061126",

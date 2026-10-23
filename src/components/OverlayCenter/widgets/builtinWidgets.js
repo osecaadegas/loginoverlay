@@ -557,15 +557,11 @@ registerWidget({
   configPanel: TournamentConfig,
   styleConfigKey: "layout",
   styles: [
-    { id: "grid", icon: "▦", label: "Grid" },
     { id: "vertical", icon: "↕", label: "Vertical" },
-    { id: "minimal", icon: "−", label: "Minimal" },
-    { id: "arena", icon: "⚔", label: "Arena" },
     { id: "esports", icon: "🎮", label: "Esports" },
-    { id: "scoreboard", icon: "▤", label: "Scoreboard" },
   ],
   defaults: {
-    layout: "grid",
+    layout: "vertical",
     showBg: true,
     panelHi: "#0c1c40",
     bgColor: "#0a1734",

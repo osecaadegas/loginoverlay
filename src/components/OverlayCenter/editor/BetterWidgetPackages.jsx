@@ -746,7 +746,7 @@ const BACKGROUND_PRESETS = [
 const BASE_BETTER_CONFIG = {
   slot_requests: {...IMAGE_CARDS_DEFAULTS,maxDisplay:50},
   tournament: {
-    layout: "grid",
+    layout: "vertical",
     showBg: true,
     panelHi: "#0c1c40",
     bgColor: "#0a1734",

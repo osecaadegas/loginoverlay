@@ -1283,30 +1283,12 @@ export const widgetAppearanceRegistry = Object.freeze({
     id: "tournament",
     label: "Tournament",
     category: "casino",
-    defaultStyleId: "grid",
+    defaultStyleId: "vertical",
     defaultAppearance: {
       primaryColor: "#38bdf8",
       accentColor: "#f59e0b",
     },
     styles: [
-      makeRuntimeStyle("grid", "Grid", "Tournament cards arranged in a grid.", {
-        recommended: true,
-        capabilities: {
-          ...IMAGE_QUICK_CAPABILITIES,
-          statCards: true,
-          columns: true,
-          rows: true,
-        },
-        elementIds: [
-          "container",
-          "header",
-          "matchCard",
-          "playerName",
-          "slotImage",
-          "scoreValue",
-          "statusBadge",
-        ],
-      }),
       makeRuntimeStyle("vertical", "Vertical", "Stacked tournament list.", {
         capabilities: { ...IMAGE_QUICK_CAPABILITIES, rows: true },
         elementIds: [
@@ -1316,38 +1298,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "playerName",
           "slotImage",
           "scoreValue",
-        ],
-      }),
-      makeRuntimeStyle(
-        "minimal",
-        "Minimal",
-        "Compact tournament status with reduced surfaces.",
-        {
-          capabilities: { transparentBackground: true, rows: true },
-          elementIds: [
-            "container",
-            "header",
-            "matchCard",
-            "playerName",
-            "scoreValue",
-          ],
-        },
-      ),
-      makeRuntimeStyle("arena", "Arena", "Arena-style matchup layout.", {
-        capabilities: {
-          ...IMAGE_QUICK_CAPABILITIES,
-          statCards: true,
-          positiveNegativeColours: true,
-          glow: true,
-        },
-        elementIds: [
-          "container",
-          "header",
-          "matchCard",
-          "playerName",
-          "slotImage",
-          "scoreValue",
-          "statusBadge",
         ],
       }),
       makeRuntimeStyle("esports", "Esports", "Esports scoreboard style.", {
@@ -1367,27 +1317,6 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statusBadge",
         ],
       }),
-      makeRuntimeStyle(
-        "scoreboard",
-        "Scoreboard",
-        "Focused best-of-three scoreboard with live round results.",
-        {
-          capabilities: {
-            ...IMAGE_QUICK_CAPABILITIES,
-            statCards: true,
-            rows: true,
-          },
-          elementIds: [
-            "container",
-            "header",
-            "matchCard",
-            "playerName",
-            "slotImage",
-            "scoreValue",
-            "statusBadge",
-          ],
-        },
-      ),
     ],
     responsive: {
       minWidth: 320,
