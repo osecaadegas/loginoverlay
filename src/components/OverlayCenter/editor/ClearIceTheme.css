@@ -411,6 +411,12 @@
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-image-row strong {
   font-size: 1.04em !important;
 }
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row-main .better-hunt-slot-marquee {
+  font-size: 1.08em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-row-main em {
+  font-size: .82em !important;
+}
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress,
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-progress-summary {
   background-color: transparent !important;
@@ -474,4 +480,51 @@
 }
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-mini-stat--best .better-hunt-mini-best-value > small {
   color: #89d9ff !important;
+}
+
+/* Best/Worst result faces inherit green/red gradients from the shared Hunt
+   skin. Clear Ice uses one giveaway-matched glass material for both faces. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-result,
+  .better-hunt-result-face--best .better-hunt-result,
+  .better-hunt-result-face--worst .better-hunt-result
+) {
+  border: 1px solid rgba(137, 217, 255, .55) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(180deg, #0a2b4a, #123254) !important;
+  box-shadow: inset 0 1px 0 rgba(169, 205, 229, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-result-payout,
+  .better-hunt-result-row
+) {
+  border: 1px solid rgba(137, 217, 255, .32) !important;
+  border-radius: 6px !important;
+  background: rgba(10, 43, 74, .88) !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] :is(
+  .better-hunt-result-head em,
+  .better-hunt-result-slot,
+  .better-hunt-result-payout > span,
+  .better-hunt-result-payout > strong,
+  .better-hunt-result-row > span,
+  .better-hunt-result-row > strong
+) {
+  color: #eaf7ff !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-payout > span,
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-row > span {
+  font-size: .76em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-head em {
+  font-size: .76em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-slot {
+  font-size: .88em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-payout > strong {
+  font-size: 1.12em !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bonus_hunt"] .better-hunt-result-row > strong {
+  font-size: .98em !important;
 }
