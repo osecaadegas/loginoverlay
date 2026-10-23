@@ -10,6 +10,9 @@
   --ice-highlight: rgba(216, 243, 251, .65);
   --ice-text: #EAF7FF;
   --ice-muted: #A9CDE5;
+  --clear-ice-shell-surface: rgba(18, 50, 84, .22);
+  --clear-ice-card-surface: rgba(216, 243, 251, .22);
+  --clear-ice-card-line: rgba(41, 98, 153, .52);
   --clear-ice-glass: linear-gradient(145deg, rgba(41, 98, 153, .28), rgba(18, 50, 84, .22) 45%, rgba(10, 43, 74, .3));
   color: var(--ice-text);
   color-scheme: dark;
@@ -24,7 +27,7 @@
   :is(.better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .sr-image-cards, .cg-widget, .better-giveaway-widget, .better-bets-stage .bet-widget, .better-slot-requests, .tw-root, .bets-ov) {
   border-color: var(--ice-line) !important;
   border-width: 2px !important;
-  background-color: rgba(18, 50, 84, .22) !important;
+  background-color: var(--clear-ice-shell-surface) !important;
   background-image:
     url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     linear-gradient(180deg, rgba(216, 243, 251, .20), rgba(137, 217, 255, .035) 18%, transparent 42%),
@@ -48,7 +51,7 @@
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="navbar"] [data-widget-element="container"],
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
   border-color: rgba(137, 217, 255, .72) !important;
-  background-color: rgba(18, 50, 84, .22) !important;
+  background-color: var(--clear-ice-shell-surface) !important;
   background-image:
     linear-gradient(180deg, rgba(216, 243, 251, .32), rgba(137, 217, 255, .08) 18%, rgba(10, 43, 74, .2) 78%, rgba(216, 243, 251, .14)),
     url("/theme-effects/clear-ice/clear-ice-fractures.png"),
@@ -59,7 +62,7 @@
   box-shadow: inset 0 2px 1px rgba(216, 243, 251, .72), inset 0 -2px 1px rgba(137, 217, 255, .42), 0 0 16px rgba(101, 156, 210, .42) !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item {
-  background-color: rgba(10, 43, 74, .44) !important;
+  background-color: var(--clear-ice-card-surface) !important;
   background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
@@ -85,13 +88,13 @@
   backdrop-filter: blur(4px) saturate(125%);
 }
 
-/* Nested stat and message cards take the supplied 70% navy glass treatment. */
+/* Nested stat and message cards use the same pale, translucent ice material. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
   :is([data-widget-element="header"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], .better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .tw-root [data-material-surface="panel"], .tw-root [data-material-surface="card"], [data-better-element="statCard"], [data-better-element="message"]) {
   border-color: rgba(137, 217, 255, .36) !important;
-  background-color: rgba(10, 43, 74, .44) !important;
+  background-color: var(--clear-ice-card-surface) !important;
   background-image:
-    linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(10, 43, 74, .24)),
+    linear-gradient(145deg, rgba(255, 255, 255, .10), rgba(101, 156, 210, .08)),
     url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
   background-blend-mode: screen, soft-light !important;
   box-shadow: inset 0 1px 0 rgba(216, 243, 251, .22), inset 0 0 9px rgba(137, 217, 255, .08), 0 2px 8px rgba(0, 10, 19, .22) !important;
@@ -123,8 +126,8 @@
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov {
   --bets-bg: rgba(18, 50, 84, .22);
   --bets-hdr-bg: rgba(41, 98, 153, .22);
-  --bets-bar-bg: rgba(10, 43, 74, .44);
-  --bets-card-bg: rgba(10, 43, 74, .44);
+  --bets-bar-bg: rgba(216, 243, 251, .22);
+  --bets-card-bg: rgba(216, 243, 251, .22);
   --bets-border: rgba(137, 217, 255, .42);
   --bets-text: #EAF7FF;
   --bets-hdr-txt: #EAF7FF;
@@ -141,8 +144,10 @@
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__stat,
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__row,
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="bets"] .bets-ov__card {
-  background-color: rgba(10, 43, 74, .44) !important;
-  color: #EAF7FF;
+  background-color: var(--clear-ice-card-surface) !important;
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(137, 217, 255, .06)), url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+  background-blend-mode: screen, soft-light !important;
+  color: #000;
 }
 
 /* Tournament surfaces opt into material attributes so preserve their semantic
@@ -184,7 +189,7 @@
   background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"] .better-bets-stage :is(.bet-option, .bet-bar) {
-  background-color: rgba(10, 43, 74, .44) !important;
+  background-color: var(--clear-ice-card-surface) !important;
   background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass-20.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
   background-blend-mode: normal, soft-light, soft-light !important;
   background-size: cover !important;
@@ -222,11 +227,11 @@
    markup rather than the shared material attributes. Keep image artwork and
    the central gameplay opening untouched. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.bhh-stats-panel, .bhh-stat, .bhh-carousel-wrap, .bhtc-badge-pill, .bhtc-total-pay, .bhtc-card, .bhtc-card-top-bar, .bhtc-card-bottom-bar, .bht-compact-info-pill, .bht-stat-box, .bht-fullflip-slot, .bht-fullflip-slot-ribbon, .bht-card) {
+  :is(.bhh-stats-panel, .bhh-stats-header, .bhh-stat-grid, .bhh-stat, .bhh-carousel-wrap, .bhtc-badge-pill, .bhtc-total-pay, .bhtc-card, .bhtc-card-top-bar, .bhtc-card-bottom-bar, .bht-compact-info-pill, .bht-stat-box, .bht-fullflip-slot, .bht-fullflip-slot-ribbon, .bht-card, .bht-current, .bht-cpt-current, .bht-cpt-card, .bht-stack-card, .bht-compact-progress-section, .bht-progress, .bht-bonus-list, .cg-info, .cg-records, .cg-record-bet, .cg-stat, .cg-current, .better-hunt-result) {
   border-color: rgba(101, 156, 210, .62) !important;
-  background-color: rgba(216, 243, 251, .42) !important;
+  background-color: var(--clear-ice-card-surface) !important;
   background-image:
-    linear-gradient(145deg, rgba(255, 255, 255, .28), rgba(137, 217, 255, .10) 42%, rgba(10, 43, 74, .08)),
+    linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(137, 217, 255, .06) 42%, rgba(41, 98, 153, .04)),
     url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
@@ -234,11 +239,11 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42), 0 1px 5px rgba(10, 43, 74, .12) !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.slot-bingo-widget__header, .slot-bingo-widget__progress, .slot-bingo-widget__board, .slot-bingo-widget__square, .better-navbar-zone, .better-navbar-content, .rtp-stats-item, .rtp-stats-provider--text, .rtp-stats-slot, .cg-info, .cg-records, .cg-record-bet, .studio-current-info, .studio-current-row, .street-current-stat, .better-gw-title, .better-gw-result-card, .better-gw-winner-banner) {
-  border-color: rgba(101, 156, 210, .56) !important;
-  background-color: rgba(216, 243, 251, .38) !important;
+  :is(.slot-bingo-widget__header, .slot-bingo-widget__progress, .slot-bingo-widget__board, .slot-bingo-widget__square, .better-navbar-zone, .better-navbar-content, .rtp-stats-item, .rtp-stats-provider--text, .rtp-stats-slot, .studio-current-info, .studio-current-row, .street-current-stat, .better-gw-title, .better-gw-result-card, .better-gw-winner-banner, .ov-chat-empty, .ov-chat-giveaway, .better-chat-message, .better-chat-bubble, .better-shoutout-card, .better-hunt-requests, .better-hunt-request-card, .better-hunt-stats-panel, .better-hunt-empty, .better-hunt-progress, .better-hunt-autoscroll-card, .better-hunt-total) {
+  border-color: var(--clear-ice-card-line) !important;
+  background-color: var(--clear-ice-card-surface) !important;
   background-image:
-    linear-gradient(145deg, rgba(255, 255, 255, .24), rgba(137, 217, 255, .08) 46%, rgba(10, 43, 74, .06)),
+    linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(137, 217, 255, .06) 46%, rgba(41, 98, 153, .04)),
     url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
   background-blend-mode: screen, soft-light !important;
   background-size: cover !important;
@@ -260,6 +265,26 @@
   mix-blend-mode: screen;
   pointer-events: none;
   z-index: -1;
+}
+
+/* Align widget shells and nested data cards to one light glass material. These
+   shared tokens prevent a mix of dark navy, opaque white and missing textures
+   across widgets while retaining each widget's geometry and semantic accents. */
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-panel, .better-slideshow-frame, .slot-bingo-widget, .cg-widget, .better-giveaway-widget, .better-bets-stage .bet-widget, .better-slot-requests, .tw-root, .bets-ov, [data-widget-element="container"]) {
+  background-color: var(--clear-ice-shell-surface) !important;
+  border-color: rgba(137, 217, 255, .68) !important;
+}
+.better-widget-colour-scope[data-colour-theme="clear_ice"]
+  :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .better-hunt-stats-panel, .better-hunt-empty, .better-hunt-progress, .better-hunt-requests, .better-hunt-request-card, .better-hunt-result, .bhtc-badge-pill, .bhtc-total-pay, .bhtc-card, .bhtc-card-top-bar, .bhtc-card-bottom-bar, .bht-stat-box, .bht-compact-info-pill, .bht-fullflip-slot, .bht-current, .bht-cpt-current, .bht-cpt-card, .bht-stack-card, .cg-info, .cg-records, .cg-record-bet, .cg-stat, .cg-current, .better-giveaway-widget, .better-gw-result-card, .better-gw-winner-banner, .better-chat-message, .better-chat-bubble, .better-shoutout-card, .ov-chat-empty, .ov-chat-giveaway, .ov-chat-header, .ov-chat-messages, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .bet-option, .bet-bar, .slot-bingo-widget__header, .slot-bingo-widget__progress, .slot-bingo-widget__board, .slot-bingo-widget__square, .rtp-stats-item, .rtp-stats-slot, .studio-current-info, .studio-current-row, .street-current-stat) {
+  background-color: var(--clear-ice-card-surface) !important;
+  background-image:
+    linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(137, 217, 255, .06) 46%, rgba(41, 98, 153, .04)),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+  background-blend-mode: screen, soft-light !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  border-color: var(--clear-ice-card-line) !important;
 }
 
 /* Clear Ice is the light palette: make every textual descendant consistently

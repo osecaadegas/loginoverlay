@@ -32,7 +32,9 @@ assert(!getWidgetColourThemeGroups((key, theme) => !theme.adminOnly).some(group 
 assert(getWidgetColourThemeGroups((key, theme) => Boolean(theme.adminOnly)).some(group => group.themes.some(theme => theme.key === 'clear_ice')), 'admin theme catalog includes Clear Ice');
 assert.doesNotMatch(themeEffectsCss, /clear_ice/, 'Clear Ice does not inherit Arctic-only dark material rules');
 assert.match(clearIceCss, /rgba\(18, 50, 84, \.22\)/, 'Clear Ice uses a translucent 22% outer glass shell');
-assert.match(clearIceCss, /rgba\(10, 43, 74, \.44\)/, 'Clear Ice keeps inset cards translucent at 44%');
+assert.match(clearIceCss, /--clear-ice-card-surface:\s*rgba\(216, 243, 251, \.22\)/, 'Clear Ice uses one shared 22% pale-glass surface for inner cards');
+assert.match(clearIceCss, /--clear-ice-shell-surface:\s*rgba\(18, 50, 84, \.22\)/, 'Clear Ice uses one shared translucent surface for widget shells');
+assert.doesNotMatch(clearIceCss, /rgba\(10, 43, 74, \.44\)|rgba\(216, 243, 251, \.42\)|rgba\(216, 243, 251, \.38\)/, 'Clear Ice avoids inconsistent dark and near-opaque card fills');
 assert.equal(getWidgetColourTheme('clear_ice').background, '#D8F3FB', 'Clear Ice uses pale frost for its light glass base');
 assert.equal(getWidgetColourTheme('clear_ice').surface, '#B7DDED', 'Clear Ice uses glacier blue for translucent panels');
 assert.equal(getWidgetColourTheme('clear_ice').raised, '#89D9FF', 'Clear Ice uses ice glow for readable raised surfaces');
@@ -64,6 +66,8 @@ assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear
 assert.match(clearIceCss, /\.slot-bingo-widget__square/, 'Clear Ice covers Slot Bingo square surfaces');
 assert.match(clearIceCss, /\.better-navbar-zone/, 'Clear Ice covers navbar zones');
 assert.match(clearIceCss, /\.bhh-stats-panel/, 'Clear Ice covers Bonus Hunt stats surfaces');
+assert.match(clearIceCss, /\.bhh-stats-header[\s\S]*\.cg-info/, 'Clear Ice aligns Bonus Hunt and current-game card materials');
+assert.match(clearIceCss, /\.better-giveaway-widget[\s\S]*\.ov-chat-messages[\s\S]*\.bets-ov__card/, 'Clear Ice gives giveaway, chat and bet cards the shared glass material');
 assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\] \*:not\(svg\):not\(path\)\s*\{\s*color:\s*#000 !important/s, 'Clear Ice forces scoped text to black with theme-local precedence');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Clear Ice textures RTP metric cards');
 assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass-20\.png/, 'Clear Ice textures the top navigation rail with reduced opacity');
