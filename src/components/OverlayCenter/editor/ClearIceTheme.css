@@ -873,3 +873,46 @@
   align-self: center !important;
   flex-shrink: 1 !important;
 }
+
+/* Active Clear Ice giveaways hold their own slot above chat. Fade message
+   rows as they approach that edge so they disappear cleanly into the giveaway
+   without shifting the live feed or hiding any message data. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-widget[data-giveaway-active="true"][data-giveaway-position="top"] .ov-chat-messages {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 100%) !important;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 100%) !important;
+}
+
+/* Clear Ice chat uses calm, static ice glass. Remove generic sliding,
+   pulsing and red owner-role paint only inside this theme. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-messages > :is([data-better-element="message"], [data-better-element="highlightedMessage"]) {
+  animation: none !important;
+  opacity: 1 !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-messages > [data-better-element="highlightedMessage"] {
+  border-color: rgba(137, 217, 255, .62) !important;
+  background-color: rgba(18, 50, 84, .18) !important;
+  background-image:
+    linear-gradient(145deg, rgba(216, 243, 251, .18), rgba(101, 156, 210, .10) 55%, rgba(10, 43, 74, .24)),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png") !important;
+  background-blend-mode: screen, soft-light !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 2px 9px rgba(4, 34, 56, .24) !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-messages > [data-better-element="highlightedMessage"] [data-better-element="badge"] {
+  border-color: rgba(137, 217, 255, .62) !important;
+  background: linear-gradient(180deg, rgba(137, 217, 255, .32), rgba(41, 98, 153, .20)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-messages > [data-better-element="highlightedMessage"] [data-better-element="avatar"] {
+  border-color: rgba(137, 217, 255, .68) !important;
+  box-shadow: 0 0 7px rgba(101, 204, 255, .22) !important;
+}
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-messages > [data-better-element="highlightedMessage"] > span[aria-hidden="true"] > span {
+  animation: none !important;
+  opacity: 0 !important;
+}
