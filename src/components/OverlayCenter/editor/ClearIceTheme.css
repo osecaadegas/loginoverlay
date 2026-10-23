@@ -377,7 +377,7 @@
 /* Use the giveaway's deep-blue glass field on every compact stats tile. The
    RTP strip intentionally stays seamless, with its labels over the rail. */
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"]
-  :is(.better-hunt-stat, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .bets-ov__stat, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
+  :is(.better-hunt-stat, .better-hunt-image-stats-panel, .better-hunt-total, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .bets-ov__stat, .bets-ov__card, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
   background-color: transparent !important;
   background-image: linear-gradient(180deg, #0a2b4a, #123254) !important;
   border: 1px solid rgba(137, 217, 255, .55) !important;
