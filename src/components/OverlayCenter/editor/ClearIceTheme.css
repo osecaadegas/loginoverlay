@@ -809,8 +809,45 @@
   border-color: transparent !important;
   box-shadow: none !important;
 }
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"]
+  :is(.rtp-stats-item--bestwin, .rtp-stats-item--bestwin *) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin::before,
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin::after {
   content: none !important;
   display: none !important;
+}
+
+/* Better Chat renders its LIVE strip through the appearance element schema,
+   not the legacy .ov-chat-header class. Apply the same light glass and
+   fracture texture to that real header so saved navy inline styles cannot win. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-widget > :is([data-better-element="header"], .ov-chat-header, .ov-cards-header) {
+  background-color: rgba(18, 50, 84, .08) !important;
+  background-image:
+    linear-gradient(145deg, rgba(216, 243, 251, .12), rgba(41, 98, 153, .06) 52%, rgba(10, 43, 74, .06)),
+    url("/theme-effects/clear-ice/clear-ice-glass-20.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: screen, soft-light, soft-light !important;
+  background-size: 100% 100%, cover, 100% 100% !important;
+  background-repeat: no-repeat !important;
+  border-bottom-color: rgba(216, 243, 251, .36) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+}
+
+/* PremiumChat.css gives the giveaway fixed side margins. Override those
+   theme-independently applied dimensions only in Clear Ice so every giveaway
+   state remains optically centred in the chat column. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"]
+  .ov-chat-widget[data-premium-chat="true"] .ov-chat-giveaway {
+  box-sizing: border-box !important;
+  width: calc(100% - 16px) !important;
+  margin: 2px auto 4px !important;
+  align-self: center !important;
+  flex-shrink: 1 !important;
 }
