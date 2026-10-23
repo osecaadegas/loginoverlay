@@ -73,7 +73,7 @@ assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \.rtp-stats-item/, 'Cl
 assert.match(clearIceCss, /data-widget-type="navbar"\] \[data-widget-element="container"\][\s\S]*clear-ice-glass-20\.png/, 'Clear Ice textures the top navigation rail with reduced opacity');
 assert.match(clearIceCss, /background-blend-mode:\s*soft-light, soft-light, soft-light[\s\S]*background-size:\s*100% 100%, cover, cover/, 'Clear Ice navbar and RTP rail share one glass and fracture texture treatment');
 assert.match(clearIceCss, /data-widget-type="navbar"\]\s*:is\(\.better-navbar-content, \.better-navbar-zone\)\s*\{\s*background:\s*transparent !important;/, 'Clear Ice navbar layout wrappers stay transparent so they cannot wash out the shared rail material');
-assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\]\s*:is\(\.better-hunt-stat, \.bhh-stat, \.bht-stat-box[\s\S]*background-image:\s*linear-gradient\(180deg, #89d9ff, #b7dded\) !important;\s*border:\s*1px solid rgba\(41, 98, 153, \.55\) !important;\s*border-radius:\s*10px !important/s, 'Clear Ice stat tiles match the giveaway field surface, outline and radius');
+assert.match(clearIceCss, /\.better-widget-colour-scope\.better-widget-colour-scope\[data-colour-theme="clear_ice"\]\s*:is\(\.better-hunt-stat, \.bhh-stat, \.bht-stat-box[\s\S]*background-image:\s*linear-gradient\(180deg, #0a2b4a, #123254\) !important;\s*border:\s*1px solid rgba\(137, 217, 255, \.55\) !important;\s*border-radius:\s*10px !important/s, 'Clear Ice stat tiles match the on-canvas giveaway field surface, outline and radius');
 assert.match(clearIceCss, /data-colour-theme="clear_ice"\]\s*\*:not\(svg\):not\(path\)\s*\{\s*color:\s*#fff !important;\s*-webkit-text-stroke:\s*\.3px rgba\(0, 0, 0, \.96\) !important;/, 'Clear Ice uses white text with a black contour');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] \[data-better-element="statCard"\][\s\S]*background:\s*transparent !important/, 'Clear Ice RTP stat cards reveal the continuous parent bar texture');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-panel[\s\S]*background-color:\s*rgba\(18, 50, 84, \.08\)/, 'Clear Ice Bonus Hunt shell stays highly transparent');
@@ -284,7 +284,7 @@ try {
           const text = getComputedStyle(element.querySelector('span'));
           return { image: style.backgroundImage, color: text.color, stroke: text.webkitTextStrokeWidth };
         });
-        assert.match(statMaterial.image, /linear-gradient\(rgb\(137, 217, 255\), rgb\(183, 221, 237\)\)/, 'Clear Ice hunt stats use the same bright glass fill as giveaway fields');
+        assert.match(statMaterial.image, /linear-gradient\(rgb\(10, 43, 74\), rgb\(18, 50, 84\)\)/, 'Clear Ice hunt stats use the same deep glass fill as the on-canvas giveaway fields');
         assert.equal(statMaterial.color, 'rgb(255, 255, 255)', 'Clear Ice hunt stat text is white');
         assert.notEqual(statMaterial.stroke, '0px', 'Clear Ice hunt stat text has a black outline');
         const texture = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {

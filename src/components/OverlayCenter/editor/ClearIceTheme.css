@@ -379,8 +379,8 @@
 .better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="clear_ice"]
   :is(.better-hunt-stat, .bhh-stat, .bht-stat-box, .bht-compact-info-pill, .bets-ov__stat, .cg-stat, .cg-record-bet, [data-widget-element="statCell"]) {
   background-color: transparent !important;
-  background-image: linear-gradient(180deg, #89d9ff, #b7dded) !important;
-  border: 1px solid rgba(41, 98, 153, .55) !important;
+  background-image: linear-gradient(180deg, #0a2b4a, #123254) !important;
+  border: 1px solid rgba(137, 217, 255, .55) !important;
   border-radius: 10px !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
+  box-shadow: inset 0 1px 0 rgba(169, 205, 229, .1), 0 2px 8px rgba(0, 0, 0, .5) !important;
 }
