@@ -284,6 +284,8 @@
   background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item,
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] [data-better-element="statCard"],
+.better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] [data-appearance-part="statCard"],
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item::after {
   background: transparent !important;
   border-color: transparent !important;
