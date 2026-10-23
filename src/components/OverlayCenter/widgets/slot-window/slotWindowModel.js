@@ -9,6 +9,7 @@ export const SLOT_WINDOW_DEFAULTS = Object.freeze({
   cropBottom: 0,
   cropLeft: 0,
   fps: 30,
+  fit: "cover",
 });
 
 export const SLOT_WINDOW_MASK_OPTIONS = Object.freeze([
@@ -68,6 +69,7 @@ export function sanitizeSlotWindowConfig(config = {}) {
     maskShape: VALID_SHAPES.has(config.maskShape)
       ? config.maskShape
       : SLOT_WINDOW_DEFAULTS.maskShape,
+    fit: config.fit === "contain" ? "contain" : "cover",
     cornerRadius,
     cornerTopLeft: clampNumber(config.cornerTopLeft, 0, 240, cornerRadius),
     cornerTopRight: clampNumber(config.cornerTopRight, 0, 240, cornerRadius),
@@ -117,8 +119,8 @@ export function getSlotWindowPanelLabel(config = {}) {
   return panel ? `ScreenSplit panel ${panel}` : "ScreenSplit connected";
 }
 
-export function fitSlotWindowSource(sourceWidth, sourceHeight, width, height) {
+export function fitSlotWindowSource(sourceWidth, sourceHeight, width, height, fit = "contain") {
   if (![sourceWidth, sourceHeight, width, height].every(value => Number.isFinite(value) && value > 0)) return null;
-  const scale = Math.min(width / sourceWidth, height / sourceHeight);
+  const scale = (fit === "cover" ? Math.max : Math.min)(width / sourceWidth, height / sourceHeight);
   return { width: sourceWidth * scale, height: sourceHeight * scale };
 }

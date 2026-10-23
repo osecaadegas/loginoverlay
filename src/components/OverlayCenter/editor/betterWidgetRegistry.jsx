@@ -1,3 +1,4 @@
+import BonusHuntGridWidget from "../widgets/slot-window/BonusHuntGridWidget";
 import {GalacticCommandModule} from '../../../effects/ThemeEffects/galactic-command/GalacticCommandTheme.jsx';
 import {galacticVariables} from '../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
 import {StarterStudioModule} from '../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
@@ -659,6 +660,7 @@ const DEFAULT_POSITIONS = STANDARD_BETTER_WIDGET_GEOMETRY;
 
 const COMPONENTS = {
   slot_requests: SlotRequestsWidget,
+  bonus_hunt_2x2: BonusHuntGridWidget,
   slot_window: SlotWindowWidget,
   camera: CameraWidget,
   current_slot: CurrentSlotWidget,
@@ -678,6 +680,7 @@ const COMPONENTS = {
 
 const CONTROL_SCHEMAS = {
   slot_requests:["layout","artwork","typography","colours"],
+  bonus_hunt_2x2: ["source", "mask", "crop", "performance"],
   slot_window: ["source", "mask", "crop", "performance"],
   camera: ["style", "trigger", "camera", "chroma", "effect", "motion", "audio", "performance"],
   current_slot: ['display', 'colours'],
@@ -974,7 +977,7 @@ function makeInstanceId(widgetType) {
 }
 
 function normalizeZIndexes(instances) {
-  const background = instances.find(
+  const backgrounds = instances.filter(
     (item) => item.widgetType === BACKGROUND_TYPE,
   );
   const foreground = instances
@@ -985,9 +988,7 @@ function normalizeZIndexes(instances) {
     zIndex: Math.max(1, Number(item.zIndex) || index + 1),
   }));
   return [
-    ...(background
-      ? [
-          {
+    ...backgrounds.map((background) => ({
             ...background,
             x: 0,
             y: 0,
@@ -995,9 +996,7 @@ function normalizeZIndexes(instances) {
             height: BETTER_CANVAS.height,
             locked: true,
             zIndex: 0,
-          },
-        ]
-      : []),
+          })),
     ...normalized,
   ].sort((a, b) => Number(a.zIndex) - Number(b.zIndex));
 }

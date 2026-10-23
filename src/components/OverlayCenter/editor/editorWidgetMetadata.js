@@ -1,6 +1,7 @@
 // Navigation metadata only. The existing widget controls own validation and updates.
 const WIDGET_METADATA = {
   slot_requests:{category:'Community',keywords:'slot requests queue image cards viewers',source:'Bonus Hunt',route:'/overlay-center/widgets/bonus-hunt',simpleSections:['Layout','Artwork','Typography','Colours']},
+  bonus_hunt_2x2: {category: "Hunt", keywords: "2x2 four slots browser screensplit bonus hunt", source: "ScreenSplit Browser", simpleSections: ["Top left", "Top right", "Bottom left", "Bottom right", "ScreenSplit source", "Mask", "Performance"]},
   slot_window: {
     category: "Stream",
     keywords: "slot window screensplit iframe capture game obs mask crop",

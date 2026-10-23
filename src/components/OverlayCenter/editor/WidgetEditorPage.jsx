@@ -320,6 +320,7 @@ class BetterEditorWidgetBoundary extends React.Component {
 }
 
 function WidgetListItem({
+  canDeleteBackground = false,
   instance,
   selected,
   obsUrl,
@@ -1366,11 +1367,12 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
       const instance = current.instances.find(
         (item) => item.instanceId === instanceId,
       );
-      if (!instance || instance.widgetType === "background") return null;
+      if (!instance) return null;
+      if (instance.widgetType === "background" && current.instances.filter((item) => item.widgetType === "background").length <= 1) return null;
       const foregroundCount = current.instances.filter(
         (item) => item.widgetType !== "background",
       ).length;
-      if (foregroundCount <= 1) return null;
+      if (instance.widgetType !== "background" && foregroundCount <= 1) return null;
       const nextLayout = commitLayout((layoutToUpdate) => ({
         ...layoutToUpdate,
         instances: layoutToUpdate.instances.filter(

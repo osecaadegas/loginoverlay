@@ -1,3 +1,4 @@
+import BonusHuntGridWidget, { GRID_POSITIONS, sanitizeBonusHuntGrid } from "../widgets/slot-window/BonusHuntGridWidget";
 import { normalizeStreetArtSettings } from '../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import PalettePreview from './PalettePreview';
 import ImageCardsControls from '../widgets/slot-requests/ImageCardsControls';
@@ -1196,6 +1197,7 @@ const BASE_BETTER_CONFIG = {
   camera: {
     ...DEFAULT_CAMERA_CONFIG,
   },
+  bonus_hunt_2x2: { displayStyle: "four_slots", gap: 8, slots: [{},{},{},{}] },
   slot_window: {
     ...SLOT_WINDOW_DEFAULTS,
   },
@@ -1214,6 +1216,7 @@ export const DEFAULT_BETTER_CONFIG = Object.freeze(
 );
 
 export const BETTER_WIDGETS = [
+  {type:"bonus_hunt_2x2",label:"2x2 Bonus Hunt",styleKey:"displayStyle",styleId:"four_slots",icon:"▦",defaultSize:{width:1280,height:720}},
   {type:'slot_requests',label:'Slot Requests',styleKey:'displayStyle',styleId:'image_cards',icon:'↝',defaultSize:{width:440,height:520}},
   {
     type: "slot_window",
@@ -1699,6 +1702,7 @@ export function ensureBetterWidgetConfig(type, config = {}) {
   else if (merged.__appearanceStyleId==='new_horizontal') delete merged.__appearanceStyleId;
   else if (String(merged.__appearanceStyleId || '').startsWith('solverde_')) delete merged.__appearanceStyleId;
   if (type === "camera") return sanitizeCameraConfig(merged);
+  if (type === "bonus_hunt_2x2") return sanitizeBonusHuntGrid(merged);
   if (type === "slot_window") return sanitizeSlotWindowConfig(merged);
   if (type === "freeze_shatter" || type === "money_explosion") return migrateCameraConfig(merged, type);
   if (type === "navbar") return normalizeBetterNavbarConfig(config, merged);
@@ -1769,6 +1773,7 @@ function SlotWindowControls({ config, onChange }) {
         </p>
       </Section>
 
+      <SelectRow label="Frame sizing" value={c.fit} options={[{value:"cover",label:"Fill frame (crop edges)"},{value:"contain",label:"Fit entire slot"}]} onChange={fit=>set({fit})}/>
       <Section title="Mask" icon={<Frame size={13} />} defaultOpen simple>
         <SelectRow
           label="Shape"
@@ -2305,6 +2310,7 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "bonus_hunt_2x2": return <BonusHuntGridWidget config={config} runtime="editor" />;
     case "slot_window":
       return <SlotWindowWidget config={config} runtime="editor" />;
     case "camera":
@@ -7903,6 +7909,10 @@ export function BetterWidgetControls({
   ...props
 }) {
   const c = ensureBetterWidgetConfig(type, config);
+  if (type === "bonus_hunt_2x2") {
+    const grid = sanitizeBonusHuntGrid(c);
+    return <div><NumberRow label="Grid spacing" min={0} max={60} value={grid.gap} onChange={gap=>onChange({...grid,gap})}/>{GRID_POSITIONS.map((position,index)=><Section key={position} title={position} defaultOpen={index===0} simple><SlotWindowControls config={grid.slots[index]} onChange={slot=>onChange({...grid,slots:grid.slots.map((previous,i)=>i===index?slot:previous)})}/></Section>)}</div>;
+  }
   if (type === "slot_window") {
     return <><GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;
   }

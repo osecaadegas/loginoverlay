@@ -69,7 +69,7 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
     return () => window.removeEventListener('message', receive);
   }, [sourceUrl]);
   const size = reported?.sourceUrl === sourceUrl ? reported : null;
-  const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height) : null;
+  const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height, normalized.fit) : null;
   const streamerOverlayOpening = config.streamerOverlay?.role === "gameplay";
   const showSetup = !sourceUrl && !streamerOverlayOpening && runtime !== "obs" && !['starter_studio','galactic_command'].includes(normalized.colourTheme);
 
@@ -82,7 +82,7 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
       data-element-id="root"
       data-connected={sourceUrl ? "true" : "false"}
       data-mask-shape={normalized.maskShape}
-      style={fitted ? undefined : outerMaskStyle(normalized)}
+      style={outerMaskStyle(normalized)}
     >
       {sourceUrl ? (
         <iframe
