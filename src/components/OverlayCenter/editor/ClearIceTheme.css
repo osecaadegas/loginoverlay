@@ -1,5 +1,5 @@
-/* Clear Ice keeps Arctic's existing layout, widget markup and ice artwork. It only
-   replaces the Arctic palette with the translucent Crystal Ice glass palette. */
+/* Clear Ice keeps the existing layout and widget markup, using its own original
+   clear-glass and early-fracture textures rather than Arctic's heavier frost. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"] {
   --ice-void: #0A2B4A;
   --ice-deep: #0A2B4A;
@@ -16,8 +16,8 @@
   text-shadow: 0 1px 3px rgba(0, 9, 17, .68);
 }
 
-/* Recolor the existing Arctic shells while retaining their frame geometry and
-   original ice-glass/crack layers. Semi-transparent fill preserves gameplay. */
+/* Semi-transparent shells carry a quiet crystalline surface; the transparent
+   crack map supplies brighter detail without filling the gameplay opening. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
   > [data-widget-element="container"]:not(.better-hunt-root),
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
@@ -26,15 +26,14 @@
   border-width: 2px !important;
   background-color: rgba(18, 50, 84, .22) !important;
   background-image:
-    url("/theme-effects/ice/frost-edge.png"),
-    url("/theme-effects/ice/frost-corners.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     linear-gradient(180deg, rgba(216, 243, 251, .20), rgba(137, 217, 255, .035) 18%, transparent 42%),
     linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(18, 50, 84, .06) 45%, rgba(10, 43, 74, .12)),
-    url("/theme-effects/ice/ice-glass.webp") !important;
-  background-blend-mode: screen, screen, normal, normal, soft-light !important;
-  background-position: center, center, center, center, center !important;
-  background-size: 100% 100%, 100% 100%, cover, cover, 360px 360px !important;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat !important;
+    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-blend-mode: screen, normal, normal, soft-light !important;
+  background-position: center !important;
+  background-size: 100% 100%, cover, cover, cover !important;
+  background-repeat: no-repeat !important;
   -webkit-backdrop-filter: blur(4px) saturate(125%);
   backdrop-filter: blur(4px) saturate(125%);
   box-shadow:
@@ -52,19 +51,19 @@
   background-color: rgba(18, 50, 84, .22) !important;
   background-image:
     linear-gradient(180deg, rgba(216, 243, 251, .32), rgba(137, 217, 255, .08) 18%, rgba(10, 43, 74, .2) 78%, rgba(216, 243, 251, .14)),
-    url("/theme-effects/ice/frost-edge.png"),
-    url("/theme-effects/ice/ice-glass.webp") !important;
-  background-blend-mode: normal, screen, soft-light !important;
-  background-size: 100% 100%, 100% 100%, 320px 320px !important;
-  background-repeat: no-repeat, no-repeat, repeat !important;
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
+    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-blend-mode: soft-light, soft-light !important;
+  background-size: 100% 100%, cover !important;
+  background-repeat: no-repeat !important;
   box-shadow: inset 0 2px 1px rgba(216, 243, 251, .72), inset 0 -2px 1px rgba(137, 217, 255, .42), 0 0 16px rgba(101, 156, 210, .42) !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="rtp_stats"] .rtp-stats-item {
   background-color: rgba(10, 43, 74, .44) !important;
-  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
   background-blend-mode: screen, soft-light !important;
-  background-size: cover, 260px 260px !important;
-  background-repeat: no-repeat, repeat !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 
 /* Clear glass remains especially transparent for chat, camera and slot source
@@ -76,11 +75,11 @@
   background-color: rgba(18, 50, 84, .08) !important;
   background-image:
     linear-gradient(145deg, rgba(41, 98, 153, .13), rgba(10, 43, 74, .12)),
-    url("/theme-effects/ice/ice-glass.webp"),
-    url("/theme-effects/ice/frost-corners.png") !important;
-  background-blend-mode: screen, soft-light, screen !important;
-  background-size: cover, 440px 560px, 100% 100% !important;
-  background-repeat: no-repeat, repeat, no-repeat !important;
+    url("/theme-effects/clear-ice/clear-ice-glass.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: screen, soft-light, soft-light !important;
+  background-size: cover, cover, 100% 100% !important;
+  background-repeat: no-repeat !important;
   box-shadow: inset 0 0 12px rgba(216, 243, 251, .18), 0 0 16px rgba(101, 156, 210, .4) !important;
   -webkit-backdrop-filter: blur(4px) saturate(125%);
   backdrop-filter: blur(4px) saturate(125%);
@@ -93,14 +92,13 @@
   background-color: rgba(10, 43, 74, .44) !important;
   background-image:
     linear-gradient(145deg, rgba(41, 98, 153, .12), rgba(10, 43, 74, .24)),
-    url("/theme-effects/ice/frozen-glass.webp") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
   background-blend-mode: screen, soft-light !important;
   box-shadow: inset 0 1px 0 rgba(216, 243, 251, .22), inset 0 0 9px rgba(137, 217, 255, .08), 0 2px 8px rgba(0, 10, 19, .22) !important;
 }
 
-/* Reuse the actual ice surface artwork and brighten it as a separate overlay.
-   The corner map adds crystalline edge detail while screen blending keeps the
-   dark source pixels transparent over gameplay and widget content. */
+/* A separate, original fracture overlay adds crystalline detail only around
+   panel edges. Low opacity keeps text, thumbnails and gameplay visible. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
   :is(.better-hunt-stat, .better-hunt-row, .better-hunt-autoscroll-card, .better-hunt-total, .sr-image-card, .cg-stat, .cg-current, .better-chat-message, .better-chat-bubble, .better-giveaway-widget, .better-gw-winner-banner, .better-gw-result-card, .better-shoutout-card, .ov-chat-msg, .broadcast-chat-row, .community-chat-row, .bets-ov__header, .bets-ov__stat, .bets-ov__row, .bets-ov__card, .tw-root [data-material-surface="panel"], .tw-root [data-material-surface="card"], [data-widget-element="statCard"], [data-widget-element="incompleteSquare"], [data-better-element="statCard"], [data-better-element="message"]) {
   position: relative;
@@ -112,11 +110,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background:
-    url("/theme-effects/ice/frost-corners.png") center / 100% 100% no-repeat,
-    url("/theme-effects/ice/ice-glass.webp") center / 300px 300px repeat;
-  opacity: .2;
-  filter: brightness(1.65) contrast(1.06) saturate(.68);
+  background: url("/theme-effects/clear-ice/clear-ice-fractures.png") center / 100% 100% no-repeat;
+  opacity: .14;
+  filter: brightness(1.12) contrast(1.03) saturate(.82);
   mix-blend-mode: screen;
   pointer-events: none;
   z-index: -1;
@@ -134,10 +130,10 @@
   --bets-hdr-txt: #EAF7FF;
   background: var(--clear-ice-glass) !important;
   background-color: rgba(18, 50, 84, .22) !important;
-  background-image: url("/theme-effects/ice/frost-edge.png"), url("/theme-effects/ice/frost-corners.png"), var(--clear-ice-glass), url("/theme-effects/ice/ice-glass.webp") !important;
-  background-size: 100% 100%, 100% 100%, cover, 360px 360px !important;
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat !important;
-  background-blend-mode: screen, screen, normal, soft-light !important;
+  background-image: url("/theme-effects/clear-ice/clear-ice-fractures.png"), var(--clear-ice-glass), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
+  background-size: 100% 100%, cover, cover !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: soft-light, normal, soft-light !important;
   border: 2px solid rgba(137, 217, 255, .72) !important;
   box-shadow: inset 0 1px 0 rgba(216, 243, 251, .66), inset 0 0 14px rgba(137, 217, 255, .18), 0 0 16px rgba(101, 156, 210, .4) !important;
 }
@@ -168,31 +164,31 @@
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-widget {
   background-color: rgba(18, 50, 84, .08) !important;
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/ice/ice-glass.webp"), url("/theme-effects/ice/frost-corners.png") !important;
-  background-blend-mode: normal, soft-light, screen !important;
-  background-size: cover, 420px 420px, 100% 100% !important;
-  background-repeat: no-repeat, repeat, no-repeat !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: normal, soft-light, soft-light !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"] .ov-chat-widget :is(.ov-chat-header, .ov-chat-messages, .ov-chat-giveaway, .better-gw-roulette-viewport) {
   background-color: rgba(18, 50, 84, .08) !important;
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
   background-blend-mode: normal, soft-light !important;
-  background-size: cover, 360px 360px !important;
-  background-repeat: no-repeat, repeat !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
   color: #EAF7FF;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"][data-widget-type="chat"] .ov-chat-messages {
-  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/ice/ice-glass.webp") !important;
+  background-image: linear-gradient(145deg, rgba(41, 98, 153, .06), rgba(10, 43, 74, .04)), url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
   background-blend-mode: normal, soft-light !important;
-  background-size: cover, 360px 360px !important;
-  background-repeat: no-repeat, repeat !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 .better-widget-colour-scope[data-colour-theme="clear_ice"] .better-bets-stage :is(.bet-option, .bet-bar) {
   background-color: rgba(10, 43, 74, .44) !important;
-  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/ice/ice-glass.webp"), url("/theme-effects/ice/frost-corners.png") !important;
-  background-blend-mode: normal, soft-light, screen !important;
-  background-size: cover, 300px 300px, 100% 100% !important;
-  background-repeat: no-repeat, repeat, no-repeat !important;
+  background-image: linear-gradient(145deg, rgba(216, 243, 251, .06), rgba(10, 43, 74, .08)), url("/theme-effects/clear-ice/clear-ice-glass.png"), url("/theme-effects/clear-ice/clear-ice-fractures.png") !important;
+  background-blend-mode: normal, soft-light, soft-light !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 
 /* These Bonus Hunt content regions were left flat between the glass shell and
@@ -203,15 +199,15 @@
   background-color: rgba(10, 43, 74, .24) !important;
   background-image:
     linear-gradient(145deg, rgba(216, 243, 251, .05), rgba(10, 43, 74, .04)),
-    url("/theme-effects/ice/ice-glass.webp") !important;
+    url("/theme-effects/clear-ice/clear-ice-glass.png") !important;
   background-blend-mode: normal, soft-light !important;
-  background-size: cover, 320px 320px !important;
-  background-repeat: no-repeat, repeat !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
   -webkit-backdrop-filter: blur(3px) saturate(125%);
   backdrop-filter: blur(3px) saturate(125%);
 }
 
-/* Keep artwork fully legible; only reuse Arctic's existing fine ice texture. */
+/* Keep artwork fully legible within the Clear Ice frame. */
 .better-widget-colour-scope[data-colour-theme="clear_ice"]
   :is(.cg-cover, .better-slideshow-frame__viewport, .better-shoutout-media)::before {
   border-color: rgba(216, 243, 251, .72);
