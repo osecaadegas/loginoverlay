@@ -34,6 +34,8 @@ try {
   assert.equal(model.fitSlotWindowSource(0,1080,240,160), null);
   assert.equal(model.fitSlotWindowSource(1920,1080,0,160), null);
   assert.equal(model.normalizeSlotWindowSourceUrl(SOURCE), SOURCE);
+  assert.equal(model.sanitizeSlotWindowConfig({ fps: 60 }).fps, 60);
+  assert.equal(model.sanitizeSlotWindowConfig({ fps: 120 }).fps, 60);
   assert.equal(model.normalizeSlotWindowSourceUrl("https://evil.example/view/panel-2?token=" + TOKEN), "");
   assert.equal(model.normalizeSlotWindowSourceUrl("http://127.0.0.1:17899/view/panel-2?token=" + TOKEN), "");
 

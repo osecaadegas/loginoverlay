@@ -1800,7 +1800,7 @@ function SlotWindowControls({ config, onChange }) {
       </Section>
 
       <Section title="Performance" icon={<Gauge size={13} />} defaultOpen={false} simple>
-        <SliderRow label="Capture rate" value={c.fps} min={5} max={30} unit=" FPS" onChange={(fps) => set({ fps })} />
+        <SliderRow label="Capture rate" value={c.fps} min={5} max={60} unit=" FPS" onChange={(fps) => set({ fps })} />
       </Section>
 
       <button className="bp-reset" type="button" onClick={() => onChange({ ...SLOT_WINDOW_DEFAULTS })}>

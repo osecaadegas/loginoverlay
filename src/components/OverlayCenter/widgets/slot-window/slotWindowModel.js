@@ -8,7 +8,7 @@ export const SLOT_WINDOW_DEFAULTS = Object.freeze({
   cropRight: 0,
   cropBottom: 0,
   cropLeft: 0,
-  fps: 30,
+  fps: 60,
   fit: "cover",
 });
 
@@ -80,7 +80,7 @@ export function sanitizeSlotWindowConfig(config = {}) {
     cropRight: clampNumber(config.cropRight, 0, 45, SLOT_WINDOW_DEFAULTS.cropRight),
     cropBottom: clampNumber(config.cropBottom, 0, 45, SLOT_WINDOW_DEFAULTS.cropBottom),
     cropLeft: clampNumber(config.cropLeft, 0, 45, SLOT_WINDOW_DEFAULTS.cropLeft),
-    fps: clampNumber(config.fps, 5, 30, SLOT_WINDOW_DEFAULTS.fps),
+    fps: clampNumber(config.fps, 5, 60, SLOT_WINDOW_DEFAULTS.fps),
   };
 }
 
