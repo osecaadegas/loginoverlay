@@ -29,12 +29,17 @@ export function getWidgetSlotBehavior(widget) {
     || (isBonusHunt && !['v2', 'v5_compact'].includes(style));
   const needsNpcOverflow = !!widget?.config?.npcEnabled;
   const isNavbar = widget?.widget_type === 'navbar';
-  const needsVisibleOverflow = needs3D || needsNpcOverflow || isNavbar;
+  // Arctic RTP icicles hang below the stats rail as an absolute decoration.
+  // Let the outer overlay slot paint them without enlarging the widget bounds.
+  const needsArcticRtpOverflow = widget?.widget_type === 'rtp_stats'
+    && widget?.config?.colourTheme === 'arctic';
+  const needsVisibleOverflow = needs3D || needsNpcOverflow || isNavbar || needsArcticRtpOverflow;
   const widgetRadius = widget?.config?.cardRadius;
   return {
     needs3D,
     needsNpcOverflow,
     isNavbar,
+    needsArcticRtpOverflow,
     needsVisibleOverflow,
     needsClip: !isNavbar && widgetRadius && !needsVisibleOverflow,
     widgetRadius,

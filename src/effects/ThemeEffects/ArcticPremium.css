@@ -227,7 +227,7 @@
 .better-widget-colour-scope[data-colour-theme="arctic"] .ov-chat-widget {
   background-image:
     radial-gradient(ellipse at 50% 48%, rgba(2, 24, 43, 0.9), rgba(29, 88, 120, 0.4)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
   background-size: cover, 100% 100%, 230px 230px, cover !important;
@@ -238,7 +238,7 @@
   background-image:
     url("/theme-effects/ice/frost-corners.png"),
     radial-gradient(ellipse at center, rgba(2, 16, 29, 0.68), rgba(28, 83, 110, 0.18)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/frozen-glass.webp");
   background-size: 100% 100%, cover, 100% 100%, 180px 180px, cover !important;
@@ -251,7 +251,7 @@
 .better-widget-colour-scope[data-colour-theme="arctic"] :is(.better-hunt-panel, .slot-bingo-widget, .better-slideshow-frame) {
   background-image:
     radial-gradient(ellipse at 50% 48%, rgba(2, 22, 40, .88) 12%, rgba(10, 53, 82, .52) 68%, rgba(95, 184, 224, .22)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/frozen-glass.webp");
   background-blend-mode: normal;
@@ -268,26 +268,22 @@
 
 /* Icicles need room below these bars; their old overflow clipping hid them. */
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"],
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar,
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-inner {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar {
   overflow: visible !important;
-}
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-inner {
-  position: relative;
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar {
   position: relative;
+  z-index: 2;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"]::after,
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar::after,
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-inner::after {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar::after {
   position: absolute;
-  z-index: 4;
-  top: calc(100% - 1px);
+  z-index: 1;
+  top: calc(100% - 2px);
   right: 2%;
   left: 2%;
-  height: clamp(18px, 2.8vw, 32px);
+  height: clamp(20px, 3vw, 34px);
   background: url("/theme-effects/ice/icicles.png") top center / 100% 100% no-repeat;
   content: "";
   opacity: .9;
@@ -307,7 +303,7 @@
   background-color: rgba(3, 20, 34, .78) !important;
   background-image:
     linear-gradient(145deg, rgba(7, 37, 57, .82), rgba(1, 12, 23, .82)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-glass.webp") !important;
   background-size: cover, 100% 100%, 280px 220px !important;
   background-blend-mode: normal, screen, normal !important;
@@ -329,7 +325,7 @@
     url("/theme-effects/ice/frost-corners.png"),
     linear-gradient(180deg, rgba(210, 244, 255, .13), rgba(20, 70, 98, .14) 22%, rgba(1, 13, 25, .3) 100%),
     radial-gradient(ellipse at 50% 0%, rgba(58, 145, 184, .18), transparent 72%),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/ice-glass.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
@@ -344,7 +340,7 @@
     url("/theme-effects/ice/frost-corners.png"),
     linear-gradient(180deg, rgba(210, 244, 255, .13), rgba(20, 70, 98, .14) 22%, rgba(1, 13, 25, .3) 100%),
     radial-gradient(ellipse at 50% 0%, rgba(58, 145, 184, .18), transparent 72%),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/ice-glass.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
@@ -369,7 +365,7 @@
   background-color: rgba(2, 17, 30, .88) !important;
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(56, 145, 184, .2), transparent 76%),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
   background-size: cover, 100% 100%, 100% 100%, cover !important;
@@ -382,7 +378,7 @@
   background-color: rgba(3, 21, 36, .88) !important;
   background-image:
     linear-gradient(145deg, rgba(10, 46, 68, .76), rgba(1, 13, 25, .84)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/ice-glass.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
@@ -395,7 +391,7 @@
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov__card, .bets-ov__row, .bets-ov__stat) {
   background-image:
     linear-gradient(145deg, rgba(9, 42, 64, .78), rgba(1, 13, 25, .82)),
-    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/ice-noise.webp"),
     url("/theme-effects/ice/ice-glass.webp"),
     url("/theme-effects/ice/frozen-glass.webp") !important;
