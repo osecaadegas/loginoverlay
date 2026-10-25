@@ -277,7 +277,7 @@
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"]::after,
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar::after {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .arctic-rtp-icicle-attachment {
   position: absolute;
   z-index: 1;
   top: calc(100% - 2px);

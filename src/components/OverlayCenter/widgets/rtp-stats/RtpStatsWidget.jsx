@@ -379,7 +379,7 @@ function buildRtpRootStyle(values) {
     fontSize: `${values.fontSize}px`,
     width: "100%",
     height: "100%",
-    overflow: "hidden",
+    overflow: values.colourTheme === "arctic" ? "visible" : "hidden",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1756,6 +1756,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOve
     barBgFrom,
     barBgVia,
     barBgTo,
+    colourTheme: c.colourTheme,
     metalPrimaryColor,
     metalSecondaryColor,
     borderColor,
@@ -1926,6 +1927,27 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId, publicOve
           bestWinEmptyText={bestWinEmptyText}
         />
       </div>
+      {c.colourTheme === "arctic" ? (
+        <span
+          className="arctic-rtp-icicle-attachment"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            zIndex: 4,
+            top: "calc(100% - 2px)",
+            right: "2%",
+            left: "2%",
+            height: "clamp(20px, 3vw, 34px)",
+            backgroundImage: 'url("/theme-effects/ice/icicles.png")',
+            backgroundPosition: "top center",
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+            opacity: 0.98,
+            filter: "drop-shadow(0 2px 4px rgba(100, 202, 235, .55))",
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -6306,7 +6306,7 @@ export function BetterRtpStatsStyle({
         fontFamily: font,
         fontSize,
         boxShadow: `inset 0 0 0 1px ${c.colourTheme === 'volcanic' ? rim : 'rgba(3,12,32,0.9)'}, inset 0 1px 0 ${alphaColor(c.cRim || accent, 0.3)}, inset 0 -1px 0 rgba(0,0,0,0.45)`,
-        overflow: "hidden",
+        overflow: c.colourTheme === "arctic" ? "visible" : "hidden",
         position: "relative",
         flexShrink: 0,
       })}
@@ -6543,6 +6543,27 @@ export function BetterRtpStatsStyle({
             {bestWinValue}
           </strong>
         </div>
+      ) : null}
+      {c.colourTheme === "arctic" ? (
+        <span
+          className="arctic-rtp-icicle-attachment"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            zIndex: 4,
+            top: "calc(100% - 2px)",
+            right: "2%",
+            left: "2%",
+            height: "clamp(20px, 3vw, 34px)",
+            backgroundImage: 'url("/theme-effects/ice/icicles.png")',
+            backgroundPosition: "top center",
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+            opacity: 0.98,
+            filter: "drop-shadow(0 2px 4px rgba(100, 202, 235, .55))",
+            pointerEvents: "none",
+          }}
+        />
       ) : null}
     </div>
   );
