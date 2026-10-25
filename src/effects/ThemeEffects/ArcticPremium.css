@@ -228,8 +228,9 @@
   background-image:
     radial-gradient(ellipse at 50% 48%, rgba(2, 24, 43, 0.9), rgba(29, 88, 120, 0.4)),
     url("/theme-effects/ice/ice-cracks.png"),
-    url("/theme-effects/ice/ice-glass.webp") !important;
-  background-size: cover, 100% 100%, cover !important;
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, 100% 100%, 230px 230px, cover !important;
   background-position: center !important;
   background-repeat: no-repeat;
 }
@@ -238,8 +239,9 @@
     url("/theme-effects/ice/frost-corners.png"),
     radial-gradient(ellipse at center, rgba(2, 16, 29, 0.68), rgba(28, 83, 110, 0.18)),
     url("/theme-effects/ice/ice-cracks.png"),
-    url("/theme-effects/ice/ice-glass.webp");
-  background-size: 100% 100%, cover, 100% 100%, cover !important;
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/frozen-glass.webp");
+  background-size: 100% 100%, cover, 100% 100%, 180px 180px, cover !important;
   background-position: center !important;
   border-color: rgba(195, 239, 254, 0.85);
   box-shadow: inset 0 0 12px rgba(183, 235, 255, 0.42);
@@ -250,18 +252,18 @@
   background-image:
     radial-gradient(ellipse at 50% 48%, rgba(2, 22, 40, .88) 12%, rgba(10, 53, 82, .52) 68%, rgba(95, 184, 224, .22)),
     url("/theme-effects/ice/ice-cracks.png"),
-    url("/theme-effects/ice/ice-glass.webp");
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/frozen-glass.webp");
   background-blend-mode: normal;
-  background-size: cover, 100% 100%, cover;
+  background-size: cover, 100% 100%, 220px 220px, cover;
   background-position: center;
 }
 .better-widget-colour-scope[data-colour-theme="arctic"] .better-hunt-panel::after,
 .better-widget-colour-scope[data-colour-theme="arctic"] .slot-bingo-widget::before,
 .better-widget-colour-scope[data-colour-theme="arctic"] .better-slideshow-frame__inner {
-  background-image: url("/theme-effects/ice/bonus-frost-edge.webp");
-  mask-image: linear-gradient(90deg, #000, transparent 3%, transparent 97%, #000), linear-gradient(#000, transparent 4%, transparent 96%, #000) !important;
-  mask-composite: add;
-  opacity: .65;
+  background-image: url("/theme-effects/ice/frost-corners.png");
+  mask-image: none !important;
+  opacity: .34;
 }
 
 /* Icicles need room below these bars; their old overflow clipping hid them. */
@@ -285,10 +287,10 @@
   top: calc(100% - 1px);
   right: 2%;
   left: 2%;
-  height: clamp(10px, 2vw, 23px);
+  height: clamp(18px, 2.8vw, 32px);
   background: url("/theme-effects/ice/icicles.png") top center / 100% 100% no-repeat;
   content: "";
-  opacity: .76;
+  opacity: .9;
   filter: drop-shadow(0 2px 3px rgba(100, 202, 235, .42));
   pointer-events: none;
 }
@@ -310,4 +312,95 @@
   background-size: cover, 100% 100%, 280px 220px !important;
   background-blend-mode: normal, screen, normal !important;
   box-shadow: inset 0 1px 0 rgba(234, 251, 255, .38), inset 0 0 10px rgba(130, 211, 241, .18), 0 2px 7px rgba(0, 5, 12, .36) !important;
+}
+
+/* Reference material: smooth deep-blue frozen glass under sharp corner cracks,
+   with the luminous frost-edge artwork kept at the perimeter. The previous
+   cloudy ice-glass texture is intentionally reserved for animated frost FX. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bonus_hunt"] .better-hunt-panel,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"] .better-slideshow-frame,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .ov-chat-widget,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov, .bet-widget),
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+  background-color: rgba(3, 20, 34, .96) !important;
+  background-image:
+    url("/theme-effects/ice/frost-corners.png"),
+    linear-gradient(180deg, rgba(210, 244, 255, .13), rgba(20, 70, 98, .14) 22%, rgba(1, 13, 25, .3) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(58, 145, 184, .18), transparent 72%),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/ice-glass.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: 100% 100%, cover, cover, 100% 100%, 100% 100%, cover, cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: soft-light, normal, screen, screen, soft-light, soft-light, normal !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"] {
+  background-color: rgba(3, 20, 34, .96) !important;
+  background-image:
+    url("/theme-effects/ice/frost-corners.png"),
+    linear-gradient(180deg, rgba(210, 244, 255, .13), rgba(20, 70, 98, .14) 22%, rgba(1, 13, 25, .3) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(58, 145, 184, .18), transparent 72%),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/ice-glass.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: 100% 100%, cover, cover, 100% 100%, 100% 100%, cover, cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: soft-light, normal, screen, screen, soft-light, soft-light, normal !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bonus_hunt"] .better-hunt-panel::after,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slot_bingo"] .slot-bingo-widget::before,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"] .better-slideshow-frame__inner {
+  background-image: url("/theme-effects/ice/frost-corners.png") !important;
+  mask-image: none !important;
+  opacity: .46 !important;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 4px rgba(165, 225, 248, .4));
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bonus_hunt"] :is(.better-hunt-empty, .better-hunt-main-empty, .better-hunt-main-active-empty),
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="slideshow_frame"] .better-slideshow-frame__empty {
+  background-color: rgba(2, 17, 30, .88) !important;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(56, 145, 184, .2), transparent 76%),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, 100% 100%, 100% 100%, cover !important;
+  background-blend-mode: screen, screen, normal !important;
+  border-color: rgba(174, 229, 250, .7) !important;
+  box-shadow: inset 0 1px 0 rgba(240, 252, 255, .4), inset 0 0 14px rgba(113, 202, 236, .16) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] :is(.ov-chat-msg, .ov-cards-msg) {
+  background-color: rgba(3, 21, 36, .88) !important;
+  background-image:
+    linear-gradient(145deg, rgba(10, 46, 68, .76), rgba(1, 13, 25, .84)),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/ice-glass.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, 100% 100%, 100% 100%, cover, cover !important;
+  background-blend-mode: normal, screen, soft-light, soft-light, normal !important;
+  border-color: rgba(180, 231, 249, .62) !important;
+  box-shadow: inset 0 1px 0 rgba(233, 250, 255, .32), inset 0 0 8px rgba(117, 202, 234, .16), 0 3px 9px rgba(0, 5, 12, .3) !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov__card, .bets-ov__row, .bets-ov__stat) {
+  background-image:
+    linear-gradient(145deg, rgba(9, 42, 64, .78), rgba(1, 13, 25, .82)),
+    url("/theme-effects/ice/ice-cracks.png"),
+    url("/theme-effects/ice/ice-noise.webp"),
+    url("/theme-effects/ice/ice-glass.webp"),
+    url("/theme-effects/ice/frozen-glass.webp") !important;
+  background-size: cover, 100% 100%, 100% 100%, cover, cover !important;
+  background-blend-mode: normal, screen, soft-light, soft-light, normal !important;
+  border-color: rgba(181, 231, 250, .78) !important;
+  box-shadow: inset 0 1px 0 rgba(241, 253, 255, .42), inset 0 0 10px rgba(117, 201, 235, .2), 0 3px 8px rgba(0, 5, 12, .38) !important;
 }
