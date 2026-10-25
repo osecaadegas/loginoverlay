@@ -1,4 +1,4 @@
-import BonusHuntGridWidget, { GRID_POSITIONS, sanitizeBonusHuntGrid } from "../widgets/slot-window/BonusHuntGridWidget";
+import BonusHuntGridWidget, { GRID_POSITIONS, GRID_FRAME_CORNERS, sanitizeBonusHuntGrid } from "../widgets/slot-window/BonusHuntGridWidget";
 import { normalizeStreetArtSettings } from '../../../effects/ThemeEffects/street-art/streetArtTheme.js';
 import PalettePreview from './PalettePreview';
 import ImageCardsControls from '../widgets/slot-requests/ImageCardsControls';
@@ -7911,7 +7911,7 @@ export function BetterWidgetControls({
   const c = ensureBetterWidgetConfig(type, config);
   if (type === "bonus_hunt_2x2") {
     const grid = sanitizeBonusHuntGrid(c);
-    return <div><NumberRow label="Grid spacing" min={0} max={60} value={grid.gap} onChange={gap=>onChange({...grid,gap})}/>{GRID_POSITIONS.map((position,index)=><Section key={position} title={position} defaultOpen={index===0} simple><SlotWindowControls config={grid.slots[index]} onChange={slot=>onChange({...grid,slots:grid.slots.map((previous,i)=>i===index?slot:previous)})}/></Section>)}</div>;
+    return <div><Section title="Whole frame" defaultOpen simple><NumberRow label="Grid spacing" min={0} max={60} value={grid.gap} onChange={gap=>onChange({...grid,gap})}/><NumberRow label="Frame border width" min={0} max={24} value={grid.frameWidth} onChange={frameWidth=>onChange({...grid,frameWidth})}/>{GRID_FRAME_CORNERS.map(([key,label])=><NumberRow key={key} label={label} min={0} max={240} value={grid[key]} onChange={value=>onChange({...grid,[key]:value})}/>)}<p className="bp-hint">These corners clip the whole four-slot frame. Set the other corners to 0 to round just one. Feeds are transparent while Slot mode is off in SC Browser.</p></Section>{GRID_POSITIONS.map((position,index)=><Section key={position} title={position} defaultOpen={index===0} simple><SlotWindowControls config={grid.slots[index]} onChange={slot=>onChange({...grid,slots:grid.slots.map((previous,i)=>i===index?slot:previous)})}/></Section>)}</div>;
   }
   if (type === "slot_window") {
     return <><GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;

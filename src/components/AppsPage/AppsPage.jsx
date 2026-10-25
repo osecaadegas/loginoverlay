@@ -21,7 +21,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAdmin } from "../../hooks/useAdmin";
 import "./AppsPage.css";
 
-const SCREEN_SPLIT_VERSION = "0.1.16";
+const SCREEN_SPLIT_VERSION = "0.1.18";
 const SCREEN_SPLIT_DOWNLOAD_URL = `https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v${SCREEN_SPLIT_VERSION}/StreamersCenterBrowserSetup-${SCREEN_SPLIT_VERSION}.exe`;
 
 export default function AppsPage() {
