@@ -324,6 +324,10 @@ export default function BetterObsOverlay() {
                   height: renderInstance.height,
                   opacity: targetInstance.opacity,
                   zIndex: 1,
+                  overflow: targetInstance.widgetType === "rtp_stats"
+                    && targetInstance.config?.colourTheme === "arctic"
+                    ? "visible"
+                    : "hidden",
                 }}
               >
                 <BetterObsWidgetBoundary instanceId={targetInstance.instanceId}>
@@ -386,6 +390,10 @@ export default function BetterObsOverlay() {
                   height: instance.height,
                   opacity: instance.opacity,
                   zIndex: instance.zIndex,
+                  overflow: instance.widgetType === "rtp_stats"
+                    && instance.config?.colourTheme === "arctic"
+                    ? "visible"
+                    : "hidden",
                 }}
               >
                 <BetterObsWidgetBoundary instanceId={instance.instanceId}>

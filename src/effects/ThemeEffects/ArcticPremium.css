@@ -266,7 +266,7 @@
   opacity: .34;
 }
 
-/* Icicles need room below these bars; their old overflow clipping hid them. */
+/* Icicles are an absolute attachment outside the rail's measured height. */
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="navbar"] [data-widget-element="container"],
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-bar {
   overflow: visible !important;

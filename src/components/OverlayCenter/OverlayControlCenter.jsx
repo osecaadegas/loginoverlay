@@ -1123,6 +1123,10 @@ function BetterEditorInlinePreview({ userId, active, onStatusChange }) {
                 height: instance.height,
                 opacity: instance.opacity,
                 zIndex: instance.zIndex,
+                overflow: instance.widgetType === "rtp_stats"
+                  && instance.config?.colourTheme === "arctic"
+                  ? "visible"
+                  : "hidden",
               }}
             >
               <BetterPreviewWidgetBoundary instanceId={instance.instanceId}>
