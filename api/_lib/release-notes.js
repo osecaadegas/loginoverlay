@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'bets-return-points-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Return points when cancelling chat bets',
+    summary: 'Round controls can return deducted StreamElements points to every bettor before cancelling a round.',
+    changes: [
+      'Added a Return points to bettors action for active betting rounds with deducted points; successful refunds cancel the round.',
+      'The server locks betting and records each refund attempt so repeated clicks cannot automatically credit a bettor twice.',
+      'Partial failures remain visible; uncertain StreamElements responses require manual review before retrying.',
+    ],
+    action: 'Refresh the Overlay Center. In Bets round controls, choose Return points to bettors while the round is open or locked.',
+  },
+  {
     id: 'sc-transitions-3-18-production-candidate-2026-10-28', date: '2026-10-28', category: 'browser', version: 'SC Web Transitions 3.18.0',
     title: 'SC Web Transitions: safer recovery and revised GPU effects',
     summary: 'Version 3.18.0 adds verified shutdown recovery, safer hotkeys, configuration backups, diagnostics and revised GPU rendering.',

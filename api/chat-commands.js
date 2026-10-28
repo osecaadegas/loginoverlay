@@ -71,6 +71,8 @@ export default async function handler(req, res) {
       return handleBet(req, res);
     case "bet-payout":
       return handleBetPayout(req, res);
+    case "bet-refund":
+      return handleBetRefund(req, res);
     case "connect-four":
       return handleConnectFour(req, res);
     default:
@@ -553,6 +555,104 @@ async function handlePredSay(req, res) {
 
   await seBotSay(seConn.se_channel_id, seConn.se_jwt_token, message);
   return res.status(200).json({ ok: true });
+}
+
+// Refund the current chat-betting round. Claims are durable because an external
+// credit and a database write cannot be one atomic transaction.
+async function handleBetRefund(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "POST required" });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(500).json({ error: "Server config error" });
+  const { user_id: userId, round_id: roundId } = req.body || {};
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const user = await verifyJwt(supabase, req);
+  if (!user || user.id !== userId) return res.status(401).json({ error: "Unauthorised" });
+  try {
+    const { data: widget, error: widgetError } = await supabase.from("overlay_widgets")
+      .select("id, config, updated_at").eq("user_id", userId)
+      .eq("widget_type", "bets").limit(1).maybeSingle();
+    if (widgetError) throw widgetError;
+    if (!widget) return res.status(404).json({ error: "Bets widget not found" });
+    const cfg = widget.config || {};
+    if (!roundId || String(cfg._roundId || cfg._openedAt) !== String(roundId) || !["open", "locked"].includes(cfg.gameStatus))
+      return res.status(409).json({ error: "Round changed or already settled. Refresh the editor." });
+    if ((cfg._roundUsesPoints ?? cfg.betSeEnabled !== false) === false)
+      return res.status(400).json({ error: "This round did not deduct StreamElements points" });
+
+    // Close admission before issuing credits. A concurrent bet update causes
+    // the compare-and-swap to fail and the operator can retry safely.
+    if (cfg.gameStatus === "open") {
+      const { data: locked, error: lockError } = await supabase.from("overlay_widgets")
+        .update({ config: { ...cfg, gameStatus: "locked" }, updated_at: new Date().toISOString() })
+        .eq("id", widget.id).eq("updated_at", widget.updated_at).select("id");
+      if (lockError) throw lockError;
+      if (!locked?.length) return res.status(409).json({ error: "Bets changed while closing the round. Retry." });
+    }
+    const entries = Object.entries(cfg.betters || {});
+    if (entries.some(([username, bet]) => !username || !Number.isSafeInteger(Number(bet?.amount)) || Number(bet.amount) <= 0))
+      return res.status(409).json({ error: "Invalid saved bet amount; the locked round needs manual review." });
+    const { data: se, error: seError } = await supabase.from("streamelements_connections")
+      .select("se_channel_id, se_jwt_token").eq("user_id", userId).maybeSingle();
+    if (seError) throw seError;
+    if (!se?.se_channel_id || !se?.se_jwt_token)
+      return res.status(400).json({ error: "StreamElements connection is missing; bets are locked and can be refunded after reconnecting." });
+
+    let refunded = 0, alreadyRefunded = 0, failed = 0, needsReview = 0;
+    for (const [username, bet] of entries) {
+      const amount = Number(bet.amount);
+      const key = { widget_id: widget.id, round_id: String(roundId), username };
+      const { data: inserted, error: insertError } = await supabase.from("bets_refund_ledger")
+        .upsert({ ...key, amount, status: "processing" }, { onConflict: "widget_id,round_id,username", ignoreDuplicates: true })
+        .select("status, amount");
+      if (insertError) throw insertError;
+      let claimed = Boolean(inserted?.length);
+      if (!claimed) {
+        const { data: prior, error: priorError } = await supabase.from("bets_refund_ledger")
+          .select("status, amount").match(key).single();
+        if (priorError) throw priorError;
+        if (prior.amount !== amount) { needsReview++; continue; }
+        if (prior.status === "refunded") { alreadyRefunded++; continue; }
+        if (prior.status === "failed") {
+          const { data: retried, error: retryError } = await supabase.from("bets_refund_ledger")
+            .update({ status: "processing", updated_at: new Date().toISOString() })
+            .match(key).eq("status", "failed").select("status");
+          if (retryError) throw retryError;
+          claimed = Boolean(retried?.length);
+        }
+      }
+      if (!claimed) { needsReview++; continue; }
+      try {
+        const response = await fetch(`https://api.streamelements.com/kappa/v2/points/${se.se_channel_id}/${encodeURIComponent(username)}/${amount}`, {
+          method: "PUT", headers: { Authorization: `Bearer ${se.se_jwt_token}`, "Content-Type": "application/json" },
+        });
+        // An HTTP rejection is known not to have credited points; a network
+        // exception is ambiguous and remains processing for manual review.
+        if (!response.ok) {
+          if ([400, 401, 403, 404].includes(response.status)) {
+            const { error: failError } = await supabase.from("bets_refund_ledger")
+              .update({ status: "failed", updated_at: new Date().toISOString() }).match(key);
+            if (failError) throw failError;
+            failed++;
+          } else {
+            needsReview++;
+          }
+          continue;
+        }
+        const { error: markError } = await supabase.from("bets_refund_ledger")
+          .update({ status: "refunded", updated_at: new Date().toISOString() }).match(key);
+        if (markError) throw markError;
+        refunded++;
+      } catch (error) {
+        console.error("[bet-refund] credit outcome needs review:", username, error);
+        needsReview++;
+      }
+    }
+    const complete = failed === 0 && needsReview === 0 && refunded + alreadyRefunded === entries.length;
+    return res.status(complete ? 200 : 207).json({ ok: complete, refunded, alreadyRefunded, failed, needsReview, total: entries.length });
+  } catch (error) {
+    console.error("[bet-refund]", error);
+    return res.status(500).json({ error: "Refund could not complete. Bets remain locked; retry or review the ledger." });
+  }
 }
 
 /* ─── Bet Payout — called by BetsConfig when SE points mode is on ──────────── */

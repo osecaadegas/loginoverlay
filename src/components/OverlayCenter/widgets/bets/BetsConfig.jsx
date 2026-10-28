@@ -190,6 +190,8 @@ export default function BetsConfig({ config, onChange }) {
   const set = (k, v) => onChange({ ...c, [k]: v });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [tab, setTab] = useState("game");
+  const [refundBusy, setRefundBusy] = useState(false);
+  const [refundMessage, setRefundMessage] = useState("");
   const [chatTemplateDrafts, setChatTemplateDrafts] = useState(() =>
     getChatTemplateValues(c),
   );
@@ -231,6 +233,7 @@ export default function BetsConfig({ config, onChange }) {
   const bracketUsage = Array.isArray(c.bracketUsage) ? c.bracketUsage : [];
   const chatCommand = c.chatCommand || "!bet";
   const pointsEnabled = c.betSeEnabled !== false;
+  const roundUsesPoints = c._roundUsesPoints ?? pointsEnabled;
   const timerSeconds = Number(c.timerSeconds || 0);
   const customTimerActive = !TIMER_PRESETS.some(
     (preset) => preset.value === timerSeconds,
@@ -271,6 +274,7 @@ export default function BetsConfig({ config, onChange }) {
 
   /* ── Game actions ── */
   const openBets = () => {
+    setRefundMessage("");
     const opts = normalizeBracketOptions(
       options.length > 0 ? options : DEFAULT_OPTIONS,
     );
@@ -280,6 +284,8 @@ export default function BetsConfig({ config, onChange }) {
       bets: {},
       betters: {},
       _openedAt: Date.now(),
+      _roundId: crypto.randomUUID(),
+      _roundUsesPoints: pointsEnabled,
       options: opts,
       ...createBracketMemory(
         opts,
@@ -369,7 +375,36 @@ export default function BetsConfig({ config, onChange }) {
       bets: {},
       betters: {},
       _openedAt: null,
+      _roundId: null,
+      _roundUsesPoints: null,
     });
+
+  const refundBets = async () => {
+    if (refundBusy || !userId || !c._openedAt || !totalBetters) return;
+    setRefundBusy(true);
+    setRefundMessage("Returning points…");
+    try {
+      const { supabase } = await import("../../../../config/supabaseClient");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Sign in again before refunding bets.");
+      const response = await fetch(`${window.location.origin}/api/chat-commands?cmd=bet-refund`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, round_id: c._roundId || c._openedAt }),
+      });
+      const result = await response.json();
+      if (!result.ok) {
+        setRefundMessage(result.error || `${result.refunded || 0} refunded, ${result.failed || 0} failed, ${result.needsReview || 0} need review. Retry failed credits; uncertain credits need manual review.`);
+        return;
+      }
+      resetBets();
+      setRefundMessage(`${result.refunded + result.alreadyRefunded} bettors received their points back. Round cancelled.`);
+    } catch (error) {
+      setRefundMessage(error.message || "Refund failed. Bets remain in the round.");
+    } finally {
+      setRefundBusy(false);
+    }
+  };
 
   /* ── Bracket management ── */
   const addOption = () =>
@@ -571,6 +606,16 @@ export default function BetsConfig({ config, onChange }) {
 
             {/* Action buttons */}
             <div className="cg-config__actions cg-config__game-actions">
+              {refundMessage && <p className="cg-config__hint" role="status">{refundMessage}</p>}
+              <button
+                type="button"
+                className="cg-config__btn cg-config__btn--accent"
+                onClick={refundBets}
+                disabled={refundBusy || !roundUsesPoints || !totalBetters || !["open", "locked"].includes(status)}
+                title={!totalBetters ? "No points bets in the current round" : "Return every bettor's deducted points, then cancel this round"}
+              >
+                {refundBusy ? "Returning points…" : `↩ Return points to ${totalBetters} bettor${totalBetters === 1 ? "" : "s"}`}
+              </button>
               {status === "idle" && (
                 <button
                   className="cg-config__btn cg-config__btn--primary"
@@ -588,12 +633,12 @@ export default function BetsConfig({ config, onChange }) {
                   >
                     🔒 Lock Bets
                   </button>
-                  <button
+                  {(!roundUsesPoints || !totalBetters) && <button
                     className="cg-config__btn cg-config__btn--muted"
                     onClick={resetBets}
                   >
                     ⏸ Cancel
-                  </button>
+                  </button>}
                 </>
               )}
               {status === "locked" && (
@@ -625,13 +670,13 @@ export default function BetsConfig({ config, onChange }) {
                       </button>
                     ))}
                   </div>
-                  <button
+                  {(!roundUsesPoints || !totalBetters) && <button
                     className="cg-config__btn cg-config__btn--muted"
                     onClick={resetBets}
                     style={{ marginTop: 6 }}
                   >
                     🗑️ Cancel
-                  </button>
+                  </button>}
                 </div>
               )}
               {status === "result" && (
@@ -819,6 +864,7 @@ export default function BetsConfig({ config, onChange }) {
             <input
               type="checkbox"
               checked={pointsEnabled}
+              disabled={status === "open" || status === "locked"}
               onChange={(e) => set("betSeEnabled", e.target.checked)}
               style={{ width: 16, height: 16, cursor: "pointer" }}
             />
