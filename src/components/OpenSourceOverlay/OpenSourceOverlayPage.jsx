@@ -4,6 +4,7 @@ import {
   Activity,
   ArrowUpRight,
   BarChart3,
+  Copy,
   Database,
   ExternalLink,
   Gift,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getOrCreateOpenSourceOverlay } from "./openSourceOverlayBuild";
+import { getPublishedBetterOverlay, publishBetterOverlay } from "../../services/betterOverlayService";
 import "./OpenSourceOverlay.css";
 
 const CONTROL_SECTIONS = [
@@ -49,6 +51,11 @@ export default function OpenSourceOverlayPage() {
   const [overlay, setOverlay] = useState(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
+  const [copyBusy, setCopyBusy] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
+  const obsUrl = overlay?.publicOverlayId
+    ? `${window.location.origin}/obs/overlay/${overlay.publicOverlayId}`
+    : "";
 
   const load = async () => {
     setBusy(true);
@@ -65,6 +72,29 @@ export default function OpenSourceOverlayPage() {
 
   useEffect(() => { load(); }, [user?.id]);
 
+  const copyObsUrl = async () => {
+    if (!user?.id || !overlay?.id || !obsUrl || copyBusy) return;
+    setCopyBusy(true);
+    setCopyMessage("");
+    try {
+      let record = overlay;
+      const publication = await getPublishedBetterOverlay(record.publicOverlayId);
+      if (!publication || publication.publishedVersion < record.draftVersion || record.hasUnpublishedChanges) {
+        record = await publishBetterOverlay(user.id, record.draftLayout, record.draftVersion, record.id);
+        setOverlay(record);
+      }
+      await navigator.clipboard.writeText(`${window.location.origin}/obs/overlay/${record.publicOverlayId}`);
+      setCopyMessage("OBS URL copied. Add it as a 1920 × 1080 Browser Source in OBS.");
+    } catch (copyError) {
+      if (copyError?.committedEditorRecord) setOverlay(copyError.committedEditorRecord);
+      setCopyMessage(copyError?.name === "NotAllowedError"
+        ? "Clipboard access was blocked. Select and copy the URL below."
+        : copyError?.message || "Could not publish or copy the OBS URL. Try again.");
+    } finally {
+      setCopyBusy(false);
+    }
+  };
+
   return (
     <main className="opensource-page">
       <div className="opensource-shell">
@@ -75,6 +105,9 @@ export default function OpenSourceOverlayPage() {
             <p className="opensource-intro">The imported stream scene and its controls, running from this site with your live overlay data.</p>
           </div>
           <div className="opensource-header-actions">
+            <button className="opensource-button opensource-button--primary" type="button" onClick={copyObsUrl} disabled={busy || copyBusy || !overlay}>
+              <Copy size={16} /> {copyBusy ? "Preparing OBS URL…" : overlay?.hasUnpublishedChanges ? "Publish & copy OBS URL" : "Copy OBS URL"}
+            </button>
             <button className="opensource-button opensource-button--quiet" type="button" onClick={load} disabled={busy}>
               <RefreshCw size={16} className={busy ? "opensource-spin" : ""} /> Refresh
             </button>
@@ -83,6 +116,12 @@ export default function OpenSourceOverlayPage() {
             </Link>
           </div>
         </header>
+
+        {overlay && <div className="opensource-obs-url">
+          <label htmlFor="opensource-obs-url">OBS Browser Source URL</label>
+          <input id="opensource-obs-url" type="text" value={obsUrl} readOnly onFocus={(event) => event.target.select()} aria-describedby="opensource-obs-url-status" />
+          <p id="opensource-obs-url-status" role="status">{copyMessage || "Use Copy OBS URL above. The scene is published before copying when needed."}</p>
+        </div>}
 
         <section className="opensource-scene-card" aria-label="Main stream overlay">
           <div className="opensource-scene-card__copy">

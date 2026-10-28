@@ -21,6 +21,10 @@
 .opensource-header h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); line-height: 1.04; letter-spacing: -.04em; }
 .opensource-intro { max-width: 680px; margin: 12px 0 0; color: #9fb0c4; font-size: 15px; line-height: 1.6; }
 .opensource-header-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.opensource-obs-url { margin: -8px 0 22px; padding: 14px 16px; border: 1px solid #23415a; border-radius: 12px; background: rgba(7, 20, 35, .82); }
+.opensource-obs-url label { display: block; margin-bottom: 8px; color: #c9e6f4; font-size: 12px; font-weight: 750; }
+.opensource-obs-url input { box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #31516c; border-radius: 8px; color: #eef8ff; background: #07111f; font: 12px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.opensource-obs-url p { margin: 8px 0 0; color: #9fb7c8; font-size: 12px; }
 .opensource-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 0 15px; border: 1px solid #25374d; border-radius: 10px; color: #dceaff; background: #0d1a2a; text-decoration: none; font-size: 13px; font-weight: 750; cursor: pointer; }
 .opensource-button:disabled { opacity: .6; cursor: wait; }
 .opensource-button--primary { border-color: #148cb3; background: linear-gradient(120deg, #087ea3, #2945a7); color: white; }

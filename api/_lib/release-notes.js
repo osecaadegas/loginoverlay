@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'opensource-obs-copy-url-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Copy the open-source scene URL for OBS',
+    summary: 'The open-source overlay page now has a button for its full-scene OBS Browser Source URL.',
+    changes: [
+      'Added Copy OBS URL beside the preview action and displayed the URL for manual copying.',
+      'When the scene has unpublished changes, Publish & copy OBS URL publishes the current layout before copying its public renderer link.',
+      'The page explains the 1920 × 1080 OBS Browser Source size and reports clipboard or publication errors.',
+    ],
+    action: 'Open /opensource, select Copy OBS URL, and paste it into a 1920 × 1080 OBS Browser Source.',
+  },
+  {
     id: 'bets-return-points-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Return points when cancelling chat bets',
     summary: 'Round controls can return deducted StreamElements points to every bettor before cancelling a round.',
