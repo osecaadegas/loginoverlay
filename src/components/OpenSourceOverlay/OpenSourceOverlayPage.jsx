@@ -17,6 +17,7 @@ import {
   Twitch,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useAdmin } from "../../hooks/useAdmin";
 import { getOrCreateOpenSourceOverlay } from "./openSourceOverlayBuild";
 import { getPublishedBetterOverlay, publishBetterOverlay } from "../../services/betterOverlayService";
 import "./OpenSourceOverlay.css";
@@ -39,15 +40,16 @@ const CONTROL_SECTIONS = [
     title: "Data and integrations",
     items: [
       { title: "Giveaways", detail: "Manage giveaway settings and display", to: "/overlay-center/widgets/giveaway", icon: Gift, tone: "gold" },
-      { title: "Slots Database", detail: "Review slot metadata and artwork", to: "/overlay-center/slots", icon: Database, tone: "cyan" },
+      { title: "Slots Database", detail: "Review slot metadata and artwork", to: "/overlay-center/slots", icon: Database, tone: "cyan", access: "premium" },
       { title: "Integrations", detail: "Configure connected stream services", to: "/overlay-center/integrations", icon: Twitch, tone: "purple" },
-      { title: "Statistics", detail: "View your stream and platform stats", to: "/analytics", icon: BarChart3, tone: "blue" },
+      { title: "Statistics", detail: "View your stream and platform stats", to: "/analytics", icon: BarChart3, tone: "blue", access: "admin" },
     ],
   },
 ];
 
 export default function OpenSourceOverlayPage() {
   const { user } = useAuth();
+  const { isAdmin, isPremium } = useAdmin();
   const [overlay, setOverlay] = useState(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -100,7 +102,7 @@ export default function OpenSourceOverlayPage() {
       <div className="opensource-shell">
         <header className="opensource-header">
           <div>
-            <p className="opensource-eyebrow">Admin testing · Streamers Center data</p>
+            <p className="opensource-eyebrow">Free Twitch overlay · Streamers Center data</p>
             <h1>Open Source Overlay</h1>
             <p className="opensource-intro">The imported stream scene and its controls, running from this site with your live overlay data.</p>
           </div>
@@ -134,7 +136,7 @@ export default function OpenSourceOverlayPage() {
           <div className="opensource-scene-card__meta">
             <span>1920 × 1080</span>
             <span>Live data</span>
-            <span>Admin only</span>
+            <span>Free with Twitch</span>
           </div>
           {error && <button type="button" className="opensource-retry" onClick={load}>Try again</button>}
           {overlay && <Link className="opensource-text-link" to="/opensource_preview">Preview source scene <ArrowUpRight size={15} /></Link>}
@@ -147,7 +149,7 @@ export default function OpenSourceOverlayPage() {
               {section.title === "Stream overlays" && <Link to="/opensource_preview">Preview scene <ArrowUpRight size={14} /></Link>}
             </div>
             <div className="opensource-control-grid">
-              {section.items.map(({ title, detail, to, icon: Icon, tone, primary }) => (
+              {section.items.filter((item) => !item.access || isAdmin || (item.access === "premium" && isPremium)).map(({ title, detail, to, icon: Icon, tone, primary }) => (
                 <Link className={`opensource-control${primary ? " opensource-control--primary" : ""}`} to={to} key={title}>
                   <span className={`opensource-control__icon opensource-control__icon--${tone}`}><Icon size={19} /></span>
                   <span className="opensource-control__text"><strong>{title}</strong><small>{detail}</small></span>

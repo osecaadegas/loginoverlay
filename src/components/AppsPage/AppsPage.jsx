@@ -26,7 +26,7 @@ const SCREEN_SPLIT_DOWNLOAD_URL = `https://github.com/osecaadegas/loginoverlay/r
 
 export default function AppsPage() {
   const { user, signOut } = useAuth();
-  const { isAdmin, isModerator, isSlotModder, isPremium, isAffiliate } =
+  const { isAdmin, isModerator, isSlotModder, isPremium, isAffiliate, isFreeTier } =
     useAdmin();
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,12 +62,12 @@ export default function AppsPage() {
           },
         ]
       : []),
-    ...(isAdmin
+    ...(isAdmin || isFreeTier
       ? [
           {
             to: "/opensource",
-            label: "Open Source Overlay (Admin Beta)",
-            desc: "Manage and preview the imported overlay with live data",
+            label: "Open Source Overlay",
+            desc: "Manage your free Twitch overlay and copy its OBS link",
             icon: SlidersHorizontal,
             tone: "teal",
             art: "editor",

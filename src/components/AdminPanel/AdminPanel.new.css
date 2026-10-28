@@ -3072,6 +3072,13 @@
   background: rgba(8, 145, 178, 0.2);
 }
 
+.admin-panel.admin-panel-modern .role-freeTier,
+.admin-panel.admin-panel-modern .role-chip.role-freeTier {
+  color: #b7f6e8;
+  border-color: rgba(77, 212, 182, 0.38);
+  background: rgba(13, 125, 110, 0.2);
+}
+
 .admin-panel.admin-panel-modern .role-brutus,
 .admin-panel.admin-panel-modern .role-chip.role-brutus {
   color: #ddd6fe;

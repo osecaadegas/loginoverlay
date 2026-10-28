@@ -198,7 +198,7 @@ function App() {
                     <Route
                       path="/opensource"
                       element={
-                        <ProtectedAdminRoute>
+                        <ProtectedAdminRoute allowFreeTier>
                           <OpenSourceOverlayPage />
                         </ProtectedAdminRoute>
                       }
@@ -206,7 +206,7 @@ function App() {
                     <Route
                       path="/opensource_preview"
                       element={
-                        <ProtectedAdminRoute>
+                        <ProtectedAdminRoute allowFreeTier>
                           <OpenSourceOverlayPreview />
                         </ProtectedAdminRoute>
                       }
@@ -303,6 +303,7 @@ function App() {
                         <ProtectedAdminRoute
                           allowPremium
                           allowModerator
+                          allowFreeTier
                           redirectTo="/premium"
                         >
                           <OverlayControlCenter />

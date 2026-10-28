@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'twitch-free-tier-open-source-overlay-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Open-source overlay for Twitch accounts',
+    summary: 'Twitch sign-ins receive a separate freeTier role and can use their own open-source scene.',
+    changes: [
+      'Existing and new Twitch accounts receive the freeTier role without losing Premium, moderator or admin roles.',
+      'Free Tier members can open the source scene, its preview and the Overlay Center controls, then publish and copy their own OBS Browser Source URL.',
+      'Admin-only pages and the Better Editor remain restricted. Premium-only and admin-only links are hidden from the free source scene page.',
+    ],
+    action: 'Sign in with Twitch, open Apps → Open Source Overlay, configure the scene and use Copy OBS URL for a 1920 × 1080 Browser Source.',
+  },
+  {
     id: 'opensource-obs-copy-url-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Copy the open-source scene URL for OBS',
     summary: 'The open-source overlay page now has a button for its full-scene OBS Browser Source URL.',

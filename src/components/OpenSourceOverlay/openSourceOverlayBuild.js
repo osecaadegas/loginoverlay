@@ -15,9 +15,9 @@ import {
   selectBetterEditorOverlay,
 } from "../../services/betterOverlayService";
 
-/** Load the admin's source overlay, migrating an older composition when needed. */
+/** Load the signed-in user's source overlay, migrating an older composition when needed. */
 export async function getOrCreateOpenSourceOverlay(user) {
-  if (!user?.id) throw new Error("Sign in with an admin account to open this overlay.");
+  if (!user?.id) throw new Error("Sign in with Twitch to open this overlay.");
 
   const builds = await listBetterEditorOverlays(user.id);
   const expectedName = getStreamerOverlayName({ instances: [] }, user).toLocaleLowerCase();

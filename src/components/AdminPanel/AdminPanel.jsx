@@ -1743,7 +1743,7 @@ export default function AdminPanel() {
                                     {roleObj.role === "moderator" && "🔧"}
                                     {roleObj.role === "affiliate" && "AF"}
                                     {roleObj.role === "brutus" && "🎬"}
-                                    {roleObj.role.replaceAll("_", " ")}
+                                    {roleObj.role === "freeTier" ? "Free Tier" : roleObj.role.replaceAll("_", " ")}
                                   </span>
                                 ))
                               ) : (
@@ -2008,7 +2008,7 @@ export default function AdminPanel() {
                           </span>
                           {roleObj.role === "affiliate" && "AF"}
                           <span className="role-chip-name">
-                            {roleObj.role.replaceAll("_", " ")}
+                            {roleObj.role === "freeTier" ? "Free Tier" : roleObj.role.replaceAll("_", " ")}
                           </span>
                           {roleObj.access_expires_at && (
                             <span className="role-chip-expiry">

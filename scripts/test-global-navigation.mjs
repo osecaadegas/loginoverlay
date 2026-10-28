@@ -21,7 +21,7 @@ const appsPageSource = readSource("../src/components/AppsPage/AppsPage.jsx");
 
 assert.match(
   appSource,
-  /const showTopNavigation\s*=\s*!isWidgetRoute\s*&&\s*!isOBSOverlay\s*&&\s*!isBetterOBSOverlay\s*&&\s*!isSystemRoute\s*&&\s*!isMarketingHome;/,
+  /const showTopNavigation\s*=\s*!isWidgetRoute\s*&&\s*!isOBSOverlay\s*&&\s*!isBetterOBSOverlay\s*&&\s*!isOpenSourcePreview\s*&&\s*!isSystemRoute\s*&&\s*!isMarketingHome;/,
   "Shared navigation stays on app pages; the homepage owns its marketing navigation and broadcast routes remain chrome-free",
 );
 assert.ok(

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../config/supabaseClient";
 import { accountQueryOptions } from "../config/queryClient";
 import { getUserRoles } from "../utils/adminUtils";
 import { getAccessTokenWithFallback } from "../utils/authSession";
@@ -22,6 +23,7 @@ function buildAccessState({
     isModerator: roleNames.has("moderator") || hasAdminAccess,
     isSlotModder: roleNames.has("slot_modder") || hasAdminAccess,
     isBrutus: roleNames.has("brutus"),
+    isFreeTier: roleNames.has("freeTier"),
     isPremium: hasStreamerEntitlement || roleNames.has("premium") || hasAdminAccess,
     isAffiliate: roleNames.has("affiliate") || hasAdminAccess,
   };
@@ -33,10 +35,21 @@ const NO_ACCESS = buildAccessState({
   serverRoleNames: [],
 });
 
-async function loadRoleAccess(userId) {
+async function loadRoleAccess(user) {
   try {
+    const hasTwitchIdentity = user.identities?.some((identity) => identity.provider === "twitch")
+      || user.app_metadata?.provider === "twitch"
+      || user.app_metadata?.providers?.includes("twitch");
+    if (hasTwitchIdentity) {
+      const { error } = await withTimeout(
+        supabase.rpc("ensure_twitch_free_tier"),
+        8000,
+        "Twitch free tier assignment",
+      );
+      if (error) throw error;
+    }
     const result = await withTimeout(
-      getUserRoles(userId),
+      getUserRoles(user.id),
       8000,
       "Role access check",
     );
@@ -99,7 +112,7 @@ export const useAdmin = () => {
     queryKey: ['account', user?.id, 'roles'],
     enabled: !!user?.id && !authLoading,
     queryFn: async () => {
-      const { roles, rolesError } = await loadRoleAccess(user.id);
+      const { roles, rolesError } = await loadRoleAccess(user);
       const premiumAccess = await loadPremiumAccess(roles);
       if (rolesError && !premiumAccess.hasStreamerEntitlement) throw rolesError;
       return buildAccessState(premiumAccess);

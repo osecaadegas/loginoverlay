@@ -109,8 +109,8 @@ export const getUserRole = async (userId) => {
     return { data: { role: 'user', is_active: true, moderator_permissions: {} }, error: null };
   }
   
-  // Priority: admin > slot_modder > moderator > premium > affiliate > user
-  const rolePriority = { admin: 6, slot_modder: 5, moderator: 4, premium: 3, affiliate: 2, user: 1 };
+  // Priority: admin > slot_modder > moderator > premium > affiliate > freeTier > user
+  const rolePriority = { admin: 7, slot_modder: 6, moderator: 5, premium: 4, affiliate: 3, freeTier: 2, user: 1 };
   const highestRole = data.reduce((highest, current) => {
     const currentPriority = rolePriority[current.role] || 0;
     const highestPriority = rolePriority[highest.role] || 0;

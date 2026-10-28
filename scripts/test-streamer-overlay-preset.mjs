@@ -530,11 +530,11 @@ try {
   );
   assert.match(
     appsSource,
-    /\.\.\.\(isAdmin\s*\?\s*\[[\s\S]*?to: "\/opensource"[\s\S]*?label: "Open Source Overlay \(Admin Beta\)"/,
-    "the website Apps page exposes the source overlay hub only to admins",
+    /\.\.\.\(isAdmin \|\| isFreeTier\s*\?\s*\[[\s\S]*?to: "\/opensource"[\s\S]*?label: "Open Source Overlay"/,
+    "the website Apps page exposes the source overlay hub to admins and Twitch Free Tier accounts",
   );
   console.log(
-    "Streamer Overlay checks passed: supplied-scene widgets and layout, blue source styling, transparent empty gameplay frame, admin gate, legacy build migration, owner-scoped persistence, OBS publication, live data, and embedded giveaway settings.",
+    "Streamer Overlay checks passed: supplied-scene widgets and layout, blue source styling, transparent empty gameplay frame, Free Tier route, legacy build migration, owner-scoped persistence, OBS publication, live data, and embedded giveaway settings.",
   );
 } finally {
   await server.close();
