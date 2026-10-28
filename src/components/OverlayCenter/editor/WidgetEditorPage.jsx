@@ -33,6 +33,7 @@ import {
   Layers,
   PanelRight,
   PanelLeftClose,
+  Palette,
   Search,
   ZoomIn,
   ZoomOut,
@@ -50,9 +51,12 @@ import { applyCandyComposition } from './candyComposition';
 import { applyVolcanicComposition } from './volcanicComposition';
 import { applyStreetArtComposition } from './streetArtComposition.js';
 import { applyWidgetColourTheme } from './widgetColourThemes.js';
+import { applySceneColourTheme, getSceneColourTheme } from './sceneColourTheme.js';
+import { getWidgetColourThemeGroups } from '../widgets/shared/colourThemePalettes.js';
 import { applySolverdeComposition } from './solverdeComposition';
 import { useAuth } from "../../../context/AuthContext";
 import { useAdmin } from "../../../hooks/useAdmin";
+import { useOverlayAssetAccess } from "../../../hooks/useOverlayAssetAccess";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import {
   getBetterEditorLiveSource,
@@ -550,6 +554,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const location = useLocation();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const themeAccess = useOverlayAssetAccess(user?.id);
   const shellRef = useRef(null);
   const layoutRef = useRef(createDefaultBetterLayout());
   const interactionRef = useRef(null);
@@ -566,6 +571,13 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
   const confirmDialogRef = useRef(null);
 
   const [layout, setLayout] = useState(createDefaultBetterLayout);
+  const sceneColourTheme = getSceneColourTheme(layout);
+  const sceneThemeGroups = getWidgetColourThemeGroups((key, theme) =>
+    (!theme.adminOnly || isAdmin) && themeAccess.canUse('theme', key)
+  );
+  const selectedSceneTheme = sceneThemeGroups.some(group =>
+    group.themes.some(theme => theme.key === sceneColourTheme)
+  ) ? sceneColourTheme : '';
   const [overlayRecord, setOverlayRecord] = useState(null);
   const [liveSource, setLiveSource] = useState(() => ({
     overlayId: null,
@@ -1347,10 +1359,13 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
         zIndex: getMaxZ(layoutRef.current) + 1,
       });
       if (!created) return null;
-      const nextLayout = commitLayout((current) => ({
-        ...current,
-        instances: [...current.instances, created],
-      }));
+      const nextLayout = commitLayout((current) => {
+        const theme = getSceneColourTheme(current);
+        const instance = theme
+          ? { ...created, config: applyWidgetColourTheme(widgetType, created.config, theme) }
+          : created;
+        return { ...current, instances: [...current.instances, instance] };
+      });
       setSelectedInstanceId(created.instanceId);
       if (window.innerWidth <= 1100) {
         setLayersOpen(false);
@@ -1796,6 +1811,27 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           onRename={(name) => commitLayout((current) => ({ ...current, name }))}
           disabled={Boolean(operation)}
         />
+        <label className="editor-scene-theme" title="Change every widget's colours in this build. The preview updates now; Publish to OBS when ready.">
+          <Palette size={16} aria-hidden="true" />
+          <span>Overlay theme</span>
+          <select
+            aria-label="Overlay colour theme"
+            value={selectedSceneTheme}
+            disabled={Boolean(operation) || previewing || themeAccess.loading || Boolean(themeAccess.error) || !sceneThemeGroups.length}
+            onChange={(event) => {
+              const key = event.target.value;
+              if (!sceneThemeGroups.some(group => group.themes.some(theme => theme.key === key))) return;
+              commitLayout(current => applySceneColourTheme(current, key));
+            }}
+          >
+            <option value="" disabled>{themeAccess.loading ? 'Loading themes…' : themeAccess.error ? 'Themes unavailable' : 'Mixed / custom'}</option>
+            {sceneThemeGroups.map(group => (
+              <optgroup key={group.key} label={group.name}>
+                {group.themes.map(theme => <option key={theme.key} value={theme.key}>{theme.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
         {isAdmin && (
           <button
             type="button"

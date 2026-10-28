@@ -32,6 +32,7 @@
     "test:better-bets": "node scripts/test-better-bets-browser.mjs",
     "test:broadcast-chat": "node scripts/test-broadcast-chat.mjs",
     "test:widget-colour-themes": "node scripts/test-widget-colour-themes.mjs",
+    "test:scene-colour-theme": "node scripts/test-scene-colour-theme.mjs",
     "test:slot-bingo-config": "node scripts/test-slot-bingo-config.mjs",
     "test:theme-effects": "node scripts/test-theme-effects.mjs",
     "test:orbital-theme": "node scripts/test-orbital-theme.mjs",

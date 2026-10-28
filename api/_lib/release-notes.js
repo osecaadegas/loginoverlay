@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'editor-whole-overlay-colour-theme-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Choose one colour theme for the whole overlay',
+    summary: 'The main editor can apply an available colour theme to every widget in the current build at once.',
+    changes: [
+      'Added an Overlay theme picker that uses the existing widget palettes and checks access before offering restricted themes.',
+      'A selection updates the editor preview immediately, retains widget positions and data, supports Undo, and saves with the existing draft and publish workflow.',
+      'New widgets inherit the scene theme while all widgets share one palette; individual colour edits show the scene as Mixed / custom.',
+    ],
+    action: 'Open the main editor, choose Overlay theme, then Publish to OBS when the preview is ready.',
+  },
+  {
     id: 'twitch-free-tier-open-source-overlay-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Open-source overlay for Twitch accounts',
     summary: 'Twitch sign-ins receive a separate freeTier role and can use their own open-source scene.',
