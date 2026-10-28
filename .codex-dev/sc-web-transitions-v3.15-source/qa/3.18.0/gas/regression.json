@@ -1,0 +1,191 @@
+{
+  "environment": "Headless Chrome SwiftShader software renderer, 960x540 synthetic silhouette; no OBS",
+  "results": [
+    {
+      "effect": "smoke",
+      "diagnostics": {
+        "mode": "WebGL2 rolling 3D emitter volume",
+        "quality": "Cinematic",
+        "steps": 42,
+        "lightSteps": 2,
+        "detailOctaves": 3,
+        "resolution": "691×389",
+        "frames": 4,
+        "contextLost": false,
+        "effect": "smoke",
+        "maskBoundsFound": true,
+        "maskBounds": [
+          0.3802083333333333,
+          0.1111111111111111,
+          0.23958333333333334,
+          0.8703703703703703
+        ],
+        "simulatedFluid": false,
+        "alpha": true,
+        "coverageVerifiedExternally": true,
+        "coverageProbe": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 3.799999952316284,
+          "targets": 10
+        },
+        "gpuTimerAvailable": true,
+        "gpuMsP50": null,
+        "gpuMsP95": null,
+        "cpuSubmitMsP95": 0.19999998807907104,
+        "gpuSamples": 0,
+        "pendingQueries": 4
+      },
+      "earlyBuild": {
+        "coverage": 0.2467837875224789,
+        "alphaCentroidY": 0.763725129450684,
+        "texturedColors": 23,
+        "outsideAlpha": 6654,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "developedBuild": {
+        "coverage": 0.9607137916724305,
+        "alphaCentroidY": 0.5464600042697701,
+        "texturedColors": 22,
+        "outsideAlpha": 21529,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "handoff": {
+        "coverage": 1,
+        "alphaCentroidY": 0.5124393230440947,
+        "texturedColors": 20,
+        "outsideAlpha": 30681,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "sampledCoverage": 1,
+      "handoffDifference": 0,
+      "holdDifference": 4230226,
+      "lateMaxAlpha": 0,
+      "releaseStart": {
+        "coverage": 1,
+        "alphaCentroidY": 0.5124393230440947,
+        "texturedColors": 20,
+        "outsideAlpha": 30681,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "remainingAlphaAfterRelease": 0,
+      "resourcesReused": true,
+      "repeatCoverage": 1,
+      "canvasRemoved": true
+    },
+    {
+      "effect": "toxic",
+      "diagnostics": {
+        "mode": "WebGL2 rolling 3D emitter volume",
+        "quality": "Cinematic",
+        "steps": 42,
+        "lightSteps": 2,
+        "detailOctaves": 3,
+        "resolution": "691×389",
+        "frames": 4,
+        "contextLost": false,
+        "effect": "toxic",
+        "maskBoundsFound": true,
+        "maskBounds": [
+          0.3802083333333333,
+          0.1111111111111111,
+          0.23958333333333334,
+          0.8703703703703703
+        ],
+        "simulatedFluid": false,
+        "alpha": true,
+        "coverageVerifiedExternally": true,
+        "coverageProbe": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 3.399999976158142,
+          "targets": 10
+        },
+        "gpuTimerAvailable": true,
+        "gpuMsP50": null,
+        "gpuMsP95": null,
+        "cpuSubmitMsP95": 0.19999998807907104,
+        "gpuSamples": 0,
+        "pendingQueries": 4
+      },
+      "earlyBuild": {
+        "coverage": 0.28399502005809935,
+        "alphaCentroidY": 0.7655771531705117,
+        "texturedColors": 27,
+        "outsideAlpha": 6661,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "developedBuild": {
+        "coverage": 0.979250242080509,
+        "alphaCentroidY": 0.5483984010601878,
+        "texturedColors": 23,
+        "outsideAlpha": 21538,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "handoff": {
+        "coverage": 1,
+        "alphaCentroidY": 0.5144252503871963,
+        "texturedColors": 27,
+        "outsideAlpha": 30918,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "sampledCoverage": 1,
+      "handoffDifference": 0,
+      "holdDifference": 2362894,
+      "lateMaxAlpha": 0,
+      "releaseStart": {
+        "coverage": 1,
+        "alphaCentroidY": 0.5144252503871963,
+        "texturedColors": 27,
+        "outsideAlpha": 30918,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "remainingAlphaAfterRelease": 0,
+      "resourcesReused": true,
+      "repeatCoverage": 1,
+      "canvasRemoved": true
+    }
+  ]
+}

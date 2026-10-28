@@ -1,0 +1,346 @@
+{
+  "environment": {
+    "device": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 SUPER (0x00002783) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "resolution": [
+      960,
+      540
+    ],
+    "syntheticInputs": true,
+    "liveOBS": false,
+    "hardwareBenchmark": false
+  },
+  "checks": [
+    {
+      "test": "Approved Money OUT",
+      "baselineByteIdentical": false,
+      "changedBytes": 151,
+      "maxChannelDelta": 1,
+      "tolerance": "At most 1/255 on 0.01% of channels (driver precision)",
+      "frames": 3
+    },
+    {
+      "test": "Money IN independent bend modes and cached resources",
+      "changedBytes": 561027
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "smoke",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "smoke",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "smoke",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "smoke",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "toxic",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "toxic",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "toxic",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Performance",
+      "effect": "toxic",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "smoke",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "smoke",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "smoke",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "smoke",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "toxic",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "toxic",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "toxic",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Balanced",
+      "effect": "toxic",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "smoke",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "smoke",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "smoke",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "smoke",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "toxic",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "toxic",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "toxic",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Cinematic",
+      "effect": "toxic",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "smoke",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "smoke",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "smoke",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "smoke",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "toxic",
+      "location": "center",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "toxic",
+      "location": "left",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "toxic",
+      "location": "right",
+      "coverage": [
+        1,
+        1
+      ]
+    },
+    {
+      "test": "Gas footprint coverage and cleanup",
+      "quality": "Ultra",
+      "effect": "toxic",
+      "location": "full",
+      "coverage": [
+        1,
+        1
+      ]
+    }
+  ]
+}

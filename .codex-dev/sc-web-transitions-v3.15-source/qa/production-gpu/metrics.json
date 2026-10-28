@@ -1,0 +1,2666 @@
+{
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 SUPER (0x00002783) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "realOBS": false,
+    "source": "synthetic high-contrast moving source fixture",
+    "visualResolution": [
+      640,
+      360
+    ],
+    "benchmarkResolution": [
+      1920,
+      1080
+    ],
+    "sourceSHA256": "a86fc6a47defc37bf760ad326a9726e38db22716d792ab2ffc383a075a373b36",
+    "baselineReference": "8de8a6e6",
+    "baselineSHA256": "16a9555ad73a9ce64b0b5c91b0be551eca5d6d54b9fa8396b8235dcbe4566f5f"
+  },
+  "checks": [
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 944,
+      "sum": 2053009
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 105727,
+      "sum": 377350801
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 159165,
+      "sum": 575017514
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159073,
+      "sum": 522548510
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159029,
+      "sum": 498860491
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 158793,
+      "sum": 487277312
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 123160,
+      "sum": 319680658
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 69610,
+      "sum": 151805201
+    },
+    {
+      "type": "inferno",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 103569,
+      "sum": 383841107
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 159930,
+      "sum": 609932126
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159794,
+      "sum": 553832577
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159240,
+      "sum": 528262509
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159496,
+      "sum": 490642740
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 159715,
+      "sum": 492516468
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 142426,
+      "sum": 395729138
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 41266,
+      "sum": 94773977
+    },
+    {
+      "type": "inferno",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 17483,
+      "sum": 20696096
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 131540,
+      "sum": 438415308
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 157632,
+      "sum": 1624392075
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158924,
+      "sum": 1962800547
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158711,
+      "sum": 1976652254
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 157926,
+      "sum": 1783235564
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 145975,
+      "sum": 538624653
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 88952,
+      "sum": 302066915
+    },
+    {
+      "type": "lightning",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 127412,
+      "sum": 452773221
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 155259,
+      "sum": 1249948167
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159229,
+      "sum": 2025339676
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158986,
+      "sum": 2028400614
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159051,
+      "sum": 1982195485
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 157646,
+      "sum": 1664656248
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 150248,
+      "sum": 715685747
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 71659,
+      "sum": 120450026
+    },
+    {
+      "type": "lightning",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 158693,
+      "sum": 277828956
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 158870,
+      "sum": 372325134
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158920,
+      "sum": 379620115
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158721,
+      "sum": 382075682
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 158464,
+      "sum": 379757473
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 158901,
+      "sum": 335537588
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 159321,
+      "sum": 224592982
+    },
+    {
+      "type": "shadow",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 158270,
+      "sum": 271208642
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 158910,
+      "sum": 370406832
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159202,
+      "sum": 377119451
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158989,
+      "sum": 379021435
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159043,
+      "sum": 382318080
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 158566,
+      "sum": 382104264
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 159046,
+      "sum": 369308937
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 94485,
+      "sum": 161867861
+    },
+    {
+      "type": "shadow",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 617,
+      "sum": 598701
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 155586,
+      "sum": 1311092672
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 158513,
+      "sum": 1549312974
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158957,
+      "sum": 1486588414
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158752,
+      "sum": 1486076397
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 158274,
+      "sum": 1500064230
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 157050,
+      "sum": 1420619029
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 155024,
+      "sum": 862780365
+    },
+    {
+      "type": "holy",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 155066,
+      "sum": 1280057059
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 157912,
+      "sum": 1570419617
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159253,
+      "sum": 1487061370
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159018,
+      "sum": 1486710445
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159063,
+      "sum": 1494059161
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 158253,
+      "sum": 1557770851
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 157581,
+      "sum": 1532989104
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 148951,
+      "sum": 252179950
+    },
+    {
+      "type": "holy",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 477,
+      "sum": 884207
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 95815,
+      "sum": 401624691
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 155222,
+      "sum": 677092817
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158604,
+      "sum": 683643305
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158424,
+      "sum": 683401924
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 157683,
+      "sum": 689594921
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 108546,
+      "sum": 475622868
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 82530,
+      "sum": 353798457
+    },
+    {
+      "type": "sand",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 95177,
+      "sum": 396067905
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 139127,
+      "sum": 604375635
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158908,
+      "sum": 682703511
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158677,
+      "sum": 683646796
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 158746,
+      "sum": 682779870
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 156272,
+      "sum": 689495403
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 116814,
+      "sum": 507564768
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 66728,
+      "sum": 285631752
+    },
+    {
+      "type": "sand",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 17252,
+      "sum": 80984259
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 102421,
+      "sum": 486818490
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 150961,
+      "sum": 1039951474
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158085,
+      "sum": 1232103871
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 157919,
+      "sum": 1233111080
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 157256,
+      "sum": 1190784182
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 127575,
+      "sum": 620495104
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 96742,
+      "sum": 304490746
+    },
+    {
+      "type": "crystal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 107997,
+      "sum": 461957940
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 140916,
+      "sum": 896765663
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158406,
+      "sum": 1230819955
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158146,
+      "sum": 1231941828
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 158238,
+      "sum": 1233195426
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 156469,
+      "sum": 1101640015
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 126238,
+      "sum": 708139723
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 69961,
+      "sum": 191052004
+    },
+    {
+      "type": "crystal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 9953,
+      "sum": 39925868
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 143352,
+      "sum": 332962322
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 158978,
+      "sum": 979328723
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159001,
+      "sum": 979898475
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158791,
+      "sum": 979163048
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 158502,
+      "sum": 970339338
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 161249,
+      "sum": 809951507
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 9040,
+      "sum": 43297411
+    },
+    {
+      "type": "petal",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 135220,
+      "sum": 249760247
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 158647,
+      "sum": 982084003
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159301,
+      "sum": 980967063
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159058,
+      "sum": 980035814
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159114,
+      "sum": 976918293
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 158664,
+      "sum": 970976775
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 161237,
+      "sum": 958458885
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 9836,
+      "sum": 49118258
+    },
+    {
+      "type": "petal",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 30096,
+      "sum": 41372154
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 144172,
+      "sum": 407658394
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 157965,
+      "sum": 1439076689
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158924,
+      "sum": 1499223222
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158711,
+      "sum": 1498851243
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 158060,
+      "sum": 1466943928
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 151453,
+      "sum": 566710784
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 87147,
+      "sum": 167577978
+    },
+    {
+      "type": "plasma",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 142321,
+      "sum": 352993775
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 156422,
+      "sum": 1308857069
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 159229,
+      "sum": 1500442255
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158986,
+      "sum": 1499497563
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 159051,
+      "sum": 1494238463
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 157878,
+      "sum": 1444871270
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 153697,
+      "sum": 828421593
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 65219,
+      "sum": 92340827
+    },
+    {
+      "type": "plasma",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 17687,
+      "sum": 28467855
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 151026,
+      "sum": 761171204
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 157634,
+      "sum": 1309371606
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158695,
+      "sum": 1147372888
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158506,
+      "sum": 1147719271
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 157797,
+      "sum": 1168947599
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 153415,
+      "sum": 905891654
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 147461,
+      "sum": 388276156
+    },
+    {
+      "type": "neon",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 150483,
+      "sum": 726136815
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 156221,
+      "sum": 1386809272
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158990,
+      "sum": 1141596193
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 158774,
+      "sum": 1146866563
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 158824,
+      "sum": 1147550040
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 157602,
+      "sum": 1262879415
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 154438,
+      "sum": 1103467173
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 134580,
+      "sum": 128671035
+    },
+    {
+      "type": "neon",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.1,
+      "visible": 42321,
+      "sum": 198650577
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.25,
+      "visible": 70270,
+      "sum": 373967052
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.5,
+      "visible": 72675,
+      "sum": 455666185
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 72988,
+      "sum": 462786830
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 72993,
+      "sum": 459377540
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.75,
+      "visible": 75926,
+      "sum": 476019771
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.9,
+      "visible": 61267,
+      "sum": 298212905
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 0.96,
+      "visible": 39869,
+      "sum": 210440197
+    },
+    {
+      "type": "glitch",
+      "direction": "in",
+      "stage": "in",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0,
+      "visible": 0,
+      "sum": 0
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.25,
+      "visible": 61080,
+      "sum": 216214254
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 0.6,
+      "visible": 70872,
+      "sum": 436126457
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 72839,
+      "sum": 457965731
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "cover",
+      "progress": 1,
+      "visible": 72976,
+      "sum": 464574967
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.1,
+      "visible": 73012,
+      "sum": 463681723
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.25,
+      "visible": 85441,
+      "sum": 529974448
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.5,
+      "visible": 84719,
+      "sum": 436783116
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "out",
+      "progress": 0.75,
+      "visible": 42083,
+      "sum": 226920851
+    },
+    {
+      "type": "glitch",
+      "direction": "out",
+      "stage": "out",
+      "progress": 1,
+      "visible": 0,
+      "sum": 0
+    }
+  ],
+  "probes": [
+    {
+      "width": 321,
+      "height": 181,
+      "x": 1,
+      "y": 2,
+      "alpha": 0,
+      "coverage": 0,
+      "readbackBytes": 4
+    },
+    {
+      "width": 321,
+      "height": 181,
+      "x": 320,
+      "y": 180,
+      "alpha": 0,
+      "coverage": 0,
+      "readbackBytes": 4
+    },
+    {
+      "width": 321,
+      "height": 181,
+      "x": 150,
+      "y": 110,
+      "alpha": 0.9921568627450981,
+      "coverage": 0,
+      "readbackBytes": 4
+    },
+    {
+      "width": 640,
+      "height": 360,
+      "x": 1,
+      "y": 2,
+      "alpha": 0,
+      "coverage": 0,
+      "readbackBytes": 4
+    },
+    {
+      "width": 640,
+      "height": 360,
+      "x": 639,
+      "y": 359,
+      "alpha": 0,
+      "coverage": 0,
+      "readbackBytes": 4
+    },
+    {
+      "width": 640,
+      "height": 360,
+      "x": 300,
+      "y": 219,
+      "alpha": 0.9921568627450981,
+      "coverage": 0,
+      "readbackBytes": 4
+    }
+  ],
+  "asyncChecks": [
+    {
+      "ready": true,
+      "ratio": 1,
+      "sequence": 1
+    },
+    {
+      "ready": true,
+      "ratio": 0,
+      "sequence": 3
+    }
+  ],
+  "resourceCounts": {
+    "Texture": 0,
+    "Framebuffer": 0,
+    "Buffer": 0,
+    "Program": 0,
+    "Shader": 0
+  },
+  "benchmarks": [
+    {
+      "revision": "baseline",
+      "type": "inferno",
+      "cpuSubmitMs": {
+        "mean": 0.08000000052981907,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 5.656533333333332,
+        "p95": 10.095616,
+        "p99": 10.551296,
+        "max": 11.521024,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7.099999999999909,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 9.76666667064031,
+        "p95": 7.300000011920929,
+        "p99": 7.300000011920929,
+        "max": 15.5,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "lightning",
+      "cpuSubmitMs": {
+        "mean": 0.06666666799121433,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.4051406222222225,
+        "p95": 3.794944,
+        "p99": 3.869696,
+        "max": 4.061184,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.947727272727269,
+        "p95": 7,
+        "p99": 7.099999999999909,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 143.93195943735697,
+      "coverageMs": {
+        "mean": 5.433333337306976,
+        "p95": 2.399999976158142,
+        "p99": 2.399999976158142,
+        "max": 12.200000047683716,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "shadow",
+      "cpuSubmitMs": {
+        "mean": 0.059999999735090466,
+        "p95": 0.19999998807907104,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.2664462222222213,
+        "p95": 3.743744,
+        "p99": 3.884032,
+        "max": 3.965952,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181808,
+        "p95": 7,
+        "p99": 7.099999999999909,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937828,
+      "coverageMs": {
+        "mean": 5.266666670640309,
+        "p95": 2.199999988079071,
+        "p99": 2.199999988079071,
+        "max": 11.800000011920929,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "holy",
+      "cpuSubmitMs": {
+        "mean": 0.05333333147896661,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.3967388444444433,
+        "p95": 3.716096,
+        "p99": 3.970048,
+        "max": 5.020672,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454533,
+        "p95": 7,
+        "p99": 7,
+        "max": 7.099999999999454,
+        "samples": 44
+      },
+      "fps": 143.9790575916233,
+      "coverageMs": {
+        "mean": 3.9333333373069763,
+        "p95": 2.399999976158142,
+        "p99": 2.399999976158142,
+        "max": 8,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "sand",
+      "cpuSubmitMs": {
+        "mean": 0.07555555899937948,
+        "p95": 0.19999998807907104,
+        "p99": 0.30000001192092896,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 4.942529422222222,
+        "p95": 5.168128,
+        "p99": 5.233664,
+        "max": 11.485184,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7,
+        "max": 7,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 6.133333345254262,
+        "p95": 2.100000023841858,
+        "p99": 2.100000023841858,
+        "max": 14.400000035762787,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "crystal",
+      "cpuSubmitMs": {
+        "mean": 0.05555555688010322,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 5.42323128888889,
+        "p95": 5.778432,
+        "p99": 5.808128,
+        "max": 6.10304,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 6,
+        "p95": 2.599999964237213,
+        "p99": 2.599999964237213,
+        "max": 13.900000035762787,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "petal",
+      "cpuSubmitMs": {
+        "mean": 0.06444444259007771,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.5,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.2178858666666654,
+        "p95": 3.479552,
+        "p99": 3.539968,
+        "max": 3.557376,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7.099999999999454,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 4.333333333333333,
+        "p95": 2.199999988079071,
+        "p99": 2.199999988079071,
+        "max": 8.800000011920929,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "plasma",
+      "cpuSubmitMs": {
+        "mean": 0.0644444399409824,
+        "p95": 0.19999998807907104,
+        "p99": 0.30000001192092896,
+        "max": 0.5,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.458547911111111,
+        "p95": 3.965952,
+        "p99": 3.98848,
+        "max": 4.10624,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454533,
+        "p95": 7.099999999999454,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 143.9790575916233,
+      "coverageMs": {
+        "mean": 5.399999996026357,
+        "p95": 2.399999976158142,
+        "p99": 2.399999976158142,
+        "max": 12,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "baseline",
+      "type": "glitch",
+      "cpuSubmitMs": {
+        "mean": 0.08888888623979356,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 0.09004799999999998,
+        "p95": 0.096256,
+        "p99": 0.105472,
+        "max": 0.116736,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7.099999999999454,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 3.0666666626930237,
+        "p95": 2.699999988079071,
+        "p99": 2.699999988079071,
+        "max": 4.100000023841858,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": null,
+      "asyncCoverageReady": 0,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "instances": 220,
+        "triangles": 3520,
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "inferno",
+      "cpuSubmitMs": {
+        "mean": 0.05333334075080024,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.20000004768371582,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.8852323555555555,
+        "p95": 4.468736,
+        "p99": 4.667392,
+        "max": 4.726784,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454533,
+        "p95": 7,
+        "p99": 7,
+        "max": 7.099999999999454,
+        "samples": 44
+      },
+      "fps": 143.9790575916233,
+      "coverageMs": {
+        "mean": 4.066666662693024,
+        "p95": 0.40000003576278687,
+        "p99": 0.40000003576278687,
+        "max": 11.599999964237213,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.33999999761581423,
+        "p95": 0.5,
+        "p99": 0.5,
+        "max": 0.5,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "Volumetric combustion",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.19999998807907104,
+          "asyncLatencyMilliseconds": 69.39999997615814,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "lightning",
+      "cpuSubmitMs": {
+        "mean": 0.05555555820465088,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 2.5060856888888887,
+        "p95": 2.97472,
+        "p99": 3.07712,
+        "max": 3.139584,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.9409090909090825,
+        "p95": 7,
+        "p99": 7,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.07334643091045,
+      "coverageMs": {
+        "mean": 1.9333333373069763,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 5.199999988079071,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.17999998331069947,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 0.3999999761581421,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 1",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.30000001192092896,
+          "asyncLatencyMilliseconds": 69.60000002384186,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "shadow",
+      "cpuSubmitMs": {
+        "mean": 0.066666665342119,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.2999999523162842,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 2.6220977777777774,
+        "p95": 3.068928,
+        "p99": 3.085312,
+        "max": 3.34848,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.940909090909103,
+        "p95": 7.100000000000364,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.07334643091002,
+      "coverageMs": {
+        "mean": 2.9333333373069763,
+        "p95": 0.699999988079071,
+        "p99": 0.699999988079071,
+        "max": 7.899999976158142,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.3200000047683716,
+        "p95": 0.40000003576278687,
+        "p99": 0.40000003576278687,
+        "max": 0.5,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 2",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.20000004768371582,
+          "asyncLatencyMilliseconds": 69.59999996423721,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "holy",
+      "cpuSubmitMs": {
+        "mean": 0.0422222269905938,
+        "p95": 0.10000002384185791,
+        "p99": 0.10000002384185791,
+        "max": 0.20000004768371582,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 2.5241557333333335,
+        "p95": 3.037184,
+        "p99": 3.141632,
+        "max": 3.160064,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 1.9666666785875957,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 5.300000011920929,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.20000001192092895,
+        "p95": 0.20000004768371582,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 3",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.30000001192092896,
+          "asyncLatencyMilliseconds": 69.60000002384186,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "sand",
+      "cpuSubmitMs": {
+        "mean": 0.05555555423100789,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.408996977777778,
+        "p95": 3.811328,
+        "p99": 4.046848,
+        "max": 4.094976,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454553,
+        "p95": 7,
+        "p99": 7,
+        "max": 7,
+        "samples": 44
+      },
+      "fps": 143.97905759162288,
+      "coverageMs": {
+        "mean": 2.5666666626930237,
+        "p95": 0.3999999761581421,
+        "p99": 0.3999999761581421,
+        "max": 7,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.27999999523162844,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 0.3999999761581421,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 4",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.30000001192092896,
+          "asyncLatencyMilliseconds": 69.60000002384186,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "crystal",
+      "cpuSubmitMs": {
+        "mean": 0.04666666322284275,
+        "p95": 0.10000002384185791,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 3.528305777777778,
+        "p95": 3.90144,
+        "p99": 3.918848,
+        "max": 4.328448,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454533,
+        "p95": 7,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 143.9790575916233,
+      "coverageMs": {
+        "mean": 3.799999992052714,
+        "p95": 0.3999999761581421,
+        "p99": 0.3999999761581421,
+        "max": 10.699999988079071,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.1600000023841858,
+        "p95": 0.19999998807907104,
+        "p99": 0.19999998807907104,
+        "max": 0.19999998807907104,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 5",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.30000001192092896,
+          "asyncLatencyMilliseconds": 69.19999998807907,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "petal",
+      "cpuSubmitMs": {
+        "mean": 0.07555555370118883,
+        "p95": 0.20000004768371582,
+        "p99": 0.40000003576278687,
+        "max": 0.40000003576278687,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 1.9719253333333335,
+        "p95": 2.18624,
+        "p99": 2.321408,
+        "max": 2.32448,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.947727272727248,
+        "p95": 7.099999999998545,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 143.9319594373574,
+      "coverageMs": {
+        "mean": 1.6333333452542622,
+        "p95": 0.3999999761581421,
+        "p99": 0.3999999761581421,
+        "max": 4.300000011920929,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.20000001192092895,
+        "p95": 0.20000004768371582,
+        "p99": 0.20000004768371582,
+        "max": 0.3999999761581421,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 6",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.20000004768371582,
+          "asyncLatencyMilliseconds": 69.20000004768372,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "plasma",
+      "cpuSubmitMs": {
+        "mean": 0.057777778307596846,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.20000004768371582,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 2.2525148444444443,
+        "p95": 2.635776,
+        "p99": 2.738176,
+        "max": 2.825216,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.945454545454553,
+        "p95": 7,
+        "p99": 7,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 143.97905759162288,
+      "coverageMs": {
+        "mean": 1.7333333492279053,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 4.600000023841858,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.2,
+        "p95": 0.19999998807907104,
+        "p99": 0.19999998807907104,
+        "max": 0.30000001192092896,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 7",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.30000001192092896,
+          "asyncLatencyMilliseconds": 69.60000002384186,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "neon",
+      "cpuSubmitMs": {
+        "mean": 0.06222222513622708,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.30000001192092896,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 2.2692039111111106,
+        "p95": 2.690048,
+        "p99": 2.833408,
+        "max": 2.848768,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7.100000000000364,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 1.7333333293596904,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 4.600000023841858,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.2399999976158142,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 0.40000003576278687,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 9",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.2999999523162842,
+          "asyncLatencyMilliseconds": 69.39999997615814,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "revision": "updated",
+      "type": "glitch",
+      "cpuSubmitMs": {
+        "mean": 0.057777778307596846,
+        "p95": 0.19999998807907104,
+        "p99": 0.20000004768371582,
+        "max": 0.3999999761581421,
+        "samples": 45
+      },
+      "gpuMs": {
+        "mean": 0.0859249777777778,
+        "p95": 0.090112,
+        "p99": 0.091136,
+        "max": 0.09216,
+        "samples": 45
+      },
+      "frameIntervalMs": {
+        "mean": 6.943181818181818,
+        "p95": 7,
+        "p99": 7.099999999998545,
+        "max": 7.100000000000364,
+        "samples": 44
+      },
+      "fps": 144.02618657937808,
+      "coverageMs": {
+        "mean": 0.5333333412806193,
+        "p95": 0.40000003576278687,
+        "p99": 0.40000003576278687,
+        "max": 0.800000011920929,
+        "samples": 3
+      },
+      "asyncCoverageCpuMs": {
+        "mean": 0.2,
+        "p95": 0.30000001192092896,
+        "p99": 0.30000001192092896,
+        "max": 0.3999999761581421,
+        "samples": 5
+      },
+      "asyncCoverageReady": 2,
+      "diagnostics": {
+        "mode": "WebGL2 instanced 3D",
+        "material": "GPU family 0",
+        "instances": 220,
+        "triangles": 3520,
+        "volumeSteps": 36,
+        "coverage": {
+          "method": "Conservative all-pixel GPU minimum reduction",
+          "readbackBytes": 4,
+          "minimum": 1,
+          "milliseconds": 0.40000003576278687,
+          "asyncLatencyMilliseconds": 69.59999996423721,
+          "pending": false,
+          "targets": 11
+        },
+        "renderer": "WebKit WebGL",
+        "maxTexture": 16384
+      }
+    }
+  ]
+}

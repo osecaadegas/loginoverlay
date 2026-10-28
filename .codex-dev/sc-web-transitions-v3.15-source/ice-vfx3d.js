@@ -16,7 +16,7 @@ layout(location=3) in vec4 aMotion; // center x/y + exit velocity x/y
 layout(location=4) in vec4 aShape; // roll, delay, apparent depth, phase
 layout(location=5) in float aLayer; // 0 face, 1 bevel, 2 cut edge
 uniform vec2 uResolution;uniform float uProgress;uniform float uClock;uniform float uInbound;uniform float uGrowth;
-out vec2 vUV;out vec3 vNormal;out float vLayer;out float vOpacity;out vec3 vPosition;out float vGrazing;
+out vec2 vUV;out vec3 vNormal;out float vLayer;out float vOpacity;out vec3 vPosition;out float vGrazing;out float vThickness;out float vSeed;
 mat3 rx(float a){float c=cos(a),s=sin(a);return mat3(1.,0.,0.,0.,c,s,0.,-s,c);}
 mat3 ry(float a){float c=cos(a),s=sin(a);return mat3(c,0.,-s,0.,1.,0.,s,0.,c);}
 mat3 rz(float a){float c=cos(a),s=sin(a);return mat3(c,s,0.,-s,c,0.,0.,0.,1.);}
@@ -51,10 +51,11 @@ void main(){
  vUV=aUV;vNormal=normalize(rotation*aNormal);vLayer=aLayer;vPosition=world;
  vOpacity=(1.-quint((local-.91)/.09))*smoothstep(0.,.14,growth);
  vGrazing=clamp(travel,0.,1.);
+ vThickness=.4+.6*abs(sin(aShape.w*2.17));vSeed=aShape.w;
 }`;
 const FRAG=`#version 300 es
 precision highp float;
-in vec2 vUV;in vec3 vNormal;in float vLayer;in float vOpacity;in vec3 vPosition;in float vGrazing;
+in vec2 vUV;in vec3 vNormal;in float vLayer;in float vOpacity;in vec3 vPosition;in float vGrazing;in float vThickness;in float vSeed;
 uniform sampler2D uFrozen;uniform vec2 uResolution;uniform float uClock;uniform float uQuality;
 out vec4 outColor;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -75,8 +76,14 @@ void main(){
  vec3 rim=normalize(vec3(.80,.20,-.75));
  vec3 viewDir=normalize(vec3((uResolution*.5-vPosition.xy)*.00030,-1.));
  if(dot(n,viewDir)<0.)n=-n;
- float nd=max(dot(n,key),0.),nd2=max(dot(n,rim),0.);
  float frost=noise(vUV*uResolution*.043)+.42*noise(vUV*uResolution*.17);
+ // Frozen grain perturbs the optical normal, not the silhouette. Two scales
+ // avoid the uniform plastic material of the old front faces.
+ vec2 grainUV=vUV*uResolution*.08;
+ vec2 micro=vec2(noise(grainUV+vec2(.17,0.))-noise(grainUV-vec2(.17,0.)),
+                 noise(grainUV+vec2(0.,.17))-noise(grainUV-vec2(0.,.17)));
+ n=normalize(n+vec3(micro*(.16+.12*uQuality),0.));
+ float nd=max(dot(n,key),0.),nd2=max(dot(n,rim),0.);
  float sparkleMask=pow(max(noise(vUV*uResolution*.24+uClock*.18)-.58,0.),3.2);
  float sparkle= sparkleMask * (.35 + .65*pow(max(dot(reflect(-rim,n),viewDir),0.),18.));
  vec4 img=texture(uFrozen,vUV);
@@ -96,12 +103,12 @@ void main(){
   vec4 transmitted=texture(uFrozen,clamp(vUV+warp,vec2(0.),vec2(1.)));
   vec3 photo=mix(img.rgb,transmitted.rgb,.58*transmitted.a);
   // Beer-Lambert absorption through a thicker optical path at grazing angles.
-  float path=(.20+.70*vGrazing)/max(.25,abs(dot(n,viewDir)));
+  float path=(.15+.65*vThickness+.70*vGrazing)/max(.25,abs(dot(n,viewDir)));
   photo*=exp(-vec3(.19,.065,.025)*path);
   // Preserve the recognizable webcam portrait under clear frozen aquamarine ice.
-  color=photo*(.78+.23*nd+.045*nd2);
-  color+=vec3(.14,.30,.48)*(.075+.10*frost);
-  float roughness=.12+.32*clamp(frost*.65,0.,1.);
+  color=photo*(.59+.27*nd+.08*nd2);
+  color+=vec3(.12,.25,.34)*(.08+.08*frost);
+  float roughness=.07+.24*clamp(frost*.65,0.,1.);
   vec3 halfVector=normalize(key+viewDir);
   float NoH=max(dot(n,halfVector),0.),a2=pow(roughness,4.);
   float denom=NoH*NoH*(a2-1.)+1.;
@@ -115,9 +122,20 @@ void main(){
   vec3 reflected=reflect(-viewDir,n);
   float softbox=exp(-pow((reflected.y+.35)*5.,2.))*smoothstep(-.4,.2,reflected.z);
   color+=vec3(.65,.86,1.)*(opticalFresnel*.52+softbox*.20);
+  // A second narrow strip reflection moves independently across the facets;
+  // the dark transmitted core stays readable between those bright edges.
+  float strip=exp(-pow((reflected.x-.38)*12.,2.))*exp(-pow((reflected.y+.22)*2.2,2.));
+  color+=vec3(.61,.86,1.)*strip*(.055+.22*opticalFresnel);
   if(uQuality>.5){
-   float cracks=fracture(vUV*uResolution*.032);
-   color+=vec3(.55,.80,.94)*cracks*(.035+.08*vGrazing);
+   float cracks=fracture(vUV*uResolution*.029+micro*.18);
+   float branches=fracture(vUV*uResolution*.083+vec2(vSeed*.13));
+   color+=vec3(.55,.80,.94)*(cracks*.065+branches*.018)*(.4+.6*vThickness);
+   // Sparse trapped inclusions scatter light inside the material. They are
+   // fixed in UV space rather than sparkling randomly between frames.
+   vec2 bubbleCell=vUV*uResolution*.13;
+   float bubble=1.-smoothstep(.035,.16,length(fract(bubbleCell)-.5));
+   bubble*=step(.91,hash(floor(bubbleCell)));
+   color+=vec3(.39,.65,.72)*bubble*.13*nd;
   }
   color+=vec3(.88,.96,1.)*sparkle*(.08+.20*uQuality);
   a=img.a*(1.-.48*smoothstep(0.,.85,vGrazing));
@@ -168,9 +186,9 @@ function buildMesh(shards,W,H,quality){
  for(const s of shards){
   const points=s.poly;if(!points||points.length<3)continue;
   const radius=Math.max(4,...points.map(p=>Math.hypot(...p)));
-  const thickness=Math.max(2.5,Math.min(W*.024,radius*(.13+.04*Math.sin(s.spark))));
+  const thickness=Math.max(3,Math.min(W*.032,radius*(.22+.08*Math.sin(s.spark))));
   const P=(x,y,z)=>({xyz:[x,y,z],uv:[x+s.cx,y+s.cy]});
-  const center=P(0,0,-thickness*.42),back=P(0,0,thickness);
+  const center=P(0,0,-thickness*.60),back=P(0,0,thickness);
   for(let j=0;j<points.length;j++){
    const k=(j+1)%points.length,p=points[j],q=points[k];
    let prevA=center,prevB=center;
@@ -178,8 +196,8 @@ function buildMesh(shards,W,H,quality){
     const t=r/rings*.946;
     // Facets follow a shallow convex profile, with seeded asymmetry in the
     // intermediate ring: finer profiles add real faces and changing reflections.
-    const height=-thickness*(.42-.25*t*t);
-    const jitter=(r===rings?0:Math.sin(s.spark+j*2.39)*.035*thickness);
+    const height=-thickness*(.60-.43*t*t);
+    const jitter=(r===rings?0:Math.sin(s.spark+j*2.39)*.10*thickness);
     const a=P(p[0]*t,p[1]*t,height+jitter),b=P(q[0]*t,q[1]*t,height-jitter*.4);
     if(r===1)tri(center,a,b,s,0,true);
     else{tri(prevA,a,prevB,s,0,true);tri(prevB,a,b,s,0,true);}
@@ -210,10 +228,10 @@ class Renderer{
   if(this.contextLost)throw Error('Ice Shatter Ultra graphics context lost');
   const gl=this.gl,limit=gl.getParameter(gl.MAX_TEXTURE_SIZE);
   if(Math.max(W,H)>limit)throw Error('Ice Shatter Ultra frame exceeds maximum texture size');
-  this.releaseResources();
+  this.releaseResources(true);
   this.w=W;this.h=H;this.quality=QUALITY[quality]?quality:'Cinematic';
   this.canvas.width=W;this.canvas.height=H;gl.viewport(0,0,W,H);
-  this.program=program(gl);for(const name of ['uResolution','uProgress','uClock','uInbound','uFrozen','uQuality','uGrowth'])this.uniforms[name]=gl.getUniformLocation(this.program,name);
+  if(!this.program)this.program=program(gl);for(const name of ['uResolution','uProgress','uClock','uInbound','uFrozen','uQuality','uGrowth'])this.uniforms[name]=gl.getUniformLocation(this.program,name);
   const mesh=buildMesh(shards,W,H,this.quality);if(!mesh.data.length)throw Error('Ice Shatter Ultra: empty mesh');
   this.stats=mesh.stats;this.vertices=mesh.data.length/17;
   this.vao=gl.createVertexArray();gl.bindVertexArray(this.vao);
@@ -253,8 +271,8 @@ class Renderer{
   g.drawArrays(g.TRIANGLES,0,this.vertices);g.bindVertexArray(null);this.frames++;return true;
  }
  hide(){if(this.canvas.style.display==='none')return;this.canvas.style.display='none';this.clear()}
- releaseResources(){const g=this.gl;if(!g||this.contextLost)return;
-  for(const [key,remove] of [['texture','deleteTexture'],['buffer','deleteBuffer'],['vao','deleteVertexArray'],['program','deleteProgram']])if(this[key]){g[remove](this[key]);this[key]=null;}
+ releaseResources(keepProgram=false){const g=this.gl;if(!g||this.contextLost)return;
+  for(const [key,remove] of [['texture','deleteTexture'],['buffer','deleteBuffer'],['vao','deleteVertexArray'],['program','deleteProgram']])if(this[key]&&!(keepProgram&&key==='program')){g[remove](this[key]);this[key]=null;}
   this.isReady=false;
  }
  dispose(){if(!this.contextLost)this.hide();else this.canvas.style.display='none';this.releaseResources();

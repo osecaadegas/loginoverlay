@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer';
 
 
 const root = new URL('./', import.meta.url);
-const source = await readFile(new URL('gas-vfx3d.js', root), 'utf8');
+const source = (await Promise.all(['gpu-vfx3d.js','gas-vfx3d.js'].map(f=>readFile(new URL(f,root),'utf8')))).join('\n');
 const launchOptions = {
   headless: true,
   args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],

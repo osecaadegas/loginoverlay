@@ -1,0 +1,11 @@
+{
+  "name": "sc-web-transitions-renderer-checks",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node run_gpu_renderer_api_test.mjs && node test_overlay_inline_syntax.mjs && node test_ice_ultra_gpu.js && node test_premium_assets.js",
+    "test:optical": "node test_phase2_optical.mjs",
+    "test:bridge": "node test_transition_bridge.mjs",
+    "test:visual": "node test_cinematic_overlay.mjs"
+  }
+}

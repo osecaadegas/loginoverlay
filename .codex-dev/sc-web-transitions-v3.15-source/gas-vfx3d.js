@@ -35,9 +35,17 @@ float noise3(vec3 p){return texture(uNoise,p).r;}
 float sealStrength(float p){return uCover>.5?smoothstep(.48,.98,p):1.-smoothstep(.04,.74,p);}
 vec3 advect(vec3 p){
  float t=uTime,heavy=uToxic;
- float rise=mix(.19,.085,heavy);
- float roll=sin(p.y*4.6+p.z*3.8-t*mix(.9,.46,heavy));
- vec3 q=vec3(p.x*2.8,p.y*3.3+t*rise,p.z*2.6);
+ float rise=mix(.22,.11,heavy);
+ // Rotating eddies act in all three dimensions. Vertical translation alone
+ // made the previous field read as a textured upright curtain.
+ vec3 q=p*vec3(2.9,2.7,3.1)+vec3(0.,t*rise,0.);
+ float roll=sin(q.y*2.3+q.z*1.7-t*mix(.75,.43,heavy));
+ // ABC-style divergence-free curl: each component is independent of its own
+ // coordinate. Bounded displacement avoids stretched horizontal striations.
+ vec3 curl=vec3(sin(q.z*1.7+t*.19)+cos(q.y*1.9-t*.11),
+                sin(q.x*1.8-t*.14)+cos(q.z*1.7+t*.16),
+                sin(q.y*1.9+t*.13)+cos(q.x*1.8-t*.17));
+ q+=curl*mix(.19,.28,heavy);
  vec3 warp=vec3(noise3(q*.67+vec3(.17,t*.016,.39)),
                 noise3(q*.61+vec3(.51,.23,-t*.012)),
                 noise3(q*.73+vec3(.09,.63,t*.019)))-.5;
@@ -49,49 +57,38 @@ float plumeDensity(vec3 p,float seal,float front,float detail){
  float macro=noise3(q*.58),fold=noise3(q*1.37+vec3(.31,.11,.47));
  float micro=detail>.5?noise3(q*3.73+vec3(.07,.43,.23)):.5;
  float structure=sat((macro*.48+fold*.36+micro*.16-.29)*2.65);
- float height=max(0.,1.10-p.y);
- // Five interleaved sources occupy actual depth; their folds expand as they
- // rise, rather than painting a single X/Y layer through the whole volume.
- float center=uBounds.x+uBounds.z*.5;
- float span=max(uBounds.z,.12);
- float plume=0.;
- for(int j=0;j<5;j++){
-  float id=float(j),phase=id*2.39996;
-  float sx=center+sin(phase)*span*.30+sin(height*3.4+phase+uTime*.25)*height*.045;
-  float sz=.48+cos(phase)*.26;
-  float width=span*(.13+height*.37)*(1.+macro*.4);
-  vec2 r=vec2((p.x-sx)/max(.025,width),(p.z-sz)/(.15+height*.23));
-  float edge=length(r)+(macro-.5)*.68+(fold-.5)*.21;
-  plume=max(plume,1.-smoothstep(.54,1.2,edge));
- }
- float leading=front+(macro-.5)*.16+sin(p.x*17.+p.z*11.+uTime*.4)*.025;
- float rising=smoothstep(leading-.11,leading+.11,p.y);
- float turbulence=smoothstep(.22,.66,structure);
- plume*=plume*rising*turbulence;
- // A deep ellipsoidal pressure roll expands from the same emitters. Optical
- // thickness, integrated along the ray, conceals the camera: no alpha stamp,
- // frozen camera image or rectangular color layer is added after shading.
  vec2 c=uBounds.xy+uBounds.zw*.5;
- float edge=10.;
- // Unequal overlapping pressure cells create broad rolling lobes at the
- // silhouette. A single extruded ellipse read as a cylindrical curtain.
- for(int k=0;k<5;k++){
-  float id=float(k),phase=id*2.39996;
-  vec3 cell=vec3(c.x+sin(phase+uTime*.13)*uBounds.z*.18,
-                 uBounds.y+uBounds.w*(.02+id*.24),
-                 .45+sin(phase)*.09);
-  vec3 radius=vec3(max(.12,uBounds.z*(.96+.23*cos(phase))),
-                   max(.13,uBounds.w*(.29+.04*sin(phase+1.))),.62);
-  // Rotate each 3D roll slightly, with different inertia and depth.
-  vec3 q=p-cell;
-  q.x+=q.y*sin(phase+uTime*.09)*.15;
-  float shape=length(q/radius)+(macro-.5)*.40+(fold-.5)*.20;
-  float merge=sat(.5+.5*(shape-edge)/.24);
-  edge=mix(shape,edge,merge)-.24*merge*(1.-merge);
+ float edge=10.,span=max(.17,uBounds.z),height=max(.24,uBounds.w);
+ float release=uCover>.5?0.:sat(uProgress);
+ // Staggered puffs occupy independent positions and depths, rather than
+ // copying the keyed portrait. Their optical depth conceals the source.
+ for(int k=0;k<9;k++){
+  float id=float(k),phase=id*2.39996,layer=floor(id/3.);
+  float row=mod(id,3.)-1.;
+  float rising=clamp(1.16-front,0.,1.6);
+  float inertia=mix(.15,.09,uToxic);
+  float curl=sin(uTime*inertia+phase+rising*.8);
+  vec3 cell=vec3(c.x+row*span*.45+curl*span*.18,
+                uBounds.y+height*(.05+layer*.45)+(1.-seal)*height*.22,
+                .47+.19*sin(phase+uTime*inertia*.7));
+  cell.x+=release*release*span*(row*.85+sin(phase)*.6);
+  cell.y-=release*release*height*(.6+.32*layer);
+  vec3 radius=vec3(span*(.57+.11*cos(phase)),
+                   height*(.40+.07*sin(phase+1.)),.37+.07*cos(phase));
+  radius*=mix(.68,1.18,seal);
+  vec3 offset=p-cell;
+  float angle=curl*.45;
+  offset.xy=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*offset.xy;
+  float shape=length(offset/radius)+(macro-.5)*.42+(fold-.5)*.22;
+  float merge=sat(.5+.5*(shape-edge)/.32);
+  edge=mix(shape,edge,merge)-.32*merge*(1.-merge);
  }
- float billow=1.-smoothstep(.68,1.12,edge);
- float rollDensity=billow*billow*seal*(.20+smoothstep(.12,.80,structure)*1.65);
- float density=max(plume,rollDensity);
+ float leading=front+(macro-.5)*.25+sin(p.x*12.+p.z*9.+uTime*.4)*.045;
+ float rising=smoothstep(leading-.18,leading+.14,p.y);
+ float billow=1.-smoothstep(.58,1.22,edge);
+ float turbulence=.30+.95*smoothstep(.15,.80,structure);
+ float density=billow*billow*rising*turbulence;
+ density*=mix(.86+.25*fold,1.03+.24*macro,uToxic);
  // Dense gas hugs the lower emission region; soot has faster, finer wisps.
  density*=mix(1.,.85+.15*smoothstep(.05,.9,p.y),uToxic);
  float depthStart=.055+smoothstep(.22,.76,macro)*.36;
@@ -129,13 +126,18 @@ void main(){
   vec3 world=vec3(projected,z);
   float density=plumeDensity(world,seal,front,uDetail)*survival;
   if(density<.002)continue;
-  float extinction=density*uDensity*25./uSteps;
+  // Leave an optical-density margin at the thin edge lobes. The minimum-alpha
+  // reduction rejects even isolated subpixel holes, including full-canvas masks.
+  float extinction=density*uDensity*29./uSteps;
   float segment=1.-exp(-extinction);
   float light=shadowTransmittance(world,seal,front,lightDir);
   float forward=.65+.35*pow(max(0.,dot(-lightDir,normalize(vec3(screen-center,1.)))),4.);
   vec3 ambient=mix(vec3(.035,.042,.054),vec3(.020,.039,.010),uToxic);
   vec3 key=mix(vec3(.62,.67,.72),vec3(.52,.69,.28),uToxic);
-  vec3 color=ambient+key*light*forward*(.42+.58*smoothstep(.06,.5,density));
+  vec3 color=ambient+key*pow(light,1.65)*forward*(.27+.97*smoothstep(.06,.5,density));
+  // A broad cool skylight enters from the rear, so shadowed folds retain depth
+  // instead of all collapsing to the same neutral grey during full coverage.
+  color+=mix(vec3(.035,.065,.095),vec3(.014,.045,.006),uToxic)*(1.-light)*(.4+.6*world.z);
   // Secondary cool rim scatters through thin smoke; toxic uses an internal,
   // slowly rolling green source that remains restrained in dense regions.
   float rim=pow(max(0.,1.-density),2.)*.12;
@@ -180,41 +182,35 @@ class Renderer{
  this.maskBoundsFound=maxX>=minX&&maxY>=minY;
  this.bounds=this.maskBoundsFound?[minX/mw,minY/mh,(maxX-minX+1)/mw,(maxY-minY+1)/mh]:[0,0,1,1];
  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,mw,mh,0,gl.RGBA,gl.UNSIGNED_BYTE,mono);
- gl.useProgram(this.program);this.uniforms={};for(const name of ['uResolution','uNoise','uSilhouette','uBounds','uTime','uProgress','uCover','uToxic','uDensity','uSteps','uLightSteps','uDetail'])this.uniforms[name]=gl.getUniformLocation(this.program,name);this.isReady=true;for(const q of this.pendingQueries)gl.deleteQuery(q);this.pendingQueries.length=0;this.lastAge=0;this.frames=0;this.cpuSamples.length=0;this.gpuSamples.length=0;this.draw(.72,true,0);this.hide();return true;
+ gl.useProgram(this.program);this.uniforms={};for(const name of ['uResolution','uNoise','uSilhouette','uBounds','uTime','uProgress','uCover','uToxic','uDensity','uSteps','uLightSteps','uDetail'])this.uniforms[name]=gl.getUniformLocation(this.program,name);this.isReady=true;for(const q of this.pendingQueries)gl.deleteQuery(q);this.pendingQueries.length=0;this.lastAge=0;this.frames=0;this.cpuSamples.length=0;this.gpuSamples.length=0;this.draw(.72,true,0);
+ if(root.SCGPU3D&&root.SCGPU3D.CoverageProbe){
+  if(!this.coverageProbe)this.coverageProbe=new root.SCGPU3D.CoverageProbe(gl);
+  this.coverageProbe.invalidate();
+  this.coverageProbe.measure({map:mono,mw,mh},this.canvas.width,this.canvas.height);
+  this.coverageProbe.invalidate();
+ }
+ this.hide();return true;
  }
  clear(){if(!this.isReady)return;const gl=this.gl;gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT)}
  draw(progress,cover,age){if(!this.isReady)throw Error('Smoke raymarcher not ready');const began=performance.now();const gl=this.gl;this.pollTimers();age=Math.max(this.lastAge,Number.isFinite(age)?age:0);this.lastAge=age;this.canvas.style.display='block';this.clear();if(progress>=1&&!cover)return true;gl.useProgram(this.program);gl.bindVertexArray(this.vao);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,this.noise);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.silhouette);gl.uniform1i(this.uniforms.uNoise,0);gl.uniform1i(this.uniforms.uSilhouette,1);gl.uniform2f(this.uniforms.uResolution,this.W,this.H);gl.uniform4f(this.uniforms.uBounds,...this.bounds);gl.uniform1f(this.uniforms.uTime,age);gl.uniform1f(this.uniforms.uProgress,clamp(progress));gl.uniform1f(this.uniforms.uCover,cover?1:0);gl.uniform1f(this.uniforms.uToxic,this.effect==='toxic'?1:0);gl.uniform1f(this.uniforms.uDensity,.90+.45*this.intensity);gl.uniform1f(this.uniforms.uSteps,this.cfg.steps);gl.uniform1f(this.uniforms.uLightSteps,this.cfg.lightSteps);gl.uniform1f(this.uniforms.uDetail,this.cfg.detail);gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);const query=this.timer&&this.pendingQueries.length<4?gl.createQuery():null;if(query)gl.beginQuery(this.timer.TIME_ELAPSED_EXT,query);gl.drawArrays(gl.TRIANGLES,0,6);if(query){gl.endQuery(this.timer.TIME_ELAPSED_EXT);this.pendingQueries.push(query)}gl.bindVertexArray(null);this.frames++;this.cpuSamples.push(performance.now()-began);if(this.cpuSamples.length>180)this.cpuSamples.shift();return true;}
  pollTimers(){const gl=this.gl;if(!this.timer)return;const disjoint=gl.getParameter(this.timer.GPU_DISJOINT_EXT);while(this.pendingQueries.length){const q=this.pendingQueries[0];if(!gl.getQueryParameter(q,gl.QUERY_RESULT_AVAILABLE))break;this.pendingQueries.shift();if(!disjoint){this.gpuSamples.push(gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6);if(this.gpuSamples.length>180)this.gpuSamples.shift()}gl.deleteQuery(q)}if(disjoint)this.gpuSamples.length=0;}
  measureCoverage(field){
   if(!this.isReady||this.contextLost||!field||!field.map)return 0;
-  const gl=this.gl,w=192,h=Math.max(1,Math.round(w*this.H/this.W));
-  // Read a small sampled copy of the REAL rendered alpha only at handoff.
-  // The previous implementation synchronously copied the full 1080p image.
-  if(!this.coverageTarget||this.coverageHeight!==h){
-   if(this.coverageTarget)gl.deleteTexture(this.coverageTarget);
-   if(!this.coverageFBO)this.coverageFBO=gl.createFramebuffer();
-   this.coverageTarget=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,this.coverageTarget);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
-   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
-   gl.bindFramebuffer(gl.FRAMEBUFFER,this.coverageFBO);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,this.coverageTarget,0);
-   if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){gl.bindFramebuffer(gl.FRAMEBUFFER,null);return 0;}
-   this.coverageHeight=h;this.coveragePixels=new Uint8Array(w*h*4);
-  }
-  gl.bindFramebuffer(gl.READ_FRAMEBUFFER,null);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,this.coverageFBO);
-  gl.blitFramebuffer(0,0,this.canvas.width,this.canvas.height,0,0,w,h,gl.COLOR_BUFFER_BIT,gl.NEAREST);
-  gl.bindFramebuffer(gl.READ_FRAMEBUFFER,this.coverageFBO);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,this.coveragePixels);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-  let total=0,hit=0;const fw=field.mw,fh=field.mh,m=field.map;
-  for(let y=0;y<fh;y++)for(let x=0;x<fw;x++){
-   if(m[(y*fw+x)*4+3]<196)continue;total++;
-   const sx=Math.min(w-1,Math.floor((x+.5)*w/fw)),sy=Math.min(h-1,Math.floor((y+.5)*h/fh));
-   if(this.coveragePixels[((h-1-sy)*w+sx)*4+3]>=254)hit++;
-  }
-  return total?hit/total:0;
+  // Min-reduce every rendered camera pixel on the GPU. The old nearest-blit
+  // probe could miss one-pixel holes; this reads only the final four bytes.
+  if(!root.SCGPU3D||!root.SCGPU3D.CoverageProbe)return 0;
+  if(!this.coverageProbe)this.coverageProbe=new root.SCGPU3D.CoverageProbe(this.gl);
+  return this.coverageProbe.measure(field,this.canvas.width,this.canvas.height);
+ }
+ measureCoverageAsync(field){
+  if(!this.isReady||this.contextLost||!field||!field.map||!root.SCGPU3D||!root.SCGPU3D.CoverageProbe)return {ready:true,ratio:0};
+  if(!this.coverageProbe)this.coverageProbe=new root.SCGPU3D.CoverageProbe(this.gl);
+  return this.coverageProbe.sampleAsync(field,this.canvas.width,this.canvas.height);
  }
 
- hide(){this.canvas.style.display='none';this.clear()}
- dispose(){const gl=this.gl;if(!gl)return;if(!this.contextLost){this.hide();if(this.noise)gl.deleteTexture(this.noise);if(this.silhouette)gl.deleteTexture(this.silhouette);if(this.vbo)gl.deleteBuffer(this.vbo);if(this.vao)gl.deleteVertexArray(this.vao);if(this.program)gl.deleteProgram(this.program);if(this.coverageTarget)gl.deleteTexture(this.coverageTarget);if(this.coverageFBO)gl.deleteFramebuffer(this.coverageFBO);for(const q of this.pendingQueries)gl.deleteQuery(q)}this.canvas.removeEventListener('webglcontextlost',this.lost);this.isReady=false;this.pendingQueries.length=0;this.program=this.vbo=this.vao=this.noise=this.silhouette=this.coverageTarget=this.coverageFBO=null;this.canvas.remove();}
- diagnostics(){const percentile=(a,p)=>a.length?[...a].sort((a,b)=>a-b)[Math.min(a.length-1,Math.floor(a.length*p))]:null;return {mode:'WebGL2 perspective multi-emitter raymarched volume',quality:this.quality,steps:this.cfg&&this.cfg.steps,lightSteps:this.cfg&&this.cfg.lightSteps,detailOctaves:this.cfg&&this.cfg.detail?3:2,resolution:this.canvas.width+'×'+this.canvas.height,frames:this.frames,contextLost:this.contextLost,effect:this.effect,maskBoundsFound:this.maskBoundsFound,maskBounds:this.bounds,simulatedFluid:false,alpha:true,coverageVerifiedExternally:true,gpuTimerAvailable:!!this.timer,gpuMsP50:percentile(this.gpuSamples,.5),gpuMsP95:percentile(this.gpuSamples,.95),cpuSubmitMsP95:percentile(this.cpuSamples,.95),gpuSamples:this.gpuSamples.length,pendingQueries:this.pendingQueries.length}}
+ hide(){if(this.coverageProbe)this.coverageProbe.cancelPending();this.canvas.style.display='none';this.clear()}
+ dispose(){const gl=this.gl;if(!gl)return;if(!this.contextLost){this.hide();if(this.noise)gl.deleteTexture(this.noise);if(this.silhouette)gl.deleteTexture(this.silhouette);if(this.vbo)gl.deleteBuffer(this.vbo);if(this.vao)gl.deleteVertexArray(this.vao);if(this.program)gl.deleteProgram(this.program);if(this.coverageProbe)this.coverageProbe.dispose();for(const q of this.pendingQueries)gl.deleteQuery(q)}this.canvas.removeEventListener('webglcontextlost',this.lost);this.isReady=false;this.pendingQueries.length=0;this.program=this.vbo=this.vao=this.noise=this.silhouette=this.coverageProbe=null;this.canvas.remove();}
+ diagnostics(){const percentile=(a,p)=>a.length?[...a].sort((a,b)=>a-b)[Math.min(a.length-1,Math.floor(a.length*p))]:null;return {mode:'WebGL2 rolling 3D emitter volume',quality:this.quality,steps:this.cfg&&this.cfg.steps,lightSteps:this.cfg&&this.cfg.lightSteps,detailOctaves:this.cfg&&this.cfg.detail?3:2,resolution:this.canvas.width+'×'+this.canvas.height,frames:this.frames,contextLost:this.contextLost,effect:this.effect,maskBoundsFound:this.maskBoundsFound,maskBounds:this.bounds,simulatedFluid:false,alpha:true,coverageVerifiedExternally:true,coverageProbe:this.coverageProbe&&this.coverageProbe.diagnostics(),gpuTimerAvailable:!!this.timer,gpuMsP50:percentile(this.gpuSamples,.5),gpuMsP95:percentile(this.gpuSamples,.95),cpuSubmitMsP95:percentile(this.cpuSamples,.95),gpuSamples:this.gpuSamples.length,pendingQueries:this.pendingQueries.length}}
 
 }
 root.SCGasVolume={Renderer,qualityMap,shaders:{vert,frag}};

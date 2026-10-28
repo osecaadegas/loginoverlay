@@ -8,7 +8,7 @@ try{
  const results=await page.evaluate(source=>{
   new Function(source)();const W=320,H=180,results=[];
   const r=new SCGPU3D.Renderer();
-  for(const type of ['inferno','lightning','shadow','holy','sand','crystal','petal','plasma'])for(const quality of ['Performance','Balanced','Cinematic','Ultra'])for(const rect of [[7,8,70,95],[210,45,95,120]]){
+  for(const type of ['inferno','lightning','shadow','holy','sand','crystal','petal','plasma','neon','glitch'])for(const quality of ['Performance','Balanced','Cinematic','Ultra'])for(const rect of [[7,8,70,95],[210,45,95,120]]){
    const subject=document.createElement('canvas');subject.width=W;subject.height=H;const g=subject.getContext('2d');
    g.fillStyle='rgba(255,0,255,.3)';g.fillRect(...rect);const map=g.getImageData(0,0,W,H).data;
    const fx={type,W,H,subject,seal:subject,quality,b:{x:rect[0],y:rect[1],w:rect[2],h:rect[3]},tuning:{},config:{color:'#77bbff',inBuild:.61},motion:1,particles:[],arcs:[]};

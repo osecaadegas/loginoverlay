@@ -12,25 +12,25 @@ const gl = new Proxy({
   LINEAR:9729,CLAMP_TO_EDGE:33071,UNPACK_FLIP_Y_WEBGL:37440,
   UNPACK_PREMULTIPLY_ALPHA_WEBGL:37441,BLEND:3042,SRC_ALPHA:770,ONE_MINUS_SRC_ALPHA:771,ONE:1,
   DEPTH_TEST:2929,CULL_FACE:2884,COLOR_BUFFER_BIT:16384,DEPTH_BUFFER_BIT:256,
-  MAX_TEXTURE_SIZE:3379,RENDERER:7937,
+  MAX_TEXTURE_SIZE:3379,RENDERER:7937,FRAMEBUFFER_COMPLETE:36053,
   createShader:()=>({id:nextId++}),getShaderParameter:()=>true,getShaderInfoLog:()=>'',
   createProgram:()=>({id:nextId++}),getProgramParameter:()=>true,getProgramInfoLog:()=>'',
   getUniformLocation:(p,n)=>{uniformQueries++;return `${p.id}:${n}`},
-  createTexture:()=>({id:nextId++}),createBuffer:()=>({id:nextId++}),
+  createTexture:()=>({id:nextId++}),createBuffer:()=>({id:nextId++}),createFramebuffer:()=>({id:nextId++}),checkFramebufferStatus:()=>36053,
   getParameter:k=>k===3379?4096:k===7937?'Mock GPU':'',
   drawArraysInstanced:()=>{drawCalls++},drawArrays:()=>{drawCalls++},
   texImage2D:()=>{textureUploads++},readPixels:(_,__,w,h,___,____,pixels)=>pixels.fill(255),
 }, {get(o,p){return p in o?o[p]:()=>undefined}});
 const canvas={id:'',style:{},getContext:()=>gl,addEventListener:()=>{},remove:()=>{}};
 const context={window:{},document:{body:{appendChild:()=>{}},createElement:()=>canvas},
-  console,location:{reload:()=>{}},Math,atob:(s)=>Buffer.from(s,'base64').toString('binary'),Uint8Array,Float32Array};
+  console,performance,location:{reload:()=>{}},Math,atob:(s)=>Buffer.from(s,'base64').toString('binary'),Uint8Array,Float32Array};
 vm.createContext(context);
 vm.runInContext(fs.readFileSync(__dirname+'/premium-vfx-meshes.js','utf8'),context);
 vm.runInContext(fs.readFileSync(__dirname+'/premium-crystal-accents.js','utf8'),context);
 vm.runInContext(fs.readFileSync(__dirname+'/crystal-hero3d.js','utf8'),context);
 vm.runInContext(fs.readFileSync(__dirname+'/gpu-vfx3d.js','utf8'),context);
 const renderer=new context.window.SCGPU3D.Renderer();
-const kinds=['glitch','lightning','shadow','holy','sand','crystal','petal','plasma'];
+const kinds=['glitch','lightning','shadow','holy','sand','crystal','petal','plasma','inferno','neon'];
 for(const type of kinds){
   const particles=Array.from({length:13},(_,i)=>({x:100+i*8,y:120+i*5,depth:1.2,size:1,tx:i*3,ty:i*6,spin:.3,phase:i*.3,delay:.1}));
   const fx={type,W:640,H:360,tuning:{accent:'#5577ff'},config:{color:'#5577ff',inBuild:.58},motion:1,
@@ -53,4 +53,6 @@ const fx={type:'crystal',W:640,H:360,tuning:{},config:{color:'#77ffff',inBuild:.
 renderer.prepare(fx);renderer.render('cover',1,2);
 assert.strictEqual(renderer.measureCoverage(field),1);
 assert(drawCalls>200&&textureUploads>=9);
-console.log('PASS all eight families: WebGL2 API mocked, calls:',drawCalls, 'uniform lookups:',uniformQueries);
+assert.equal(renderer.diagnostics().coverage.readbackBytes,4);
+renderer.destroy();assert.equal(renderer.ready,false);
+console.log('PASS all ten families: WebGL2 API mocked, calls:',drawCalls, 'uniform lookups:',uniformQueries);

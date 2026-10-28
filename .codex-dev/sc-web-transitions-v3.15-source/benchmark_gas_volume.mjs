@@ -6,7 +6,7 @@ const args=hardware?['--enable-webgl','--ignore-gpu-blocklist','--use-gl=angle',
 const browser=await puppeteer.launch({headless:true,executablePath:process.env.SC_CHROME_PATH,args});
 try{
  const page=await browser.newPage();await page.setViewport({width:1920,height:1080});
- await page.addScriptTag({content:await readFile(new URL('./gas-vfx3d.js',import.meta.url),'utf8')});
+ for(const file of ['gpu-vfx3d.js','gas-vfx3d.js'])await page.addScriptTag({content:await readFile(new URL('./'+file,import.meta.url),'utf8')});
  const reports=[];
  for(const effect of ['smoke','toxic'])for(const quality of ['Performance','Balanced','Cinematic','Ultra']){
   const result=await page.evaluate(async({quality,effect})=>{

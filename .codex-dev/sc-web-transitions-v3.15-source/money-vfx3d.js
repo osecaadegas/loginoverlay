@@ -15,7 +15,7 @@ layout(location=3) in vec4 iMotion; // age, Z rotation, depth, independent phase
 layout(location=4) in vec4 iShape;  // aerodynamics, yaw, pitch, hero flag
 uniform vec2 uResolution;
 layout(location=5) in vec2 iVelocity; // measured screen motion in paper UV per shutter
-uniform float uClock;uniform int uShadowPass;
+uniform float uClock;uniform int uShadowPass;uniform float uInbound;
 out vec2 vUV;out vec3 vNormal;out vec3 vWorld;out float vAlpha;
 out float vHero;out float vPhase;out float vFold;out float vMotion;out vec3 vShadow;out vec2 vVelocity;out float vDepth;
 mat3 rotX(float a){float c=cos(a),s=sin(a);return mat3(1.,0.,0.,0.,c,s,0.,-s,c);}
@@ -24,6 +24,7 @@ mat3 rotZ(float a){float c=cos(a),s=sin(a);return mat3(c,s,0.,-s,c,0.,0.,0.,1.);
 void main(){
  float u=aLocal.x,v=aLocal.y,age=iMotion.x,phase=iMotion.w;
  float width=max(2.,iPose.z),wind=clamp(iShape.x,0.,2.);
+ float airflow=uInbound*clamp((wind-.18)*1.4,0.,1.)*(1.-iShape.w*.55);
  float q1=u*6.283185+phase+age*(2.2+1.8*wind);
  float q2=u*12.1-v*5.8+phase*1.47+age*(3.6+wind);
  float bend=width*(.023+.023*wind);
@@ -32,15 +33,21 @@ void main(){
  float wave=bend*(.77*sin(q1)+.23*sin(q2));
  float torsion=width*.105*wind*u*v*sin(phase*.63+age*2.3);
  float vertical=width*.009*wind*sin(v*8.+age*2.1+phase);
- float z=cornerCurl+wave+torsion+vertical;
+ // IN's moving sheets have distinct bending modes rather than one shared
+ // sinusoidal flapping pose. The approved OUT receives exactly zero lift.
+ float creasePhase=u*4.1+v*3.7+phase*1.63+uClock*(1.3+.35*sin(phase));
+ float crease=width*.032*airflow*sin(creasePhase)*(1.-u*u*2.);
+ float z=cornerCurl+wave+torsion+vertical+crease;
  // Analytic sheet tangent derivatives keep the light following real folds.
  float dzdu=width*(.044+.017*sin(phase+age*1.7))*2.4*pow(max(edge,.0001),1.4)*2.*sign(u)*(1.+v*.27)
            +bend*(.77*6.283185*cos(q1)+.23*12.1*cos(q2))
-           +width*.105*wind*v*sin(phase*.63+age*2.3);
+           +width*.105*wind*v*sin(phase*.63+age*2.3)
+           +width*.032*airflow*(4.1*cos(creasePhase)*(1.-u*u*2.)-4.*u*sin(creasePhase));
  float dzdv=width*(.044+.017*sin(phase+age*1.7))*corner*.27
            -bend*.23*5.8*cos(q2)
            +width*.105*wind*u*sin(phase*.63+age*2.3)
-           +width*.072*wind*cos(v*8.+age*2.1+phase);
+           +width*.072*wind*cos(v*8.+age*2.1+phase)
+           +width*.032*airflow*3.7*cos(creasePhase)*(1.-u*u*2.);
  vec3 normal=normalize(vec3(dzdu/width,dzdv/(width*.455),-1.));
  mat3 rotation=rotZ(iMotion.y)*rotY(iShape.y)*rotX(iShape.z);
  vec3 local=vec3(u*width,v*width*.455,z);
@@ -147,13 +154,21 @@ class Renderer{
   this.canvas.addEventListener('webglcontextlost',this.lostHandler,false);
   this.payload=new Float32Array(this.maxInstances*14);this.sorted=[];this.previous=new Map();this.lastClock=null;
  }
- prepare(bill,normal,W,H,quality,roughness){
+ prepare(bill,normal,W,H,quality,roughness,direction='out'){
   const gl=this.gl;if(this.contextLost)throw Error('Money CGI Ultra graphics context lost');
   const size=gl.getParameter(gl.MAX_TEXTURE_SIZE);if(W>size||H>size)throw Error('Money CGI Ultra unsupported renderer texture size');
-  this.releaseResources();this.previous.clear();this.lastClock=null;
+  this.inbound=direction==='in';
+  const resolved=GEOMETRY[quality]?quality:'Cinematic';
+  const inputs=this.preparedInputs;
+  if(this.isReady&&inputs&&inputs.bill===bill&&inputs.normal===normal&&inputs.roughness===roughness&&this.w===W&&this.h===H&&this.quality===resolved){
+   this.previous.clear();this.lastClock=null;this.frameCount=0;this.passes=0;this.hide();return true;
+  }
+  // Keep the driver program linked when only the viewport/geometry changes.
+  // Assets and geometry are reused entirely for repeated matching jobs.
+  this.releaseResources(true);this.previous.clear();this.lastClock=null;
   this.w=W;this.h=H;this.quality=GEOMETRY[quality]?quality:'Cinematic';
   this.canvas.width=W;this.canvas.height=H;gl.viewport(0,0,W,H);
-  this.shader=program(gl);this.uniforms={};for(const n of ['uResolution','uClock','uQuality','uBanknote','uPaperNormal','uPaperRoughness','uShadowPass','uShadowMap','uShadowTexel','uPass'])this.uniforms[n]=gl.getUniformLocation(this.shader,n);
+  if(!this.shader)this.shader=program(gl);this.uniforms={};for(const n of ['uResolution','uClock','uQuality','uBanknote','uPaperNormal','uPaperRoughness','uShadowPass','uShadowMap','uShadowTexel','uPass','uInbound'])this.uniforms[n]=gl.getUniformLocation(this.shader,n);
   const [cols,rows]=GEOMETRY[this.quality],mesh=gridMesh(cols,rows);this.verts=mesh.length/4;
   this.meshBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.meshBuffer);gl.bufferData(gl.ARRAY_BUFFER,mesh,gl.STATIC_DRAW);
   this.instanceBuffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.instanceBuffer);gl.bufferData(gl.ARRAY_BUFFER,this.payload.byteLength,gl.DYNAMIC_DRAW);
@@ -177,7 +192,7 @@ class Renderer{
   const warm={x:W*.5,y:H*.5,w:W*.25,alpha:1,age:.2,rot:.12,depth:-40,phase:0,wave:.7,yaw:.32,pitch:.2,hero:0};
   this.draw([warm,{...warm,x:W*.52,alpha:.6,phase:1}],0);
   const probe=new Uint8Array(4);gl.readPixels(Math.floor(W*.5),Math.floor(H*.5),1,1,gl.RGBA,gl.UNSIGNED_BYTE,probe);
-  this.hide();this.previous.clear();this.lastClock=null;this.frameCount=0;this.passes=0;return true;
+  this.hide();this.previous.clear();this.lastClock=null;this.frameCount=0;this.passes=0;this.preparedInputs={bill,normal,roughness};return true;
  }
  loadTexture(img){const gl=this.gl,tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
@@ -213,6 +228,7 @@ class Renderer{
   for(let i=0;i<3;i++){gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,[this.tex,this.normal,this.roughness][i]);}
   gl.uniform1i(this.uniforms.uBanknote,0);gl.uniform1i(this.uniforms.uPaperNormal,1);gl.uniform1i(this.uniforms.uPaperRoughness,2);
   gl.uniform2f(this.uniforms.uResolution,this.w,this.h);gl.uniform1f(this.uniforms.uClock,clock);gl.uniform1f(this.uniforms.uQuality,QUALITY[this.quality]);
+  gl.uniform1f(this.uniforms.uInbound,this.inbound?1:0);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
   gl.uniform1i(this.uniforms.uShadowMap,3);gl.uniform1f(this.uniforms.uShadowTexel,0);
   if(this.shadowFramebuffer){
@@ -233,11 +249,11 @@ class Renderer{
   gl.depthMask(true);gl.bindVertexArray(null);this.frameCount++;this.passes+=count;return true;
  }
  hide(){this.canvas.style.display='none';this.clear()}
- releaseResources(){const gl=this.gl;if(!gl||this.contextLost)return;
+ releaseResources(keepProgram=false){const gl=this.gl;if(!gl||this.contextLost)return;
   for(const k of ['meshBuffer','instanceBuffer'])if(this[k]){gl.deleteBuffer(this[k]);this[k]=null;}
   for(const k of ['tex','normal','roughness','shadowTexture'])if(this[k]){gl.deleteTexture(this[k]);this[k]=null;}
   if(this.shadowFramebuffer){gl.deleteFramebuffer(this.shadowFramebuffer);this.shadowFramebuffer=null;}
-  if(this.shader){gl.deleteProgram(this.shader);this.shader=null;}if(this.vao){gl.deleteVertexArray(this.vao);this.vao=null;}
+  if(this.shader&&!keepProgram){gl.deleteProgram(this.shader);this.shader=null;}if(this.vao){gl.deleteVertexArray(this.vao);this.vao=null;}
   this.isReady=false;
  }
  dispose(){if(!this.contextLost)this.hide();else this.canvas.style.display='none';this.releaseResources();

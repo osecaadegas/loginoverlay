@@ -12,7 +12,8 @@ const TYPES = Object.freeze({
  sand:{name:'Sand Disintegration',color:'#d4a36e',glyph:'◌',mode:'granular',inBuild:.63},
  crystal:{name:'Crystal Growth',color:'#b178fa',glyph:'◇',mode:'mineral',inBuild:.64},
  petal:{name:'Petal Bloom',color:'#f06da9',glyph:'❀',mode:'petals',inBuild:.64},
- plasma:{name:'Neon Plasma',color:'#5ce7ef',glyph:'◉',mode:'plasma',inBuild:.61}
+ plasma:{name:'Plasma Flow',color:'#5ce7ef',glyph:'◉',mode:'plasma',inBuild:.61},
+ neon:{name:'Neon Lattice',color:'#68baff',glyph:'⬡',mode:'neon',inBuild:.58}
 });
 const keys=Object.keys(TYPES);
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
@@ -144,7 +145,7 @@ class Effect {
   this.sprite=this.makeSpriteV35();
   this.particles=[];this.tiles=[];this.arcs=[];
   const perf={Performance:.5,Balanced:.78,Cinematic:1,Ultra:1.26}[this.quality]||1;
-  const countBase={glitch:220,lightning:200,shadow:320,holy:310,sand:1700,crystal:180,petal:320,plasma:250}[t];
+  const countBase={glitch:220,lightning:200,shadow:320,holy:310,sand:1700,crystal:180,petal:320,plasma:250,neon:210}[t];
   const count=Math.round(countBase*perf*this.detail);
   const pts=this.field.points;if(!pts.length)throw Error('Empty subject mask');
   for(let i=0;i<count;i++){
@@ -227,11 +228,11 @@ class Effect {
   }
  }
  buildArcsV35(){
-  const t=this.type;if(t!=='lightning'&&t!=='plasma'&&t!=='crystal')return;
+  const t=this.type;if(t!=='lightning'&&t!=='plasma'&&t!=='neon'&&t!=='crystal')return;
   const b=this.b,pt=this.field.points;
-  for(let i=0;i<(t==='lightning'?26:t==='plasma'?13:12);i++){
+  for(let i=0;i<(t==='lightning'?26:(t==='plasma'||t==='neon')?13:12);i++){
    const seed=pt[Math.floor(this.rand()*pt.length)],arr=[[seed[0],seed[1]]];
-   let x=seed[0],y=seed[1],dir=t==='plasma'?-Math.PI/2:this.random(-Math.PI,Math.PI);
+   let x=seed[0],y=seed[1],dir=(t==='plasma'||t==='neon')?-Math.PI/2:this.random(-Math.PI,Math.PI);
    for(let j=0;j<(t==='lightning'?10:16);j++){
     dir+=t==='lightning'?this.random(-.75,.75):this.random(-.19,.19);
     const step=t==='lightning'?this.random(9,22):this.random(11,21);
@@ -293,13 +294,13 @@ class Effect {
    const curlX=Math.sin(time*1.1+o.phase*1.7)*b.w*.025*r*r;
    const curlY=Math.cos(time*.83+o.phase)*b.h*.018*r;
    const xx=o.x+o.tx*r*this.motion+
-    (t==='petal'||t==='shadow'||t==='plasma'?sway*r:0)+
-    (t==='shadow'||t==='plasma'?curlX:0)+
+    (t==='petal'||t==='shadow'||(t==='plasma'||t==='neon')?sway*r:0)+
+    (t==='shadow'||(t==='plasma'||t==='neon')?curlX:0)+
     (t==='sand'?o.wind*b.w*r+Math.sin(time*1.7+o.phase)*b.w*.012*r:0);
    const yy=o.y+o.ty*r*this.motion+
     (t==='sand'?this.H*(o.gravity+.12)*r*r:0)+
     (t==='petal'?this.H*o.gravity*.12*r*r:0)+
-    (t==='shadow'||t==='plasma'?curlY:0);
+    (t==='shadow'||(t==='plasma'||t==='neon')?curlY:0);
    if(xx<-90||xx>this.W+90||yy<-90||yy>this.H+90)continue;
    const visible=incoming?ease((progress-.015)/.28):1-ease((progress-.78)/.22);
    if(visible<=.01)continue;
@@ -320,7 +321,7 @@ class Effect {
     const size=t==='shadow'?sz*1.9:t==='petal'?sz*1.75:t==='holy'?sz*.74:sz*.55;
     const rotate=o.spin*r+Math.sin(age*(t==='petal'?1.7:.8)+o.phase)*.34;
     g.translate(xx,yy);g.rotate(rotate);
-    if(t==='holy'||t==='plasma')g.globalCompositeOperation='screen';
+    if(t==='holy'||(t==='plasma'||t==='neon'))g.globalCompositeOperation='screen';
     g.drawImage(this.sprite,-size*.52,-size*.52,size,size);
     if(t==='petal'&&i%4===0){g.globalAlpha*=.32;g.drawImage(this.sprite,-size*.50+4,-size*.50-4,size,size)}
    }
@@ -343,7 +344,7 @@ class Effect {
      if(!j)g.moveTo(xx,yy);else g.lineTo(xx,yy);
     }g.stroke();g.shadowBlur=0;g.strokeStyle=`rgba(232,249,255,${(active*.83).toFixed(3)})`;g.lineWidth=Math.max(.6,arc.width*.85);g.stroke();g.restore();
    }
-  }else if(t==='plasma'){
+  }else if((t==='plasma'||t==='neon')){
    const A=phase==='cover'?ease(p):1-ease((p-.65)/.35);
    g.save();g.globalCompositeOperation='screen';
    // Six long, non-identical spline streams follow the silhouette's contours.

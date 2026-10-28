@@ -1,0 +1,18 @@
+{
+  "server": "actual Go --serve",
+  "browser": "Chromium",
+  "realOBS": false,
+  "passed": true,
+  "checks": [
+    "private status",
+    "versioned export",
+    "invalid schema refusal",
+    "14 effects",
+    "preview direction",
+    "preview teardown",
+    "unconfirmed recovery",
+    "responsive UI",
+    "redacted diagnostics",
+    "coordinated quit"
+  ]
+}

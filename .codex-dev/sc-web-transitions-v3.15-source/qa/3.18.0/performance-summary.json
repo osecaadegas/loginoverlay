@@ -1,0 +1,33 @@
+{
+  "environment": {
+    "resolution": [
+      1920,
+      1080
+    ],
+    "backend": "Default Chrome ANGLE; inspect actual final.gpu",
+    "capture": false,
+    "syntheticCamera": true,
+    "realOBS": false,
+    "cpu": "AMD Ryzen 5 7600",
+    "ramGiB": 31.1,
+    "gpu": "NVIDIA RTX 4070 SUPER",
+    "driver": "617.42"
+  },
+  "passed": 28,
+  "total": 28,
+  "frameIntervals": {
+    "samples": 17151,
+    "meanMs": 6.955168794823278,
+    "p95Ms": 7,
+    "p99Ms": 7.100000000000364,
+    "maxMs": 27.59999999999991,
+    "over16_67": 6,
+    "over25": 1,
+    "browserAverageFps": 143.77796276408108,
+    "browserOnePercentLowFps": 122.80451235184475
+  },
+  "obsPresentedFps": null,
+  "cpuUtilization": null,
+  "encoderImpact": null,
+  "limitation": "Browser rAF cadence, not source camera or OBS frames; isolated tests, no game/encoder contention."
+}

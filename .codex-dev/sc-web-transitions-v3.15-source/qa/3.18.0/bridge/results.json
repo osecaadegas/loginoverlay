@@ -1,0 +1,1600 @@
+[
+  {
+    "scenario": "money-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013292766
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013292868
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 206,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013294335
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013296036
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.5265000000119209,
+          "checksum": "a247c2ae8a67862b106e08287e7d4ec268eab4d416c6e67dca2a899f5adca9e4"
+        },
+        "end": {
+          "time": 2.082100000011921,
+          "checksum": "f4bb3f273d561f79fbbe8cfcabb3846620229549b12885e052d6f79a29453e12"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "money-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013296204
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013296307
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 284,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013298191
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013301258
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.969799999964237,
+          "checksum": "4cae1f928ea408890431811367840bd099de857028915706ada4bdbffe12bc1f"
+        },
+        "end": {
+          "time": 2.5183999999642372,
+          "checksum": "fec58e858cf0e58dbcd0713d9d2883ed67b233d3e84b233b200915da4001f19d"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "ice-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013301792
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013301903
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 187,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013303315
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013305162
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.4096000000476838,
+          "checksum": "d7c5321f425c239243eb77b2b88a133a501a1400330f5d5e28ba3b3102446315"
+        },
+        "end": {
+          "time": 1.9791000000476837,
+          "checksum": "714d085925672ba2a747e2fa40f8a1dc160b377b04aa8d181fd5e52a58103305"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "ice-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013305474
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013305587
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 196,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013307046
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013310064
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.4545,
+          "checksum": "1d3bddadb6bcee26c836410f9cec4de80ea3019789a4f25d2efb0c61be5b5520"
+        },
+        "end": {
+          "time": 2.01,
+          "checksum": "ce17d1ac77a96e8f570355c5b1992d585f6751c462e17c575ff76a4496c6b347"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "smoke-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013311159
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013311274
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 25,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013311523
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013314711
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 0.264700000011921,
+          "checksum": "33e183cfb24a60d9b785747d4a7b7147772185f1a8c5e09f878fe6b0a33cfbf1"
+        },
+        "end": {
+          "time": 0.8551000000119209,
+          "checksum": "a87a089a2ef6581774cd043bf4060ad1153fe08506d85210d98c6e55f15f8ee1"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "smoke-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013315783
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013315891
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 328,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013318350
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013321488
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.4566999999999997,
+          "checksum": "ccea37c223e0e0aaf390d62be68a12664168b8b2abc0f6315d59536664159ef8"
+        },
+        "end": {
+          "time": 3.0748,
+          "checksum": "f6c73212b73b2c0f2293815d64a89f6280ad49a5cedb777bb04b82571afae289"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "toxic-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013322408
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013322523
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 25,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013322773
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013325989
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 0.26550000002384194,
+          "checksum": "48c6d1b2386cca0dfa8a34b4e184427d64886d06c4a442cc28f0e0660fca1561"
+        },
+        "end": {
+          "time": 0.8696000000238419,
+          "checksum": "7f933694c0f277ebcd9b2743c0fc20f12ee1fe06576180f21c3ab91af8496477"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "toxic-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013326874
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013326990
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 340,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013329426
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013332523
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.452499999964237,
+          "checksum": "127b2c566830b56a89dff2d133d7ecd8fb995d16d797bb9a42dad1758e0d0619"
+        },
+        "end": {
+          "time": 3.0428999999642374,
+          "checksum": "4d59852f30d3238de5ca1f56a7c9d550a1a48421a740262b43b5b37cafb7777d"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "inferno-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013334019
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013334131
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 235,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013335836
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013337530
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.718999999976158,
+          "checksum": "afd19372b68ad3b7bd740b3f950931e4baa0951f7a5fbda1026847b715a8cfc7"
+        },
+        "end": {
+          "time": 2.281599999976158,
+          "checksum": "77bc64bfc98c39b1af8e258d5d644c01dff36a00ddb4ffdb34554428a52fdedd"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "inferno-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013337856
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013337962
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 291,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013340169
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013343239
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.205600000023842,
+          "checksum": "dc369467ecc1c4ac6b1a333c582b14f02622953acd7eebc5b8f79416778c03ef"
+        },
+        "end": {
+          "time": 2.7750000000238417,
+          "checksum": "6b3e11f4bf80caf36982ba1368583bedf1d026573e4c38f51aaa6917b32b06d4"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "lightning-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013343458
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013343571
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 220,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013345211
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013346899
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7162000000357627,
+          "checksum": "339c898c80300b3ed7851977b71c62a3724ce819b91c81c5d0c65df992c54264"
+        },
+        "end": {
+          "time": 2.278700000035763,
+          "checksum": "ece5aceb4e4f985c009705fcffedf345025a3a823669189b7f1773a3f6409466"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "lightning-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013347091
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013347198
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 308,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013349343
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013352447
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.230400000023842,
+          "checksum": "c5ca602a9944f9b4027edb752b7bf44665083e7f5f9695960fc2f8322c79ed13"
+        },
+        "end": {
+          "time": 2.793000000023842,
+          "checksum": "469a8d0c255704e3f31661dddef0dddd657ecf3cd71bfca73406cd38aad809c2"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "shadow-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013352629
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013352732
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 238,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013354406
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013356114
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7395999999880791,
+          "checksum": "2d207729934d815a0173b1e3e9e7c5cc500068788908ebd33b3a851af49e9e7f"
+        },
+        "end": {
+          "time": 2.302199999988079,
+          "checksum": "98a6231de716f12ef38f5876b978b79cdafbf5e194676b2e4a9198d5382c4a1d"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "shadow-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013356272
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013356378
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 309,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013358545
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013361565
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.230600000011921,
+          "checksum": "38b1c410eda381332ecdbbef3175e09b5a83c7b8b398b61ff43c47cfbc9ad815"
+        },
+        "end": {
+          "time": 2.786200000011921,
+          "checksum": "e6d4f6beb526ca8e41b8ab9d5d73e1d65f81b862513c18b69e0e2aacb44a3d3c"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "holy-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013361748
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013361851
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 237,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013363503
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013365191
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7183,
+          "checksum": "a9174828b24a80c1fc4dd7550732e19036e4dbb59809e541025f597e9e9f8ffe"
+        },
+        "end": {
+          "time": 2.2876999999999996,
+          "checksum": "f3bd20125ebc9dbeca7217c3b008e00f1bafad206bdf0bad5b0c9317c334d8dc"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "holy-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013365401
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013365510
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 296,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013367684
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013370788
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.2343000000238415,
+          "checksum": "acbe2c01b3438754b07a7ddf3922df5d3e57aec28cfa607c59d2750b70bd31fb"
+        },
+        "end": {
+          "time": 2.803900000023842,
+          "checksum": "216b3f7e2e6031e0295de0680078d5295aca0194580a08876231d183fb83809d"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "sand-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013370925
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013371032
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 244,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013372732
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013374400
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7667,
+          "checksum": "d0dc23393f3355439cf63558291255936e10dc289d5a84eb06faf230b874ea0e"
+        },
+        "end": {
+          "time": 2.3432,
+          "checksum": "c4c15064407d2484142a0d87533a223fbf5134ee44f8cd04eb5ba0f0cc67feb7"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "sand-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013374596
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013374708
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 295,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013376865
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013379913
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.2365000000238417,
+          "checksum": "e9f844ffcb80349b07520386c51b2a07c1e5da5eeeb904f56fd631ae07096b38"
+        },
+        "end": {
+          "time": 2.805900000023842,
+          "checksum": "46f018e55d0c45024f9316ebe03be7c7619f0398feed7a3eccb52a629a701836"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "crystal-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013380087
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013380190
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 232,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013381920
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013383538
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7893999999880792,
+          "checksum": "cfcc6357175a4e21d56afda9fc9ca08ed210db9ff71cbed83e20ae73bf464072"
+        },
+        "end": {
+          "time": 2.351999999988079,
+          "checksum": "aa6c0f6cf674bec8b182d5d1bd7daaf397a6c7a1863a9b83d8cbefc95b1363d0"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "crystal-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013383685
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013383790
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 310,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013385948
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013389052
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.232000000047684,
+          "checksum": "56c19518a3001bd8f0be1193da2605c737ed24b26cf510ef916acffedf2655d4"
+        },
+        "end": {
+          "time": 2.794500000047684,
+          "checksum": "a820e577a584979b0a8cdea316fe821ac11c4499ba79f4bfa64421600fb5171e"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "petal-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013389187
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013389289
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 247,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013391018
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013392636
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7878999999761582,
+          "checksum": "3c39cf39eae180bcabc95451d53eab19821063dbc87091a7ffaf03437732c700"
+        },
+        "end": {
+          "time": 2.3642999999761583,
+          "checksum": "cf7df873b1f1904b15521d4361598afb89364eda5d7d6e7e6404e35029e25354"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "petal-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013392832
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013392935
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 309,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013395102
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013398206
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.2304000000119206,
+          "checksum": "a14bd45ca1e7eae3ff78147ed1d6197994490b9852b9c5578994582f660bb767"
+        },
+        "end": {
+          "time": 2.799800000011921,
+          "checksum": "6d392f3ba89fe9021a6f7706468095ba6cff76dbe08c018ed7bd962880503761"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "neon-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013398419
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013398526
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 224,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013400095
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013401900
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.648199999988079,
+          "checksum": "97a78992501e56edfbd3942edb9de7d9dd7f639f39d1923d59bf8e871d97cd54"
+        },
+        "end": {
+          "time": 2.231599999988079,
+          "checksum": "d851ff69939e34418a921e9ce452e2dd6a19c7e77044b9caab4d126e8be63383"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "neon-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013402126
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013402233
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 309,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013404388
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013407490
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.2313000000119207,
+          "checksum": "2015c8c686702d0d7939edf39fce803c5b3905a04646c44be779ecacc6572484"
+        },
+        "end": {
+          "time": 2.7938000000119207,
+          "checksum": "157844716553c76f8fa206fcf30347fd2d0582a00130f0c0d1645ffc6ebe45ae"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "plasma-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013407655
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013407756
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 221,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013409401
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013411067
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7169000000119208,
+          "checksum": "f12f221cca421c1282ee27db1cf940bddb3d9a76cdf0cf86ac4c85a3e0e5c357"
+        },
+        "end": {
+          "time": 2.279400000011921,
+          "checksum": "bc7b1d00fcba5caf494793b90905df0298c1cbc94d26449f6d126f965bd58c8f"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "plasma-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013411284
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013411387
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 310,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013413547
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013416609
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.230300000011921,
+          "checksum": "632a41407091df48ce7c02a70511ae5fa885843b150afdac0f5db6437069a679"
+        },
+        "end": {
+          "time": 2.799800000011921,
+          "checksum": "13e3d9230f47c89a2016ad51de78f3395b415677827ba8e10100a85531210f97"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "glitch-in",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "done",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013416870
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013416972
+      },
+      {
+        "action": "reveal",
+        "id": 101,
+        "coverage": 1,
+        "frame": 224,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013418589
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013420262
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 1.7157000000238418,
+          "checksum": "1d4fdca4397d5e1c59816345d1eb2ac0578cf55a5c7ff44525971585c6723646"
+        },
+        "end": {
+          "time": 2.264300000023842,
+          "checksum": "5badd691bf925c6d2775a03aac39218bfba9a0292f68da03b74ff6e2961d1b8f"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "glitch-out",
+    "simulatedOBS": true,
+    "completed": true,
+    "stage": "idle",
+    "signals": [
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013420451
+      },
+      {
+        "action": "ready",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013420554
+      },
+      {
+        "action": "covered",
+        "id": 101,
+        "coverage": 1,
+        "frame": 310,
+        "confirmations": 2,
+        "reason": null,
+        "time": 1793013422700
+      },
+      {
+        "action": "done",
+        "id": 101,
+        "coverage": 0,
+        "frame": 0,
+        "confirmations": 0,
+        "reason": null,
+        "time": 1793013425713
+      }
+    ],
+    "holds": [
+      {
+        "start": {
+          "time": 2.233399999952316,
+          "checksum": "1ae77df3c985f99e3f94148ce68c706a7c480f707666e709a9caf581e5b7ccc6"
+        },
+        "end": {
+          "time": 2.781999999952316,
+          "checksum": "2a2c91a0d85de3e736dc4a9622d6bbb2f9a437d122cf668833a22f202e0edb31"
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "cancel-prepare",
+    "simulatedOBS": true,
+    "completed": false,
+    "stage": "idle",
+    "signals": [],
+    "holds": []
+  },
+  {
+    "scenario": "missing-clips",
+    "simulatedMissingAssets": true,
+    "attempts": [
+      {
+        "canvases": 0,
+        "error": "Error: Professional cinematic plates not installed for toxic"
+      },
+      {
+        "canvases": 0,
+        "error": "Error: Professional cinematic plates not installed for smoke"
+      },
+      {
+        "canvases": 0,
+        "error": "Error: Professional cinematic plates not installed for toxic"
+      },
+      {
+        "canvases": 0,
+        "error": ""
+      }
+    ]
+  }
+]
