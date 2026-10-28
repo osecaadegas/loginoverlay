@@ -1,11 +1,13 @@
-# Native OBS Filter Feasibility Prototype (not installed)
+# Native OBS integration: design sketch only
 
-The production architecture comparison identified that OBS WebSocket screenshots are unsuitable for a continuously updated 1080p60 alpha mask. libobs supports video filters in its GPU `video_render` path. This prototype is a **pass-through frame-probe filter only**: it establishes an integration point for future live-texture tracking, but does not yet expose frame pixels to the controller or implement VFX. No signed or validated DLL is included.
+No native filter implementation or distributable DLL is present in this directory. The existing CMake recipe references `sc-native-probe.c`, which is absent; the recipe therefore cannot currently build. Earlier documentation describing a pass-through frame-probe prototype overstated the available source.
 
-Build on a Windows machine with an OBS SDK/libobs installation and Visual Studio 2022 using a `libobs_DIR` pointing to the CMake libobs configuration. See the official OBS plugin template for development setup. This code is intentionally **not loaded by the Windows application** and is unsafe to distribute until the plugin has been compiled and tested across supported OBS versions.
+The production application continues to use the standalone Go controller and local Browser Source renderer. No native plugin is loaded, installed or required. No live GPU texture sharing, native frame counters, continuous alpha segmentation or native VFX compositor is claimed.
 
-Do not mistake this prototype for completed live segmentation, real-time mask transport, or certified plugin functionality. The current Windows release candidate still uses the Browser Source compatibility implementation and a captured silhouette.
+## Proposed integration boundary
 
-## Architectural recommendation
+A future OBS video filter could retain camera textures and alpha inside OBS's render thread, with explicit frame identity and the same transition state protocol. The Go application would continue to handle settings, hotkeys, connection/recovery and diagnostics. IPC would carry state rather than camera frames. The existing Browser Source implementation would remain a compatibility path.
 
-Use a hybrid solution in the longer term: the Go desktop controller remains responsible for presets/hotkeys/update UX, while a native OBS filter composites camera textures/effects on the OBS render thread. The source-level mask and frame timestamps should remain inside OBS. IPC should carry only transition state, not raw camera pixels. A fully integrated, validated native renderer is **not yet implemented**.
+This may reduce screenshot uncertainty, expose source frame freshness and permit refraction/compositing against actual live textures. It also requires OBS SDK compatibility, device-loss handling, source ownership rules, a real implementation, build tooling, packaging and recorded tests across supported OBS versions. None of those native integration release gates is completed by the 3.18.0 standalone changes.
+
+Do not distribute this directory as a working plugin or cite it as evidence of native camera tracking. Implement and validate the module before enabling the CMake recipe in a production build.

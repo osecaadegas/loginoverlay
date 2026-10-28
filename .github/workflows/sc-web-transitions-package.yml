@@ -6,6 +6,7 @@ on:
     paths:
       - ".codex-dev/sc-web-transitions-v3.15-source/**"
       - "scripts/package-sc-web-transitions.ps1"
+      - "scripts/build-sc-web-transitions.ps1"
       - ".github/workflows/sc-web-transitions-package.yml"
   workflow_dispatch:
 
@@ -27,7 +28,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.12"
           cache-dependency-path: .codex-dev/sc-web-transitions-v3.15-source/go.mod
 
       - uses: actions/setup-node@v4
@@ -40,36 +41,40 @@ jobs:
 
       - name: Test transition controller
         working-directory: .codex-dev/sc-web-transitions-v3.15-source
-        run: go test ./...
+        run: |
+          go test ./... -count=1
+          if ($LASTEXITCODE -ne 0) { throw "Controller tests failed" }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { throw "Controller vet failed" }
 
       - name: Check renderer JavaScript and inline overlay syntax
         working-directory: .codex-dev/sc-web-transitions-v3.15-source
         run: |
-          node --check money-vfx3d.js
-          node --check ice-vfx3d.js
-          node --check gas-vfx3d.js
-          node --check gpu-vfx3d.js
-          node --check expansion-effects.js
-          node --check test_gpu_shaders_browser.mjs
-          node run_gpu_renderer_api_test.mjs
-          node test_overlay_inline_syntax.mjs
+          foreach ($file in @('money-vfx3d.js','ice-vfx3d.js','gas-vfx3d.js','gpu-vfx3d.js','expansion-effects.js','test_gpu_shaders_browser.mjs')) {
+            node --check $file
+            if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax failed: $file" }
+          }
+          foreach ($test in @('run_gpu_renderer_api_test.mjs','test_overlay_inline_syntax.mjs')) {
+            node $test
+            if ($LASTEXITCODE -ne 0) { throw "Renderer regression failed: $test" }
+          }
 
-      - name: Build latest Windows x64 application
-        shell: pwsh
-        working-directory: .codex-dev/sc-web-transitions-v3.15-source
-        run: |
-          python build_icon_resource.py
-          $env:GOOS = "windows"
-          $env:GOARCH = "amd64"
-          $env:CGO_ENABLED = "0"
-          go build -trimpath -buildvcs=false -ldflags="-s -w -H windowsgui" -o "$env:RUNNER_TEMP\SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe" .
-
-      - name: Package current executable and source for the Apps download
+      - name: Build reproducible Windows application and installer
         shell: pwsh
         run: |
-          ./scripts/package-sc-web-transitions.ps1 `
-            -RepoRoot "$env:GITHUB_WORKSPACE" `
-            -ExecutablePath "$env:RUNNER_TEMP\SC_Web_Transitions_v3.17.0_Cinematic_GPU.exe"
+          $compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $compiler)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+          }
+          if (-not (Test-Path -LiteralPath $compiler)) { throw 'Inno Setup compiler is unavailable' }
+          ./scripts/build-sc-web-transitions.ps1 -RepoRoot "$env:GITHUB_WORKSPACE" -GoBinary (Get-Command go).Source -InnoCompiler $compiler
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SC-Web-Transitions-verified-Windows-release
+          path: public/SC_Web_Transitions.zip
+          if-no-files-found: error
 
       - name: Publish refreshed website package
         shell: pwsh
