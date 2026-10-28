@@ -66,7 +66,14 @@ func TestOBSWaitsForReadbackAndUsesFreshSceneItemID(t *testing.T) {
 			}
 			switched.Add(1)
 		}
+		if r := fixturePlacementResponse(name, p); r != nil {
+			return r
+		}
 		if name == "GetSceneItemEnabled" {
+			id, _ := field[int](p, "sceneItemId")
+			if id == 85 {
+				return map[string]any{"sceneItemEnabled": true}
+			}
 			return map[string]any{"sceneItemEnabled": readbacks.Add(1) < 3}
 		}
 		return simulatedSceneResponse(name)

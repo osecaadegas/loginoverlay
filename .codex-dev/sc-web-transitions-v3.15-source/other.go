@@ -6,3 +6,5 @@ func configureHotkeys(out, in, toggle string, callback func(string)) error { ret
 func createDesktopShortcut(exe, icon string)                               {}
 
 func showUpgradeWarning() {}
+
+func stopHotkeys() error { return nil }

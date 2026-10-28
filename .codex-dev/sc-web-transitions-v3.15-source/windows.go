@@ -18,6 +18,7 @@ var modUser32 = syscall.NewLazyDLL("user32.dll")
 var procRegisterHotKey = modUser32.NewProc("RegisterHotKey")
 var procUnregisterHotKey = modUser32.NewProc("UnregisterHotKey")
 var procGetMessage = modUser32.NewProc("GetMessageW")
+var procPeekMessage = modUser32.NewProc("PeekMessageW")
 var procGetThreadID = syscall.NewLazyDLL("kernel32.dll").NewProc("GetCurrentThreadId")
 var procPostThreadMessage = modUser32.NewProc("PostThreadMessageW")
 var procMessageBox = modUser32.NewProc("MessageBoxW")
@@ -40,95 +41,113 @@ type msg struct {
 }
 
 var hotkeyMu sync.Mutex
-var activeThread uintptr
-var activeDone chan struct{}
-var activeSignature string
+var hotkeyWorker *windowsHotkeyWorker
+
+const wmConfigure = 0x8001
+
+type hotkeyCommand struct {
+	codes    [3]string
+	callback func(string)
+	result   chan error
+}
+type windowsHotkeyWorker struct {
+	thread   uintptr
+	commands chan hotkeyCommand
+	done     chan struct{}
+}
 
 func configureHotkeys(out, in, toggle string, callback func(string)) error {
-	signature := out + "/" + in + "/" + toggle
-	names := []string{"out", "in", "toggle"}
-	codes := []string{out, in, toggle}
-	var mod, key [3]uintptr
-	for i := 0; i < 3; i++ {
-		m, k, err := parseHotkey(codes[i])
-		if err != nil {
-			return err
-		}
-		mod[i], key[i] = m, k
-	}
-	for i := 0; i < 3; i++ {
-		for j := 0; j < i; j++ {
-			if mod[i] == mod[j] && key[i] == key[j] {
-				return fmt.Errorf("Duplicate hotkey: %s", codes[i])
-			}
-		}
+	codes := [3]string{out, in, toggle}
+	if _, err := hotkeyBindings(codes); err != nil {
+		return err
 	}
 	hotkeyMu.Lock()
-	if activeThread != 0 && activeSignature == signature {
-		hotkeyMu.Unlock()
+	defer hotkeyMu.Unlock()
+	if hotkeyWorker == nil {
+		worker := &windowsHotkeyWorker{commands: make(chan hotkeyCommand, 1), done: make(chan struct{})}
+		ready := make(chan struct{})
+		go func() {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			defer close(worker.done)
+			worker.thread, _, _ = procGetThreadID.Call()
+			var message msg
+			// Ensure PostThreadMessage has a queue before publishing this worker.
+			procPeekMessage.Call(uintptr(unsafe.Pointer(&message)), 0, 0, 0, 0)
+			close(ready)
+			var registered []hotkeyBinding
+			var callback func(string)
+			nextID := 100
+			defer func() {
+				for _, b := range registered {
+					procUnregisterHotKey.Call(0, uintptr(b.id))
+				}
+			}()
+			for {
+				ret, _, _ := procGetMessage.Call(uintptr(unsafe.Pointer(&message)), 0, 0, 0)
+				if int32(ret) <= 0 {
+					return
+				}
+				if message.Message == wmConfigure {
+					cmd := <-worker.commands
+					bindings, err := replaceHotkeyBindings(registered, cmd.codes, &nextID,
+						func(b hotkeyBinding) error {
+							ok, _, _ := procRegisterHotKey.Call(0, uintptr(b.id), b.mods, b.key)
+							if ok == 0 {
+								return fmt.Errorf("Shortcut %s is already used by another application", b.code)
+							}
+							return nil
+						},
+						func(b hotkeyBinding) { procUnregisterHotKey.Call(0, uintptr(b.id)) })
+					if err == nil {
+						registered = bindings
+						callback = cmd.callback
+					}
+					cmd.result <- err
+				} else if message.Message == wmHotkey && callback != nil {
+					for _, b := range registered {
+						if uintptr(b.id) == message.Wparam {
+							go callback(b.action)
+							break
+						}
+					}
+				}
+			}
+		}()
+		<-ready
+		hotkeyWorker = worker
+	}
+	cmd := hotkeyCommand{codes, callback, make(chan error, 1)}
+	hotkeyWorker.commands <- cmd
+	ok, _, _ := procPostThreadMessage.Call(hotkeyWorker.thread, wmConfigure, 0, 0)
+	if ok == 0 {
+		<-hotkeyWorker.commands
+		return fmt.Errorf("Windows hotkey thread is unavailable")
+	}
+	select {
+	case err := <-cmd.result:
+		return err
+	case <-hotkeyWorker.done:
+		hotkeyWorker = nil
+		return fmt.Errorf("Windows hotkey service stopped")
+	}
+}
+
+func stopHotkeys() error {
+	hotkeyMu.Lock()
+	defer hotkeyMu.Unlock()
+	if hotkeyWorker == nil {
 		return nil
 	}
-	old := activeThread
-	done := activeDone
-	activeThread = 0
-	hotkeyMu.Unlock()
-	if old != 0 {
-		procPostThreadMessage.Call(old, wmQuit, 0, 0)
-		if done != nil {
-			select {
-			case <-done:
-			case <-time.After(2 * time.Second):
-			}
-		}
+	worker := hotkeyWorker
+	procPostThreadMessage.Call(worker.thread, wmQuit, 0, 0)
+	select {
+	case <-worker.done:
+		hotkeyWorker = nil
+		return nil
+	case <-time.After(2 * time.Second):
+		return fmt.Errorf("Windows hotkey release timed out")
 	}
-	newDone := make(chan struct{})
-	started := make(chan error, 1)
-	go func() {
-		runtime.LockOSThread()
-		defer runtime.UnlockOSThread()
-		thread, _, _ := procGetThreadID.Call()
-		var message msg
-		registered := []int{}
-		for i := 0; i < 3; i++ {
-			ok, _, _ := procRegisterHotKey.Call(0, uintptr(i+1), mod[i], key[i])
-			if ok == 0 {
-				for _, j := range registered {
-					procUnregisterHotKey.Call(0, uintptr(j))
-				}
-				started <- fmt.Errorf("Could not register %s hotkey %s: already used by another app", names[i], codes[i])
-				return
-			}
-			registered = append(registered, i+1)
-		}
-		hotkeyMu.Lock()
-		activeThread = thread
-		activeDone = newDone
-		activeSignature = signature
-		hotkeyMu.Unlock()
-		started <- nil
-		for {
-			ret, _, _ := procGetMessage.Call(uintptr(unsafe.Pointer(&message)), 0, 0, 0)
-			if int32(ret) <= 0 {
-				break
-			}
-			if message.Message == wmHotkey {
-				index := int(message.Wparam) - 1
-				if index >= 0 && index < 3 {
-					go callback(names[index])
-				}
-			}
-		}
-		for _, id := range registered {
-			procUnregisterHotKey.Call(0, uintptr(id))
-		}
-		close(newDone)
-		hotkeyMu.Lock()
-		if activeThread == thread {
-			activeThread = 0
-		}
-		hotkeyMu.Unlock()
-	}()
-	return <-started
 }
 func createDesktopShortcut(exe, icon string) {
 	// Safely embed the two installed paths as escaped PowerShell string literals.

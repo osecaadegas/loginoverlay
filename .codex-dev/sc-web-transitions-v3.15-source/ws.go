@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -24,11 +25,18 @@ type WSClient struct {
 }
 
 func connectWS(address string, timeout time.Duration) (*WSClient, error) {
-	conn, err := net.DialTimeout("tcp", address, timeout)
+	return connectWSContext(context.Background(), address, timeout)
+}
+func connectWSContext(ctx context.Context, address string, timeout time.Duration) (*WSClient, error) {
+	conn, err := (&net.Dialer{Timeout: timeout}).DialContext(ctx, "tcp", address)
 	if err != nil {
 		return nil, fmt.Errorf("OBS unreachable at %s: %w", address, err)
 	}
-	conn.SetDeadline(time.Now().Add(timeout))
+	deadline := time.Now().Add(timeout)
+	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
+		deadline = d
+	}
+	conn.SetDeadline(deadline)
 	var random [16]byte
 	_, err = rand.Read(random[:])
 	if err != nil {
@@ -187,20 +195,32 @@ func (w *WSClient) RecvJSON(v any) error {
 }
 
 type OBS struct {
-	ws      *WSClient
-	counter uint64
-	version string
+	ws          *WSClient
+	counter     uint64
+	version     string
+	context     context.Context
+	cancelWatch func() bool
 }
 
 func DialOBS(host string, port int, password string) (*OBS, error) {
+	return DialOBSContext(context.Background(), host, port, password)
+}
+func DialOBSContext(ctx context.Context, host string, port int, password string) (*OBS, error) {
 	if host != "127.0.0.1" && host != "localhost" && host != "::1" {
 		return nil, errors.New("For security, OBS must connect to this PC (127.0.0.1)")
 	}
-	ws, err := connectWS(net.JoinHostPort(host, fmt.Sprint(port)), 8*time.Second)
+	ws, err := connectWSContext(ctx, net.JoinHostPort(host, fmt.Sprint(port)), 8*time.Second)
 	if err != nil {
 		return nil, err
 	}
-	result := &OBS{ws: ws}
+	result := &OBS{ws: ws, context: ctx}
+	result.cancelWatch = context.AfterFunc(ctx, ws.Close)
+	success := false
+	defer func() {
+		if !success {
+			result.cancelWatch()
+		}
+	}()
 	var hello struct {
 		Op int `json:"op"`
 		D  struct {
@@ -247,10 +267,19 @@ func DialOBS(host string, port int, password string) (*OBS, error) {
 	}
 	result.version = hello.D.OBSStudioVersion
 	_ = ws.conn.SetDeadline(time.Time{})
+	success = true
 	return result, nil
 }
-func (o *OBS) Close() { o.ws.Close() }
+func (o *OBS) Close() {
+	if o.cancelWatch != nil {
+		o.cancelWatch()
+	}
+	o.ws.Close()
+}
 func (o *OBS) Request(name string, params map[string]any) (map[string]json.RawMessage, error) {
+	if o.context != nil && o.context.Err() != nil {
+		return nil, o.context.Err()
+	}
 	o.counter++
 	id := fmt.Sprintf("sc-%d", o.counter)
 	if params == nil {
@@ -262,7 +291,13 @@ func (o *OBS) Request(name string, params map[string]any) (map[string]json.RawMe
 	if name == "GetSourceScreenshot" {
 		timeout = 9 * time.Second
 	}
-	_ = o.ws.conn.SetDeadline(time.Now().Add(timeout))
+	deadline := time.Now().Add(timeout)
+	if o.context != nil {
+		if d, ok := o.context.Deadline(); ok && d.Before(deadline) {
+			deadline = d
+		}
+	}
+	_ = o.ws.conn.SetDeadline(deadline)
 	defer o.ws.conn.SetDeadline(time.Time{})
 	err := o.ws.SendJSON(map[string]any{"op": 6, "d": map[string]any{"requestType": name, "requestId": id, "requestData": params}})
 	if err != nil {
