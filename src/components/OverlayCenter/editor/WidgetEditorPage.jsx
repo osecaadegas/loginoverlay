@@ -1811,7 +1811,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
           onRename={(name) => commitLayout((current) => ({ ...current, name }))}
           disabled={Boolean(operation)}
         />
-        <label className="editor-scene-theme" title="Change every widget's colours in this build. The preview updates now; Publish to OBS when ready.">
+        <label className="editor-scene-theme" title="Replace the visible widgets with this theme's scene layout and colours. The preview updates now; Publish to OBS when ready. Undo restores the previous scene.">
           <Palette size={16} aria-hidden="true" />
           <span>Overlay theme</span>
           <select
@@ -1832,6 +1832,16 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          className="editor-icon-button"
+          title="Reapply this theme’s widget layout and colours"
+          aria-label="Reapply overlay theme layout"
+          disabled={Boolean(operation) || previewing || !selectedSceneTheme}
+          onClick={() => commitLayout(current => applySceneColourTheme(current, selectedSceneTheme))}
+        >
+          <Scan size={16} />
+        </button>
         {isAdmin && (
           <button
             type="button"

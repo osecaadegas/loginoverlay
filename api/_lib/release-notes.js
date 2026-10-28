@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'overlay-theme-replaces-scene-layout-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Overlay theme now arranges the full scene',
+    summary: 'The top editor theme selector applies the selected theme’s widget layout as well as its colours.',
+    changes: [
+      'Themes with a dedicated reference scene use its widget set, sizes and positions; other palettes use a complete standard 1920 × 1080 arrangement.',
+      'Missing scene widgets are created, extra widgets are hidden for later reuse, and existing widget IDs and saved live settings are retained.',
+      'Switching themes resets incompatible layout modes and remains one undoable editor action; a reapply button restores the selected layout after manual moves.',
+    ],
+    action: 'Open the main editor, choose Overlay theme at the top, review the new positions, then Publish to OBS. Use Reapply beside the selector to restore its layout.',
+  },
+  {
     id: 'opensource-orientation-theme-inheritance-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Open Source widget layouts follow colour themes',
     summary: 'The compact Bonus Hunt and Chat layouts resolve their colours from the selected widget theme.',
