@@ -22,6 +22,19 @@ assert.equal(sharpBonus.layoutHeight, 1894);
 assert.equal(sharpBonus.transform, "none");
 assert.equal(sharpBonus.nativeLayout, true);
 
+const clearIceBonus = getObsRenderGeometry({
+  viewportWidth: 748,
+  viewportHeight: 1894,
+  targetWidth: 374,
+  targetHeight: 947,
+  scaleMode: "fit",
+  standalone: false,
+});
+assert.equal(clearIceBonus.layoutWidth, 374);
+assert.equal(clearIceBonus.layoutHeight, 947);
+assert.equal(clearIceBonus.renderScale, 2);
+assert.equal(clearIceBonus.transform, "scale(2)");
+
 const nativeBonus = getObsRenderGeometry({
   viewportWidth: 748,
   viewportHeight: 1894,
@@ -51,8 +64,11 @@ const overlaySource = fs.readFileSync(
   path.join(root, "src/components/OverlayCenter/editor/BetterObsOverlay.jsx"),
   "utf8",
 );
-assert.match(overlaySource, /data-render-mode="native"/);
-assert.match(overlaySource, /renderScale: geometry\.renderScale/);
+assert.match(overlaySource, /data-render-mode=\{preserveLogicalLayout \? "logical" : "native"\}/);
+assert.match(overlaySource, /targetInstance\.config\?\.colourTheme === "clear_ice"/);
+assert.match(overlaySource, /standalone: isSingleWidget && !preserveLogicalLayout/);
+assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);
+assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);
 assert.doesNotMatch(
   overlaySource.slice(
     overlaySource.indexOf("if (isSingleWidget)"),
@@ -67,6 +83,13 @@ const presetSource = fs.readFileSync(
 );
 assert.match(presetSource, /runtime === "obs-single"/);
 assert.match(presetSource, /\? 2/);
+
+const obsCss = fs.readFileSync(
+  path.join(root, "src/components/OverlayCenter/editor/BetterObsOverlay.css"),
+  "utf8",
+);
+assert.match(obsCss, /\[data-render-mode="native"\] \.better-hunt-image-stats-panel/);
+assert.doesNotMatch(obsCss, /\.better-obs-overlay--single \.better-hunt-image-stats-panel/);
 
 for (const widgetType of ["chat", "giveaway", "navbar", "rtp_stats", "bets"]) {
   const instance = { width: 720, height: 480 };

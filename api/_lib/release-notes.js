@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'clear-ice-bonus-hunt-obs-layout-parity-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Match Clear Ice Bonus Hunt in OBS and the editor',
+    summary: 'The individual Clear Ice Bonus Hunt OBS source keeps the saved image-card and text layout when fitted to a larger Browser Source.',
+    changes: [
+      'Scale the saved Bonus Hunt layout as a whole, preserving the image columns and card text wrapping shown in the editor preview.',
+      'Limit the older high-DPI Bonus Hunt layout overrides to other native-rendered widget sources.',
+    ],
+    action: 'Refresh the Clear Ice Bonus Hunt Browser Source in OBS after deployment. Publish any unpublished editor changes first. Live OBS appearance still needs visual confirmation.',
+  },
+  {
     id: 'overlay-theme-replaces-scene-layout-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Overlay theme now arranges the full scene',
     summary: 'The top editor theme selector applies the selected theme’s widget layout as well as its colours.',

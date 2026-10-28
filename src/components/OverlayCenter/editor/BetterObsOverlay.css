@@ -51,34 +51,34 @@
 
 /* Keep responsive variants tied to the saved widget geometry. A 2x Browser
    Source must increase raster detail without switching to a desktop layout. */
-.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-shell {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] .better-hunt-shell {
   padding: calc(10px * var(--obs-render-scale, 1));
 }
 
-.better-obs-overlay--single .better-hunt-root[data-drawer-mode="contain"] .better-hunt-panel {
+.better-obs-overlay--single[data-render-mode="native"] .better-hunt-root[data-drawer-mode="contain"] .better-hunt-panel {
   height: 100%;
   max-height: 100%;
 }
 
-.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-left {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] .better-hunt-left {
   border-right: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.better-obs-overlay--single[data-logical-compact="true"] :is(.better-hunt-stat-grid, .better-hunt-stat-strip) {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] :is(.better-hunt-stat-grid, .better-hunt-stat-strip) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-stat-strip div {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] .better-hunt-stat-strip div {
   border-left: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-requests {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] .better-hunt-requests {
   grid-template-columns: 1fr;
 }
 
-.better-obs-overlay--single[data-logical-compact="true"] .better-hunt-requests-head {
+.better-obs-overlay--single[data-render-mode="native"][data-logical-compact="true"] .better-hunt-requests-head {
   grid-template-columns: 1fr auto;
   align-items: center;
   border-right: 0;
@@ -86,16 +86,16 @@
   padding: 0 0 calc(7px * var(--obs-render-scale, 1));
 }
 
-.better-obs-overlay--single .better-hunt-image-stats-panel {
+.better-obs-overlay--single[data-render-mode="native"] .better-hunt-image-stats-panel {
   height: calc(210px * var(--obs-render-scale, 1));
 }
 
-.better-obs-overlay--single .better-hunt-list-group {
+.better-obs-overlay--single[data-render-mode="native"] .better-hunt-list-group {
   gap: calc(6px * var(--obs-render-scale, 1));
   padding-bottom: calc(6px * var(--obs-render-scale, 1));
 }
 
-.better-obs-overlay--single .better-hunt-main-list-wrap {
+.better-obs-overlay--single[data-render-mode="native"] .better-hunt-main-list-wrap {
   padding: calc(10px * var(--obs-render-scale, 1))
     calc(12px * var(--obs-render-scale, 1)) 0;
 }

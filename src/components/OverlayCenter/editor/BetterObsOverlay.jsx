@@ -249,13 +249,19 @@ export default function BetterObsOverlay() {
     ? Number(targetInstance?.height || 0)
     : BETTER_CANVAS.height;
   const scaleMode = getObsScaleMode();
+  // Clear Ice's image cards depend on the saved widget width for their image
+  // columns and text wrapping. Scale that layout as a whole in a single-widget
+  // OBS source, just as the editor preview does.
+  const preserveLogicalLayout = isSingleWidget &&
+    targetInstance?.widgetType === "bonus_hunt" &&
+    targetInstance.config?.colourTheme === "clear_ice";
   const geometry = getObsRenderGeometry({
     viewportWidth: viewport.width,
     viewportHeight: viewport.height,
     targetWidth,
     targetHeight,
     scaleMode,
-    standalone: isSingleWidget,
+    standalone: isSingleWidget && !preserveLogicalLayout,
   });
 
   if (!loaded || !layout || (isSingleWidget && !targetInstance)) {
@@ -281,7 +287,7 @@ export default function BetterObsOverlay() {
     return (
       <main
         className="better-obs-overlay better-obs-overlay--single"
-        data-render-mode="native"
+        data-render-mode={preserveLogicalLayout ? "logical" : "native"}
         data-scale-mode={geometry.mode}
         data-render-scale={geometry.renderScale.toFixed(4)}
         data-logical-compact={targetWidth <= 640 ? "true" : "false"}
@@ -301,8 +307,8 @@ export default function BetterObsOverlay() {
             style={{
               width: geometry.layoutWidth,
               height: geometry.layoutHeight,
-              transform: "none",
-              "--obs-render-scale": geometry.renderScale,
+              transform: geometry.transform,
+              "--obs-render-scale": preserveLogicalLayout ? 1 : geometry.renderScale,
             }}
           >
             <ThemeEffectsLayer userId={publication.ownerUserId}
@@ -336,7 +342,7 @@ export default function BetterObsOverlay() {
                     layout: renderLayout,
                     mode: "live",
                     runtime: "obs",
-                    renderScale: geometry.renderScale,
+                    renderScale: preserveLogicalLayout ? 1 : geometry.renderScale,
                     userId: publication.ownerUserId,
                     theme: liveSource.theme,
                     liveWidgets: liveSource.widgets,
