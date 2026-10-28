@@ -9,7 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
-import { getWidgetColourTheme } from "../shared/colourThemePalettes";
+import { getWidgetColourThemeTokens } from "../../editor/widgetColourThemes";
 
 function money(value, currency) {
   const amount = Number(value);
@@ -70,7 +70,9 @@ function SourceStat({ icon: Icon, label, value, tone = "purple", palette }) {
 
 export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], stats = {}, currency }) {
   const themedSource = config.orientation === "source_panel" && config.streamerOverlay?.role !== "active_panel";
-  const palette = themedSource ? getWidgetColourTheme(config.colourTheme || "neon") : null;
+  const palette = themedSource
+    ? getWidgetColourThemeTokens("bonus_hunt", config, String(config.colourTheme || config.colour || "neon").replace(/^theme_/, ""))
+    : null;
   const items = useMemo(() => bonuses.map((item, index) => ({ item, index })), [bonuses]);
   const opened = items.filter(({ item }) => Boolean(item?.opened || item?.status === "opened"));
   const isOpening = Boolean(config.bonusOpening);
@@ -149,9 +151,9 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
             ? (isWin ? "rgba(16,185,129,.15)" : "rgba(239,68,68,.15)")
             : "rgba(251,191,36,.15)",
           border: isSuper
-            ? "3px solid rgba(255,215,0,.95)"
+            ? `3px solid ${palette?.accent || "rgba(255,215,0,.95)"}`
             : isExtreme
-              ? "3px solid rgba(239,68,68,.95)"
+              ? `3px solid ${palette?.secondary || "rgba(239,68,68,.95)"}`
               : palette
                 ? `1px solid ${palette.border}`
                 : isOpened
@@ -261,7 +263,11 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-brand>svg,
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-list-title,
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-title,
-        .streamer-source-bonus-panel[data-themed-source] .source-overlay-pending-bet{color:var(--source-accent)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-pending-bet,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-index,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-stat strong,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-empty,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-art--empty{color:var(--source-accent)}
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-list-title i,
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-title i,
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-progress-track i{background:var(--source-accent)}
@@ -276,7 +282,8 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-stat::before{display:none}
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-progress-track{background:var(--source-raised);border-color:var(--source-border)}
         .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-art,
-        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-icon{background:var(--source-raised)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-icon,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-art--empty{background:var(--source-raised)}
         @keyframes streamer-source-bonus-scroll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
         @media(prefers-reduced-motion:reduce){.streamer-source-bonus-panel *{animation:none!important;transition:none!important}}
       `}</style>

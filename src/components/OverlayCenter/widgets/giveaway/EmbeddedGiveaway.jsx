@@ -2,7 +2,7 @@ import {GalacticGiveawayNotice} from '../../../../effects/ThemeEffects/galactic-
 import {StarterGiveawayNotice} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtGiveawayNotice } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import React, { useLayoutEffect, useRef, useState } from "react";
-import { getWidgetColourTheme } from '../shared/colourThemePalettes';
+import { getWidgetColourThemeTokens } from '../../editor/widgetColourThemes';
 import './EmbeddedGiveaway.css';
 import { SolverdeGiveawayNotice } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
 
@@ -23,7 +23,7 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const hasWinner = Boolean(config.winner);
   const drawing = !hasWinner && Boolean(config.spinningWinner);
   const streamerSourceChat = layout?.streamerOverlay?.role === "chat" || layout?.orientation === 'source_panel';
-  const sourcePalette = getWidgetColourTheme(config.colourTheme || layout.colourTheme);
+  const sourcePalette = getWidgetColourThemeTokens('giveaway', config, String(config.colourTheme || layout.colourTheme || 'neon').replace(/^theme_/, ''));
   const themedSource = layout?.orientation === 'source_panel' && layout?.streamerOverlay?.role !== 'chat';
   const compactSourceWinner = streamerSourceChat && hasWinner;
   // Orbital, Arctic and Candy winner cards use the real chat bay so

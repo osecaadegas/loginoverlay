@@ -31,6 +31,15 @@ try {
   const sourceBonusPanel = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/bonus-hunt/StreamerSourceBonusPanel.jsx",
   );
+  const chatWidget = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/chat/ChatWidget.jsx",
+  );
+  const widgetColours = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/editor/widgetColourThemes.js",
+  );
+  const themePalettes = await server.ssrLoadModule(
+    "/src/components/OverlayCenter/widgets/shared/colourThemePalettes.js",
+  );
   const embeddedGiveaway = await server.ssrLoadModule(
     "/src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.jsx",
   );
@@ -273,6 +282,37 @@ try {
   assert.match(themedPanelMarkup, /data-themed-source="true"/);
   assert.match(themedPanelMarkup, /--source-bg:#04120d/);
   assert.doesNotMatch(endedPanelMarkup, /data-themed-source="true"/);
+  for (const { key: theme } of themePalettes.WIDGET_COLOUR_THEMES) {
+    const themedConfig = widgetColours.applyWidgetColourTheme("bonus_hunt", { orientation: "source_panel" }, theme);
+    const markup = renderToStaticMarkup(React.createElement(sourceBonusPanel.default, {
+      config: themedConfig, bonuses: [], stats: {}, currency: "€",
+    }));
+    const tokens = widgetColours.getWidgetColourThemeTokens("bonus_hunt", themedConfig, theme);
+    assert.match(markup, new RegExp(`--source-bg:${tokens.background}`), `${theme} background follows the selected theme`);
+    assert.match(markup, new RegExp(`--source-border:${tokens.border}`), `${theme} border follows the selected theme`);
+    const chatConfig = widgetColours.applyWidgetColourTheme('chat', {
+      orientation: 'source_panel', chatStyle: 'broadcast_chat', showHeader: true,
+    }, theme);
+    const chatMarkup = renderToStaticMarkup(React.createElement(chatWidget.default, {
+      config: chatConfig, allWidgets: [], previewOnly: true,
+    }));
+    const chatTokens = widgetColours.getWidgetColourThemeTokens('chat', chatConfig, theme);
+    assert.match(chatMarkup, new RegExp(chatTokens.border), `${theme} compact chat border follows the selected theme`);
+    const giveawayConfig = widgetColours.applyWidgetColourTheme('giveaway', { title: 'Live giveaway' }, theme);
+    const giveawayMarkup = renderToStaticMarkup(React.createElement(embeddedGiveaway.default, {
+      config: giveawayConfig, layout: chatConfig, children: React.createElement('div', null, 'giveaway'),
+    }));
+    const giveawayTokens = widgetColours.getWidgetColourThemeTokens('giveaway', giveawayConfig, theme);
+    assert.match(giveawayMarkup, new RegExp(giveawayTokens.border), `${theme} compact giveaway border follows the selected theme`);
+  }
+  const customPanelConfig = {
+    ...widgetColours.applyWidgetColourTheme('bonus_hunt', { orientation: 'source_panel' }, 'emerald'),
+    headerColor: '#123456',
+  };
+  const customPanelMarkup = renderToStaticMarkup(React.createElement(sourceBonusPanel.default, {
+    config: customPanelConfig, bonuses: [], stats: {}, currency: '€',
+  }));
+  assert.match(customPanelMarkup, /--source-surface:#123456/, 'compact panel follows a saved widget colour override');
   assert.match(chatWidgetSource, /Match ChatOverlay's original 240 x 720 inset panel/);
   assert.match(chatWidgetSource, /linear-gradient\(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%\)/);
   assert.match(chatWidgetSource, /const giveawayPosition = isStreamerOverlayChat \|\|/);

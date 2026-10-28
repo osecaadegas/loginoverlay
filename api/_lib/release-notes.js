@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'opensource-orientation-theme-inheritance-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Open Source widget layouts follow colour themes',
+    summary: 'The compact Bonus Hunt and Chat layouts resolve their colours from the selected widget theme.',
+    changes: [
+      'Bonus Hunt compact stats, rows, progress, results, and border colours now use the applied theme tokens.',
+      'Compact Chat and its embedded giveaway use resolved theme colours, including saved widget colour fields.',
+      'Added renderer checks for every available Bonus Hunt colour theme while retaining the original open-source scene appearance.',
+    ],
+    action: 'Choose a colour theme for a compact Bonus Hunt or Chat widget in the main editor, then publish and refresh its OBS Browser Source.',
+  },
+  {
     id: 'opensource-widget-orientations-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Open Source layouts for Bonus Hunt and Chat',
     summary: 'The compact Open Source widget layouts are selectable in the main overlay editor.',

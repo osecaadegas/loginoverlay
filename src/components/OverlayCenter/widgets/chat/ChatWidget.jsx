@@ -46,7 +46,7 @@ import {
 } from "../../../../services/shoutoutCommandService";
 
 import {premiumChatPalette,premiumMessageSurface} from './premiumChatPresentation';
-import { getWidgetColourTheme } from '../shared/colourThemePalettes';
+import { getWidgetColourThemeTokens } from '../../editor/widgetColourThemes';
 import './PremiumChat.css';
 
 /* ─── Platform helpers ─── */
@@ -827,7 +827,7 @@ function ChatWidget({
     [config],
   );
   const premiumPalette=premiumChatPalette(c);
-  const sourcePalette = getWidgetColourTheme(c.colourTheme) || getWidgetColourTheme('neon');
+  const sourcePalette = getWidgetColourThemeTokens('chat', c, String(c.colourTheme || 'neon').replace(/^theme_/, ''));
   const [shoutoutHasMedia,setShoutoutHasMedia]=useState(true);
   const partAttrs = (elementId) => ({
     "data-appearance-part": elementId,
