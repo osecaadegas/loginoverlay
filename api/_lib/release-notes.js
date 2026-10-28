@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'opensource-widget-orientations-2026-10-28', date: '2026-10-28', category: 'overlays',
+    title: 'Open Source layouts for Bonus Hunt and Chat',
+    summary: 'The compact Open Source widget layouts are selectable in the main overlay editor.',
+    changes: [
+      'Added an Open Source orientation to Bonus Hunt and Chat widget settings, using their existing compact renderers.',
+      'The selected widget colour theme now supplies the compact layout surfaces, text and borders; the original open-source scene layout remains available.',
+      'Orientation and palette selections use the existing save and publish workflow for editor preview and browser sources.',
+    ],
+    action: 'In the main editor, select a Bonus Hunt or Chat widget, choose Open Source under Orientation, select a colour theme, then publish the overlay.',
+  },
+  {
     id: 'editor-whole-overlay-colour-theme-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Choose one colour theme for the whole overlay',
     summary: 'The main editor can apply an available colour theme to every widget in the current build at once.',

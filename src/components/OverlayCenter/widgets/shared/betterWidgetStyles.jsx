@@ -5672,7 +5672,7 @@ export function BetterChatMessage({
 }) {
   const c = context.config || {};
   const broadcast = c.chatStyle === "broadcast_chat";
-  const streamerSourceChat = c.streamerOverlay?.role === "chat";
+  const streamerSourceChat = c.streamerOverlay?.role === "chat" || (c.orientation === 'source_panel' && broadcast);
   const streetInline = (c.colourTheme==='street_art'&&c.streetArt?.compactChat)||(c.colourTheme==='starter_studio'&&c.studio?.compactChat)||(c.colourTheme==='galactic_command'&&c.galactic?.compactChat);
   const accent = context.badgeBg || context.usernameColor || "#45c8ff";
   const baseBg = context.messageBg || "#0d2049";

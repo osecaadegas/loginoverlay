@@ -420,7 +420,7 @@ function BonusHuntWidget({
   // The supplied MainStreamOverlay uses its own compact, full-height bonus
   // panel. Keep its presentation while continuing to use the canonical
   // StreamersCenter bonus configuration and calculations above.
-  if (sortedConfig.streamerOverlay?.role === "active_panel") {
+  if (sortedConfig.streamerOverlay?.role === "active_panel" || sortedConfig.orientation === 'source_panel') {
     return (
       <StreamerSourceBonusPanel
         config={sortedConfig}

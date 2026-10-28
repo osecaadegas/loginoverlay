@@ -147,7 +147,8 @@ try {
     new URL("../src/components/OverlayCenter/widgets/shared/betterWidgetStyles.jsx", import.meta.url),
     "utf8",
   );
-  assert.match(chatWidgetSource, /const isStreamerOverlayChat = c\.streamerOverlay\?\.role === "chat"/);
+  assert.match(chatWidgetSource, /const isLegacySourceChat = c\.streamerOverlay\?\.role === "chat"/);
+  assert.match(chatWidgetSource, /const isStreamerOverlayChat = isLegacySourceChat \|\| \(c\.orientation === 'source_panel' && isBroadcast\)/);
   assert.match(chatWidgetSource, /STREAMER_SOURCE_CHAT_EMPTY_MESSAGE = "Sem mensagens ainda\.\.\."/);
   assert.match(chatWidgetSource, /minHeight: isStreamerOverlayChat \? 320 : "100%"/);
   assert.match(chatWidgetSource, /isStreamerOverlayChat && \([\s\S]{0,1400}>CHAT<\/span>/);
@@ -263,6 +264,15 @@ try {
     }),
   );
   assert.match(endedPanelMarkup, /BONUS ENDED/);
+  const themedPanelMarkup = renderToStaticMarkup(
+    React.createElement(sourceBonusPanel.default, {
+      config: { orientation: "source_panel", colourTheme: "emerald", streamerName: "Test" },
+      bonuses: [], stats: {}, currency: "€",
+    }),
+  );
+  assert.match(themedPanelMarkup, /data-themed-source="true"/);
+  assert.match(themedPanelMarkup, /--source-bg:#04120d/);
+  assert.doesNotMatch(endedPanelMarkup, /data-themed-source="true"/);
   assert.match(chatWidgetSource, /Match ChatOverlay's original 240 x 720 inset panel/);
   assert.match(chatWidgetSource, /linear-gradient\(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%\)/);
   assert.match(chatWidgetSource, /const giveawayPosition = isStreamerOverlayChat \|\|/);

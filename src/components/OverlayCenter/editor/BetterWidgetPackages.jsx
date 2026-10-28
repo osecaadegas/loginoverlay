@@ -3512,9 +3512,27 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
             label="Style"
             value={c.chatStyle}
             options={BETTER_CHAT_STYLES.map(({ id, label }) => ({ value: id, label }))}
-            onChange={(styleId) => onChange(switchChatStyle(c, styleId))}
+            onChange={(styleId) => onChange({ ...switchChatStyle(c, styleId), orientation: styleId === 'broadcast_chat' ? c.orientation : 'standard' })}
           />
         </Section>
+        {!c.streamerOverlay?.role && <Section title="Orientation" icon={<MonitorPlay size={13} />} category="layout">
+          <SelectRow
+            label="Layout"
+            value={c.orientation === 'source_panel' ? 'source_panel' : 'standard'}
+            options={[{ value: 'standard', label: 'Standard' }, { value: 'source_panel', label: 'Open Source compact' }]}
+            onChange={(orientation) => {
+              const next = orientation === 'source_panel' && c.chatStyle !== 'broadcast_chat'
+                ? applyWidgetColourTheme('chat', switchChatStyle(c, 'broadcast_chat'), c.colourTheme || 'neon')
+                : c;
+              const oriented = { ...next, orientation, ...(orientation === 'source_panel' ? { flow: 'top-to-bottom', entry: 'top', showHeader: true, width: 240, height: 720 } : {}) };
+              if (orientation === 'source_panel' && typeof onWidgetChange === 'function') {
+                onWidgetChange({ width: 240, height: 720, config: oriented });
+              } else {
+                onChange(oriented);
+              }
+            }}
+          />
+        </Section>}
         <Section
           title="Chat Box Size"
           icon={<Maximize2 size={13} />}
@@ -4022,6 +4040,7 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
 
 export function getBetterBonusOrientationWidth(orientation) {
   if (orientation === 'new_horizontal') return 730;
+  if (orientation === 'source_panel') return 240;
   if (orientation === "horizontal") return 1080;
   if (orientation === "mainstream") return 372;
   return 402;
@@ -4029,6 +4048,7 @@ export function getBetterBonusOrientationWidth(orientation) {
 
 export function getBetterBonusOrientationHeight(orientation) {
   if (orientation === 'new_horizontal') return 150;
+  if (orientation === 'source_panel') return 720;
   return orientation === "horizontal" ? BETTER_HUNT_HORIZONTAL_HEIGHT : 884;
 }
 
@@ -4086,7 +4106,7 @@ function SimpleThemedControls({
       const minimumHeight =
         next.orientation === 'new_horizontal'?150:next.orientation === "horizontal" ? getHorizontalHuntMinHeight(next) : 320;
       const widgetPatch = {
-        width: clampNumber(nextWidth, 320, 1280, nextWidth),
+        width: clampNumber(nextWidth, next.orientation === 'source_panel' ? 240 : 320, 1280, nextWidth),
         config: next,
       };
       if (nextHeight > 0) {
@@ -5459,6 +5479,8 @@ function SimpleThemedControls({
   const orientationHint =
     c.orientation === "horizontal"
       ? "Wide two-column layout - the log drifts sideways as cards."
+      : c.orientation === "source_panel"
+        ? "Open Source layout - compact stats above a scrolling bonus list."
       : c.orientation === "mainstream"
         ? "Mainstream layout - active bonus and stats stay high, with the tracker below."
         : "The classic tall tracker - list scrolls upward.";
@@ -5556,6 +5578,7 @@ function SimpleThemedControls({
                 label: "Mainstream",
                 hint: "Streamer opening layout",
               },
+              { key: 'source_panel', label: 'Open Source', hint: 'Compact stats and scrolling bonus list' },
               {key:'new_horizontal',label:'New Horizontal',hint:'Five cards with a central hunt summary'},
             ]}
             onChange={(orientation) => {
@@ -5855,7 +5878,7 @@ function SimpleThemedControls({
           <SliderRow
             label="Widget width"
             value={widgetWidth}
-            min={320}
+            min={c.orientation === 'source_panel' ? 240 : 320}
             max={1280}
             step={10}
             unit="px"

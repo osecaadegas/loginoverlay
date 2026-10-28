@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import SlotImage from "../SlotImage";
+import { getWidgetColourTheme } from "../shared/colourThemePalettes";
 
 function money(value, currency) {
   const amount = Number(value);
@@ -36,7 +37,7 @@ function slotImage(item) {
   return item?.imageUrl || item?.image_url || item?.slotImageUrl || item?.slot_image_url || item?.slot_image || item?.slot?.image || item?.slot?.image_url || item?.slot?.imageUrl || "";
 }
 
-function SourceStat({ icon: Icon, label, value, tone = "purple" }) {
+function SourceStat({ icon: Icon, label, value, tone = "purple", palette }) {
   const tones = {
     purple: {
       icon: "#d8b4fe",
@@ -58,9 +59,9 @@ function SourceStat({ icon: Icon, label, value, tone = "purple" }) {
     },
   }[tone];
   return (
-    <div className="source-overlay-stat" style={{ background: tones.background, border: `1px solid ${tones.border}` }}>
-      <span className="source-overlay-stat__label" style={{ color: tones.label }}>
-        <Icon aria-hidden="true" style={{ color: tones.icon }} />{label}
+    <div className="source-overlay-stat" style={{ background: palette ? palette.raised : tones.background, border: `1px solid ${palette ? palette.border : tones.border}` }}>
+      <span className="source-overlay-stat__label" style={{ color: palette ? palette.muted : tones.label }}>
+        <Icon aria-hidden="true" style={{ color: palette ? palette.accent : tones.icon }} />{label}
       </span>
       <strong>{value}</strong>
     </div>
@@ -68,6 +69,8 @@ function SourceStat({ icon: Icon, label, value, tone = "purple" }) {
 }
 
 export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], stats = {}, currency }) {
+  const themedSource = config.orientation === "source_panel" && config.streamerOverlay?.role !== "active_panel";
+  const palette = themedSource ? getWidgetColourTheme(config.colourTheme || "neon") : null;
   const items = useMemo(() => bonuses.map((item, index) => ({ item, index })), [bonuses]);
   const opened = items.filter(({ item }) => Boolean(item?.opened || item?.status === "opened"));
   const isOpening = Boolean(config.bonusOpening);
@@ -142,14 +145,16 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         className="source-overlay-bonus-row"
         key={item?.id || `${name}-${index}`}
         style={{
-          background: isOpened
+          background: palette ? palette.surface : isOpened
             ? (isWin ? "rgba(16,185,129,.15)" : "rgba(239,68,68,.15)")
             : "rgba(251,191,36,.15)",
           border: isSuper
             ? "3px solid rgba(255,215,0,.95)"
             : isExtreme
               ? "3px solid rgba(239,68,68,.95)"
-              : isOpened
+              : palette
+                ? `1px solid ${palette.border}`
+                : isOpened
                 ? `1px solid ${isWin ? "rgba(16,185,129,.3)" : "rgba(239,68,68,.3)"}`
                 : "1px solid rgba(251,191,36,.3)",
         }}
@@ -166,9 +171,9 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
             <div className="source-overlay-bonus-values">
               {isOpened ? (
                 <>
-                  {badge(money(bet, currencyUnit), "#fbbf24", "rgba(251,191,36,.2)")}
-                  {badge(money(payout, currencyUnit), isWin ? "#10b981" : "#ef4444", isWin ? "rgba(16,185,129,.2)" : "rgba(239,68,68,.2)")}
-                  {badge(`${multiplier.toFixed(0)}x`, "#a855f7", "rgba(168,85,247,.2)")}
+                  {badge(money(bet, currencyUnit), palette?.accent || "#fbbf24", palette?.raised || "rgba(251,191,36,.2)")}
+                  {badge(money(payout, currencyUnit), palette?.text || (isWin ? "#10b981" : "#ef4444"), palette?.raised || (isWin ? "rgba(16,185,129,.2)" : "rgba(239,68,68,.2)"))}
+                  {badge(`${multiplier.toFixed(0)}x`, palette?.accent || "#a855f7", palette?.raised || "rgba(168,85,247,.2)")}
                 </>
               ) : <span className="source-overlay-pending-bet">{money(bet, currencyUnit)}</span>}
             </div>
@@ -180,7 +185,15 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
   };
 
   return (
-    <section className="streamer-source-bonus-panel" aria-label={bonusTitle}>
+    <section className="streamer-source-bonus-panel" data-themed-source={themedSource || undefined} aria-label={bonusTitle} style={palette ? {
+      "--source-bg": palette.background,
+      "--source-surface": palette.surface,
+      "--source-raised": palette.raised,
+      "--source-border": palette.border,
+      "--source-accent": palette.accent,
+      "--source-text": palette.text,
+      "--source-muted": palette.muted,
+    } : undefined}>
       <style>{`
         .streamer-source-bonus-panel{box-sizing:border-box;position:relative;display:flex;width:100%;height:100%;min-width:0;min-height:0;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,.15);border-radius:16px;color:#fff;background:linear-gradient(145deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);font-family:Rubik,Inter,ui-sans-serif,system-ui,sans-serif}
         .streamer-source-bonus-panel *{box-sizing:border-box}
@@ -242,6 +255,28 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         .source-overlay-best-icon{display:grid;width:24px;height:24px;flex:none;place-items:center;border-radius:5px;background:rgba(251,191,36,.2);font-size:12px}
         .source-overlay-best-stat strong{display:block;max-width:100px;overflow:hidden;color:#fbbf24;font-size:14px;font-weight:900;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}
         .source-overlay-best-stat small{display:block;margin-top:2px;color:rgba(255,255,255,.5);font-size:8px;font-weight:700;letter-spacing:.04em;line-height:1;text-transform:uppercase}
+        .streamer-source-bonus-panel[data-themed-source]{color:var(--source-text);border-color:var(--source-border);background:linear-gradient(145deg,var(--source-surface),var(--source-bg))}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-header{background:var(--source-surface)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-body{background:linear-gradient(var(--source-bg),var(--source-surface))}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-brand>svg,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-list-title,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-title,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-pending-bet{color:var(--source-accent)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-list-title i,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-title i,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-progress-track i{background:var(--source-accent)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-brand-copy strong,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-stat strong,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-copy>strong{color:var(--source-text)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-brand-copy span,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-number,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-progress-label,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-stat small,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-bonus-empty{color:var(--source-muted)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-stat::before{display:none}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-progress-track{background:var(--source-raised);border-color:var(--source-border)}
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-art,
+        .streamer-source-bonus-panel[data-themed-source] .source-overlay-best-icon{background:var(--source-raised)}
         @keyframes streamer-source-bonus-scroll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
         @media(prefers-reduced-motion:reduce){.streamer-source-bonus-panel *{animation:none!important;transition:none!important}}
       `}</style>
@@ -256,21 +291,21 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
         </div>
 
         <div className="source-overlay-opening-grid">
-          <SourceStat icon={TrendingUp} label="AVERAGE" value={average} />
-          <div className="source-overlay-stat source-overlay-be-stat" style={{ background: "radial-gradient(ellipse at center, rgba(124,58,237,.35) 0%, rgba(15,23,42,.7) 100%)", border: "1px solid rgba(124,58,237,.4)" }}>
-            <span className="source-overlay-stat__label" style={{ color: "#e9d5ff" }}>
-              {showInitialBE ? <Target aria-hidden="true" style={{ color: "#d8b4fe" }} /> : <TrendingUp aria-hidden="true" style={{ color: "#d8b4fe" }} />}
+          <SourceStat icon={TrendingUp} label="AVERAGE" value={average} palette={palette} />
+          <div className="source-overlay-stat source-overlay-be-stat" style={{ background: palette ? palette.raised : "radial-gradient(ellipse at center, rgba(124,58,237,.35) 0%, rgba(15,23,42,.7) 100%)", border: `1px solid ${palette ? palette.border : "rgba(124,58,237,.4)"}` }}>
+            <span className="source-overlay-stat__label" style={{ color: palette ? palette.muted : "#e9d5ff" }}>
+              {showInitialBE ? <Target aria-hidden="true" style={{ color: palette ? palette.accent : "#d8b4fe" }} /> : <TrendingUp aria-hidden="true" style={{ color: palette ? palette.accent : "#d8b4fe" }} />}
               {showInitialBE ? "BE INICIAL" : "BE ATUAL"}
             </span>
             <strong>{showInitialBE ? `${initialBreakEven.toFixed(2)}x` : `${currentBreakEven.toFixed(0)}x`}</strong>
           </div>
         </div>
 
-        <div className="source-overlay-total"><SourceStat icon={DollarSign} label="TOTAL PAY" value={money(totalPay, currencyUnit)} /></div>
+        <div className="source-overlay-total"><SourceStat icon={DollarSign} label="TOTAL PAY" value={money(totalPay, currencyUnit)} palette={palette} /></div>
         <div className="source-overlay-counter-grid">
-          <SourceStat icon={Gift} label="BONUSES" value={items.length} />
-          <SourceStat icon={Zap} label="SUPER" value={superItems.length} tone="gold" />
-          <SourceStat icon={Flame} label="EXTREME" value={extremeItems.length} tone="red" />
+          <SourceStat icon={Gift} label="BONUSES" value={items.length} palette={palette} />
+          <SourceStat icon={Zap} label="SUPER" value={superItems.length} tone="gold" palette={palette} />
+          <SourceStat icon={Flame} label="EXTREME" value={extremeItems.length} tone="red" palette={palette} />
         </div>
         <div className="source-overlay-opening-progress">
           <div className="source-overlay-progress-track"><i style={{ width: `${items.length ? (opened.length / items.length) * 100 : 0}%` }} /></div>
@@ -304,11 +339,11 @@ export default function StreamerSourceBonusPanel({ config = {}, bonuses = [], st
               <div className="source-overlay-best-art">
                 {slotImage(resultSlot) ? <SlotImage src={slotImage(resultSlot)} alt={slotName(resultSlot, 0)} fit="contain" /> : <div className="source-overlay-best-empty">?</div>}
               </div>
-              {resultSlots.length > 1 ? <div className="source-overlay-result-dots" aria-hidden="true">{resultSlots.map((_, index) => <i key={index} style={{ background: index === resultIndex ? "#fbbf24" : "rgba(255,255,255,.3)" }} />)}</div> : null}
+              {resultSlots.length > 1 ? <div className="source-overlay-result-dots" aria-hidden="true">{resultSlots.map((_, index) => <i key={index} style={{ background: index === resultIndex ? (palette?.accent || "#fbbf24") : (palette?.border || "rgba(255,255,255,.3)") }} />)}</div> : null}
               <div className="source-overlay-best-copy">
                 <div className="source-overlay-best-stat"><span className="source-overlay-best-icon">🏆</span><div><strong>{money(resultSlot.payout ?? resultSlot._payout ?? resultSlot.result ?? resultSlot.win, currencyUnit)}</strong><small>BEST WIN</small></div></div>
-                <div className="source-overlay-best-stat"><span className="source-overlay-best-icon" style={{ background: "rgba(168,85,247,.2)" }}>⚡</span><div><strong style={{ color: "#a855f7" }}>{Number(resultSlot._multi ?? resultSlot.multiplier ?? resultSlot.multi ?? 0).toFixed(1)}x</strong><small>BEST MULTI</small></div></div>
-                <div className="source-overlay-best-stat"><span className="source-overlay-best-icon" style={{ background: "rgba(34,197,94,.2)" }}>💰</span><div><strong style={{ color: "#22c55e" }}>{money(resultSlot.betSize ?? resultSlot.bet_size ?? resultSlot.payment_amount ?? resultSlot.bet ?? 0, currencyUnit)}</strong><small>BET SIZE</small></div></div>
+                <div className="source-overlay-best-stat"><span className="source-overlay-best-icon" style={{ background: palette?.raised || "rgba(168,85,247,.2)" }}>⚡</span><div><strong style={{ color: palette?.accent || "#a855f7" }}>{Number(resultSlot._multi ?? resultSlot.multiplier ?? resultSlot.multi ?? 0).toFixed(1)}x</strong><small>BEST MULTI</small></div></div>
+                <div className="source-overlay-best-stat"><span className="source-overlay-best-icon" style={{ background: palette?.raised || "rgba(34,197,94,.2)" }}>💰</span><div><strong style={{ color: palette?.text || "#22c55e" }}>{money(resultSlot.betSize ?? resultSlot.bet_size ?? resultSlot.payment_amount ?? resultSlot.bet ?? 0, currencyUnit)}</strong><small>BET SIZE</small></div></div>
               </div>
             </div>
           </section>

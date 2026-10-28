@@ -2,6 +2,7 @@ import {GalacticGiveawayNotice} from '../../../../effects/ThemeEffects/galactic-
 import {StarterGiveawayNotice} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtGiveawayNotice } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import React, { useLayoutEffect, useRef, useState } from "react";
+import { getWidgetColourTheme } from '../shared/colourThemePalettes';
 import './EmbeddedGiveaway.css';
 import { SolverdeGiveawayNotice } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
 
@@ -21,7 +22,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
   const height = bounded(config.height, 140, 900, 270);
   const hasWinner = Boolean(config.winner);
   const drawing = !hasWinner && Boolean(config.spinningWinner);
-  const streamerSourceChat = layout?.streamerOverlay?.role === "chat";
+  const streamerSourceChat = layout?.streamerOverlay?.role === "chat" || layout?.orientation === 'source_panel';
+  const sourcePalette = getWidgetColourTheme(config.colourTheme || layout.colourTheme);
+  const themedSource = layout?.orientation === 'source_panel' && layout?.streamerOverlay?.role !== 'chat';
   const compactSourceWinner = streamerSourceChat && hasWinner;
   // Orbital, Arctic and Candy winner cards use the real chat bay so
   // their typography and spacing are not reduced by the legacy 420px canvas.
@@ -87,9 +90,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
           aria-label={hasWinner ? `${sourceWinnerName} won the giveaway` : `${config.title || "Giveaway"}; ${sourceEntryCount} entries`}
           style={{
             position: "absolute", inset: 0, display: "flex", alignItems: "center", gap: 9,
-            boxSizing: "border-box", padding: "9px 10px", overflow: "hidden", color: "#fff",
-            border: "1px solid rgba(96,165,250,.3)", borderRadius: 12,
-            background: "linear-gradient(135deg,#1e3a8a 0%,#1e40af 100%)",
+            boxSizing: "border-box", padding: "9px 10px", overflow: "hidden", color: themedSource ? (config.textColor || sourcePalette?.text || '#fff') : "#fff",
+            border: themedSource ? `1px solid ${config.lineColor || sourcePalette?.border || '#60a5fa'}` : "1px solid rgba(96,165,250,.3)", borderRadius: 12,
+            background: themedSource ? `linear-gradient(135deg, ${config.bgColor || sourcePalette?.surface || '#1e3a8a'}, ${config.panelLo || sourcePalette?.background || '#1e40af'})` : "linear-gradient(135deg,#1e3a8a 0%,#1e40af 100%)",
             boxShadow: "0 8px 24px rgba(0,0,0,.28)", fontFamily: "Rubik, Inter, ui-sans-serif, system-ui, sans-serif",
           }}
         >
@@ -101,13 +104,13 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
                 ) : (
                   <span aria-hidden="true" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", border: "2px solid rgba(251,191,36,.55)", background: "rgba(255,255,255,.12)", fontSize: 14, fontWeight: 900 }}>{sourceWinnerName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "W"}</span>
                 )}
-                <i style={{ position: "absolute", top: -4, left: -2, padding: "2px 5px", borderRadius: 7, background: "#0b1730", border: "1px solid rgba(255,255,255,.35)", color: "#fff", fontSize: 7, fontStyle: "normal", fontWeight: 900 }}>WIN</i>
+                <i style={{ position: "absolute", top: -4, left: -2, padding: "2px 5px", borderRadius: 7, background: themedSource ? sourcePalette?.raised : "#0b1730", border: themedSource ? `1px solid ${sourcePalette?.border}` : "1px solid rgba(255,255,255,.35)", color: themedSource ? sourcePalette?.text : "#fff", fontSize: 7, fontStyle: "normal", fontWeight: 900 }}>WIN</i>
               </div>
               <div style={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column", gap: 2 }}>
-                <span style={{ overflow: "hidden", color: "#93c5fd", fontSize: 8, fontWeight: 900, letterSpacing: ".12em", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>Giveaway complete</span>
+                <span style={{ overflow: "hidden", color: themedSource ? sourcePalette?.accent : "#93c5fd", fontSize: 8, fontWeight: 900, letterSpacing: ".12em", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>Giveaway complete</span>
                 <strong title={sourceWinnerName} style={{ overflow: "hidden", fontSize: 12, fontWeight: 900, lineHeight: 1.1, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourceWinnerName}</strong>
-                <span style={{ color: "rgba(255,255,255,.72)", fontSize: 9, fontWeight: 600 }}>won the giveaway</span>
-                {sourcePrize ? <span style={{ overflow: "hidden", color: "#38bdf8", fontSize: 9, fontWeight: 900, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourcePrize}</span> : null}
+                <span style={{ color: themedSource ? sourcePalette?.muted : "rgba(255,255,255,.72)", fontSize: 9, fontWeight: 600 }}>won the giveaway</span>
+                {sourcePrize ? <span style={{ overflow: "hidden", color: themedSource ? sourcePalette?.accent : "#38bdf8", fontSize: 9, fontWeight: 900, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourcePrize}</span> : null}
               </div>
             </>
           ) : (
@@ -127,9 +130,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
             <>
               <span aria-hidden="true" style={{ flex: "0 0 auto", fontSize: 21 }}>🎁</span>
               <div style={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column", gap: 3 }}>
-                <strong style={{ overflow: "hidden", color: "#fff", fontSize: 10, fontWeight: 900, letterSpacing: ".08em", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>{config.title || "Giveaway"}</strong>
-                <span style={{ overflow: "hidden", color: "#bfdbfe", fontSize: 9, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourcePrize || (sourceKeyword ? `Type !${sourceKeyword.replace(/^!/, "")} to join` : "Live giveaway")}</span>
-                <span style={{ color: "#38bdf8", fontSize: 8, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>{sourceKeyword ? `${sourceKeyword.startsWith("!") ? sourceKeyword : `!${sourceKeyword}`}  ·  ` : ""}{sourceEntryCount} {sourceEntryCount === 1 ? "entry" : "entries"}</span>
+                <strong style={{ overflow: "hidden", color: themedSource ? sourcePalette?.text : "#fff", fontSize: 10, fontWeight: 900, letterSpacing: ".08em", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>{config.title || "Giveaway"}</strong>
+                <span style={{ overflow: "hidden", color: themedSource ? sourcePalette?.muted : "#bfdbfe", fontSize: 9, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourcePrize || (sourceKeyword ? `Type !${sourceKeyword.replace(/^!/, "")} to join` : "Live giveaway")}</span>
+                <span style={{ color: themedSource ? sourcePalette?.accent : "#38bdf8", fontSize: 8, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>{sourceKeyword ? `${sourceKeyword.startsWith("!") ? sourceKeyword : `!${sourceKeyword}`}  ·  ` : ""}{sourceEntryCount} {sourceEntryCount === 1 ? "entry" : "entries"}</span>
               </div>
             </>
             )

@@ -1009,6 +1009,9 @@ export function getBetterInstanceConstraints(instance = {}) {
   if (instance.widgetType === "bonus_hunt" && instance.config?.streamerOverlay?.role === "active_panel") {
     return { ...constraints, minWidth: 240, minHeight: 320, maxWidth: 1280, maxHeight: 1080 };
   }
+  if (instance.widgetType === 'bonus_hunt' && instance.config?.orientation === 'source_panel') {
+    return { ...constraints, minWidth: 240, minHeight: 320, maxWidth: 1280, maxHeight: 1080 };
+  }
   if(instance.widgetType==='bonus_hunt'&&instance.config?.orientation==='new_horizontal') return {...constraints,minWidth:365,minHeight:75,maxWidth:1920,maxHeight:1080};
   const commandSize=instance.widgetType==='current_slot'?({galactic_scanner:[260,220],galactic_max:[220,100],galactic_rail:[680,54],galactic_info:[680,180]})[instance.config?.displayStyle]:null;
   if(commandSize)return {...constraints,minWidth:commandSize[0],minHeight:commandSize[1],maxWidth:1920,maxHeight:1080};

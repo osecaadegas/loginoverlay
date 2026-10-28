@@ -46,6 +46,7 @@ import {
 } from "../../../../services/shoutoutCommandService";
 
 import {premiumChatPalette,premiumMessageSurface} from './premiumChatPresentation';
+import { getWidgetColourTheme } from '../shared/colourThemePalettes';
 import './PremiumChat.css';
 
 /* ─── Platform helpers ─── */
@@ -826,6 +827,7 @@ function ChatWidget({
     [config],
   );
   const premiumPalette=premiumChatPalette(c);
+  const sourcePalette = getWidgetColourTheme(c.colourTheme) || getWidgetColourTheme('neon');
   const [shoutoutHasMedia,setShoutoutHasMedia]=useState(true);
   const partAttrs = (elementId) => ({
     "data-appearance-part": elementId,
@@ -1143,7 +1145,8 @@ function ChatWidget({
 
   /* Which features each style shows */
   const showHeader = shouldShowChatHeader(chatStyle, c);
-  const isStreamerOverlayChat = c.streamerOverlay?.role === "chat";
+  const isLegacySourceChat = c.streamerOverlay?.role === "chat";
+  const isStreamerOverlayChat = isLegacySourceChat || (c.orientation === 'source_panel' && isBroadcast);
   const showStyleHeader = showHeader && !isStreamerOverlayChat;
   const showLegend = shouldShowChatLegend(chatStyle, c);
   const showBadges = shouldShowChatBadges(chatStyle, c);
@@ -1460,7 +1463,7 @@ function ChatWidget({
     containerBorderWidth,
     containerBorderColor,
   });
-  if (c.streamerOverlay?.role === "chat") {
+  if (isLegacySourceChat) {
     // Match ChatOverlay's original 240 x 720 inset panel while keeping the
     // renderer driven by the saved overlay instance and live chat services.
     Object.assign(rootStyle, {
@@ -1475,6 +1478,17 @@ function ChatWidget({
       fontFamily: "Rubik, Inter, ui-sans-serif, system-ui, sans-serif",
       fontSize: "11px",
       overflow: "hidden",
+    });
+  }
+  if (c.orientation === 'source_panel' && !isLegacySourceChat && isBroadcast) {
+    Object.assign(rootStyle, {
+      width: '100%', height: '100%', boxSizing: 'border-box',
+      background: `linear-gradient(145deg, ${c.panel || sourcePalette.surface}, ${sourcePalette.background})`,
+      border: `1px solid ${c.borderColor || sourcePalette.border}`,
+      borderRadius: `${Number(c.containerRadius) || 16}px`,
+      boxShadow: 'none', color: c.textColor || sourcePalette.text,
+      fontFamily: c.font || 'Rubik, Inter, ui-sans-serif, system-ui, sans-serif',
+      fontSize: `${Number(c.fontSize) || 11}px`, overflow: 'hidden',
     });
   }
   if (c.colourTheme === 'volcanic' && !isTransparent) {
@@ -1656,12 +1670,12 @@ function ChatWidget({
       ) : null}
 
       {showHeader && isStreamerOverlayChat && (
-        <div className="ov-chat-header ov-chat-header--streamer-source" {...partAttrs("header")} style={headerPartStyle({ flex: "none", padding: "12px 16px", background: "rgba(0,0,0,.2)", color: "#fff", border: 0 })}>
+        <div className="ov-chat-header ov-chat-header--streamer-source" {...partAttrs("header")} style={headerPartStyle({ flex: "none", padding: "12px 16px", background: isLegacySourceChat ? "rgba(0,0,0,.2)" : (c.headerBg || sourcePalette.raised), color: isLegacySourceChat ? '#fff' : (c.headerText || sourcePalette.text), border: 0 })}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isLegacySourceChat ? '#60a5fa' : sourcePalette.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span style={{ color: "#fff", fontSize: 14, fontWeight: 900, letterSpacing: ".05em", textShadow: "0 2px 4px rgba(0,0,0,.5), 0 0 20px rgba(168,85,247,.4)", textTransform: "uppercase" }}>CHAT</span>
+            <span style={{ color: isLegacySourceChat ? '#fff' : (c.headerText || sourcePalette.text), fontSize: 14, fontWeight: 900, letterSpacing: ".05em", textShadow: "0 2px 4px rgba(0,0,0,.5), 0 0 20px rgba(168,85,247,.4)", textTransform: "uppercase" }}>CHAT</span>
           </div>
           <div aria-hidden="true" style={{ width: "100%", height: 1, background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,.3) 50%, transparent 100%)" }} />
         </div>
