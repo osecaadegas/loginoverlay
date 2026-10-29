@@ -26,7 +26,6 @@ export const BILLING_PLANS = {
     env: 'STRIPE_PRICE_PLAYER_MONTHLY',
     productCode: 'player_bonus_hunt',
     monthlyPrice: '3.00',
-    trialDays: 30,
   },
   player_annual: {
     label: 'Player Annual',
