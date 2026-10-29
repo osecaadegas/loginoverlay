@@ -7,21 +7,8 @@ import { StreamElementsProvider } from "./context/StreamElementsContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import LandingPage from "./components/LandingPage/LandingPage";
-import ToolLandingPage from "./components/LandingPage/ToolLandingPage";
 import TopNavigation from "./components/Navigation/TopNavigation";
-import OffersPage from "./components/OffersPage/OffersPage";
-
-import SlotManagerPage from "./components/SlotManager/SlotManagerPage";
 import ProtectedAdminRoute from "./components/ProtectedRoute/ProtectedAdminRoute";
-
-import ProfilePage from "./components/ProfilePage/ProfilePage";
-import AppsPage from "./components/AppsPage/AppsPage";
-import SpotifyCallback from "./components/SpotifyCallback";
-import DeveloperPage from "./components/DeveloperPage/DeveloperPage";
-import PricingPage from "./components/Pricing/PricingPage";
-import PrivacyPolicy from "./components/Legal/PrivacyPolicy";
-import TermsOfService from "./components/Legal/TermsOfService";
-import LoginPage from "./components/Login/LoginPage";
 import CookieConsent from "./components/CookieConsent/CookieConsent";
 import useSlotRequestListener from "./hooks/useSlotRequestListener";
 import usePredictionListener from "./hooks/usePredictionListener";
@@ -32,6 +19,17 @@ import { applyRouteSeo } from "./utils/seo";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 
 /* -- Lazy-loaded heavy routes (code-split) -- */
+const ToolLandingPage = lazy(() => import("./components/LandingPage/ToolLandingPage"));
+const OffersPage = lazy(() => import("./components/OffersPage/OffersPage"));
+const SlotManagerPage = lazy(() => import("./components/SlotManager/SlotManagerPage"));
+const ProfilePage = lazy(() => import("./components/ProfilePage/ProfilePage"));
+const AppsPage = lazy(() => import("./components/AppsPage/AppsPage"));
+const SpotifyCallback = lazy(() => import("./components/SpotifyCallback"));
+const DeveloperPage = lazy(() => import("./components/DeveloperPage/DeveloperPage"));
+const PricingPage = lazy(() => import("./components/Pricing/PricingPage"));
+const PrivacyPolicy = lazy(() => import("./components/Legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/Legal/TermsOfService"));
+const LoginPage = lazy(() => import("./components/Login/LoginPage"));
 const UpdatesPage = lazy(() => import("./components/UpdatesPage/UpdatesPage"));
 const AdminPanel = lazy(() => import("./components/AdminPanel/AdminPanel"));
 const AdminAffiliatesPage = lazy(

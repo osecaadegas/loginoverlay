@@ -214,7 +214,7 @@ const FAQ_BY_PATH = {
   ],
 };
 
-const SEO_BY_PATH = {
+export const SEO_BY_PATH = {
   '/': {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,

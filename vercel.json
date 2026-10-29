@@ -213,6 +213,19 @@
       "source": "/support-extension.html",
       "destination": "/support-extension.html"
     },
+    { "source": "/player", "destination": "/seo/player.html" },
+    { "source": "/streamer", "destination": "/seo/streamer.html" },
+    { "source": "/streamer-overlays", "destination": "/seo/streamer-overlays.html" },
+    { "source": "/bonus-hunt-tracker", "destination": "/seo/bonus-hunt-tracker.html" },
+    { "source": "/casino-profit-loss-tracker", "destination": "/seo/casino-profit-loss-tracker.html" },
+    { "source": "/slot-request-widget", "destination": "/seo/slot-request-widget.html" },
+    { "source": "/tournament-overlay", "destination": "/seo/tournament-overlay.html" },
+    { "source": "/giveaway-widget", "destination": "/seo/giveaway-widget.html" },
+    { "source": "/chat-games", "destination": "/seo/chat-games.html" },
+    { "source": "/offers", "destination": "/seo/offers.html" },
+    { "source": "/premium", "destination": "/seo/premium.html" },
+    { "source": "/privacy", "destination": "/seo/privacy.html" },
+    { "source": "/terms", "destination": "/seo/terms.html" },
     {
       "source": "/privacy-policy-extension.html",
       "destination": "/privacy-policy-extension.html"

@@ -1,6 +1,19 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'public-seo-giveaway-security-slot-detector-2026-10-29', date: '2026-10-29', category: 'website',
+    title: 'Public page discovery and safer automation',
+    summary: 'Public marketing routes now ship route-specific initial HTML; scheduled giveaway draws require a cron credential.',
+    changes: [
+      'Added route-specific title, description, canonical and semantic initial content for 14 public routes, plus a generated public-only sitemap.',
+      'Protected the scheduled giveaway endpoint with CRON_SECRET and a transaction-based, ticket-weighted legacy draw function. The active user_giveaways model is unchanged.',
+      'Repaired the missing slot detector suggestion columns and index in the production database.',
+      'Updated Player landing trial copy to follow the public subscription configuration and improved the overlay gallery search and scene descriptions.',
+      'Deferred unrelated application routes so the main JavaScript chunk fell from 823 KB to 642 KB in the local production build.',
+    ],
+    action: 'Refresh public pages after deployment. Configure CRON_SECRET in Vercel before enabling scheduled draws. The legacy giveaway tables are absent in production, so that cron currently reports no draw. Live OBS and browser viewport checks remain pending.',
+  },
+  {
     id: 'clear-ice-bonus-hunt-obs-layout-parity-2026-10-28', date: '2026-10-28', category: 'overlays',
     title: 'Match Clear Ice Bonus Hunt in OBS and the editor',
     summary: 'The individual Clear Ice Bonus Hunt OBS source keeps the saved image-card and text layout when fitted to a larger Browser Source.',

@@ -48,8 +48,14 @@ function statusCode(err) {
   return err.statusCode || 500;
 }
 
-function userFacingError(err) {
+export function userFacingError(err) {
   const text = `${err?.message || ''} ${err?.details || ''}`.toLowerCase();
+  if ((err?.code === '42703' || err?.code === 'PGRST204') &&
+      (text.includes('device_panel_id') || text.includes('suggestion_dismissed_at'))) {
+    const setup = new Error('Slot Detector suggestion schema is outdated. Apply the slot detector suggestion repair migration.');
+    setup.statusCode = 503;
+    return setup;
+  }
   if (err?.code === '42P01' || err?.code === 'PGRST205' || text.includes('slot_detector') || text.includes('detected_slots')) {
     const setup = new Error('Slot Detector database tables are missing. Apply migrations/027_slot_detector.sql in Supabase.');
     setup.statusCode = 503;
@@ -94,8 +100,8 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'Unknown Slot Detector action' });
   } catch (rawError) {
     const err = userFacingError(rawError);
-    if (statusCode(err) >= 500) console.error('[slot-detector]', rawError);
+    if (statusCode(err) >= 500) console.error('[slot-detector]', rawError?.code || rawError?.name || 'Error');
     if (err.retryAfter) res.setHeader('Retry-After', String(err.retryAfter));
-    return res.status(statusCode(err)).json({ error: err.message || 'Slot Detector request failed' });
+    return res.status(statusCode(err)).json({ error: statusCode(err) >= 500 && err === rawError ? 'Slot Detector request failed' : err.message || 'Slot Detector request failed' });
   }
 }

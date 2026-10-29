@@ -1584,12 +1584,12 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
 
       <section className="lp-home-hero" id="demo">
         <div className="lp-home-hero__copy">
-          <span className="lp-eyebrow">YOUR STREAM, WITH A LITTLE MORE MAGIC</span>
+          <span className="lp-eyebrow">BUILD YOUR LIVE SCENE IN ONE PLACE</span>
           <h1>
-            Your stream.<br />Their favourite<br /><strong>place to be.</strong>
+            Professional iGaming overlays.<br /><strong>One streaming dashboard.</strong>
           </h1>
           <p>
-            Interactive iGaming overlays, bonus hunts, giveaways, viewer games and chat tools, all controlled from one place and added directly to your OBS scene.
+            Build custom OBS scenes, track bonus hunts, run tournaments, manage slot requests and engage viewers with Twitch, Kick and YouTube tools.
           </p>
           <div className="lp-home-hero__ctas">
             <button
@@ -1599,9 +1599,7 @@ function HomeLanding({ user, onLogin, onStreamerCta, onPlayerCta }) {
             >
               {user ? 'Open your workspace' : 'Start free trial'} <ArrowRight size={18} />
             </button>
-            <a className="lp-btn lp-btn--ghost" href="#playground">
-              Try the widgets <Play size={18} />
-            </a>
+            <a className="lp-btn lp-btn--ghost" href="#overlays">Explore live overlays <Play size={18} /></a>
           </div>
           {!user && <div className="lp-hero-trial">
             <span className="lp-hero-trial__icon"><Sparkles size={18} aria-hidden="true" /></span>
@@ -1871,7 +1869,9 @@ function TrustComplianceSection() {
   );
 }
 
-function PlayerLanding({ headingRef, onPrimaryCta, user }) {
+function PlayerLanding({ headingRef, onPrimaryCta, user, subscriptionContent }) {
+  const trialDays = Number(subscriptionContent?.trialDays) || 0;
+  const trialLabel = user ? 'Open Player Center' : trialDays > 0 ? `Start ${trialDays}-Day Free Trial` : 'Explore Player Access';
   return (
     <main className="lp-selected lp-selected--player">
       <section className="lp-selected-hero">
@@ -1900,7 +1900,7 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
               className="lp-btn lp-btn--player"
               onClick={onPrimaryCta}
             >
-              Start 30-Day Free Trial <ArrowRight size={18} />
+              {trialLabel} <ArrowRight size={18} />
             </button>
             {user && (
               <Link className="lp-btn lp-btn--ghost" to="/player/bonus-hunt">
@@ -1909,9 +1909,8 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
             )}
           </div>
           <p className="lp-responsible-note">
-            First 30 days free, then EUR 3 per month after payment
-            authorization. Track your play responsibly; Streamers Center records
-            results and never implies guaranteed winnings.
+            {trialDays > 0 ? `Eligible new accounts can try Player Center for ${trialDays} days. ` : ''}
+            Review current paid plans and renewal terms before checkout. Streamers Center records results and never implies guaranteed winnings.
           </p>
         </div>
         <div className="lp-selected-hero__preview">
@@ -1976,11 +1975,9 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
       <section className="lp-section lp-player-plan">
         <div>
           <span className="lp-eyebrow">Player plan</span>
-          <h2>Try the full player dashboard for 30 days.</h2>
+          <h2>{trialDays > 0 ? `Try the player dashboard for ${trialDays} days.` : 'Explore the player dashboard.'}</h2>
           <p>
-            After the free trial, the Player plan renews monthly at EUR 3 only
-            after you authorize recurring billing through the secure payment
-            flow.
+            {trialDays > 0 ? `Eligible accounts can start a ${trialDays}-day free trial${subscriptionContent?.trialRequiresPaymentMethod === false ? ' without a payment method' : ''}. ` : ''}Paid plan prices, tax and renewal terms are shown on the plans page and at checkout.
           </p>
         </div>
         <button
@@ -1988,7 +1985,7 @@ function PlayerLanding({ headingRef, onPrimaryCta, user }) {
           className="lp-btn lp-btn--player"
           onClick={onPrimaryCta}
         >
-          Start 30-Day Free Trial <ArrowRight size={18} />
+          {trialLabel} <ArrowRight size={18} />
         </button>
       </section>
     </main>
@@ -2216,6 +2213,7 @@ export default function LandingPage({ mode = "selector" }) {
   const [pricingPlans, setPricingPlans] = useState([]);
   const { user } = useAuth();
   const { isPremium } = usePremium();
+  const { data: subscriptionContent } = useLandingSubscriptions();
   const navigate = useNavigate();
   const location = useLocation();
   const headingRef = useRef(null);
@@ -2374,6 +2372,7 @@ export default function LandingPage({ mode = "selector" }) {
             headingRef={headingRef}
             onPrimaryCta={startPlayerTrial}
             user={user}
+            subscriptionContent={subscriptionContent}
           />
         ) : mode === "streamer" ? (
           <StreamerLanding
