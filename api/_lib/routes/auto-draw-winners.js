@@ -37,6 +37,12 @@ export default async function handler(req, res, { createClientImpl = createClien
         error: error.code === 'PGRST202' ? 'Giveaway draw migration is pending' : 'Giveaway draw failed',
       });
     }
+    if (data?.status === 'legacy_schema_absent') {
+      return res.status(503).json({
+        error: 'Automated draws are unavailable for the current giveaway model',
+        code: 'current_giveaway_model_not_supported',
+      });
+    }
     return res.status(200).json(data);
   } catch (error) {
     console.error('[auto-draw-winners] Unexpected draw failure:', error?.name || 'Error');

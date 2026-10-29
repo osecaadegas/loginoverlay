@@ -1,10 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/auto-draw-winners",
-      "schedule": "0 0 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)\\.(webp|avif|jpg|jpeg|gif|ico|svg|woff2|woff|ttf|otf)",

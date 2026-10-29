@@ -78,3 +78,19 @@ test('missing database migration does not report a successful draw', async () =>
     assert.equal(res.statusCode, 503);
   } finally { restore(); }
 });
+
+test('retired giveaway schema is not reported as a successful scheduled draw', async () => {
+  try {
+    process.env.CRON_SECRET = 'local-test-secret';
+    process.env.SUPABASE_URL = 'https://example.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'local-test-key';
+    const res = response();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer local-test-secret' } }, res, {
+      createClientImpl: () => ({ rpc: async () => ({
+        data: { status: 'legacy_schema_absent', drawn: 0, winners: 0 }, error: null,
+      }) }),
+    });
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.code, 'current_giveaway_model_not_supported');
+  } finally { restore(); }
+});
