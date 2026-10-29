@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'distinct-app-download-brand-icons-2026-10-29', date: '2026-10-29', category: 'website',
+    title: 'Give each desktop app its own logo',
+    summary: 'The Apps page now shows the dedicated ScreenSplit Browser and SC Web Transitions marks on their download tiles.',
+    changes: [
+      'Used the supplied ScreenSplit Browser and SC Web Transitions artwork on their matching Apps page tiles.',
+      'Kept the Streamers Center website identity separate from the two downloadable products.',
+    ],
+    action: 'Refresh the Apps page to see the two app-specific logos. This update does not change installed Windows icons.',
+  },
+  {
     id: 'public-seo-giveaway-security-slot-detector-2026-10-29', date: '2026-10-29', category: 'website',
     title: 'Public page discovery and safer automation',
     summary: 'Public marketing routes now ship route-specific initial HTML; scheduled giveaway draws require a cron credential.',
@@ -11,7 +21,7 @@ export const releaseNotes = [
       'Updated Player landing trial copy to follow the public subscription configuration and improved the overlay gallery search and scene descriptions.',
       'Deferred unrelated application routes so the main JavaScript chunk fell from 823 KB to 642 KB in the local production build.',
     ],
-    action: 'Refresh public pages after deployment. The production CRON_SECRET is configured; the legacy giveaway tables are absent, so the cron currently reports no draw. Live OBS and browser viewport checks remain pending.',
+    action: 'Refresh public pages after deployment. Automated draws for the current giveaway model are disabled; manual giveaways remain available. Live OBS and browser viewport checks remain pending.',
   },
   {
     id: 'clear-ice-bonus-hunt-obs-layout-parity-2026-10-28', date: '2026-10-28', category: 'overlays',
@@ -113,7 +123,7 @@ export const releaseNotes = [
     action: 'Download SC Web Transitions from Apps. Use Quit in the old version before installing, keep a settings export, then reconnect OBS and test both directions off-stream. Refresh the OBS FX Browser Source. This release candidate still requires live OBS validation.',
   },
   {"id":"arctic-rtp-icicle-render-element-2026-10-25","date":"2026-10-25","category":"overlays","title":"Render Arctic RTP icicles as a separate attachment","summary":"Arctic RTP now renders its icicles as a dedicated absolute overlay element, independent of the bar contents and layout height.","changes":["Added the icicle artwork directly to both RTP renderer implementations only when Arctic is selected.","The bar and outer widget frame allow the attachment to paint below their edges without reserving vertical layout space."],"action":"Refresh the overlay editor and OBS Browser Source to load the updated Arctic RTP decoration."},
-  {"id":"arctic-rtp-icicle-obs-clip-2026-10-25","date":"2026-10-25","category":"overlays","title":"Unclip Arctic RTP icicles in the overlay","summary":"The Arctic RTP icicle attachment now extends through the Better Overlay OBS and editor-preview widget wrappers without changing the rail height.","changes":["The RTP widget's own frame and the surrounding Better Overlay instance no longer clip the Arctic-only icicle decoration.","Other widget types, colour themes and the RTP rail's measured dimensions are unchanged."],"action":"Refresh the overlay editor and OBS Browser Source to load the Arctic RTP attachment fix."},
+  {"id":"arctic-rtp-icicle-obs-clip-2026-10-25","date":"2026-10-25","category":"overlays","title":"Unclip Arctic RTP icicles in the overlay","summary":"The Arctic RTP icicle attachment now extends through the Better Overlay OBS and editor-preview widget wrappers without changing the rail height.","changes":["The RTP widget’s own frame and the surrounding Better Overlay instance no longer clip the Arctic-only icicle decoration.","Other widget types, colour themes and the RTP rail’s measured dimensions are unchanged."],"action":"Refresh the overlay editor and OBS Browser Source to load the Arctic RTP attachment fix."},
   {"id":"arctic-fracture-edge-rtp-icicles-2026-10-25","date":"2026-10-25","category":"overlays","title":"Refine Arctic glass fractures and RTP icicles","summary":"Arctic widget surfaces use Clear Ice's shattered-edge fracture artwork, and RTP icicles hang below the rail without adding to its layout height.","changes":["Replaced the fine string-like crack texture on Arctic panels, chat, bets and RTP surfaces with the edge-focused shattered-glass fracture image.","Attached the RTP icicle decoration to the bar's lower edge and allowed it to extend beyond the bar without changing the widget's measured height."],"action":"Refresh the overlay editor and OBS Browser Source to load the updated Arctic glass and RTP bar."},
   {"id":"arctic-ice-edges-bets-2026-10-25","date":"2026-10-25","category":"overlays","title":"Match Arctic glass and frost to the reference","summary":"Arctic now uses dark blue frozen glass, fine edge cracks, brighter frost rims and visible icicles on the navbar and RTP bar.","changes":["Replaced the cloudy panel wash with smooth frozen glass, subtle ice grain and sharper crack details concentrated at the edges.","Added brighter icy corner highlights to chat, bonus hunt, slideshow, bingo, bets and slot panels while keeping dark centres for readability.","Refined chat messages and bet cards with dark glass texture and clearer borders; increased the hanging icicles below the navbar and RTP stats bar."],"action":"Refresh the overlay editor and OBS Browser Source to load the updated Arctic materials."},
   {"id":"arctic-brighter-frost-2026-10-25","date":"2026-10-25","category":"overlays","title":"Brighter Arctic ice frames","summary":"Arctic uses brighter white-blue rims and more visible frozen glass to better match the reference material.","changes":["Strengthened corner frost and side/bottom highlights across Arctic widget frames.","Brightened recessed stat borders and exposed more glass and crack detail in chat and empty hunt panels. Other colour themes and widget layouts are unchanged."],"action":"Refresh the editor and OBS Browser Sources to load the updated Arctic styling."},

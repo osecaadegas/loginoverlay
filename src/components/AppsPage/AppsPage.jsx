@@ -104,6 +104,7 @@ export default function AppsPage() {
       label: "ScreenSplit Browser",
       desc: `Download the Windows installer (v${SCREEN_SPLIT_VERSION})`,
       icon: Download,
+      logo: "/iconLOGOs/SC_BROWSER.png",
       tone: "sky",
       art: "screensplit",
     },
@@ -113,6 +114,7 @@ export default function AppsPage() {
       label: "SC Web Transitions",
       desc: "Download the latest Windows build and source (ZIP)",
       icon: Download,
+      logo: "/iconLOGOs/SC_WEB_TRANSITIONS.png",
       tone: "cyan",
       art: "screensplit",
     },
@@ -245,8 +247,8 @@ export default function AppsPage() {
               {...tileProps}
               className={tileClassName}
             >
-              <span className="apps-tile__icon" aria-hidden="true">
-                <Icon size={25} strokeWidth={2.35} />
+              <span className={`apps-tile__icon${tile.logo ? " apps-tile__icon--logo" : ""}`} aria-hidden="true">
+                {tile.logo ? <img src={tile.logo} alt="" /> : <Icon size={25} strokeWidth={2.35} />}
               </span>
               <strong>{tile.label}</strong>
               <span className="apps-tile__desc">{tile.desc}</span>

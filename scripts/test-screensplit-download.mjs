@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 
 const source = await readFile(
   new URL("../src/components/AppsPage/AppsPage.jsx", import.meta.url),
@@ -28,5 +28,9 @@ assert.ok(
   source.includes(`Download the Windows installer (v\${SCREEN_SPLIT_VERSION})`),
   "Apps page must show the version delivered by the download link",
 );
+assert.ok(source.includes('logo: "/iconLOGOs/SC_BROWSER.png"'), "ScreenSplit Browser tile must use its dedicated app logo");
+assert.ok(source.includes('logo: "/iconLOGOs/SC_WEB_TRANSITIONS.png"'), "SC Web Transitions tile must use its dedicated app logo");
+await access(new URL("../public/iconLOGOs/SC_BROWSER.png", import.meta.url));
+await access(new URL("../public/iconLOGOs/SC_WEB_TRANSITIONS.png", import.meta.url));
 
-console.log(`ScreenSplit Browser download is pinned consistently to v${version}.`);
+console.log(`App download links are pinned consistently to v${version} and both app-specific logos are present.`);

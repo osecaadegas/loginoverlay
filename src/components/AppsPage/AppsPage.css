@@ -140,6 +140,24 @@
   filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--tile-accent) 32%, transparent));
 }
 
+.apps-tile__icon--logo {
+  width: 56px;
+  height: 56px;
+  padding: 2px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.apps-tile__icon--logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .42));
+}
+
 .apps-tile strong {
   position: relative;
   z-index: 1;
