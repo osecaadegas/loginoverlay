@@ -11,7 +11,7 @@ export const releaseNotes = [
       'Updated Player landing trial copy to follow the public subscription configuration and improved the overlay gallery search and scene descriptions.',
       'Deferred unrelated application routes so the main JavaScript chunk fell from 823 KB to 642 KB in the local production build.',
     ],
-    action: 'Refresh public pages after deployment. Configure CRON_SECRET in Vercel before enabling scheduled draws. The legacy giveaway tables are absent in production, so that cron currently reports no draw. Live OBS and browser viewport checks remain pending.',
+    action: 'Refresh public pages after deployment. The production CRON_SECRET is configured; the legacy giveaway tables are absent, so the cron currently reports no draw. Live OBS and browser viewport checks remain pending.',
   },
   {
     id: 'clear-ice-bonus-hunt-obs-layout-parity-2026-10-28', date: '2026-10-28', category: 'overlays',
