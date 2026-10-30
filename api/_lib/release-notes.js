@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'overlay-editor-control-preview-theme-audit-2026-10-30', date: '2026-10-30', category: 'overlays',
+    title: 'Complete Slot Requests preview and 2x2 frame themes',
+    summary: 'The editor now renders Slot Requests beside its controls and lets the 2x2 Bonus Hunt frame use an allowed colour theme.',
+    changes: [
+      'Connected the Slot Requests widget to the right-panel preview path.',
+      'Added the existing theme picker and palette mapping to the 2x2 Bonus Hunt frame while preserving its per-slot controls.',
+      'Expanded editor control checks to cover all 17 registered widgets, valid ScreenSplit source connection, and current Clear Ice styles.',
+    ],
+    action: 'Refresh the Overlay Center editor after deployment and publish changed scenes to update OBS. Live OBS and physical ScreenSplit feeds were not verified by the browser audit.',
+  },
+  {
     id: 'community-overlay-active-role-visibility-2026-10-30', date: '2026-10-30', category: 'overlays',
     title: 'Show community builds according to their active assets',
     summary: 'Signed-in users can browse shared designs whose displayed assets are allowed by their overlay roles.',

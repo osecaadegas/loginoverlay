@@ -82,7 +82,7 @@ assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-widget \.ov
 assert.match(embeddedGiveawaySource, /const clearIceChatGiveaway = streamerSourceChat && winnerTheme === "clear_ice" && !hasWinner && !drawing;/, 'Clear Ice active chat giveaway is identified for its dedicated reference-card layout');
 assert.match(embeddedGiveawaySource, /data-clear-ice-chat-giveaway=\{clearIceChatGiveaway \? "true" : undefined\}/, 'Clear Ice active chat giveaway applies its layout marker to the frame');
 assert.match(embeddedGiveawaySource, /ov-chat-giveaway-clear-ice-heading[\s\S]*ov-chat-giveaway-clear-ice-prize[\s\S]*ov-chat-giveaway-clear-ice-stats/, 'Clear Ice active giveaway shows heading, centered prize and keyword/entry stats');
-assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-giveaway\[data-clear-ice-chat-giveaway="true"\]\s*\{[\s\S]*flex:\s*0 1 136px !important;[\s\S]*min-height:\s*min\(120px, 26%\) !important;/, 'Clear Ice active giveaway reserves responsive height for readable details');
+assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-giveaway\[data-clear-ice-chat-giveaway="true"\]\s*\{[\s\S]*flex:\s*0 0 172px !important;[\s\S]*height:\s*172px !important;[\s\S]*min-height:\s*min\(160px, 35%\) !important;/, 'Clear Ice active giveaway keeps its readable height as chat messages arrive');
 assert.match(clearIceCss, /\.ov-chat-giveaway-clear-ice-prize\s*\{[\s\S]*font-size:\s*19px;/, 'Clear Ice giveaway prize uses larger type');
 assert.match(clearIceCss, /\.ov-chat-giveaway-clear-ice-stats\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/, 'Clear Ice giveaway stats use two readable columns');
 assert.match(clearIceCss, /data-widget-type="connect_four"\] \.connect-four-player-rail[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice styles Connect Four player rails with the shared glass texture');
@@ -124,10 +124,10 @@ assert.match(clearIceCss, /data-widget-type="bets"\]\s*\.bets-ov--compact-scoreb
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-track > span\s*\{\s*border-radius:\s*inherit !important;\s*background:\s*linear-gradient\(90deg, #39bfff, #89d9ff 68%, #d8f3fb\) !important;\s*box-shadow:\s*0 0 7px rgba\(70, 195, 255, \.95\), 0 0 16px rgba\(70, 195, 255, \.72\) !important;/, 'Clear Ice progress fill uses a luminous blue gradient and glow');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-mini-stat:nth-child\(2\) > \*\s*\{\s*color:\s*#89d9ff !important;/, 'Clear Ice carousel multiplier label and value share a cyan identity');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-mini-stat--best \.better-hunt-mini-best-value > small\s*\{\s*color:\s*#89d9ff !important;/, 'Clear Ice Best multiplier uses cyan while Best payout remains white');
-assert.match(clearIceCss, /data-widget-type="bonus_hunt"\]\s*:is\([\s\S]*\.better-hunt-result-face--best \.better-hunt-result,[\s\S]*\.better-hunt-result-face--worst \.better-hunt-result[\s\S]*background:\s*linear-gradient\(180deg, #0a2b4a, #123254\) !important;/, 'Clear Ice Best and Worst outer faces use the same deep-glass treatment as carousel cards');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] :is\([\s\S]*\.better-hunt-result-face--best \.better-hunt-result,[\s\S]*\.better-hunt-result-face--worst \.better-hunt-result[\s\S]*background:\s*linear-gradient\(145deg,[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice Best and Worst outer faces use the same glass treatment as carousel cards');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-result-payout > span,[\s\S]*\.better-hunt-result-row > span\s*\{\s*font-size:\s*1\.12em !important;/, 'Clear Ice Best and Worst labels are enlarged for overlay readability');
 assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] \.better-hunt-result-row > strong\s*\{\s*font-size:\s*1\.52em !important;/, 'Clear Ice Best and Worst metric values use larger type');
-assert.match(clearIceCss, /data-widget-type="bonus_hunt"\]\s*:is\([\s\S]*\.better-hunt-result-payout,[\s\S]*\.better-hunt-result-row[\s\S]*background:\s*rgba\(10, 43, 74, \.88\) !important;/, 'Clear Ice Best and Worst metric wells retain their dark readable fill');
+assert.match(clearIceCss, /data-widget-type="bonus_hunt"\] :is\([\s\S]*\.better-hunt-result-payout,[\s\S]*\.better-hunt-result-row[\s\S]*background:\s*rgba\(10, 43, 74, \.28\) !important;/, 'Clear Ice Best and Worst metric wells retain a translucent readable fill');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-widget,[\s\S]*data-widget-type="bonus_hunt"\][\s\S]*background-blend-mode:\s*soft-light, soft-light, soft-light/, 'Clear Ice Chat and Bonus Hunt use softened shell textures');
 assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*data-giveaway-active="true"\]\[data-giveaway-position="top"\] \.ov-chat-messages\s*\{[\s\S]*mask-image:\s*linear-gradient\(to bottom, transparent 0, #000 30px, #000 100%\) !important;/, 'Clear Ice fades messages as they approach an active top giveaway');
 assert.match(clearIceCss, /data-widget-type="chat"\][\s\S]*\.ov-chat-messages > :is\(\[data-better-element="message"\], \[data-better-element="highlightedMessage"\]\)\s*\{\s*animation:\s*none !important;\s*opacity:\s*1 !important;/, 'Clear Ice chat rows remain still and visible');
@@ -277,7 +277,7 @@ try {
   await page.evaluate(() => window.themeTest.mount('chat', undefined, { isAdmin: false }));
   await page.waitForSelector('.bp-theme-grid button');
   assert.equal(await page.$('[data-colour-theme-key="clear_ice"]'), null, 'non-admin editor does not expose Clear Ice');
-  assert.equal(types.length, 14);
+  assert.equal(types.length, 15);
   assert(types.includes('slot_requests'), 'Slot Requests participates in the palette regression matrix');
   const unit = await page.evaluate(() => {
     const t = window.themeTest, failures = [];
@@ -329,7 +329,8 @@ try {
       assert.equal(await page.$$eval('.bp-theme-grid button', buttons => buttons.length), themes.length, `${type}: all themes`);
       await page.evaluate(theme => [...document.querySelectorAll('.bp-theme-grid button')].find(button => button.dataset.colourThemeKey === theme).click(), theme);
       await settle();
-      const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.dataset.colourThemeKey }));
+      const result = await page.evaluate(() => ({ config: window.themeTest.lastConfig, style: window.themeTest.appearance(), selected: document.querySelector('.bp-theme-grid [aria-pressed="true"]')?.dataset.colourThemeKey,
+        frameStyle: (() => { const frame = document.querySelector('[data-preview] [aria-label="2x2 Bonus Hunt"]'); if (!frame) return null; const css = getComputedStyle(frame); return [css.backgroundColor, css.borderColor, css.borderRadius]; })() }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
       if (type === 'bonus_hunt' && theme === 'clear_ice') {
@@ -338,7 +339,7 @@ try {
           const text = getComputedStyle(element.querySelector('span'));
           return { image: style.backgroundImage, color: text.color, stroke: text.webkitTextStrokeWidth };
         });
-        assert.match(statMaterial.image, /linear-gradient\(rgb\(10, 43, 74\), rgb\(18, 50, 84\)\)/, 'Clear Ice hunt stats use the same deep glass fill as the on-canvas giveaway fields');
+        assert.match(statMaterial.image, /clear-ice-glass-20\.png/, 'Clear Ice hunt stats use the shared glass texture');
         assert.equal(statMaterial.color, 'rgb(255, 255, 255)', 'Clear Ice hunt stat text is white');
         assert.notEqual(statMaterial.stroke, '0px', 'Clear Ice hunt stat text has a black outline');
         const texture = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {
@@ -370,7 +371,12 @@ try {
       assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: reload matches preview`);
       if (!['raid_shoutout', 'connect_four'].includes(type)) {
         await mount(type, result.config, { runtime: 'obs' });
-        assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: OBS matches editor`);
+        if (type === 'bonus_hunt_2x2') {
+          const obsFrameStyle = await page.evaluate(() => { const css = getComputedStyle(document.querySelector('[data-preview] [aria-label="2x2 Bonus Hunt"]')); return [css.backgroundColor, css.borderColor, css.borderRadius]; });
+          assert.deepEqual(obsFrameStyle, result.frameStyle, `${type}/${theme}: frame colour and corners match OBS`);
+        } else {
+          assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: OBS matches editor`);
+        }
       }
     }
     assert.equal(appearances.size, themes.length, `${type}: each theme visibly changes the renderer`);

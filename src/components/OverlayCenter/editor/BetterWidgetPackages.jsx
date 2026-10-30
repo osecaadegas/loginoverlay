@@ -106,6 +106,7 @@ import {
 } from "../widgets/money-explosion/config";
 import CameraWidget from "../widgets/camera/CameraWidget";
 import SlotWindowWidget from "../widgets/slot-window/SlotWindowWidget";
+import SlotRequestsWidget from "../widgets/slot-requests/SlotRequestsWidget";
 import {
   SLOT_WINDOW_DEFAULTS,
   SLOT_WINDOW_MASK_OPTIONS,
@@ -2310,6 +2311,8 @@ export function BetterWidgetPreview({
   widget,
 }) {
   switch (type) {
+    case "slot_requests":
+      return <SlotRequestsWidget config={config} userId={userId} runtime="editor" previewOnly />;
     case "bonus_hunt_2x2": return <BonusHuntGridWidget config={config} runtime="editor" />;
     case "slot_window":
       return <SlotWindowWidget config={config} runtime="editor" />;
@@ -7925,6 +7928,28 @@ function FreezeShatterControls({ config, onChange, widget }) {
   );
 }
 
+function GridColourThemeControls({ config, onChange, userId, isAdmin = false }) {
+  const access = useOverlayAssetAccess(userId);
+  const selected = getSelectedWidgetColourTheme("bonus_hunt_2x2", config);
+  return <Section title="Colour Theme" icon={<Palette size={12}/>} defaultOpen simple>
+    {access.error && <p role="alert">Could not load theme access. <button type="button" onClick={access.retry}>Retry</button></p>}
+    {access.loading && <p role="status">Loading themes…</p>}
+    <div role="group" aria-label="Colour theme">
+      {getWidgetColourThemeGroups((key, theme) => (!theme?.adminOnly || isAdmin) && access.canUse("theme", key)).map(group => <div key={group.key} className="bp-theme-group" data-theme-group={group.key}>
+        <div className="bp-theme-group-title">{group.key === "premium" ? <Crown size={12}/> : <Palette size={12}/>} {group.name}</div>
+        <div className="bp-theme-grid">{group.themes.map(theme => {
+          const Icon = COLOUR_THEME_ICONS[theme.icon];
+          return <button key={theme.key} type="button" data-colour-theme-key={theme.key} className={selected === theme.key ? "is-active" : ""} aria-pressed={selected === theme.key} onClick={() => onChange(applyWidgetColourTheme("bonus_hunt_2x2", config, theme.key))}>
+            <PalettePreview theme={theme}/>
+            <span aria-hidden="true">{theme.swatches.map(color => <i key={color} style={{ background: color }}/>)}</span>
+            <strong><Icon size={11}/>{theme.name}</strong>
+          </button>;
+        })}</div>
+      </div>)}
+    </div>
+  </Section>;
+}
+
 export function BetterWidgetControls({
   type,
   config,
@@ -7934,7 +7959,7 @@ export function BetterWidgetControls({
   const c = ensureBetterWidgetConfig(type, config);
   if (type === "bonus_hunt_2x2") {
     const grid = sanitizeBonusHuntGrid(c);
-    return <div><Section title="Whole frame" defaultOpen simple><NumberRow label="Grid spacing" min={0} max={60} value={grid.gap} onChange={gap=>onChange({...grid,gap})}/><NumberRow label="Frame border width" min={0} max={24} value={grid.frameWidth} onChange={frameWidth=>onChange({...grid,frameWidth})}/>{GRID_FRAME_CORNERS.map(([key,label])=><NumberRow key={key} label={label} min={0} max={240} value={grid[key]} onChange={value=>onChange({...grid,[key]:value})}/>)}<p className="bp-hint">These corners clip the whole four-slot frame. Set the other corners to 0 to round just one. Feeds are transparent while Slot mode is off in SC Browser.</p></Section>{GRID_POSITIONS.map((position,index)=><Section key={position} title={position} defaultOpen={index===0} simple><SlotWindowControls config={grid.slots[index]} onChange={slot=>onChange({...grid,slots:grid.slots.map((previous,i)=>i===index?slot:previous)})}/></Section>)}</div>;
+    return <div><GridColourThemeControls config={grid} onChange={onChange} userId={props.userId || props.user?.id} isAdmin={props.isAdmin}/><Section title="Whole frame" defaultOpen simple><NumberRow label="Grid spacing" min={0} max={60} value={grid.gap} onChange={gap=>onChange({...grid,gap})}/><NumberRow label="Frame border width" min={0} max={24} value={grid.frameWidth} onChange={frameWidth=>onChange({...grid,frameWidth})}/>{GRID_FRAME_CORNERS.map(([key,label])=><NumberRow key={key} label={label} min={0} max={240} value={grid[key]} onChange={value=>onChange({...grid,[key]:value})}/>)}<p className="bp-hint">These corners clip the whole four-slot frame. Set the other corners to 0 to round just one. Feeds are transparent while Slot mode is off in SC Browser.</p></Section>{GRID_POSITIONS.map((position,index)=><Section key={position} title={position} defaultOpen={index===0} simple><SlotWindowControls config={grid.slots[index]} onChange={slot=>onChange({...grid,slots:grid.slots.map((previous,i)=>i===index?slot:previous)})}/></Section>)}</div>;
   }
   if (type === "slot_window") {
     return <><GalacticCommandControls type={type} config={c} onChange={onChange}/><StarterStudioControls type={type} config={c} onChange={onChange}/><SlotWindowControls config={c} onChange={onChange}/></>;

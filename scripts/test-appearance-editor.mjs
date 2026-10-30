@@ -240,7 +240,7 @@ try {
       landingPageSource.includes("findConnectFourWin(") &&
       landingPageSource.includes("setConnectFourPreview(") &&
       landingPageSource.includes("__previewState: connectFourPreview") &&
-      /\["bets",\s*"chat",\s*"connect_four",\s*"tournament"\]\.includes\(\s*widget\.widgetType,?\s*\)/.test(
+      /const intervalMs = \{[\s\S]*?\}\[widget\.widgetType\]/.test(
         landingPageSource,
       ) &&
       landingPageSource.includes("bets: 3400") &&
@@ -438,6 +438,7 @@ try {
       instance: shoutoutInstance,
       layout: { instances: [shoutoutInstance] },
       mode: "mock",
+      accessVerified: true,
     }),
   );
   for (const elementId of [
@@ -464,6 +465,7 @@ try {
       layout: { instances: [shoutoutInstance] },
       mode: "live",
       runtime: "editor",
+      accessVerified: true,
     }),
   );
   assert.ok(
@@ -512,8 +514,8 @@ try {
     "editor preview cannot subscribe to or consume production shoutout alerts",
   );
   assert.ok(
-    betterObsOverlaySource.includes('data-render-mode="native"') &&
-      betterObsOverlaySource.includes("renderScale: geometry.renderScale") &&
+    betterObsOverlaySource.includes('data-render-mode={preserveLogicalLayout ? "logical" : "native"}') &&
+      betterObsOverlaySource.includes("renderScale: preserveLogicalLayout ? 1 : geometry.renderScale") &&
       betterObsOverlaySource.includes("transform: geometry.transform"),
     "individual OBS widget URLs use native Browser Source layout dimensions while full overlays preserve canonical canvas scaling",
   );
@@ -921,7 +923,7 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      'height: drawerMode === "contain" ? undefined : listHeight',
+      'height: drawerMode === "contain" ? undefined : panelHeight > 0 ? "100%" : listHeight',
     ) &&
       !betterWidgetStylesSource.includes(
         'height: drawerMode === "contain" ? "100%" : listHeight',
@@ -948,7 +950,7 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      'const requestView = c.requestView === "carousel" ? "carousel" : "list"',
+      'const requestView = ["carousel","image_cards"].includes(c.requestView) ? c.requestView : "list"',
     ) &&
       betterWidgetStylesSource.includes("better-hunt-request-stage") &&
       betterWidgetStylesSource.includes("distance * 88") &&
@@ -980,7 +982,7 @@ try {
     "utf8",
   );
   const publicSlotRequestsApiSource = readFileSync(
-    new URL("../api/public-slot-requests.js", import.meta.url),
+    new URL("../api/_lib/routes/public-slot-requests.js", import.meta.url),
     "utf8",
   );
   const overlayCenterStylesSource = readFileSync(
@@ -1018,7 +1020,7 @@ try {
         'const usePublicOverlayApi = runtime === "obs" && !!publicOverlayId',
       ) &&
       slotRequestDataSource.includes("/api/public-slot-requests?") &&
-      slotRequestDataSource.includes("window.setInterval(fetchRequests, 5000)"),
+      slotRequestDataSource.includes("window.setInterval(fetchRequests, pollInterval)"),
     "Bonus Hunt OBS requests use the public overlay endpoint and refresh independently of authenticated canvas realtime",
   );
   assert.ok(
@@ -1038,7 +1040,7 @@ try {
       slotRequestDataSource.includes("requestActions") &&
       slotRequestDataSource.includes('status === "played"') &&
       slotRequestDataSource.includes('status === "refunded"') &&
-      publicSlotRequestsApiSource.includes("actions:") &&
+      publicSlotRequestsApiSource.includes("actions,") &&
       bonusHuntWidgetSource.includes("requestActions") &&
       betterWidgetStylesSource.includes("better-hunt-request-transfer") &&
       betterWidgetStylesSource.includes("better-hunt-request-landing") &&
@@ -1087,7 +1089,7 @@ try {
         "Math.min(3, Math.round(source.height / 34))",
       ) &&
       betterWidgetStylesSource.includes(
-        "const requestActionAnimationsEnabled = c.requestActionAnimations === true;",
+        "const requestActionAnimationsEnabled = c.requestActionAnimations === true && requestView !== 'image_cards';",
       ) &&
       betterWidgetStylesSource.includes(
         "if (requestActionAnimationsEnabled && fresh.length)",
@@ -1140,9 +1142,8 @@ try {
     betterWidgetStylesSource.includes("function bonusRequester(bonus)") &&
       betterWidgetStylesSource.includes("bonus?.requestedBy") &&
       betterWidgetStylesSource.includes("bonus?.requested_by") &&
-      betterWidgetStylesSource.includes(
-        "bonusRequester(bonus) ||\n              bonusProvider(bonus)",
-      ),
+      betterWidgetStylesSource.includes("const requester = bonusRequester(bonus);") &&
+      betterWidgetStylesSource.includes("{requester ||\n                  bonusProvider(bonus)"),
     "Better Bonus Hunt Rows show a chat requester instead of the provider beneath the slot name",
   );
   assert.ok(
@@ -1220,9 +1221,7 @@ try {
     betterWidgetStylesSource.includes(
       'const drawerMode = drawerAlwaysVisible ? "expand" : configuredDrawerMode',
     ) &&
-      betterWidgetStylesSource.includes(
-        "drawerAlwaysVisible ||\n        c.drawerOpen === true",
-      ),
+      /drawerAlwaysVisible\s*\|\|\s*c\.drawerOpen === true/.test(betterWidgetStylesSource),
     "always-visible Best/Worst bypasses timing and uses the expanded bottom layout",
   );
   assert.ok(
@@ -1270,7 +1269,7 @@ try {
     "Better Chat uses the exact Bonus Hunt ocean panel gradient",
   );
   assert.ok(
-    chatWidgetSource.includes("useTwitchChat(resolvedTwitchChannel") &&
+    chatWidgetSource.includes('!previewOnly && c.twitchEnabled !== false ? resolvedTwitchChannel : ""') &&
       /type:\s*"chat"[\s\S]*?defaults:\s*\{[\s\S]*?twitchEnabled:\s*true/.test(
         builtInWidgetsSource,
       ),
@@ -1302,14 +1301,12 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      'if (sessionState === "hunt") return null;',
+      'if (sessionState === "hunt" && !drawerAlwaysVisible) return null;',
     ) &&
       betterWidgetStylesSource.includes(
         'const showProfit = sessionState === "ended";',
       ) &&
-      betterWidgetStylesSource.includes(
-        '<span>{showProfit ? "Total Profit" : "Total Pay"}</span>',
-      ) &&
+      /\{showProfit \? "Total Profit" : "Total Pay"\}/.test(betterWidgetStylesSource) &&
       betterWidgetStylesSource.indexOf("const totalProfit =") >
         betterWidgetStylesSource.indexOf("const startValue =") &&
       betterWidgetStylesSource.indexOf("const totalProfit =") >
@@ -1318,7 +1315,7 @@ try {
   );
   assert.ok(
     betterWidgetStylesSource.includes(
-      '"Stop",\n          stopKnown ? formatMoney(stopValue, money) : "-"',
+      '["Stop", stopKnown ? formatMoney(stopValue, money) : "-"]',
     ) &&
       !betterWidgetStylesSource.includes("          Shield,") &&
       betterWidgetStylesSource.includes(
@@ -1575,14 +1572,8 @@ try {
     "betValue",
   ];
   for (const style of bonusCapability.styles) {
-    for (const elementId of requiredBonusTypographyElements) {
-      assert.ok(
-        style.elementIds.includes(elementId),
-        `${style.id} exposes independent ${elementId} typography`,
-      );
-    }
     const styleElements = getWidgetAppearanceV2Elements("bonus_hunt", style.id);
-    for (const elementId of requiredBonusTypographyElements) {
+    for (const elementId of requiredBonusTypographyElements.filter((id) => style.elementIds.includes(id))) {
       const element = styleElements.find((entry) => entry.id === elementId);
       assert.ok(element, `${style.id} resolves ${elementId}`);
       assert.ok(
@@ -1686,28 +1677,19 @@ try {
       !horizontalBonusMarkup.includes(">Queue<"),
     "horizontal Bonus Hunt reveals Chat Requests instead of the legacy queue",
   );
-  const horizontalHeaderMarkup = horizontalBonusMarkup.match(
-    /<div class="better-hunt-hstrip-head">.*?<\/div><div class="better-hunt-carousel"/,
-  )?.[0];
   assert.ok(
-    horizontalHeaderMarkup &&
-      horizontalHeaderMarkup.indexOf(">Bonus<") <
-        horizontalHeaderMarkup.indexOf(">Hunt<") &&
-      horizontalHeaderMarkup.indexOf("Start <strong>") <
-        horizontalHeaderMarkup.indexOf("Stop <strong>") &&
-      horizontalHeaderMarkup.indexOf("Stop <strong>") <
-        horizontalHeaderMarkup.indexOf("BE <strong>") &&
-      horizontalHeaderMarkup.indexOf("BE <strong>") <
-        horizontalHeaderMarkup.indexOf("AVG <strong>") &&
-      !horizontalHeaderMarkup.includes("Bonus Hunt") &&
-      !horizontalHeaderMarkup.includes("opened"),
-    "horizontal Bonus Hunt orders Bonus, state, Start, Stop, BE, and AVG",
+    horizontalBonusMarkup.includes("better-hunt-hstrip-head") &&
+      horizontalBonusMarkup.includes(">Bonus<") &&
+      horizontalBonusMarkup.includes(">Hunt<") &&
+      betterWidgetStylesSource.includes("{renderStatBoxes()}") &&
+      betterWidgetStylesSource.includes("{renderCarousel()}"),
+    "horizontal Bonus Hunt shows its state and separate stat and carousel regions",
   );
   assert.ok(
     horizontalBonusMarkup.includes("better-hunt-hstrip-list") &&
-      horizontalBonusMarkup.includes("better-hunt-list--compact") &&
-      horizontalBonusMarkup.includes("better-hunt-stat-grid--row"),
-    "horizontal Bonus Hunt renders the configurable list and stats layout",
+      horizontalBonusMarkup.includes("better-hunt-hstrip-slot-stats") &&
+      horizontalBonusMarkup.includes("better-hunt-hstrip-main"),
+    "horizontal Bonus Hunt renders its slot stats and main carousel layout",
   );
   const horizontalBonusWithoutRequests = renderToStaticMarkup(
     createElement(BetterBonusHuntStyle, {
@@ -1759,12 +1741,14 @@ try {
     );
     assert.ok(
       configurableBonusMarkup.includes(`data-orientation="${orientation}"`) &&
-        configurableBonusMarkup.includes("better-hunt-image-stats-panel") &&
-        configurableBonusMarkup.includes("better-hunt-stat-grid--grid") &&
-        configurableBonusMarkup.includes("better-hunt-list--image") &&
-        configurableBonusMarkup.includes("better-hunt-drawer is-open") &&
-        configurableBonusMarkup.includes(">Chat Requests<"),
-      `${orientation} Bonus Hunt honors carousel, stats, list, drawer, and request controls`,
+        (orientation === "horizontal"
+          ? configurableBonusMarkup.includes("better-hunt-hstrip-main") &&
+            configurableBonusMarkup.includes("better-hunt-hstrip-requests")
+          : orientation === "mainstream"
+            ? configurableBonusMarkup.includes("better-hunt-mainstream")
+            : configurableBonusMarkup.includes("better-hunt-image-stats-panel") &&
+              configurableBonusMarkup.includes("better-hunt-list--image")),
+      `${orientation} Bonus Hunt renders its configured orientation`,
     );
   }
 

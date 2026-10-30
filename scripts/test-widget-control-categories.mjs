@@ -38,6 +38,14 @@ try {
       }),
     );
 
+    if (widgetDefinition.type === "bonus_hunt_2x2") {
+      assert.ok(
+        ["Whole frame", "Grid spacing", "Frame border width", "Top left", "Top right", "Bottom left", "Bottom right", "Source URL"].every((label) => markup.includes(label)),
+        "2x2 Bonus Hunt exposes its frame and per-slot controls",
+      );
+      continue;
+    }
+
     if (widgetDefinition.type === "background") {
       assert.ok(markup.includes('role="tablist"') && markup.includes('>Source</span>'));
       assert.ok(!markup.includes('data-level="secondary"'), "Background uses one row of relevant tabs");

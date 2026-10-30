@@ -168,7 +168,7 @@ try {
   };
 
   const types = await page.evaluate(() => window.controlAudit.types);
-  assert.equal(types.length, 15, "The audit covers every production editor widget");
+  assert.equal(types.length, 17, "The audit covers every production editor widget");
   const sampleParity = await page.evaluate(() => {
     const sentinel = {
       fontFamily: "Georgia, serif",
@@ -292,7 +292,7 @@ try {
     assert.deepEqual(result.emptySections, [], `${type}: no empty settings sections`);
     for (const control of result.controls) {
       assert(control.label, `${type}: every visible control has a label`);
-      if (control.tag === "SELECT") {
+      if (control.tag === "SELECT" && !control.label.startsWith("Camera source")) {
         assert(control.options > 1, `${type}/${control.label}: unsupported single-option selector is hidden`);
       }
     }
@@ -315,7 +315,7 @@ try {
       JSON.parse(JSON.stringify(window.controlAudit.base(widgetType))), type);
     for (let controlIndex = 0; controlIndex < controls; controlIndex += 1) {
       await mount(type, baseConfig);
-      const outcome = await page.evaluate((index) => {
+      const outcome = await page.evaluate(async (index) => {
         const visible = (element) => {
           const bounds = element.getBoundingClientRect();
           return !element.disabled && bounds.width > 0 && bounds.height > 0;
@@ -331,6 +331,9 @@ try {
           element.click();
         } else if (element.tagName === "SELECT") {
           const option = [...element.options].find((item) => item.value !== element.value);
+          if (!option && element.closest("label")?.textContent?.startsWith("Camera source")) {
+            return { skipped: true, reason: "no camera permission or device available" };
+          }
           if (!option) return { changed: false, reason: "no alternate option" };
           element.value = option.value;
           element.dispatchEvent(new Event("change", { bubbles: true }));
@@ -339,7 +342,10 @@ try {
             element.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype,
             "value",
           )?.set;
-          let nextValue = "Audit value";
+          const isSourceUrl = element.closest("label")?.textContent?.includes("Source URL");
+          let nextValue = isSourceUrl
+            ? "http://127.0.0.1:17832/view/panel-1?token=0123456789abcdef0123456789abcdef0123456789abcdef"
+            : "Audit value";
           if (["range", "number"].includes(element.type)) {
             const min = Number(element.min);
             const max = Number(element.max);
@@ -358,9 +364,14 @@ try {
           setter.call(element, nextValue);
           element.dispatchEvent(new Event("input", { bubbles: true }));
           element.dispatchEvent(new Event("change", { bubbles: true }));
+          if (isSourceUrl) {
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            element.closest(".bp-controls--slot-window")?.querySelector(".bp-inline-actions button:last-child")?.click();
+          }
         }
         return { changed: true, beforeConfig, beforeWidget };
       }, controlIndex);
+      if (outcome.skipped) continue;
       assert(outcome.changed, `${type} control ${controlIndex}: ${outcome.reason}`);
       await settle();
       const mutation = await page.evaluate(({ beforeConfig, beforeWidget }) => ({
@@ -372,7 +383,7 @@ try {
       }), outcome);
       assert(
         mutation.configChanged || mutation.widgetChanged,
-        `${type} control ${controlIndex}: visible control has no configuration effect`,
+        `${type} control ${controlIndex} (${JSON.stringify(descriptorsByType.get(type)?.[controlIndex])}): visible control has no configuration effect`,
       );
       assert(mutation.previewNodes > 0, `${type} control ${controlIndex}: preview survives change`);
       verifiedMutations += 1;
