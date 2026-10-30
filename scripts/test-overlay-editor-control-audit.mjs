@@ -168,7 +168,25 @@ try {
   };
 
   const types = await page.evaluate(() => window.controlAudit.types);
-  assert.equal(types.length, 17, "The audit covers every production editor widget");
+  assert.equal(types.length, 16, "The audit covers every production editor widget");
+  assert.ok(!types.includes("camera"), "Camera is absent from the editor widget catalog");
+  const removedCamera = await page.evaluate(() => {
+    const { registry } = window.controlAudit;
+    const saved = registry.normalizeBetterLayout({
+      name: "Camera only",
+      instances: [{ instanceId: "old-camera", widgetType: "camera" }],
+    });
+    return {
+      newInstance: registry.createBetterInstance("camera"),
+      legacyMoney: registry.normalizeBetterInstance({ widgetType: "money_explosion" }),
+      legacyIce: registry.normalizeBetterInstance({ widgetType: "freeze_shatter" }),
+      savedTypes: saved.instances.map((instance) => instance.widgetType),
+    };
+  });
+  assert.equal(removedCamera.newInstance, null);
+  assert.equal(removedCamera.legacyMoney, null);
+  assert.equal(removedCamera.legacyIce, null);
+  assert.deepEqual(removedCamera.savedTypes, ["background"]);
   const sampleParity = await page.evaluate(() => {
     const sentinel = {
       fontFamily: "Georgia, serif",

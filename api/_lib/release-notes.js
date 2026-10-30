@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'remove-overlay-camera-widget-2026-10-30', date: '2026-10-30', category: 'overlays',
+    title: 'Remove the Camera overlay widget',
+    summary: 'The Camera option is no longer available in Overlay Center, and saved Camera widgets are omitted from editor and OBS layouts.',
+    changes: [
+      'Removed Camera from the add-widget catalog and legacy widget registry.',
+      'Discarded Camera, Ice Shatter and Money Explosion instances when loading saved overlay layouts without adding unrelated default widgets.',
+      'Removed the Starter Studio camera opening; its Slot Window opening remains available.',
+    ],
+    action: 'Refresh Overlay Center and republish existing scenes to persist the removal. Existing published OBS sources omit Camera on reload. The separate ScreenSplit Browser camera relay is unchanged.',
+  },
+  {
     id: 'overlay-editor-control-preview-theme-audit-2026-10-30', date: '2026-10-30', category: 'overlays',
     title: 'Complete Slot Requests preview and 2x2 frame themes',
     summary: 'The editor now renders Slot Requests beside its controls and lets the 2x2 Bonus Hunt frame use an allowed colour theme.',

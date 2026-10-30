@@ -8,8 +8,8 @@ export function StarterStudioModule({type,config:c,layout,runtime,children}){
  if(type==='background'){
   if(c.gameplayFrame?.enabled)return children;
   if(c.studio?.background===false)return null;
-  const holes=(layout?.instances||[]).filter(i=>i.visible!==false&&i.config?.colourTheme==='starter_studio'&&(i.widgetType==='slot_window'||(i.widgetType==='camera'&&i.config.studio?.externalCamera!==false)));
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="m"><rect width="1920" height="1080" fill="white"/>${holes.map(i=>`<rect x="${i.x}" y="${i.y}" width="${i.width}" height="${i.height-(i.widgetType==='camera'?48:0)}" rx="${Number(i.config.studio?.radius??12)}" fill="black"/>`).join('')}</mask></defs><rect width="1920" height="1080" fill="white" mask="url(#m)"/></svg>`;
+  const holes=(layout?.instances||[]).filter(i=>i.visible!==false&&i.config?.colourTheme==='starter_studio'&&i.widgetType==='slot_window');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none"><defs><mask id="m"><rect width="1920" height="1080" fill="white"/>${holes.map(i=>`<rect x="${i.x}" y="${i.y}" width="${i.width}" height="${i.height}" rx="${Number(i.config.studio?.radius??12)}" fill="black"/>`).join('')}</mask></defs><rect width="1920" height="1080" fill="white" mask="url(#m)"/></svg>`;
   return <div className="studio-environment" style={{maskImage:`url("data:image/svg+xml,${encodeURIComponent(svg)}")`,maskSize:'100% 100%',opacity:Math.max(0,Math.min(100,c.opacity??100))/100}}/>;
  }
  const [title,Icon]=titles[type]||[],headed=title&&c.studio?.showHeader!==false;

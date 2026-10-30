@@ -11,7 +11,7 @@ import {
 } from "../appearance/v2/appearanceRouting";
 
 const COLOUR_KEYS = {
- camera:{},slot_window:{},bonus_hunt_2x2:{colourTheme:'key'},
+ slot_window:{},bonus_hunt_2x2:{colourTheme:'key'},
   slot_requests:{backgroundColor:'background',cardColor:'surface',borderColor:'accent',textColor:'text',mutedColor:'muted'},
   current_slot: { panelColor: 'surface', badgeColor: 'raised', coverColor: 'background', backgroundColor: 'background', accentColor: 'accent', borderColor: 'border', textColor: 'text', mutedColor: 'muted', portraitPanelColor:'surface', portraitAccentColor:'accent' },
   slot_bingo: {

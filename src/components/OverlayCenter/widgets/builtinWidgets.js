@@ -37,8 +37,6 @@ import { SLOT_BINGO_DEFAULT_CONFIG } from "./slot-bingo/slotBingoModel";
 import CurrentSlotWidget from './current-slot/CurrentSlotWidget';
 import CurrentSlotConfig from './current-slot/CurrentSlotConfig';
 import { CURRENT_SLOT_DEFAULTS } from './current-slot/currentSlotModel';
-import CameraWidget from './camera/CameraWidget';
-import { DEFAULT_CAMERA_CONFIG } from './camera/cameraConfig';
 import SlotWindowWidget from './slot-window/SlotWindowWidget';
 import { SLOT_WINDOW_DEFAULTS } from './slot-window/slotWindowModel';
 
@@ -63,21 +61,6 @@ registerWidget({ type: 'current_slot', label: 'Current Game', icon: '▶', descr
   { id: 'portrait_compact', label: 'Portrait', defaultSize: { width: 145, height: 370 } },
 ], defaults: { ...CURRENT_SLOT_DEFAULTS } });
 
-registerWidget({
-  type: 'camera',
-  label: 'Camera',
-  icon: '◉',
-  description: 'Camera with selectable cinematic transition styles.',
-  category: 'better',
-  component: CameraWidget,
-  configPanel: null,
-  styleConfigKey: 'displayStyle',
-  styles: [
-    { id: 'ice_shatter', label: 'Ice Shatter', defaultSize: { width: 640, height: 360 } },
-    { id: 'money_explosion', label: 'Money Explosion', defaultSize: { width: 640, height: 360 } },
-  ],
-  defaults: { ...DEFAULT_CAMERA_CONFIG },
-});
 const CURRENCY = "EUR ";
 
 registerWidget({

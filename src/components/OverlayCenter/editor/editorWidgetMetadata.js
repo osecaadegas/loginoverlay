@@ -9,13 +9,6 @@ const WIDGET_METADATA = {
     supportsColourTheme: false,
     simpleSections: ["ScreenSplit source", "Mask", "Performance"],
   },
-  camera: {
-    category: "Stream",
-    keywords: "webcam camera ice shatter money banknotes transition reconstruction chroma green screen",
-    source: "Local camera",
-    supportsColourTheme: false,
-    simpleSections: ["Transition style", "Preview & trigger", "Camera", "Camera placement", "Effect", "Performance"],
-  },
   current_slot: { category: 'Hunt', keywords: 'current game slot records payout personal best', source: 'Current Game', route: '/overlay-center/widgets/current-slot', simpleSections: ['Display', 'Colours'] },
   slot_bingo: {
     category: "Community",

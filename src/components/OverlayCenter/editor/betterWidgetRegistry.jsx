@@ -32,9 +32,7 @@ import TournamentWidget from "../widgets/tournament/TournamentWidget";
 import RaidShoutoutWidget from "../widgets/raid-shoutout/RaidShoutoutWidget";
 import ConnectFourWidget from "../widgets/connect-four/ConnectFourWidget";
 import SlotBingoWidget from "../widgets/slot-bingo/SlotBingoWidget";
-import CameraWidget from "../widgets/camera/CameraWidget";
 import SlotWindowWidget from "../widgets/slot-window/SlotWindowWidget";
-import { migrateCameraConfig } from "../widgets/camera/cameraConfig";
 import {
   BETTER_WIDGETS,
   DEFAULT_BETTER_CONFIG,
@@ -662,7 +660,6 @@ const COMPONENTS = {
   slot_requests: SlotRequestsWidget,
   bonus_hunt_2x2: BonusHuntGridWidget,
   slot_window: SlotWindowWidget,
-  camera: CameraWidget,
   current_slot: CurrentSlotWidget,
   slot_bingo: SlotBingoWidget,
   connect_four: ConnectFourWidget,
@@ -682,7 +679,6 @@ const CONTROL_SCHEMAS = {
   slot_requests:["layout","artwork","typography","colours"],
   bonus_hunt_2x2: ["source", "mask", "crop", "performance"],
   slot_window: ["source", "mask", "crop", "performance"],
-  camera: ["style", "trigger", "camera", "chroma", "effect", "motion", "audio", "performance"],
   current_slot: ['display', 'colours'],
   slot_bingo: ["content", "board", "layout", "colours"],
   connect_four: ["content", "players", "board", "motion"],
@@ -734,12 +730,6 @@ const SIZE_CONSTRAINTS = {
   slot_window: {
     minWidth: 240,
     minHeight: 135,
-    maxWidth: 1920,
-    maxHeight: 1080,
-  },
-  camera: {
-    minWidth: 320,
-    minHeight: 180,
     maxWidth: 1920,
     maxHeight: 1080,
   },
@@ -1245,9 +1235,7 @@ function migrateLegacyConnectFourConfig(widgetType, rawConfig) {
 export function normalizeBetterInstance(rawInstance = {}) {
   const storedWidgetType =
     rawInstance.widgetType || rawInstance.widget_type || rawInstance.type;
-  const widgetType = storedWidgetType === "freeze_shatter" || storedWidgetType === "money_explosion"
-    ? "camera"
-    : storedWidgetType;
+  const widgetType = storedWidgetType;
   const definition = getBetterWidgetDefinition(widgetType);
   if (!definition) return null;
   const usesLegacyShoutoutGeometry =
@@ -1255,9 +1243,7 @@ export function normalizeBetterInstance(rawInstance = {}) {
     Number(rawInstance.width) === 560 &&
     Number(rawInstance.height) === 420;
   const storedConfig = rawInstance.config || definition.defaultConfig;
-  const rawConfig = widgetType === "camera"
-    ? migrateCameraConfig(storedConfig, storedWidgetType)
-    : storedConfig;
+  const rawConfig = storedConfig;
   const config = validateBetterWidgetConfig(
     widgetType,
     migrateLegacyBackgroundMediaDefaults(
@@ -1284,7 +1270,7 @@ export function normalizeBetterInstance(rawInstance = {}) {
     instanceId:
       rawInstance.instanceId || rawInstance.id || makeInstanceId(widgetType),
     widgetType,
-    label: widgetType === "camera" ? "Camera" : (rawInstance.label || definition.label),
+    label: rawInstance.label || definition.label,
     config,
     visible: rawInstance.visible !== false && rawInstance.is_visible !== false,
     locked: widgetType === BACKGROUND_TYPE ? true : rawInstance.locked === true,
@@ -1309,7 +1295,7 @@ export function normalizeBetterLayout(layout = {}) {
   const hasAnyForeground = normalized.some(
     (instance) => instance.widgetType !== BACKGROUND_TYPE,
   );
-  const instances = hasAnyForeground
+  const instances = hasAnyForeground || rawInstances.length
     ? normalizeZIndexes(normalized)
     : createDefaultBetterLayout().instances;
   return {

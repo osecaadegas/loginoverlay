@@ -1227,14 +1227,6 @@ export const BETTER_WIDGETS = [
     icon: "▣",
     defaultSize: { width: 960, height: 540 },
   },
-  {
-    type: "camera",
-    label: "Camera",
-    styleKey: "displayStyle",
-    styleId: "ice_shatter",
-    icon: "◉",
-    defaultSize: { width: 640, height: 360 },
-  },
   { type: 'current_slot', label: 'Current Game', styleKey: 'displayStyle', styleId: 'immersive_current', icon: '▶', defaultSize: { width: 1100, height: 240 } },
   {
     type: "slot_bingo",
