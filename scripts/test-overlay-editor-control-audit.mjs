@@ -391,6 +391,7 @@ try {
   }
 
   let boundaryMutations = 0;
+  let conditionalStates = 0;
   for (const { type } of inventory) {
     const baseConfig = await page.evaluate((widgetType) =>
       JSON.parse(JSON.stringify(window.controlAudit.base(widgetType))), type);
@@ -442,6 +443,17 @@ try {
           true,
           `${type}/${descriptor.label}: option or boundary ${value} has no effect`,
         );
+        if (descriptor.tag === "SELECT") {
+          const state = await page.evaluate(() => ({
+            previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
+            emptySections: [...document.querySelectorAll("aside .bp-section")]
+              .filter((section) => !section.querySelector("input,select,textarea,button:not(.bp-section__head),.bp-segmented,.bp-theme-grid,.bp-hunt-choice-grid"))
+              .map((section) => section.textContent.replace(/\s+/g, " ").trim()),
+          }));
+          assert(state.previewNodes > 0, `${type}/${descriptor.label}/${value}: conditional preview renders`);
+          assert.deepEqual(state.emptySections, [], `${type}/${descriptor.label}/${value}: no empty conditional settings`);
+          conditionalStates += 1;
+        }
         boundaryMutations += 1;
       }
     }
@@ -482,6 +494,15 @@ try {
           true,
           `${type}/${group.label}/${button.label}: option has no effect`,
         );
+        const state = await page.evaluate(() => ({
+          previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
+          emptySections: [...document.querySelectorAll("aside .bp-section")]
+            .filter((section) => !section.querySelector("input,select,textarea,button:not(.bp-section__head),.bp-segmented,.bp-theme-grid,.bp-hunt-choice-grid"))
+            .map((section) => section.textContent.replace(/\s+/g, " ").trim()),
+        }));
+        assert(state.previewNodes > 0, `${type}/${group.label}/${button.label}: option preview renders`);
+        assert.deepEqual(state.emptySections, [], `${type}/${group.label}/${button.label}: no empty option settings`);
+        conditionalStates += 1;
         groupedOptionMutations += 1;
       }
     }
@@ -516,7 +537,7 @@ try {
   assert.deepEqual(pageErrors, [], `Editor audit browser errors: ${pageErrors.join(" | ")}`);
   const totalControls = inventory.reduce((sum, item) => sum + item.controls, 0);
   assert(totalControls > 100, "The audit discovered the complete advanced control surface");
-  console.log(JSON.stringify({ widgets: types.length, visibleControls: totalControls, verifiedMutations, boundaryMutations, groupedOptionMutations, responsiveChecks: responsiveChecks.length, inventory }, null, 2));
+  console.log(JSON.stringify({ widgets: types.length, visibleControls: totalControls, verifiedMutations, boundaryMutations, groupedOptionMutations, conditionalStates, responsiveChecks: responsiveChecks.length, inventory }, null, 2));
   console.log("Overlay editor control inventory and capability visibility checks passed.");
 } finally {
   await browser.close();

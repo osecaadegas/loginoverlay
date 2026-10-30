@@ -7,6 +7,7 @@ export const releaseNotes = [
     changes: [
       'Connected the Slot Requests widget to the right-panel preview path.',
       'Added the existing theme picker and palette mapping to the 2x2 Bonus Hunt frame while preserving its per-slot controls.',
+      'Removed empty Solverde layout sections from widget types without Solverde-specific settings.',
       'Expanded editor control checks to cover all 17 registered widgets, valid ScreenSplit source connection, and current Clear Ice styles.',
     ],
     action: 'Refresh the Overlay Center editor after deployment and publish changed scenes to update OBS. Live OBS and physical ScreenSplit feeds were not verified by the browser audit.',
