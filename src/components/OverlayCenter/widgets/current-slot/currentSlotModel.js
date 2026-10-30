@@ -17,6 +17,28 @@ export function currentSlotIdentity(config = {}) {
     : { ...stored, id: config.slotId || stored.id, name: config.slotName || stored.name || '', provider: config.provider || stored.provider || '', image: config.imageUrl || stored.image || '' };
 }
 
+// Pending submissions are visible only to their submitter until approved.
+// Keep the real UUID: Current Game result validation accepts it, while results
+// themselves are stored by slot name/provider and remain in the user's history.
+export function ownedPendingCurrentGameSlots(submissions = [], userId) {
+  if (!userId) return [];
+  return (submissions || [])
+    .filter(row => row.status === 'pending' && row.submitted_by === userId && row.name)
+    .map(row => ({
+      id: row.id, name: row.name, provider: row.provider, image: row.image,
+      rtp: row.rtp, volatility: row.volatility,
+      max_win_multiplier: row.max_win_multiplier, pendingApproval: true,
+    }));
+}
+
+export function currentGameSearchResults(liveSlots = [], submissions = [], userId, query, limit = 25) {
+  const needle = String(query || '').trim().toLocaleLowerCase();
+  if (needle.length < 2) return [];
+  const ownPending = ownedPendingCurrentGameSlots(submissions, userId)
+    .filter(row => row.name.toLocaleLowerCase().includes(needle));
+  return [...ownPending, ...(liveSlots || [])].slice(0, limit);
+}
+
 export function safeArtworkUrl(value) {
   if (typeof value !== 'string' || !value.trim()) return '';
   value = value.trim();

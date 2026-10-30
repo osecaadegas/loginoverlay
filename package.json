@@ -40,6 +40,7 @@
     "test:orbital-theme": "node scripts/test-orbital-theme.mjs",
     "test:obs-high-dpi": "node scripts/test-obs-high-dpi.mjs",
     "test:current-game": "node scripts/test-current-game-browser.mjs",
+    "test:current-game-pending": "node --test scripts/test-current-game-pending.mjs",
     "test:current-game-portrait": "node scripts/test-current-game-portrait.mjs",
     "test:hunt-personal-bests": "node scripts/test-hunt-personal-bests-browser.mjs",
     "test:slot-personal-best": "node scripts/test-slot-personal-best.mjs",

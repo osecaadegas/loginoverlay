@@ -33,7 +33,7 @@ export default function CompactSlotPortrait({config:c,slot,best,cover,failed,onI
     <div className="cp-art" {...part('coverFrame')}>
       {artwork && <img src={cover} alt={slot.name || ''} {...part('slotImage')} style={{objectFit:art.fit || c.portraitArtworkFit || 'cover',objectPosition:art.position || c.portraitArtworkPosition || '50% 50%',...part('slotImage').style}} onError={onImageError} />}
       {(!artwork || lettering) && <div className={`cp-identity${artwork?' cp-identity--overlay':''}`}>
-        <strong {...part('slotTitle')} title={slot.name}>{slot.name || 'Current slot'}</strong>
+        <strong {...part('slotTitle')} title={slot.name} translate="no" className="notranslate">{slot.name || 'Current slot'}</strong>
         <small {...part('provider')}>{slot.provider || '—'}</small>
       </div>}
     </div>

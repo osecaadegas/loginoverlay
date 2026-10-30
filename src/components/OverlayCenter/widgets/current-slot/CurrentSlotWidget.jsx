@@ -66,13 +66,13 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   if(c.displayStyle==='starter_studio_card'){
     return <section className="studio-current" {...part('container')} style={{...rootStyle,color:c.textColor,...(c.colourTheme!=='starter_studio'?{'--studio-gold':c.accentColor,'--studio-line':c.borderColor}:{})}}>
       {c.showArtwork&&<div className="studio-current-art" {...part('coverFrame')}>{cover&&!failed[cover]?<img src={cover} alt={slot.name} {...part('slotImage')} onError={()=>setFailed(prev=>({...prev,[cover]:true}))}/>:<span>SC</span>}</div>}
-      <div className="studio-current-info" {...part('info')}><h2 {...part('slotTitle')}>{slot.name||'Select a slot'}</h2><p {...part('provider')}>{slot.provider||'—'}</p>
+      <div className="studio-current-info" {...part('info')}><h2 {...part('slotTitle')} translate="no" className="notranslate">{slot.name||'Select a slot'}</h2><p {...part('provider')}>{slot.provider||'—'}</p>
         {[[Coins,'bet','BET',bet!=null?money(bet):'—'],[Settings,'rtp','RTP',slot.rtp!=null?number(slot.rtp)+'%':'—'],[ChartNoAxesColumnIncreasing,'volatility','VOLATILITY',slot.volatility??'—'],[Trophy,'bestMulti','BEST WIN',best?.best_multiplier!=null?number(best.best_multiplier)+'x':'—']].filter(([,id])=>c.statVisibility?.[id]!==false&&(id!=='bestMulti'||c.showPersonalRecords)).map(([Icon,id,label,value])=><div className="studio-current-row" key={id}><Icon/>{row(id,label,value)}</div>)}
       </div>
     </section>;
   }
   if(c.displayStyle==='street_art_card') return <section className="street-current-card" {...part('container')} style={rootStyle} aria-label={slot.name || 'Current slot'}>
-    <div className="street-current-art" {...part('coverFrame')}>{c.showArtwork && cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')}/> : <div className="street-current-fallback" {...part('fallback')}><strong {...part('slotTitle')}>{slot.name || 'Select a slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>}</div>
+    <div className="street-current-art" {...part('coverFrame')}>{c.showArtwork && cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')}/> : <div className="street-current-fallback" {...part('fallback')}><strong {...part('slotTitle')} translate="no" className="notranslate">{slot.name || 'Select a slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>}</div>
     <div className="street-current-stats" {...part('info')}>{[
       ['bet','BET',money(bet)],
       ['rtp','RTP',slot.rtp != null ? number(slot.rtp)+'%' : '—'],
@@ -85,7 +85,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
   if(c.displayStyle==='portrait_compact') return <CompactSlotPortrait config={c} slot={slot} best={best} cover={safeArtworkUrl(subValue(c,'slotImage','imageUrl',art.portraitCoverUrl||art.coverUrl||slot.image||''))} failed={failed} onImageError={event=>setFailed(prev=>({...prev,[event.currentTarget.getAttribute('src')]:true}))} widgetId={widgetId}/>;
   if (c.colourTheme === 'solverde' && c.solverde?.footer) return <div className="cg-viewport cg-viewport--solverde"><section className="cg-widget cg-widget--solverde" {...part('container')} style={rootStyle}>
     {c.showArtwork && cover && !failed[cover] ? <img className="solverde-footer-art" src={cover} alt={slot.name} onError={()=>setFailed(prev=>({...prev,[cover]:true}))} {...part('slotImage')} /> : <div />}
-    <div className="solverde-footer-name"><strong {...part('slotTitle')}>{slot.name || 'Seleciona um slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>
+    <div className="solverde-footer-name"><strong {...part('slotTitle')} translate="no" className="notranslate">{slot.name || 'Seleciona um slot'}</strong><small {...part('provider')}>{slot.provider || '—'}</small></div>
     {row('rtp','RTP',slot.rtp > 0 ? `${number(slot.rtp)}%` : '—')}
     {row('potential','POTENCIAL',slot.max_win_multiplier > 0 ? `${number(slot.max_win_multiplier)}x` : '—')}
     {c.showPersonalRecords && row('bestWin','MELHOR WIN',money(best?.best_win))}
@@ -94,7 +94,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
     <div className="cg-portrait-art" {...part('coverFrame')}>
       {c.showArtwork && cover && !failed[cover]
         ? <img className="cg-portrait-cover" src={cover} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [cover]: true }))} {...part('slotImage')} />
-        : <div className="cg-portrait-fallback" {...part('fallback')}><strong>{slot.name || 'Current game'}</strong><span>{slot.provider || 'Select a slot'}</span></div>}
+        : <div className="cg-portrait-fallback" {...part('fallback')}><strong translate="no" className="notranslate">{slot.name || 'Current game'}</strong><span>{slot.provider || 'Select a slot'}</span></div>}
       <span className="cg-portrait-shine" aria-hidden="true" />
     </div>
     <div className="cg-portrait-stats" {...part('info')}>
@@ -109,7 +109,7 @@ export default function CurrentSlotWidget({ config, userId, widgetId, publicOver
     <div className="cg-identity" {...part('identity')}>
       {c.showArtwork && <div className="cg-cover" {...part('coverFrame')}>{cover && !failed[cover] ? <img src={cover} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [cover]: true }))} {...part('slotImage')} /> : <span>SC</span>}</div>}
       <div className="cg-name-block"><span className="cg-current" {...part('badge')}><Play aria-hidden="true" /> Current game</span>
-        {logo && !failed[logo] ? <img className="cg-title-art" src={logo} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [logo]: true }))} {...part('titleImage')} /> : <h2 {...part('slotTitle')}>{slot.name || 'Select a slot'}</h2>}
+        {logo && !failed[logo] ? <img className="cg-title-art" src={logo} alt={slot.name} onError={() => setFailed(prev => ({ ...prev, [logo]: true }))} {...part('titleImage')} /> : <h2 {...part('slotTitle')} translate="no" className="notranslate">{slot.name || 'Select a slot'}</h2>}
         <p className={showProviderLogo ? 'cg-provider cg-provider--logo' : 'cg-provider'} {...part('provider')}>
           {showProviderLogo
             ? <img className="cg-provider-logo" src={providerLogo} alt={slot.provider || 'Provider'} onError={() => setFailed(prev => ({ ...prev, [providerLogo]: true }))} />

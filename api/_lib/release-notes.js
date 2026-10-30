@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'current-game-owned-pending-slots-2026-10-30', date: '2026-10-30', category: 'overlays',
+    title: 'Find your pending slots in Current Game',
+    summary: 'Submitted slots awaiting approval appear in their owner’s Current Game page, and game titles keep their original names across browser languages.',
+    changes: [
+      'Added an owner-only pending submissions list and merged those slots into Current Game search while keeping the live catalogue available.',
+      'Marked Current Game slot titles as nontranslatable in the selector and all widget layouts, including OBS rendering.',
+    ],
+    action: 'Refresh Current Game and the OBS Browser Source. The pending list and search results show only the signed-in user’s submissions until approval.',
+  },
+  {
     id: 'distinct-app-download-brand-icons-2026-10-29', date: '2026-10-29', category: 'website',
     title: 'Give each desktop app its own logo',
     summary: 'The Apps page now shows the dedicated ScreenSplit Browser and SC Web Transitions marks on their download tiles.',

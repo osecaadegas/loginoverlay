@@ -276,6 +276,10 @@
 .cg-search-results button { display: flex; gap: 12px; align-items: center; text-align: left; background: #132536; border-color: #294658; color: #e6edf6; }
 .cg-search-results img { width: 40px; height: 48px; object-fit: contain; }
 .cg-search-results small { display: block; }
+.cg-pending-badge { display: inline-block; margin-left: 8px; color: #83d7ee; font-size: .78rem; font-weight: 700; }
+.cg-own-pending { margin-top: 18px; }
+.cg-own-pending h3 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; font-size: 1rem; }
+.cg-own-pending h3 button { width: auto; min-height: 32px; padding: 4px 10px; font-size: .8rem; }
 .cg-page [role=alert] { color: #ffb3a8; }
 .cg-history-scroll { overflow-x: auto; }
 .cg-page table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: .84rem; }
