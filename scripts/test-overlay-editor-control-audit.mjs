@@ -392,6 +392,48 @@ try {
 
   let boundaryMutations = 0;
   let conditionalStates = 0;
+  const conditionalControls = [];
+  const inspectConditional = async (type, trigger) => {
+    const state = await page.evaluate((baseline) => {
+      const visible = (element) => {
+        const bounds = element.getBoundingClientRect();
+        return !element.disabled && bounds.width > 0 && bounds.height > 0;
+      };
+      const signature = (control) => `${control.tag}|${control.type}|${control.label}`;
+      const counts = new Map();
+      for (const control of baseline) counts.set(signature(control), (counts.get(signature(control)) || 0) + 1);
+      const controls = [...document.querySelectorAll(
+        'aside input:not([type="file"]):not([type="hidden"]), aside select, aside textarea, aside button.bp-toggle',
+      )].filter(visible);
+      const revealed = [];
+      controls.forEach((element, index) => {
+        const control = {
+          index,
+          tag: element.tagName,
+          type: element.type || "",
+          label: element.closest("label")?.textContent?.replace(/\s+/g, " ").trim()
+            || element.textContent?.replace(/\s+/g, " ").trim()
+            || `control-${index}`,
+        };
+        const key = signature(control);
+        const remaining = counts.get(key) || 0;
+        if (remaining > 0) counts.set(key, remaining - 1);
+        else revealed.push(control);
+      });
+      return {
+        config: JSON.parse(JSON.stringify(window.controlAudit.current.config)),
+        revealed,
+        previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
+        emptySections: [...document.querySelectorAll("aside .bp-section")]
+          .filter((section) => !section.querySelector("input,select,textarea,button:not(.bp-section__head),.bp-segmented,.bp-theme-grid,.bp-hunt-choice-grid"))
+          .map((section) => section.textContent.replace(/\s+/g, " ").trim()),
+      };
+    }, descriptorsByType.get(type));
+    assert(state.previewNodes > 0, `${type}/${trigger}: conditional preview renders`);
+    assert.deepEqual(state.emptySections, [], `${type}/${trigger}: no empty conditional settings`);
+    for (const control of state.revealed) conditionalControls.push({ type, trigger, config: state.config, control });
+    conditionalStates += 1;
+  };
   for (const { type } of inventory) {
     const baseConfig = await page.evaluate((widgetType) =>
       JSON.parse(JSON.stringify(window.controlAudit.base(widgetType))), type);
@@ -444,15 +486,7 @@ try {
           `${type}/${descriptor.label}: option or boundary ${value} has no effect`,
         );
         if (descriptor.tag === "SELECT") {
-          const state = await page.evaluate(() => ({
-            previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
-            emptySections: [...document.querySelectorAll("aside .bp-section")]
-              .filter((section) => !section.querySelector("input,select,textarea,button:not(.bp-section__head),.bp-segmented,.bp-theme-grid,.bp-hunt-choice-grid"))
-              .map((section) => section.textContent.replace(/\s+/g, " ").trim()),
-          }));
-          assert(state.previewNodes > 0, `${type}/${descriptor.label}/${value}: conditional preview renders`);
-          assert.deepEqual(state.emptySections, [], `${type}/${descriptor.label}/${value}: no empty conditional settings`);
-          conditionalStates += 1;
+          await inspectConditional(type, `${descriptor.label}/${value}`);
         }
         boundaryMutations += 1;
       }
@@ -494,18 +528,81 @@ try {
           true,
           `${type}/${group.label}/${button.label}: option has no effect`,
         );
-        const state = await page.evaluate(() => ({
-          previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
-          emptySections: [...document.querySelectorAll("aside .bp-section")]
-            .filter((section) => !section.querySelector("input,select,textarea,button:not(.bp-section__head),.bp-segmented,.bp-theme-grid,.bp-hunt-choice-grid"))
-            .map((section) => section.textContent.replace(/\s+/g, " ").trim()),
-        }));
-        assert(state.previewNodes > 0, `${type}/${group.label}/${button.label}: option preview renders`);
-        assert.deepEqual(state.emptySections, [], `${type}/${group.label}/${button.label}: no empty option settings`);
-        conditionalStates += 1;
+        await inspectConditional(type, `${group.label}/${button.label}`);
         groupedOptionMutations += 1;
       }
     }
+  }
+
+  let conditionalMutations = 0;
+  console.log(`Discovered ${conditionalControls.length} controls revealed by alternate settings.`);
+  for (const { type, trigger, config, control } of conditionalControls) {
+    await mount(type, config);
+    const outcome = await page.evaluate(async ({ index }) => {
+      const visible = (element) => {
+        const bounds = element.getBoundingClientRect();
+        return !element.disabled && bounds.width > 0 && bounds.height > 0;
+      };
+      const element = [...document.querySelectorAll(
+        'aside input:not([type="file"]):not([type="hidden"]), aside select, aside textarea, aside button.bp-toggle',
+      )].filter(visible)[index];
+      if (!element) return { changed: false, reason: "revealed control disappeared" };
+      const beforeConfig = JSON.stringify(window.controlAudit.current.config);
+      const beforeWidget = window.controlAudit.lastWidget;
+      if (element.matches("button.bp-toggle") || ["checkbox", "radio"].includes(element.type)) {
+        element.click();
+      } else if (element.tagName === "SELECT") {
+        const option = [...element.options].find((item) => item.value !== element.value);
+        if (!option) return { skipped: true, reason: "no alternate option" };
+        element.value = option.value;
+        element.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        const setter = Object.getOwnPropertyDescriptor(
+          element.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype,
+          "value",
+        )?.set;
+        const isSourceUrl = element.closest("label")?.textContent?.includes("Source URL");
+        let nextValue = isSourceUrl
+          ? "http://127.0.0.1:17832/view/panel-1?token=0123456789abcdef0123456789abcdef0123456789abcdef"
+          : element.closest("label")?.textContent?.includes("URL")
+            ? "https://example.com/audit"
+            : "Audit value";
+        if (["range", "number"].includes(element.type)) {
+          const min = Number(element.min);
+          const max = Number(element.max);
+          const current = Number(element.value);
+          nextValue = String(Number.isFinite(min) && current !== min
+            ? min : Number.isFinite(max) ? max : current + 1);
+        } else if (element.type === "color") {
+          nextValue = element.value.toLowerCase() === "#123456" ? "#654321" : "#123456";
+        } else if (element.value === nextValue) {
+          nextValue = "Audit value 2";
+        }
+        setter.call(element, nextValue);
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+        element.dispatchEvent(new Event("change", { bubbles: true }));
+        if (isSourceUrl) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          element.closest(".bp-controls--slot-window")?.querySelector(".bp-inline-actions button:last-child")?.click();
+        }
+      }
+      return { changed: true, beforeConfig, beforeWidget };
+    }, control);
+    if (outcome.skipped) continue;
+    assert(outcome.changed, `${type}/${trigger}/${control.label}: ${outcome.reason}`);
+    await settle();
+    const result = await page.evaluate(({ beforeConfig, beforeWidget }) => ({
+      changed: (window.controlAudit.lastConfig != null
+        && JSON.stringify(window.controlAudit.lastConfig) !== beforeConfig)
+        || (window.controlAudit.lastWidget != null
+          && window.controlAudit.lastWidget !== beforeWidget),
+      previewNodes: document.querySelector("[data-audit-preview]")?.querySelectorAll("*").length || 0,
+    }), outcome);
+    assert(result.changed, `${type}/${trigger}/${control.label}: revealed control has no configuration effect`);
+    if (!(["camera", "money_explosion", "freeze_shatter"].includes(type) && control.label.includes("Enable "))) {
+      assert(result.previewNodes > 0, `${type}/${trigger}/${control.label}: preview survives revealed control`);
+    }
+    conditionalMutations += 1;
   }
 
   const responsiveChecks = [];
@@ -537,7 +634,7 @@ try {
   assert.deepEqual(pageErrors, [], `Editor audit browser errors: ${pageErrors.join(" | ")}`);
   const totalControls = inventory.reduce((sum, item) => sum + item.controls, 0);
   assert(totalControls > 100, "The audit discovered the complete advanced control surface");
-  console.log(JSON.stringify({ widgets: types.length, visibleControls: totalControls, verifiedMutations, boundaryMutations, groupedOptionMutations, conditionalStates, responsiveChecks: responsiveChecks.length, inventory }, null, 2));
+  console.log(JSON.stringify({ widgets: types.length, visibleControls: totalControls, verifiedMutations, boundaryMutations, groupedOptionMutations, conditionalStates, conditionalMutations, responsiveChecks: responsiveChecks.length, inventory }, null, 2));
   console.log("Overlay editor control inventory and capability visibility checks passed.");
 } finally {
   await browser.close();
