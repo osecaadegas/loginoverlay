@@ -324,9 +324,7 @@ function App() {
                       path="/community_overlays_share"
                       element={
                         <ProtectedAdminRoute
-                          allowPremium
-                          allowModerator
-                          redirectTo="/premium"
+                          allowAuthenticated
                         >
                           <CommunityOverlaysSharePage />
                         </ProtectedAdminRoute>

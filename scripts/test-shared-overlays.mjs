@@ -33,7 +33,15 @@ try {
     messages: [{ username: 'private-viewer', message: 'private message' }],
     backgroundUrl: 'https://private.example/background.png',
     textureUrl: '/images/safe-built-in-texture.webp',
+    styleConfigs: { otherStyle: { colourTheme: 'solverde' } },
   };
+  const hidden = registry.createBetterInstance('giveaway', {
+    visible: false,
+    config: { colourTheme: 'clear_ice' },
+  });
+  layout.instances.push(hidden);
+  const background = layout.instances.find((item) => item.widgetType === 'background');
+  background.config = { ...background.config, bgMode: 'texture', videoUrl: '/backgrounds/Artic/restricted.mp4' };
 
   const shared = await service.shareBetterOverlay('owner-a', layout, {
     name: 'Arctic command deck',
@@ -59,6 +67,12 @@ try {
   assert.equal(storedChat.config.fontFamily, 'Impact');
   assert.equal(storedChat.config.colourTheme, 'arctic');
   assert.equal(storedChat.config.textureUrl, '/images/safe-built-in-texture.webp');
+  assert.equal(Object.hasOwn(storedChat.config, 'styleConfigs'), false,
+    'Dormant style snapshots cannot restrict an otherwise accessible shared build');
+  assert.equal(stored.layout.instances.some((item) => item.instanceId === hidden.instanceId), false,
+    'Hidden widgets are omitted from the shared copy');
+  assert.equal(stored.layout.instances.find((item) => item.widgetType === 'background').config.videoUrl || '', '',
+    'Inactive background video cannot restrict a texture-only shared build');
   const storedSlotWindow = stored.layout.instances.find((item) => item.widgetType === 'slot_window');
   assert.equal(storedSlotWindow.config.sourceUrl, '', 'Shared overlays never publish the local ScreenSplit token');
 
@@ -116,6 +130,17 @@ try {
   assert.match(previewMigration, /browse_shared_overlay_templates/i);
   assert.match(previewMigration, /assert_access\(requester, template\.layout\)/i);
   assert.match(previewMigration, /when insufficient_privilege then\s+continue/i);
+
+  const activeAccessMigration = readFileSync(
+    new URL('../migrations/20261030120000_community_overlay_active_access.sql', import.meta.url),
+    'utf8',
+  );
+  assert.match(activeAccessMigration, /where item\.value ->> 'visible' is distinct from 'false'/i);
+  assert.match(activeAccessMigration, /'styleConfigs'/i);
+  assert.match(activeAccessMigration, /mode <> 'video'/i);
+  assert.match(activeAccessMigration, /alter policy "Authenticated users can browse shared overlay metadata"[\s\S]*using \(overlay_access_private\.can_browse_community_layout\(layout\)\)/i);
+  assert.match(activeAccessMigration, /assert_access\(requester, active_layout\)/i);
+  assert.match(activeAccessMigration, /'layout', active_layout/i);
 
   console.log('Shared overlay checks passed: safe publishing, metadata-only browsing, independent loading, owner removal and RLS migration guards.');
 } finally {

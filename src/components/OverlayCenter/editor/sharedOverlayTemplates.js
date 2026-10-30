@@ -131,12 +131,31 @@ export function createShareableBetterLayout(layout) {
   const normalized = normalizeBetterLayout(layout);
   return normalizeBetterLayout({
     ...normalized,
-    instances: normalized.instances.map((instance) => ({
-      ...instance,
-      config: sanitizeValue(
-        stripBetterRuntimeData(instance.widgetType, instance.config || {}),
-      ),
-    })),
+    instances: normalized.instances
+      .filter((instance) => instance.visible !== false)
+      .map((instance) => {
+        const { styleConfigs: _dormantStyles, ...activeConfig } =
+          stripBetterRuntimeData(instance.widgetType, instance.config || {});
+        const config = { ...activeConfig };
+        if (instance.widgetType === "background") {
+          const mode = config.subElements?.source?.bgMode || config.bgMode || "texture";
+          if (mode !== "image") {
+            delete config.imageUrl;
+            if (config.subElements?.media) {
+              config.subElements = { ...config.subElements, media: { ...config.subElements.media } };
+              delete config.subElements.media.imageUrl;
+            }
+          }
+          if (mode !== "video") {
+            delete config.videoUrl;
+            if (config.subElements?.media) {
+              config.subElements = { ...config.subElements, media: { ...config.subElements.media } };
+              delete config.subElements.media.videoUrl;
+            }
+          }
+        }
+        return { ...instance, config: sanitizeValue(config) };
+      }),
     updatedAt: new Date().toISOString(),
   });
 }

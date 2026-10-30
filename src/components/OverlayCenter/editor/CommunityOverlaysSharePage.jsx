@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { useAdmin } from "../../../hooks/useAdmin";
 import {
   getOrCreateBetterEditorOverlay,
   listSharedBetterOverlayPreviews,
@@ -179,6 +180,8 @@ function CommunityOverlayPreview({ layout, userId, compact = false, label }) {
 
 export default function CommunityOverlaysSharePage() {
   const { user } = useAuth();
+  const { isAdmin, isPremium, isModerator } = useAdmin();
+  const canEdit = isAdmin || isPremium || isModerator;
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [currentOverlay, setCurrentOverlay] = useState(null);
@@ -195,13 +198,10 @@ export default function CommunityOverlaysSharePage() {
     if (!user?.id) return;
     setLoading(true);
     setError("");
+    setTemplates([]);
     try {
-      const [library, editorOverlay] = await Promise.all([
-        listSharedBetterOverlayPreviews(user.id),
-        getOrCreateBetterEditorOverlay(user.id),
-      ]);
+      const library = await listSharedBetterOverlayPreviews(user.id);
       setTemplates(library);
-      setCurrentOverlay(editorOverlay);
       setSelectedId((current) => {
         if (preserveSelection && library.some((template) => template.id === current)) {
           return current;
@@ -214,6 +214,20 @@ export default function CommunityOverlaysSharePage() {
       setLoading(false);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id || !canEdit) {
+      setCurrentOverlay(null);
+      return undefined;
+    }
+    getOrCreateBetterEditorOverlay(user.id)
+      .then((record) => { if (!cancelled) setCurrentOverlay(record); })
+      .catch((failure) => {
+        if (!cancelled) setError(failure.message || "Your editor build could not be loaded.");
+      });
+    return () => { cancelled = true; };
+  }, [user?.id, canEdit]);
 
   useEffect(() => {
     refresh({ preserveSelection: false });
@@ -243,7 +257,7 @@ export default function CommunityOverlaysSharePage() {
 
   const submitShare = async (event) => {
     event.preventDefault();
-    if (!currentOverlay?.draftLayout || !name.trim() || busy) return;
+    if (!canEdit || !currentOverlay?.draftLayout || !name.trim() || busy) return;
     setBusy("share");
     setError("");
     try {
@@ -264,7 +278,7 @@ export default function CommunityOverlaysSharePage() {
   };
 
   const loadSelected = async () => {
-    if (!selected || busy) return;
+    if (!canEdit || !selected || busy) return;
     setBusy(`load:${selected.id}`);
     setError("");
     try {
@@ -300,8 +314,8 @@ export default function CommunityOverlaysSharePage() {
     <main className="community-share-page">
       <section className="community-share-hero">
         <div className="community-share-hero__copy">
-          <button type="button" className="community-back" onClick={() => navigate("/editor")}>
-            <ArrowLeft size={16} /> Back to editor
+          <button type="button" className="community-back" onClick={() => navigate(canEdit ? "/editor" : "/apps")}>
+            <ArrowLeft size={16} /> Back to {canEdit ? "editor" : "apps"}
           </button>
           <span className="community-eyebrow"><Sparkles size={14} /> Community layouts</span>
           <h1>Build together. Make it yours.</h1>
@@ -310,7 +324,7 @@ export default function CommunityOverlaysSharePage() {
             sample data, and load a design as your own editable build.
           </p>
         </div>
-        <div className="community-share-hero__actions">
+        {canEdit && <div className="community-share-hero__actions">
           <div>
             <small>Your current build</small>
             <strong>{currentOverlay?.draftLayout?.name || "Loading..."}</strong>
@@ -327,10 +341,10 @@ export default function CommunityOverlaysSharePage() {
           >
             <Share2 size={17} /> Share current build
           </button>
-        </div>
+        </div>}
       </section>
 
-      {shareOpen && (
+      {canEdit && shareOpen && (
         <form className="community-share-form" onSubmit={submitShare}>
           <div>
             <span className="community-eyebrow">Publish to the library</span>
@@ -484,7 +498,7 @@ export default function CommunityOverlaysSharePage() {
                       <Trash2 size={16} /> Remove share
                     </button>
                   )}
-                  <button
+                  {canEdit ? <button
                     type="button"
                     className="community-primary-button"
                     onClick={loadSelected}
@@ -492,20 +506,20 @@ export default function CommunityOverlaysSharePage() {
                   >
                     <Download size={17} />
                     {busy === `load:${selected.id}` ? "Loading..." : "Load into my editor"}
-                  </button>
+                  </button> : <p>Editor access is required to load this build.</p>}
                 </div>
               </footer>
             </article>
           )}
         </section>
-      ) : (
+      ) : error ? null : (
         <section className="community-empty-state">
           <Share2 size={32} />
-          <h2>Be the first to share an overlay</h2>
-          <p>Your current build can become the first design in the community library.</p>
-          <button type="button" className="community-primary-button" onClick={() => setShareOpen(true)}>
+          <h2>{canEdit ? "Be the first to share an overlay" : "No community overlays available"}</h2>
+          <p>{canEdit ? "Your current build can become the first design in the community library." : "Shared builds appear here when their assets are available to your account."}</p>
+          {canEdit && <button type="button" className="community-primary-button" onClick={() => setShareOpen(true)}>
             Share current build
-          </button>
+          </button>}
         </section>
       )}
     </main>

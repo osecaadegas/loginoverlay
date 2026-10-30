@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'community-overlay-active-role-visibility-2026-10-30', date: '2026-10-30', category: 'overlays',
+    title: 'Show community builds according to their active assets',
+    summary: 'Signed-in users can browse shared designs whose displayed assets are allowed by their overlay roles.',
+    changes: [
+      'Removed dormant chat style snapshots, hidden widgets and inactive background media from community copies and previews so they cannot incorrectly hide a compatible build.',
+      'Restricted shared build metadata, full previews and imports to viewers with access to every active restricted asset.',
+      'Opened the community preview page to signed-in accounts and added it to Apps; editor sharing and importing still require editor access.',
+    ],
+    action: 'Refresh Community Overlays after the database migration is applied. Existing shared rows are preserved.',
+  },
+  {
     id: 'current-game-owned-pending-slots-2026-10-30', date: '2026-10-30', category: 'overlays',
     title: 'Find your pending slots in Current Game',
     summary: 'Submitted slots awaiting approval appear in their owner’s Current Game page, and game titles keep their original names across browser languages.',

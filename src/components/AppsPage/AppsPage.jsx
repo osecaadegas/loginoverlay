@@ -9,6 +9,7 @@ import {
   Handshake,
   LogIn,
   LogOut,
+  LayoutGrid,
   Radar,
   ShieldCheck,
   SlidersHorizontal,
@@ -76,6 +77,14 @@ export default function AppsPage() {
       : []),
     ...(user
       ? [
+          {
+            to: "/community_overlays_share",
+            label: "Community Overlays",
+            desc: "Browse builds available to your account",
+            icon: LayoutGrid,
+            tone: "cyan",
+            art: "editor",
+          },
           {
             to: "/player/bonus-hunt",
             label: "Bonus Hunt",

@@ -10,6 +10,7 @@ export default function ProtectedAdminRoute({
   allowSlotModder = false,
   allowAffiliate = false,
   allowFreeTier = false,
+  allowAuthenticated = false,
   redirectTo = '/premium',
 }) {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ export default function ProtectedAdminRoute({
   }
 
   const hasAccess =
+    allowAuthenticated ||
     isAdmin ||
     (allowPremium && isPremium) ||
     (allowModerator && isModerator) ||
