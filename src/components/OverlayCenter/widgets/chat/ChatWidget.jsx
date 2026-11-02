@@ -1557,17 +1557,23 @@ function ChatWidget({
   const embeddedShoutoutPosition = shoutoutUsesGiveawaySlot ? giveawayPosition : shoutoutPosition;
   const requestedGiveawayMargin = Number(c.giveawayMargin);
   const embeddedShoutoutHeight = premiumPalette&&!['solverde','street_art','starter_studio','galactic_command'].includes(c.colourTheme)&&!shoutoutHasMedia?100:shoutoutHeight;
+  // Reserve the full 16:9 clip plus its header and footer. cqw follows the
+  // chat widget width in both editor preview and OBS Browser Sources.
+  const shoutoutFrameHeight = shoutoutHasMedia
+    ? `max(${embeddedShoutoutHeight}px, calc(56.25cqw + 96px))`
+    : `${embeddedShoutoutHeight}px`;
   const embeddedShoutout = c.shoutoutInChat === true ? (
     <div
       className={`ov-chat-shoutout${shoutoutUsesGiveawaySlot ? " ov-chat-shoutout--giveaway-slot" : ""}`}
       data-chat-slot={shoutoutUsesGiveawaySlot ? "giveaway" : "messages"}
+      data-has-media={shoutoutHasMedia ? "true" : "false"}
       style={{
         position: "relative",
         zIndex: 4,
         display: embeddedShoutoutActive ? "block" : "none",
-        flex: `0 0 ${embeddedShoutoutHeight}px`,
+        flex: `0 0 ${shoutoutFrameHeight}`,
         maxHeight: "calc(100% - 48px)",
-        height: embeddedShoutoutHeight,
+        height: shoutoutFrameHeight,
         minHeight: 0,
         margin: shoutoutUsesGiveawaySlot
           ? `${Math.max(0, Math.min(30, Number.isFinite(requestedGiveawayMargin) ? requestedGiveawayMargin : 4))}px 0`
@@ -1627,7 +1633,7 @@ function ChatWidget({
       data-giveaway-active={giveawayVisible && !embeddedShoutoutActive ? "true" : undefined}
       data-giveaway-position={giveawayVisible && !embeddedShoutoutActive ? giveawayPosition : undefined}
       {...partAttrs("container")}
-      style={rootStyle}
+      style={{ ...rootStyle, ...(embeddedShoutoutActive ? { containerType: "inline-size" } : {}) }}
     >
       <style>{`
         @keyframes ov-float-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}

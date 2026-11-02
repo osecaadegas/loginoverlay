@@ -114,6 +114,24 @@ try {
     await settle();
   };
 
+  const endedRotationCase = {
+    width: 402, height: 884, count: 3, opened: 3,
+    config: { orientation: 'vertical', carouselMode: 'imagestats',
+      sessionState: 'ended', animations: true, carouselMs: 1200 },
+  };
+  await mount([endedRotationCase]);
+  const endedSlot = await page.$eval('.better-hunt-image-stats-img', image => image.alt);
+  await page.waitForFunction(before => document.querySelector('.better-hunt-image-stats-img')?.alt !== before,
+    { timeout: 5000 }, endedSlot);
+  await mount([{ ...endedRotationCase, opened: 1, config: {
+    ...endedRotationCase.config, sessionState: 'opening',
+  } }]);
+  const openingSlot = await page.$eval('.better-hunt-image-stats-img', image => image.alt);
+  await new Promise(resolve => setTimeout(resolve, 1600));
+  assert.equal(await page.$eval('.better-hunt-image-stats-img', image => image.alt), openingSlot,
+    'Opening keeps the current bonus fixed while ended hunts rotate the image stats');
+  console.log('Ended Bonus Hunt image stats rotate; opening stays on the current slot.');
+
   // A pinned Mainstream result terminal must remain rendered during the hunt
   // and become useful after the first opened slot. This protects the saved
   // "Always visible" control from session-state and result-count gating.

@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer';
 import { resolveChatCommandOwner } from '../api/raid-shoutout.js';
 import { normalizeGiveawaySubtitle } from '../src/components/OverlayCenter/widgets/giveaway/giveawayText.js';
 import { resolveGiveawayRevealDelayMs, resolveGiveawaySpinDurationSeconds } from '../src/components/OverlayCenter/widgets/giveaway/giveawayTiming.js';
+import { WIDGET_COLOUR_THEMES } from '../src/components/OverlayCenter/widgets/shared/colourThemePalettes.js';
 
 assert.equal(normalizeGiveawaySubtitle('(min 30 Participants)'), '');
 assert.equal(normalizeGiveawaySubtitle('  Winners drawn live  '), 'Winners drawn live');
@@ -110,7 +111,7 @@ try {
       send() {} close() { this.readyState = 3; this.onclose?.(); }
     };
     window.irc = (text, moderator = true) => window.sockets.filter(socket => socket.readyState === 1).forEach(socket => socket.onmessage?.({ data: `@id=event-${Date.now()};display-name=Viewer;mod=${moderator ? 1 : 0};badges= :viewer!v@v.tmi.twitch.tv PRIVMSG #fixture :${text}\r\n` }));
-    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, giveawayWinnerHeight, shoutoutHeight = 180, colourTheme, spinDurationSec = 1.2 } = {}) => {
+    window.mountChat = ({ style = 'classic', state = 'open', position = 'top', width = 360, height = 600, live = false, legacy = false, registry = false, mode = 'live', enabled = true, editorPreview = false, sample = false, shoutout = true, giveawaySubtitle = '', giveawayHeight, giveawayWinnerHeight, shoutoutHeight = 180, colourTheme, clipThumbnailUrl, spinDurationSec = 1.2 } = {}) => {
       const config = {
         chatStyle: style, live: true, bttvEnabled: false, twitchEnabled: live, twitchChannel: 'fixture',
         giveawayInChat: enabled, giveawayPosition: position, shoutoutInChat: shoutout,
@@ -121,6 +122,7 @@ try {
         __appearancePreviewMessages: [{ id: 'sample', username: 'StreamFan', message: 'Enjoy the stream!' }],
         ...(live ? {} : { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer' } }),
         ...(sample ? withChatPreviewSamples() : {}),
+        ...(clipThumbnailUrl ? { __previewShoutoutAlert: { raider_username: 'preview', raider_display_name: 'Preview Streamer', clipThumbnailUrl } } : {}),
       };
       const restored = switchChatStyle(switchChatStyle(config, 'community_chat'), style);
       if (restored.giveawayInChat !== enabled || restored.shoutoutInChat !== shoutout || restored.giveawayPosition !== position) throw new Error('Integration settings lost on style switch');
@@ -216,6 +218,32 @@ try {
     await settle();
     assert.match(await page.$eval('.ov-chat-giveaway', element => element.textContent), /Giveaway #1/, `${style}: giveaway returns when !so is inactive`);
   }
+  for (const theme of WIDGET_COLOUR_THEMES) {
+    await page.evaluate(colourTheme => window.mountChat({
+      style: 'community_chat', colourTheme, width: 360, height: 600,
+      shoutoutHeight: 180, clipThumbnailUrl: '/player.webp',
+    }), theme.key);
+    await settle();
+    const mediaLayout = await page.evaluate(() => {
+      const rect = selector => document.querySelector(selector).getBoundingClientRect();
+      const slot = rect('.ov-chat-shoutout');
+      const header = rect('.ov-chat-shoutout .better-shoutout-header');
+      const media = rect('.ov-chat-shoutout .better-shoutout-media');
+      const footer = rect('.ov-chat-shoutout .better-shoutout-footer');
+      const image = document.querySelector('.ov-chat-shoutout .better-shoutout-media img');
+      return {
+        slotHeight: slot.height, mediaWidth: media.width, mediaHeight: media.height,
+        headerBottom: header.bottom, mediaTop: media.top, mediaBottom: media.bottom,
+        footerTop: footer.top, objectFit: getComputedStyle(image).objectFit,
+      };
+    });
+    assert.equal(mediaLayout.objectFit, 'contain', `${theme.key}: the full clip image is visible`);
+    assert.ok(mediaLayout.mediaTop >= mediaLayout.headerBottom - 1, `${theme.key}: header does not cover the clip`);
+    assert.ok(mediaLayout.footerTop >= mediaLayout.mediaBottom - 1, `${theme.key}: footer does not cover the clip`);
+    assert.ok(mediaLayout.mediaHeight >= mediaLayout.mediaWidth * 9 / 16 - 3,
+      `${theme.key}: the clip retains a 16:9 viewing area: ${JSON.stringify(mediaLayout)}`);
+  }
+  console.log(`Embedded !so clip geometry passed for ${WIDGET_COLOUR_THEMES.length} colour themes.`);
   for (const style of styles) {
     await page.evaluate(style => window.mountChat({ style, state: 'empty', height: 600, shoutout: false }), style);
     await settle();

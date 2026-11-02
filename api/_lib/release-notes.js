@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'ended-hunt-carousel-chat-shoutout-clips-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Keep ended hunts rotating and show complete chat clips',
+    summary: 'Bonus Hunt image stats continue cycling through slots after the hunt ends, and embedded chat shoutouts reserve a full 16:9 clip area.',
+    changes: [
+      'Keep the Bonus Hunt carousel active in the ended state while preserving the opening-state slot lock.',
+      'Size active in-chat shoutouts for their video and move the header and footer outside the clip area across colour themes.',
+      'Contain clip videos and thumbnails so their edges stay visible in the chat widget.',
+    ],
+    action: 'Refresh Overlay Center and republish changed scenes; reload OBS Browser Sources to receive the updated layout. Live Twitch clips and OBS playback still require verification.',
+  },
+  {
     id: 'remove-overlay-camera-widget-2026-10-30', date: '2026-10-30', category: 'overlays',
     title: 'Remove the Camera overlay widget',
     summary: 'The Camera option is no longer available in Overlay Center, and saved Camera widgets are omitted from editor and OBS layouts.',

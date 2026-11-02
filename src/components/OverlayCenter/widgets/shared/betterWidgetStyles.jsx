@@ -3193,10 +3193,13 @@ export function BetterBonusHuntStyle({
   const firstUnopened = rows.findIndex((bonus) => !bonusOpened(bonus));
   const initialIndex = firstUnopened >= 0 ? firstUnopened : 0;
   const sessionState = normalizeBetterHuntSessionState(c);
+  const carouselEnabled = c.orientation !== 'new_horizontal' &&
+    !(c.colourTheme === 'solverde' && c.solverde?.huntDock && c.orientation === 'horizontal') &&
+    c.animations !== false && sessionState !== 'opening';
   const rotatingIndex = useBetterHuntCarousel(
     rows.length,
     Number(c.carouselMs) || 3200,
-    c.orientation!=='new_horizontal' && !(c.colourTheme==='solverde'&&c.solverde?.huntDock&&c.orientation==='horizontal') && c.animations !== false && sessionState === "hunt",
+    carouselEnabled,
     initialIndex,
   );
   const lockedIndex =
@@ -3205,8 +3208,7 @@ export function BetterBonusHuntStyle({
       : firstUnopened >= 0
         ? firstUnopened
         : Math.max(0, rows.length - 1);
-  const activeIndex =
-    rows.length && sessionState !== "hunt" ? lockedIndex : rotatingIndex;
+  const activeIndex = rows.length && !carouselEnabled ? lockedIndex : rotatingIndex;
   const current = rows[activeIndex] || rows[initialIndex] || rows[0] || null;
   // Bonus row IDs are not catalogue slot IDs. Match the selected carousel slot.
   const activeSlot = {
