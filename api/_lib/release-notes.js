@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-hunt-live-be-loop-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'New Horizontal Bonus Hunt loop and live break-even',
+    summary: 'Queued bonuses scroll continuously during the hunt, and the B.E. tile shows the current break-even multiplier.',
+    changes: [
+      'Scroll all unopened bonus cards from right to left in a seamless repeated track during hunt state.',
+      'Use the live B.E. value as payouts are recorded; opening and ended states keep their existing static card layout.',
+      'Add a saved Continuous bonus loop control and respect reduced-motion settings.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Browser renderer and published-route tests passed locally; live OBS playback was not tested.',
+  },
+  {
     id: 'overlay-center-emoji-compact-tools-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Clearer dashboard navigation and tool cards',
     summary: 'Dashboard navigation uses emoji, and available tool cards are smaller with clearer actions.',

@@ -4,11 +4,11 @@ export function newHorizontalPalette(config={}) {
   const custom=config.newHorizontal||{},theme=config.colourTheme?getWidgetColourTheme(config.colourTheme):null;
   return {background:custom.background||(theme?config.bgColor:null)||'#102449',accent:custom.accent||(theme?config.accentColor:null)||'#f27786',text:custom.text||theme?.text||'#f5f7ff',muted:custom.muted||theme?.muted||'#a8b5d1',line:custom.line||theme?.border||'#405c88',tile:custom.tile||theme?.raised||'#152f59'};
 }
-// Keep five stable positions without duplicating a bonus at either hunt boundary.
+// Keep five stable positions outside hunt state and expose every unopened bonus for the live loop.
 export function newHorizontalSequence(cards,state) {
   const opened=cards.filter(card=>card.opened).slice(-2);
-  const upcoming=state==='ended'?[]:cards.filter(card=>!card.opened).slice(0,3);
-  return {left:[...Array(2-opened.length).fill(null),...opened],right:[...upcoming,...Array(3-upcoming.length).fill(null)]};
+  const queue=state==='ended'?[]:cards.filter(card=>!card.opened);
+  return {left:[...Array(2-opened.length).fill(null),...opened],right:[...queue.slice(0,3),...Array(Math.max(0,3-queue.length)).fill(null)],queue};
 }
 const text=label=>({label,kind:'text',capabilities:['typography']});
 const surface=label=>({label,kind:'container',capabilities:['surface','border','spacing']});
