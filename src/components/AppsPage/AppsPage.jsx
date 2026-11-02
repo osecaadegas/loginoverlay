@@ -49,6 +49,35 @@ const APP_TILE_ART = {
   "transitions": "/iconLOGOs/SC_WEB_TRANSITIONS.png",
 };
 
+const APP_CATEGORIES = [
+  { id: "live", title: "Live tools" },
+  { id: "downloads", title: "Downloads" },
+  { id: "explore", title: "Explore" },
+  { id: "manage", title: "Management" },
+  { id: "account", title: "Account" },
+];
+
+const APP_CATEGORY_BY_ROUTE = {
+  "/overlay-center": "live",
+  "/editor": "live",
+  "/slot-detector": "live",
+  "/opensource": "live",
+  "/community_overlays_share": "live",
+  "/player/bonus-hunt": "live",
+  "/webmod/slot-manager": "live",
+  "/offers": "explore",
+  "/affiliate": "explore",
+  "/premium": "explore",
+  "/admin": "manage",
+  "/admin/affiliates": "manage",
+  "/admin/subscriptions": "manage",
+  "/analytics": "manage",
+  "/developer": "manage",
+};
+
+const categoryForTile = (tile) =>
+  tile.href ? "downloads" : APP_CATEGORY_BY_ROUTE[tile.to] || "account";
+
 function AppLink({ tile, className, children, onAction }) {
   if (tile.action) return <button type="button" className={className} onClick={onAction}>{children}</button>;
   if (tile.href) return <a className={className} href={tile.href} download={tile.download} target={tile.external ? "_blank" : undefined} rel={tile.external ? "noopener noreferrer" : undefined}>{children}</a>;
@@ -259,6 +288,10 @@ export default function AppsPage() {
   const visibleTiles = [...tiles, accountTile].filter(
     (tile) => !tile.to || tile.to !== location.pathname,
   );
+  const sections = APP_CATEGORIES.map((category) => ({
+    ...category,
+    tiles: visibleTiles.filter((tile) => categoryForTile(tile) === category.id),
+  })).filter((category) => category.tiles.length > 0);
   const actionFor = (tile) => tile.action === "logout" ? logout : login;
 
   const renderTile = (tile) => {
@@ -290,9 +323,12 @@ export default function AppsPage() {
   return (
     <main className="apps-page">
       <h1>Apps</h1>
-      <section className="apps-grid" aria-label="Available apps and tools">
-        {visibleTiles.map(renderTile)}
-      </section>
+      {sections.map((section) => (
+        <section className={`apps-section apps-section--${section.id}`} key={section.id} aria-labelledby={`apps-section-${section.id}`}>
+          <h2 id={`apps-section-${section.id}`}>{section.title}</h2>
+          <div className="apps-grid">{section.tiles.map(renderTile)}</div>
+        </section>
+      ))}
     </main>
   );
 }

@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'apps-categories-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Group Apps tiles by purpose',
+    summary: 'Compact Apps tiles are now arranged under short Live tools, Downloads, Explore, Management and Account headings.',
+    changes: [
+      'Kept the illustrated tiles and placed them in static, easy-to-scan categories.',
+      'Hide empty sections according to each account’s existing tile access.',
+      'Preserved the existing links, download versions and role checks.',
+    ],
+    action: 'Refresh the Apps page after deployment to see the grouped tiles.',
+  },
+  {
     id: 'apps-compact-colour-tiles-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Fit more colourful Apps tiles on screen',
     summary: 'Apps tiles are smaller and use stronger accent colours while keeping the same single-grid navigation.',

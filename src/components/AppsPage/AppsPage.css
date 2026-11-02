@@ -11,6 +11,32 @@
   line-height: 1.1;
   letter-spacing: -.035em;
 }
+.apps-section {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.apps-section + .apps-section { margin-top: 26px; }
+.apps-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: #cceaf4;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 800;
+}
+.apps-section h2::before {
+  content: "";
+  width: 4px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--section-accent, #62d9ea);
+}
+.apps-section--downloads { --section-accent: #ac8aff; }
+.apps-section--explore { --section-accent: #a3e635; }
+.apps-section--manage { --section-accent: #fbbf24; }
+.apps-section--account { --section-accent: #f08cb1; }
 .apps-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -144,6 +170,7 @@
 @media (max-width: 560px) {
   .apps-page { padding: 18px 12px 42px; }
   .apps-page h1 { margin-bottom: 14px; }
+  .apps-section + .apps-section { margin-top: 22px; }
   .apps-grid { gap: 9px; }
   .apps-tile { min-height: 150px; padding: 10px; }
   .apps-tile strong { font-size: 15px; }
