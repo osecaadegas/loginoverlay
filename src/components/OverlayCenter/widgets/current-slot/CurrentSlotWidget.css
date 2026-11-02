@@ -267,6 +267,16 @@
 .cg-page-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .cg-page section.cg-panel { min-width: 0; padding: 22px; border: 1px solid #294658; background: #0b1722; border-radius: 14px; }
 .cg-panel h2 { font-size: 1.2rem; margin: 0 0 15px; }
+.cg-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+.cg-panel-heading h2 { margin: 0; }
+.cg-panel-heading button { white-space: nowrap; }
+.cg-page .cg-slot-submit { height: auto; overflow: visible; background: transparent; font-size: inherit; }
+.cg-slot-submit .ss-submit-dropdown { max-width: 100%; max-height: none !important; opacity: 1 !important; overflow: visible !important; transition: none !important; }
+.cg-slot-submit .sm-field { min-width: 0; margin-block: 0; }
+.cg-slot-submit .sm-field--image { grid-column: 1 / -1 !important; }
+.cg-slot-submit .sm-field--image > div { min-width: 0; flex-wrap: wrap; }
+.cg-page .cg-slot-submit .sm-field input,
+.cg-page .cg-slot-submit .sm-field select { min-height: 36px; }
 .cg-page > p,.cg-panel p,.cg-panel small { color: #a4b8c9; line-height: 1.6; }
 .cg-page label,.cg-appearance label { display: grid; gap: 7px; margin-block: 12px; font-size: .85rem; }
 .cg-page input,.cg-page select,.cg-appearance input,.cg-appearance select { min-width: 0; width: 100%; min-height: 42px; padding: 9px 12px; color: #e6edf6; background: #05101b; border: 1px solid #38556c; border-radius: 7px; font: inherit; }

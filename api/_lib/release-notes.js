@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'current-game-submit-slot-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Submit new slots from Current Game',
+    summary: 'Current Game now includes an Add slot action beside its slot selector.',
+    changes: [
+      'Reused the existing slot approval form and pending_slots submission path from the slot catalog.',
+      'Refreshes the signed-in user’s pending list and selects their newly submitted slot after a successful submission.',
+    ],
+    action: 'Refresh the Current Game page after deployment. Submitted slots remain pending until approved; live production submission was not verified.',
+  },
+  {
     id: 'ended-hunt-carousel-chat-shoutout-clips-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Keep ended hunts rotating and show complete chat clips',
     summary: 'Bonus Hunt image stats continue cycling through slots after the hunt ends, and embedded chat shoutouts reserve a full 16:9 clip area.',

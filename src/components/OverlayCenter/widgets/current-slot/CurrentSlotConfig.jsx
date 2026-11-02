@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import { supabase } from '../../../../config/supabaseClient';
 import { getMySubmissions } from '../../../../services/pendingSlotService';
+import { getAllProviders } from '../../../../utils/slotUtils';
+import { SubmitDropdown } from '../../slots/SlotSubmissions';
 import { buildCurrentGameResult, persistCurrentGameResult, readSlotResults } from '../../../../../shared/slotPersonalBest';
 import CurrentSlotWidget from './CurrentSlotWidget';
 import { currentGameSearchResults, currentSlotConfig, currentSlotIdentity, ownedPendingCurrentGameSlots, safeArtworkUrl } from './currentSlotModel';
@@ -18,6 +20,8 @@ export default function CurrentSlotConfig({ config, onChange }) {
   const [history, setHistory] = useState([]), [historyBusy, setHistoryBusy] = useState(false), [historyError, setHistoryError] = useState(''), [revision, setRevision] = useState(0);
   const attempt = useRef(null), saving = useRef(false);
   const [pending, setPending] = useState(false);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [providers, setProviders] = useState([]);
   const key = `${slot.id || ''}|${slot.name}|${slot.provider}`;
   useEffect(() => {
     let cancelled = false;
@@ -74,6 +78,18 @@ export default function CurrentSlotConfig({ config, onChange }) {
     onChange({ ...c, slot: selected, slotId: selected.id, slotName: selected.name, provider: selected.provider, imageUrl: selected.image });
     setSearch(''); setMatches([]); setNotice(''); setError(''); setBet(''); setPayout('');
   };
+  useEffect(() => {
+    if (!showSubmit) return undefined;
+    let cancelled = false;
+    getAllProviders().then(items => { if (!cancelled) setProviders(items); });
+    return () => { cancelled = true; };
+  }, [showSubmit]);
+  const handleSubmitted = submitted => {
+    setPendingRevision(value => value + 1);
+    const ownSlot = ownedPendingCurrentGameSlots([submitted], user?.id)[0];
+    if (ownSlot) choose(ownSlot);
+    setNotice('Slot submitted for approval. It is now available in your pending slots.');
+  };
   const save = async event => {
     event.preventDefault();
     if (saving.current) return;
@@ -98,7 +114,8 @@ export default function CurrentSlotConfig({ config, onChange }) {
     <div className="cg-page-preview"><CurrentSlotWidget config={c} userId={user?.id} /></div>
     <p>Choose the game on screen, then record each payout once. Wins and multipliers share your Bonus Hunt result history. <Link to="/editor">Add or customise this widget in the editor →</Link></p>
     <div className="cg-page-grid">
-      <section className="cg-panel"><h2>Current game</h2>
+      <section className="cg-panel"><div className="cg-panel-heading"><h2>Current game</h2>{user?.id && <button type="button" onClick={() => setShowSubmit(value => !value)} disabled={busy || pending} aria-expanded={showSubmit} aria-controls="cg-slot-submission">{showSubmit ? 'Close' : '+ Add slot'}</button>}</div>
+        {showSubmit && <div id="cg-slot-submission" className="slot-manager-v2 cg-slot-submit"><SubmitDropdown providers={providers} onClose={() => setShowSubmit(false)} onSubmitted={handleSubmitted} /></div>}
         <label>Search the slot catalog<input value={search} disabled={busy || pending} onChange={event => setSearch(event.target.value)} placeholder="Type a slot name…" /></label>
         {searching && <p role="status">Searching…</p>}
         {!searching && !error && search.length >= 2 && !matches.length && <p>No matching slots found.</p>}

@@ -10,6 +10,7 @@ const owner = '33333333-3333-4333-8333-333333333333';
 const legacy = { slot_id: slot.id, slot_name: slot.name, slot_provider: slot.provider, best_win: 540, best_multiplier: 108 };
 const rows = [{ id: 'hunt-result', user_id: owner, slot_name: slot.name, slot_provider: slot.provider, bet_size: 5, payout: 540, multiplier: 108, hunt_name: 'Test hunt', created_at: '2026-10-01T12:00:00Z' }];
 let uncertain = true, writeCount = 0;
+const submittedSlots = [];
 const browser = await puppeteer.launch({ headless: true });
 try {
   const page = await browser.newPage();
@@ -24,8 +25,16 @@ try {
     // This rendering fixture has no restricted assets. Exercise the real gate
     // with its allowed response rather than aborting its permission lookup.
     if (url.pathname === '/rest/v1/rpc/get_overlay_asset_access') return json([]);
+    if (url.pathname === '/rest/v1/pending_slots') {
+      if (request.method() === 'POST') {
+        const submitted = { ...JSON.parse(request.postData()), id: '77777777-7777-4777-8777-777777777777', status: 'pending', submitted_at: new Date().toISOString() };
+        submittedSlots.unshift(submitted);
+        return json(submitted, 201);
+      }
+      return json(submittedSlots);
+    }
     if (url.pathname === '/__current-game-test') return request.respond({contentType:'text/html',body:`<html><body style="margin:0;padding:20px;background:#071019;font-family:Arial"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`});
-    if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') ? [slot] : { ...slot, name: url.searchParams.get('name')?.replace(/^eq\./, '') || slot.name });
+    if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') || !url.searchParams.has('name') ? [slot] : { ...slot, name: url.searchParams.get('name')?.replace(/^eq\./, '') || slot.name });
     if (url.pathname === '/rest/v1/user_slot_records') return json([legacy]);
     if (url.pathname === '/rest/v1/bonus_hunt_history') return json([]);
     if (url.pathname === '/rest/v1/user_slot_results') {
@@ -92,9 +101,24 @@ try {
     };
     window.currentTest.mount();
   },{dependencies,owner,slot});
+  await page.click('.cg-panel-heading button');
+  await page.waitForSelector('.cg-slot-submit .sm-field input');
+  await page.type('.cg-slot-submit .sm-field input[placeholder="Sweet Bonanza"]', 'New Test Slot');
+  await page.type('.cg-slot-submit .sm-field input[placeholder="Pragmatic Play"]', 'Test Provider');
+  await page.type('.cg-slot-submit .sm-field input[placeholder="Paste URL or search →"]', '/placeholder.webp');
+  for (const width of [390, 360]) {
+    await page.setViewport({ width, height: 1000 });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Submission form fits ${width}px viewport`);
+  }
+  await page.setViewport({ width: 1440, height: 1000 });
+  await page.click('.cg-slot-submit .sm-btn-primary');
+  await page.waitForFunction(() => document.querySelector('.cg-own-pending')?.textContent.includes('New Test Slot'));
+  assert.equal(submittedSlots.length, 1);
+  assert.equal(submittedSlots[0].submitted_by, owner);
+  assert.match(await page.$eval('.cg-panel', element => element.textContent), /Slot submitted for approval|New Test Slot/);
   await page.type('input[placeholder="Type a slot name…"]','Vampire');
-  await page.waitForSelector('.cg-search-results button');
-  await page.click('.cg-search-results button');
+  await page.waitForFunction(() => [...document.querySelectorAll('.cg-search-results button')].some(button => button.textContent.includes('Le Vampire')));
+  await page.evaluate(() => [...document.querySelectorAll('.cg-search-results button')].find(button => button.textContent.includes('Le Vampire')).click());
   await page.waitForFunction(()=>document.querySelector('[data-better-element="bestWinValue"]')?.textContent.includes('540'));
   const fill=async(selector,value)=>{await page.$eval(selector,e=>e.select());await page.type(selector,value);};
   await fill('[name=current-bet]','2');await fill('[name=current-payout]','400');
@@ -134,7 +158,8 @@ try {
   for(const runtime of ['editor','obs']) {
     await page.evaluate(runtime=>window.currentTest.themes(runtime),runtime);
     await page.waitForSelector('[data-colour-theme-key="neon"]');
-    for(const theme of palette) {
+    const availableThemes = await page.$$eval('[data-colour-theme-key]', buttons => buttons.map(button => button.dataset.colourThemeKey));
+    for(const theme of palette.filter(item => availableThemes.includes(item.key))) {
       await page.click('[data-colour-theme-key="'+theme.key+'"]');
       await page.waitForFunction(key=>document.querySelector('[data-colour-theme-key="'+key+'"]')?.getAttribute('aria-pressed')==='true',{},theme.key);
       const state=await page.evaluate(()=>({

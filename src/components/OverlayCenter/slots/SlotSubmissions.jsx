@@ -92,7 +92,7 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
 /* ═══════════════════════════════════════════════════════════════════
    SUBMIT NEW SLOT DROPDOWN (inline, expands below toolbar)
    ═══════════════════════════════════════════════════════════════════ */
-const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
+export const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
   const { user } = useAuth();
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
@@ -199,7 +199,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
     }
     setSaving(true);
     try {
-      await submitSlot(user.id, {
+      const submittedSlot = await submitSlot(user.id, {
         name: form.name.trim(),
         provider: form.provider.trim(),
         image: form.image.trim(),
@@ -208,7 +208,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
         max_win_multiplier: form.max_win_multiplier ? parseFloat(form.max_win_multiplier) : null,
       });
       setScrapedImages([]);
-      onSubmitted();
+      onSubmitted(submittedSlot);
       onClose();
     } catch (e) {
       const message = getErrorMessage(e, 'Could not submit slot.');
@@ -281,7 +281,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
           <input type="number" value={form.max_win_multiplier || ''} onChange={e => set('max_win_multiplier', e.target.value || null)} placeholder="10000" />
         </label>
         {/* Image URL — fits in grid like other fields */}
-        <label className="sm-field" style={{ gridColumn: 'span 2', minWidth: 0 }}>
+        <label className="sm-field sm-field--image" style={{ gridColumn: 'span 2', minWidth: 0 }}>
           <span>Image <em>*</em></span>
           <div style={{ display: 'flex', gap: 4 }}>
             <input style={{ flex: 1, fontSize: '0.72rem', padding: '5px 8px' }} value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="Paste URL or search →" />
