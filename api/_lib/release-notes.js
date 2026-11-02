@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'apps-compact-colour-tiles-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Fit more colourful Apps tiles on screen',
+    summary: 'Apps tiles are smaller and use stronger accent colours while keeping the same single-grid navigation.',
+    changes: [
+      'Fit five tiles per row on wide screens and two per row on narrow phones.',
+      'Strengthened each tile’s colour, icon treatment and artwork saturation while retaining readable labels.',
+      'Kept existing destinations, download versions and access rules.',
+    ],
+    action: 'Refresh the Apps page after deployment to see the compact tiles.',
+  },
+  {
     id: 'apps-illustrated-tiles-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Make Apps easier to recognise',
     summary: 'Apps is a single grid of visual tiles with a distinct image or app logo for each destination.',

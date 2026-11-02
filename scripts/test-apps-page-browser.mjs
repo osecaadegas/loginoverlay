@@ -26,8 +26,15 @@ try {
     await page.setViewport({ width, height: 844 });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     assert.ok(overflow <= 1, `Horizontal overflow at ${width}px: ${overflow}px`);
+    if (width === 1440 || width === 390) {
+      const columns = await page.$eval(".apps-grid", (node) => getComputedStyle(node).gridTemplateColumns.split(" ").length);
+      assert.equal(columns, width === 1440 ? 5 : 2, `Unexpected column count at ${width}px`);
+    }
+    if (width === 390 && process.env.SCREENSHOT_MOBILE_PATH) {
+      await page.screenshot({ path: process.env.SCREENSHOT_MOBILE_PATH, fullPage: true });
+    }
   }
-  console.log("Apps page browser checks passed: single illustrated grid and responsive widths.");
+  console.log("Apps page browser checks passed: compact grid, five desktop columns, two phone columns and no overflow.");
 } finally {
   await browser.close();
 }
