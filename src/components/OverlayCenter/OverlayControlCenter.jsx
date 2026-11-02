@@ -657,14 +657,14 @@ function validateOverlay({ instance, widgets, setup, integrations = {} }) {
 
 function OverlayTopNavigation({ active, setupComplete }) {
   const navItems = [
-    { id: "home", label: "Tools", to: "/overlay-center", icon: Grid3X3 },
+    { id: "home", label: "Dashboard", to: "/overlay-center", icon: Grid3X3 },
     {
       id: "integrations",
-      label: "Integrations",
+      label: "Settings",
       to: "/overlay-center/integrations",
       icon: Link2,
     },
-    { id: "editor", label: "Editor", to: "/editor", icon: Brush },
+    { id: "editor", label: "Appearance Editor", to: "/editor", icon: Brush },
   ];
 
   return (
@@ -676,6 +676,7 @@ function OverlayTopNavigation({ active, setupComplete }) {
             <Link
               key={item.id}
               to={item.to}
+              title={item.label}
               className={`oc2-nav-link${active === item.id ? " oc2-nav-link--active" : ""}`}
             >
               <Icon size={16} />

@@ -23880,6 +23880,7 @@ body.wm-resizing {
 }
 
 .oc2-nav-link:not(.oc-dedup-23731) {
+  flex: 0 0 auto;
   padding: 0 12px;
   color: var(--oc-text-bluegray-soft);
   border: 1px solid transparent;
@@ -25722,7 +25723,6 @@ body.wm-resizing {
     font-size: 0.78rem;
   }
 
-  .oc2-nav-link:not(.oc-dedup-25574) span,
   .oc2-topbar-actions:not(.oc-dedup-25575) .oc2-btn span {
     display: none;
   }

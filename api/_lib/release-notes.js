@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'overlay-center-clear-navigation-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Clearer Overlay Center navigation',
+    summary: 'The Overlay Center navigation now says Dashboard, Settings and Appearance Editor.',
+    changes: [
+      'Renamed the three navigation choices without changing their destinations or access rules.',
+      'Updated the guided tour to use the same names and kept navigation labels visible on narrow screens.',
+    ],
+    action: 'Refresh the Overlay Center page after deployment to see the new labels.',
+  },
+  {
     id: 'apps-faster-refresh-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Load Apps tiles faster',
     summary: 'The Apps page loads smaller images, avoids unrelated marketing code and completes access checks sooner.',

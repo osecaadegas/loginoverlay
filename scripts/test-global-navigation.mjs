@@ -42,6 +42,12 @@ assert.ok(
     !overlayCenterSource.includes('to="/apps" className="oc2-btn"'),
   "Page-local headers do not duplicate the shared navigation controls",
 );
+assert.ok(
+  overlayCenterSource.includes('{ id: "home", label: "Dashboard", to: "/overlay-center"') &&
+    overlayCenterSource.includes('label: "Settings",\n      to: "/overlay-center/integrations"') &&
+    overlayCenterSource.includes('{ id: "editor", label: "Appearance Editor", to: "/editor"'),
+  "Overlay Center uses clear navigation labels without changing destinations",
+);
 
 const headerSource = readSource('../src/components/LandingPage/LandingHeader.jsx');
 assert.ok(landingSource.includes('<LandingHeader') && headerSource.includes('StreamerCenterLogo.png'), 'Homepage owns one branded marketing header');

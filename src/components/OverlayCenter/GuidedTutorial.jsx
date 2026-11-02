@@ -15,7 +15,7 @@ const STEPS = [
   { target: '[data-tour="your-tools"]', title: 'Set up and manage your tools', body: 'Open a tool to configure it. Its status tells you what is missing. Enable, disable and remove tools from the same page.', position: 'bottom', page: 'tools' },
   { target: '[data-tour="integrations-overview"]', title: 'Connect only what you use', body: 'Connect your streaming platform here. Music, points and other integrations are optional unless one of your tools needs them.', position: 'bottom', page: 'integrations' },
   { target: '[data-tour="obs-url"]', title: 'Add your overlay to OBS', body: 'Copy the browser-source URL and add it as a Browser Source in OBS. The preview lets you check the result before going live.', position: 'center', page: 'preview' },
-  { target: null, title: 'You are ready to start', body: 'Open the Editor when you want to change styles and layout. Presets and all other tools remain available in the navigation. You can replay this optional tour any time.', position: 'center', page: 'tools' },
+  { target: null, title: 'You are ready to start', body: 'Open Appearance Editor when you want to change styles and layout. Presets and all other tools remain available in the Dashboard. You can replay this optional tour any time.', position: 'center', page: 'tools' },
 ];
 
 export default function GuidedTutorial({ active, onClose, goToPage }) {
@@ -195,8 +195,8 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
 
   const pageLabels = {
     home: 'Home',
-    integrations: 'Integrations',
-    tools: 'Tools',
+    integrations: 'Settings',
+    tools: 'Dashboard',
     appearance: 'Appearance',
     preview: 'Preview',
     bonus_hunt: 'Bonus Hunt',
