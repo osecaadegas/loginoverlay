@@ -8,7 +8,8 @@ export default function NewHorizontalHunt({config:c,cards,state,totalPayout,curr
   const palette=newHorizontalPalette(c),sequence=newHorizontalSequence(cards,state);
   const scrollQueue=state==='hunt'&&c.newHorizontal?.queueMotion!==false&&sequence.queue.length>0;
   const loopCards=scrollQueue?Array.from({length:Math.max(3,sequence.queue.length)},(_,i)=>sequence.queue[i%sequence.queue.length]):[];
-  const scrollDuration=Math.max(1,Math.min(10,Number(c.carouselMs)||3200)/1000)*loopCards.length;
+  const secondsPerCard=Number(c.newHorizontal?.queueSeconds);
+  const scrollDuration=(Number.isFinite(secondsPerCard)&&secondsPerCard>=2&&secondsPerCard<=12?secondsPerCard:6)*loopCards.length;
   const part=id=>({...appearanceAttrs({config:{...c,__appearanceStyleId:'new_horizontal'},widgetId:c.__betterInstanceId,widgetType:'bonus_hunt',elementId:id}),style:subElementStyle(c,id,{})});
   const card=(item,index,side)=>{
     if(!item)return <div key={`empty-${index}`} className="nh-placeholder" aria-hidden="true"/>;

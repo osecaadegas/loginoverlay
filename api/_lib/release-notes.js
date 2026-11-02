@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-arctic-bounds-speed-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Contain Arctic frost and adjust the hunt carousel',
+    summary: 'Arctic frost follows the rounded New Horizontal Bonus Hunt frame, and its hunt carousel moves more slowly with a Fine Tune speed slider.',
+    changes: [
+      'Measure Arctic effects against the visible New Horizontal frame instead of its larger widget wrapper.',
+      'Set the hunt carousel to six seconds per card by default and add a saved two to twelve second speed control.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS playback was not tested.',
+  },
+  {
     id: 'new-horizontal-hunt-summary-left-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Put the hunt summary first',
     summary: 'During hunt state, the New Horizontal widget shows Bonus Hunt at the left with the scrolling bonus queue beside it.',

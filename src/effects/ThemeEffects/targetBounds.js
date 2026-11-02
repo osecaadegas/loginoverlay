@@ -1,7 +1,7 @@
 // The editor box can contain a centered/scaled widget. FX must follow the
 // painted surface, not that box (notably Bonus Hunt's fitted panel).
 const SURFACES = {
-  bonus_hunt: ".better-hunt-panel",
+  bonus_hunt: ".nh-hunt, .better-hunt-panel",
   current_slot: ".cg-widget",
   bets: ".bets-ov, .bet-widget",
   slot_bingo: ".slot-bingo-widget",
