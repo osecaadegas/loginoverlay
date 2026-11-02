@@ -8,6 +8,8 @@ Implemented in the existing Streamers Center application. Management route: `/ov
 - Real catalog fields: name, provider, image, maximum multiplier, RTP and volatility. Missing catalog values display a dash.
 - Previously saved per-slot cover, transparent title and background URLs remain compatible; the Current Game setup page no longer exposes the optional artwork form. The catalog cover is used automatically.
 - The Current Game setup page can add its selected live or owner-submitted pending slot to the existing Better Hunt widget with a positive bet and mutually exclusive Super/Extreme category. The action uses the authenticated widget save path and requires Better Hunt to be enabled.
+- The Current Game management page omits the large widget preview. The actual widget remains available in the editor and published OBS source.
+- My bonus library on that page shows the signed-in streamer's archived hunts from `bonus_hunt_history` and payouts from `user_slot_results`, across all slots. Each list supports refresh and incremental loading. Existing owner-based RLS protects both tables; no shared public history is exposed.
 - Explicit payout entry with positive bet size, nonnegative payout and a derived multiplier. Two decimal places match the existing result-table precision.
 - Every Current Game payment is inserted into the existing `user_slot_results` table with `hunt_name = 'Current Game'`. No migration or new database area is needed.
 - Shared personal-best reads combine that ledger with existing `user_slot_records` and the older Bonus Hunt history fallback. Best cash win and best multiplier are independent. Known winning bets are shown; unknown historical bet sizes are omitted.

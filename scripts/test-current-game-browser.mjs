@@ -9,6 +9,7 @@ const slot = { id: 'a9b7585a-91a9-4df0-91d1-4f2b5431ef14', name: 'Le Vampire', p
 const owner = '33333333-3333-4333-8333-333333333333';
 const legacy = { slot_id: slot.id, slot_name: slot.name, slot_provider: slot.provider, best_win: 540, best_multiplier: 108 };
 const rows = [{ id: 'hunt-result', user_id: owner, slot_name: slot.name, slot_provider: slot.provider, bet_size: 5, payout: 540, multiplier: 108, hunt_name: 'Test hunt', created_at: '2026-10-01T12:00:00Z' }];
+const savedHunts = [{ id: 'archived-hunt', user_id: owner, hunt_name: 'Previous stream', currency: '€', total_win: 150, bonus_count: 1, bonuses_opened: 1, created_at: '2026-09-30T12:00:00Z', bonuses: [{ id: 'old-bonus', slotName: 'Another Casino Slot', betSize: 2, payout: 150, opened: true }] }, ...Array.from({ length: 21 }, (_, index) => ({ id: `old-hunt-${index}`, user_id: owner, hunt_name: `Older hunt ${index + 1}`, currency: '€', total_win: 0, bonus_count: 0, bonuses_opened: 0, created_at: `2026-09-${String(29 - index).padStart(2, '0')}T12:00:00Z`, bonuses: [] }))];
 let uncertain = true, writeCount = 0;
 const submittedSlots = [];
 const browser = await puppeteer.launch({ headless: true });
@@ -36,7 +37,12 @@ try {
     if (url.pathname === '/__current-game-test') return request.respond({contentType:'text/html',body:`<html><body style="margin:0;padding:20px;background:#071019;font-family:Arial"><div id="root"></div><script type="module">import RefreshRuntime from '/@react-refresh';RefreshRuntime.injectIntoGlobalHook(window);window.$RefreshReg$=()=>{};window.$RefreshSig$=()=>type=>type;window.__vite_plugin_react_preamble_installed__=true;</script></body></html>`});
     if (url.pathname === '/rest/v1/slots') return json(url.searchParams.get('name')?.startsWith('ilike.') || !url.searchParams.has('name') ? [slot] : { ...slot, name: url.searchParams.get('name')?.replace(/^eq\./, '') || slot.name });
     if (url.pathname === '/rest/v1/user_slot_records') return json([legacy]);
-    if (url.pathname === '/rest/v1/bonus_hunt_history') return json([]);
+    if (url.pathname === '/rest/v1/bonus_hunt_history') {
+      assert.equal(url.searchParams.get('user_id'), `eq.${owner}`, 'Saved hunt library stays owner scoped');
+      const offset = Number(url.searchParams.get('offset') || 0);
+      const limit = Number(url.searchParams.get('limit') || savedHunts.length);
+      return json(savedHunts.slice(offset, offset + limit));
+    }
     if (url.pathname === '/rest/v1/user_slot_results') {
       assert.equal(url.searchParams.get('user_id') || (request.method()==='POST' ? `eq.${JSON.parse(request.postData()).user_id}` : ''), `eq.${owner}`);
       if (request.method()==='POST') {
@@ -130,7 +136,14 @@ try {
   await page.type('input[placeholder="Type a slot name…"]','Vampire');
   await page.waitForFunction(() => [...document.querySelectorAll('.cg-search-results button')].some(button => button.textContent.includes('Le Vampire')));
   await page.evaluate(() => [...document.querySelectorAll('.cg-search-results button')].find(button => button.textContent.includes('Le Vampire')).click());
-  await page.waitForFunction(()=>document.querySelector('[data-better-element="bestWinValue"]')?.textContent.includes('540'));
+  await page.waitForFunction(()=>document.querySelector('.cg-panel')?.textContent.includes('Selected: Le Vampire'));
+  assert.equal(await page.$('.cg-page-preview'), null, 'Current Game setup no longer shows the overlay preview');
+  await page.waitForFunction(()=>document.querySelector('.cg-library-hunt')?.textContent.includes('Previous stream'));
+  await page.click('.cg-library-hunt summary');
+  assert.match(await page.$eval('.cg-library-hunt', element => element.textContent), /Another Casino Slot/, 'Streamer library includes saved bonuses from other slots');
+  assert.equal(await page.$$eval('.cg-library-hunt', hunts => hunts.length), 20, 'Saved hunts load in bounded pages');
+  await page.click('.cg-library-section button');
+  await page.waitForFunction(()=>document.querySelectorAll('.cg-library-hunt').length===22);
   assert.equal(await page.$('.cg-page input[type="url"]'), null, 'Current Game no longer exposes the optional artwork form');
   await page.type('[name=hunt-bet]','1.50');
   await page.click('.cg-hunt-tier--super');
@@ -156,27 +169,27 @@ try {
   await page.waitForFunction(()=>document.querySelector('.cg-save-row button[type=submit]')?.textContent==='Retry this save');
   assert.equal(rows.length,2);
   await page.click('.cg-save-row button[type=submit]');
-  await page.waitForFunction(()=>document.body.textContent.includes('Result saved to your shared slot history'));
+  await page.waitForFunction(()=>document.body.textContent.includes('Result saved to your bonus library'));
   assert.equal(rows.length,2,'Uncertain response retry must not duplicate payment');
   assert.equal(writeCount,2);
-  await page.waitForFunction(()=>document.querySelector('[data-better-element="bestMultiValue"]')?.textContent.includes('200x'));
-  assert.match(await page.$eval('[data-better-element="bestWinValue"]',e=>e.textContent),/540/);
-  assert.match(await page.$eval('[data-better-element="averageWinValue"]',e=>e.textContent),/470/);
+  await page.waitForFunction(()=>document.querySelectorAll('.cg-page tbody tr').length===2);
+  assert.match(await page.$eval('.cg-page tbody',e=>e.textContent),/400/);
   await fill('[name=current-payout]','0');await page.click('.cg-save-row button[type=submit]');
   await page.waitForFunction(()=>document.querySelectorAll('.cg-page tbody tr').length===3);
   assert.equal(rows.length,3);
   for(const width of [1920,1440,1024,768,430,390,360]){
     await page.setViewport({width,height:1000});
-    const geometry=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth,preview:document.querySelector('.cg-widget').getBoundingClientRect().toJSON()}));
+    const geometry=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
     assert.ok(geometry.scroll<=width,`No page overflow at ${width}: ${geometry.scroll}`);
-    assert.ok(geometry.preview.right<=width && geometry.preview.width>0);
   }
   await page.setViewport({width:1440,height:1000});
   await page.evaluate(()=>window.currentTest.unmount());await page.waitForFunction(()=>!document.querySelector('.cg-page'));
   await page.evaluate(()=>window.currentTest.mount());
-  await page.waitForFunction(()=>document.querySelector('.cg-name-block')?.textContent.includes('Le Vampire') && document.querySelectorAll('.cg-page tbody tr').length===3);
+  await page.waitForFunction(()=>document.querySelector('.cg-library')?.textContent.includes('Previous stream') && document.querySelectorAll('.cg-page tbody tr').length===3);
   await page.evaluate(()=>window.currentTest.obs());
   await page.waitForFunction(()=>document.querySelector('[data-better-element="bestMultiValue"]')?.textContent.includes('200x'));
+  assert.match(await page.$eval('[data-better-element="bestWinValue"]',e=>e.textContent),/540/);
+  assert.match(await page.$eval('[data-better-element="averageWinValue"]',e=>e.textContent),/313\.33/);
   assert.match(await page.$eval('[data-better-element="slotTitle"]',e=>e.textContent),/Le Vampire/);
   await page.screenshot({path:'.codex-dev/current-game-widget.png'});
   await page.evaluate(()=>window.currentTest.styled());

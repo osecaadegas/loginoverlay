@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'current-game-streamer-bonus-library-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Private bonus history in Current Game',
+    summary: 'The Current Game setup page now shows each streamer their own saved hunts and recorded payouts.',
+    changes: [
+      'Remove the large widget preview from the Current Game management page without changing the OBS widget.',
+      'List completed hunt snapshots and payout records for the signed-in streamer, with refresh and incremental loading.',
+      'Keep history reads scoped to the authenticated owner through existing database policies.',
+    ],
+    action: 'Refresh the Current Game page after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'arctic-rtp-preview-obs-parity-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Matching Arctic RTP rail in preview and OBS',
     summary: 'The Arctic RTP rail and its icicles now use the same placement and clipping in the editor and OBS source.',

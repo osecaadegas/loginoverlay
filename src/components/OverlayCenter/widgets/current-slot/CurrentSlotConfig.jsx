@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import { supabase } from '../../../../config/supabaseClient';
 import { getMySubmissions } from '../../../../services/pendingSlotService';
+import { getBonusHuntHistoryPage } from '../../../../services/overlayService';
 import { getAllProviders } from '../../../../utils/slotUtils';
 import { SubmitDropdown } from '../../slots/SlotSubmissions';
-import { buildCurrentGameResult, persistCurrentGameResult, readSlotResults } from '../../../../../shared/slotPersonalBest';
-import CurrentSlotWidget from './CurrentSlotWidget';
+import { buildCurrentGameResult, persistCurrentGameResult, readUserSlotResultsPage } from '../../../../../shared/slotPersonalBest';
 import { currentGameSearchResults, currentSlotConfig, currentSlotIdentity, ownedPendingCurrentGameSlots, safeArtworkUrl } from './currentSlotModel';
 
 export default function CurrentSlotConfig({ config, onChange, allWidgets = [], onSaveRelatedWidget }) {
@@ -18,14 +18,15 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets = [], o
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [bet, setBet] = useState(''), [payout, setPayout] = useState(''), [busy, setBusy] = useState(false);
   const [huntBet, setHuntBet] = useState(''), [bonusType, setBonusType] = useState('normal'), [addingToHunt, setAddingToHunt] = useState(false);
-  const [history, setHistory] = useState([]), [historyBusy, setHistoryBusy] = useState(false), [historyError, setHistoryError] = useState(''), [revision, setRevision] = useState(0);
+  const [resultsPage, setResultsPage] = useState({ ownerId: null, rows: [], hasMore: false, loading: false, loadingMore: false, error: '' });
+  const [huntsPage, setHuntsPage] = useState({ ownerId: null, rows: [], hasMore: false, loading: false, loadingMore: false, error: '' });
+  const [revision, setRevision] = useState(0), [huntRevision, setHuntRevision] = useState(0);
   const attempt = useRef(null), saving = useRef(false);
   const [pending, setPending] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [providers, setProviders] = useState([]);
   const huntWidget = allWidgets.find(widget => widget.widget_type === 'bonus_hunt' && widget.config?.huntActive)
     || allWidgets.find(widget => widget.widget_type === 'bonus_hunt');
-  const key = `${slot.id || ''}|${slot.name}|${slot.provider}`;
   useEffect(() => {
     let cancelled = false;
     setOwnedPending([]); setPendingError('');
@@ -68,14 +69,50 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets = [], o
   }, [search, user?.id]);
   useEffect(() => {
     let cancelled = false;
-    setHistory([]); setHistoryError('');
-    if (!user?.id || !slot.name) { setHistoryBusy(false); return undefined; }
-    setHistoryBusy(true);
-    readSlotResults(supabase, user.id, slot).then(rows => { if (!cancelled) setHistory(rows); })
-      .catch(() => { if (!cancelled) setHistoryError('Could not load result history.'); })
-      .finally(() => { if (!cancelled) setHistoryBusy(false); });
+    const ownerId = user?.id;
+    setResultsPage({ ownerId, rows: [], hasMore: false, loading: Boolean(ownerId), loadingMore: false, error: '' });
+    if (!ownerId) return undefined;
+    readUserSlotResultsPage(supabase, ownerId).then(page => {
+      if (!cancelled) setResultsPage({ ownerId, ...page, loading: false, loadingMore: false, error: '' });
+    }).catch(() => {
+      if (!cancelled) setResultsPage({ ownerId, rows: [], hasMore: false, loading: false, loadingMore: false, error: 'Could not load recorded bonuses.' });
+    });
     return () => { cancelled = true; };
-  }, [user?.id, key, revision]);
+  }, [user?.id, revision]);
+  useEffect(() => {
+    let cancelled = false;
+    const ownerId = user?.id;
+    setHuntsPage({ ownerId, rows: [], hasMore: false, loading: Boolean(ownerId), loadingMore: false, error: '' });
+    if (!ownerId) return undefined;
+    getBonusHuntHistoryPage(ownerId).then(page => {
+      if (!cancelled) setHuntsPage({ ownerId, ...page, loading: false, loadingMore: false, error: '' });
+    }).catch(() => {
+      if (!cancelled) setHuntsPage({ ownerId, rows: [], hasMore: false, loading: false, loadingMore: false, error: 'Could not load saved hunts.' });
+    });
+    return () => { cancelled = true; };
+  }, [user?.id, huntRevision]);
+  const loadMoreResults = async () => {
+    const ownerId = user?.id;
+    if (!ownerId || resultsPage.ownerId !== ownerId || !resultsPage.hasMore || resultsPage.loadingMore) return;
+    setResultsPage(page => ({ ...page, loadingMore: true, error: '' }));
+    try {
+      const next = await readUserSlotResultsPage(supabase, ownerId, resultsPage.rows.length);
+      setResultsPage(page => page.ownerId === ownerId ? { ...page, rows: [...page.rows, ...next.rows], hasMore: next.hasMore, loadingMore: false } : page);
+    } catch {
+      setResultsPage(page => page.ownerId === ownerId ? { ...page, loadingMore: false, error: 'Could not load more recorded bonuses.' } : page);
+    }
+  };
+  const loadMoreHunts = async () => {
+    const ownerId = user?.id;
+    if (!ownerId || huntsPage.ownerId !== ownerId || !huntsPage.hasMore || huntsPage.loadingMore) return;
+    setHuntsPage(page => ({ ...page, loadingMore: true, error: '' }));
+    try {
+      const next = await getBonusHuntHistoryPage(ownerId, huntsPage.rows.length);
+      setHuntsPage(page => page.ownerId === ownerId ? { ...page, rows: [...page.rows, ...next.rows], hasMore: next.hasMore, loadingMore: false } : page);
+    } catch {
+      setHuntsPage(page => page.ownerId === ownerId ? { ...page, loadingMore: false, error: 'Could not load more saved hunts.' } : page);
+    }
+  };
   const choose = selected => {
     if (pending || busy) return;
     onChange({ ...c, slot: selected, slotId: selected.id, slotName: selected.name, provider: selected.provider, imageUrl: selected.image });
@@ -105,7 +142,7 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets = [], o
       await persistCurrentGameResult(supabase, attempt.current);
       attempt.current = null; setPending(false); setPayout(''); setRevision(value => value + 1);
       window.dispatchEvent(new Event('slot-result-saved'));
-      setNotice('Result saved to your shared slot history. Personal records include Bonus Hunt and Current Game.');
+      setNotice('Result saved to your bonus library. Personal records include Bonus Hunt and Current Game.');
     } catch (err) { setError(err.message || 'Could not save the result. Retry to safely finish this save.'); }
     finally { saving.current = false; setBusy(false); }
   };
@@ -137,10 +174,11 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets = [], o
   };
   const selectedPending = ownedPending.some(item => item.id === slot.id);
   const num = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const recordedBonuses = resultsPage.ownerId === user?.id ? resultsPage.rows : [];
+  const savedHunts = huntsPage.ownerId === user?.id ? huntsPage.rows : [];
   const slotOption = item => <button type="button" key={`${item.pendingApproval ? 'pending' : 'live'}-${item.id}`} disabled={busy || pending} onClick={() => choose(item)}>{safeArtworkUrl(item.image || '') && <img src={item.image} alt="" />}<span><span translate="no" className="notranslate">{item.name}</span><small>{item.provider}{item.pendingApproval && <span className="cg-pending-badge">Pending approval · your submission</span>}</small></span></button>;
   return <div className="cg-page" data-tour="current-slot-page">
-    <div className="cg-page-preview"><CurrentSlotWidget config={c} userId={user?.id} /></div>
-    <p>Choose the game on screen, then record each payout once. Wins and multipliers share your Bonus Hunt result history. <Link to="/editor">Add or customise this widget in the editor →</Link></p>
+    <p>Choose the game on screen, add it to your hunt or record a payout. Your past bonuses are saved in your private library below. <Link to="/editor">Customise the stream widget in the editor →</Link></p>
     <section className="cg-setup-panel" aria-label="Current game setup">
       <div className="cg-setup-heading"><span className="cg-setup-chip">🎮 CURRENT GAME</span><span>Choose a slot and record its result</span></div>
       <div className="cg-page-grid cg-setup-grid">
@@ -173,8 +211,17 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets = [], o
       </div>
     </section>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
-    <section className="cg-panel"><h2>Shared result history</h2><p>Current Game and Bonus Hunt payments for the selected slot. Average win includes every recorded payout, including zero.</p>
-      {historyBusy ? <p role="status">Loading results…</p> : historyError ? <p role="alert">{historyError} <button onClick={() => setRevision(value => value + 1)}>Retry</button></p> : history.length ? <div className="cg-history-scroll"><table><thead><tr><th>Date</th><th>Source / hunt</th><th>Bet</th><th>Payout</th><th>Multiplier</th></tr></thead><tbody>{history.slice(0, 100).map(result => <tr key={result.id}><td>{new Date(result.created_at).toLocaleString()}</td><td>{result.hunt_name || 'Bonus Hunt'}</td><td>{num(result.bet_size)}</td><td>{num(result.payout)}</td><td>{num(result.multiplier)}x</td></tr>)}</tbody></table>{history.length > 100 && <p>Showing the latest 100 of {history.length} results. All results contribute to your records.</p>}</div> : <p>No recorded results for this slot yet.</p>}
+    <section className="cg-panel cg-library" aria-label="My bonus library"><div className="cg-library-heading"><div><h2>My bonus library</h2><p>Saved hunts and individual payouts from your account.</p></div><button type="button" onClick={() => { setRevision(value => value + 1); setHuntRevision(value => value + 1); }}>Refresh library</button></div>
+      <div className="cg-library-section"><h3>Saved hunts</h3>
+        {huntsPage.loading || huntsPage.ownerId !== user?.id ? <p role="status">Loading saved hunts…</p> : savedHunts.length ? <div className="cg-library-hunts">{savedHunts.map(hunt => <details key={hunt.id} className="cg-library-hunt"><summary><strong translate="no" className="notranslate">{hunt.hunt_name || 'Untitled Hunt'}</strong><span>{new Date(hunt.created_at).toLocaleDateString()} · {hunt.bonuses_opened || 0}/{hunt.bonus_count || 0} opened · {hunt.currency || c.currency}{num(hunt.total_win || 0)} won</span></summary><div className="cg-library-bonuses">{Array.isArray(hunt.bonuses) && hunt.bonuses.length ? hunt.bonuses.map((bonus, index) => { const artwork = safeArtworkUrl(bonus.slot?.image || bonus.image || bonus.imageUrl || ''); const name = bonus.slotName || bonus.slot?.name || 'Unknown slot'; return <div key={`${bonus.id || index}-${index}`} className="cg-library-bonus">{artwork && <img src={artwork} alt="" loading="lazy" />}<div><strong translate="no" className="notranslate">{name}</strong><small>{bonus.isExtremeBonus ? 'Extreme · ' : bonus.isSuperBonus ? 'Super · ' : ''}{bonus.opened ? 'Opened' : 'Not opened'} · Bet {hunt.currency || c.currency}{num(bonus.betSize || 0)}</small></div><span>{bonus.opened ? `${hunt.currency || c.currency}${num(bonus.payout ?? bonus.result ?? 0)}` : '—'}</span></div>; }) : <p>No bonus details were saved for this hunt.</p>}</div></details>)}</div> : <p>No saved hunts yet. Save a hunt from Better Hunt to keep a full snapshot here.</p>}
+        {huntsPage.error && <p role="alert">{huntsPage.error} <button type="button" onClick={() => setHuntRevision(value => value + 1)}>Retry</button></p>}
+        {huntsPage.hasMore && <button type="button" onClick={loadMoreHunts} disabled={huntsPage.loadingMore}>{huntsPage.loadingMore ? 'Loading…' : 'Load more hunts'}</button>}
+      </div>
+      <div className="cg-library-section"><h3>Recorded payouts</h3><p>Current Game and Bonus Hunt results across all your slots, including zero payouts.</p>
+        {resultsPage.loading || resultsPage.ownerId !== user?.id ? <p role="status">Loading recorded payouts…</p> : recordedBonuses.length ? <div className="cg-history-scroll"><table><thead><tr><th>Date</th><th>Slot</th><th>Source / hunt</th><th>Bet</th><th>Payout</th><th>Multiplier</th></tr></thead><tbody>{recordedBonuses.map(result => <tr key={result.id}><td>{new Date(result.created_at).toLocaleString()}</td><td translate="no" className="notranslate">{result.slot_name}</td><td translate="no" className="notranslate">{result.hunt_name || 'Bonus Hunt'}</td><td>{num(result.bet_size)}</td><td>{num(result.payout)}</td><td>{num(result.multiplier)}x</td></tr>)}</tbody></table></div> : <p>No payouts recorded yet.</p>}
+        {resultsPage.error && <p role="alert">{resultsPage.error} <button type="button" onClick={() => setRevision(value => value + 1)}>Retry</button></p>}
+        {resultsPage.hasMore && <button type="button" onClick={loadMoreResults} disabled={resultsPage.loadingMore}>{resultsPage.loadingMore ? 'Loading…' : 'Load more payouts'}</button>}
+      </div>
     </section>
   </div>;
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildCurrentGameResult, persistCurrentGameResult, combineSlotResults, buildResultFromBonus, getSlotIdentity, queryUserSlotRecord, readSlotPersonalBest, recordMatchesSlot } from '../shared/slotPersonalBest.js';
+import { buildCurrentGameResult, persistCurrentGameResult, combineSlotResults, buildResultFromBonus, getSlotIdentity, queryUserSlotRecord, readSlotPersonalBest, readUserSlotResultsPage, recordMatchesSlot } from '../shared/slotPersonalBest.js';
 import handler, { loadOverlayPersonalBest, loadOverlayPersonalBests } from '../api/_lib/routes/slot-personal-best.js';
 
 const slotId = '11111111-1111-4111-8111-111111111111';
@@ -145,6 +145,13 @@ const ledgerTables = {
   ],
 };
 const merged = await readSlotPersonalBest(database(ledgerTables), 'owner-a', slot);
+const library = await readUserSlotResultsPage(database(ledgerTables), 'owner-a', 0, 2);
+assert.equal(library.rows.length, 2);
+assert.equal(library.hasMore, true);
+assert(library.rows.every(row => row.id !== 'other-owner'), 'Bonus library excludes other streamers');
+const remainingLibrary = await readUserSlotResultsPage(database(ledgerTables), 'owner-a', 2, 2);
+assert.equal(remainingLibrary.rows.length, 2);
+assert.equal(remainingLibrary.hasMore, false);
 assert.equal(merged.best_win, 1000);
 assert.equal(merged.best_multiplier, 400);
 assert.equal(merged.best_win_bet, 10);

@@ -373,6 +373,18 @@ export async function getBonusHuntHistory(userId) {
   return data || [];
 }
 
+export async function getBonusHuntHistoryPage(userId, offset = 0, limit = 20) {
+  if (!userId) return { rows: [], hasMore: false };
+  const start = Math.max(0, Math.floor(Number(offset) || 0));
+  const size = Math.min(50, Math.max(1, Math.floor(Number(limit) || 20)));
+  const { data, error } = await supabase.from('bonus_hunt_history')
+    .select('id, hunt_name, currency, total_win, bonus_count, bonuses_opened, bonuses, created_at')
+    .eq('user_id', userId).order('created_at', { ascending: false }).order('id')
+    .range(start, start + size);
+  if (error) throw error;
+  return { rows: (data || []).slice(0, size), hasMore: (data || []).length > size };
+}
+
 export async function saveBonusHuntToHistory(userId, huntData) {
   const { data, error } = await supabase
     .from('bonus_hunt_history')

@@ -121,6 +121,20 @@ export async function readSlotResults(client, userId, slotLike) {
   }
 }
 
+// Owner-scoped, bounded pages for the Current Game bonus library. The slot-
+// specific reader above remains unbounded for accurate personal-best totals.
+export async function readUserSlotResultsPage(client, userId, offset = 0, limit = 50) {
+  if (!userId) return { rows: [], hasMore: false };
+  const start = Math.max(0, Math.floor(Number(offset) || 0));
+  const size = Math.min(100, Math.max(1, Math.floor(Number(limit) || 50)));
+  const { data, error } = await client.from('user_slot_results')
+    .select('id, slot_name, slot_provider, bet_size, payout, multiplier, hunt_name, created_at')
+    .eq('user_id', userId).order('created_at', { ascending: false }).order('id')
+    .range(start, start + size);
+  if (error) throw error;
+  return { rows: (data || []).slice(0, size), hasMore: (data || []).length > size };
+}
+
 export function combineSlotResults(legacy, results, slotLike) {
   const slot = getSlotIdentity(slotLike);
   const rows = results.filter(row => recordMatchesSlot(row, slot) && Number.isFinite(Number(row.payout)) && Number(row.payout) >= 0 && Number(row.bet_size) > 0);
