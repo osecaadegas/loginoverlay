@@ -344,6 +344,13 @@ try {
             return { top: element.getBoundingClientRect().top, bottom: bar.bottom };
           });
           assert(attachment.top >= attachment.bottom - 3, 'Arctic icicles stay attached below the slim rail');
+          const bestWinSurface = await page.$eval('[data-better-element="personalBest"]', element => {
+            const style = getComputedStyle(element);
+            return { background: style.backgroundImage, border: style.borderColor, shadow: style.boxShadow };
+          });
+          assert.equal(bestWinSurface.background, 'none', 'Arctic Best Win has no separate pill background');
+          assert.equal(bestWinSurface.border, 'rgba(0, 0, 0, 0)', 'Arctic Best Win has no separate pill border');
+          assert.equal(bestWinSurface.shadow, 'none', 'Arctic Best Win has no separate pill shadow');
         }
       }
       if (type === 'bonus_hunt' && theme === 'clear_ice') {

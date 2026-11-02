@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-rtp-best-win-inline-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Arctic Best Win on the RTP bar',
+    summary: 'Best Win now sits directly on the Arctic ice rail without its separate pill surface.',
+    changes: [
+      'Remove the extra Best Win background, border and shadow in Arctic while retaining the value and existing appearance controls.',
+      'Keep the compact RTP rail and its icicle attachment unchanged.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'new-horizontal-ended-results-loop-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Continuous New Horizontal hunt results',
     summary: 'New Horizontal Bonus Hunt uses slimmer cards, a seamless carousel, Arctic bonus artwork effects and state-specific summary tiles.',

@@ -408,3 +408,18 @@
   min-height: 0 !important;
   padding-block: 0 !important;
 }
+
+/* Best Win reads directly on the shared ice rail, like Clear Ice, without a
+   second pill painted over the bar's texture. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"]
+  :is(.rtp-stats-item--bestwin, [data-better-element="personalBest"], .rtp-stats-item--bestwin *, [data-better-element="personalBest"] *) {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin::before,
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] .rtp-stats-item--bestwin::after {
+  content: none !important;
+  display: none !important;
+}
