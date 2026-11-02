@@ -86,6 +86,7 @@ export async function createSlotRequest(db, user, params, { fetcher = fetch, loo
   if (reservation.result === 'replay') return { success: request.status === 'pending', replay: true, status: request.status };
   if (reservation.result === 'duplicate') return reply(fill(config.srMsgDuplicate || '{user}, "{slot}" is already queued. No points taken.', { ...values, by: request.requested_by }));
   if (reservation.result === 'full') return reply(fill(config.srMsgQueueFull || '{user}, the slot queue is full.', values));
+  if (reservation.result === 'viewer_limit') return reply(`${viewer}, you already have ${reservation.limit} slots in the queue. Wait for one to be played or removed before requesting another. No points taken.`);
   if (reservation.result === 'cooldown') return reply(fill(config.srMsgCooldown || '{user}, please wait before requesting another slot.', values));
   if (reservation.result !== 'reserved') return reply(`${viewer}, your previous points operation is still processing or needs review.`);
   if (cost > 0) {

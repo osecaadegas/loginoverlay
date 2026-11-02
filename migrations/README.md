@@ -1,5 +1,9 @@
 # Migration Catalog
 
+## Slot request viewer limit
+
+`20261102140500_limit_active_slot_requests_per_viewer.sql` replaces the existing service-only reservation function after `20260914083638_secure_slot_request_points.sql`. It caps each Twitch viewer at three pending or in-progress slots per streamer, without changing existing rows or point balances. Apply it before deploying the corresponding API and queue copy, after verifying a restorable production backup. To roll back the rule, restore the previous function definition from `20260914083638_secure_slot_request_points.sql`; no data reversal is needed. The disposable PGlite integration test is `scripts/test-slot-request-points.mjs`.
+
 ## Analytics session counter
 
 `20260922025500_analytics_visitor_session_counter.sql` adds the service-only atomic visitor session counter. Apply before deploying the analytics runtime fix. It replaces the unavailable generic counter call; existing analytics records and permissions remain intact.

@@ -34,7 +34,11 @@ await pg.exec(`
   GRANT SELECT,INSERT,UPDATE,DELETE ON slot_requests,streamelements_connections TO authenticated;
 `);
 await pg.exec(readFileSync(new URL('../migrations/20260914083638_secure_slot_request_points.sql', import.meta.url),'utf8'));
+await pg.exec(readFileSync(new URL('../migrations/20261102140500_limit_active_slot_requests_per_viewer.sql', import.meta.url),'utf8'));
 await pg.query('INSERT INTO slots(name,image) VALUES($1,$2)', ['Gates of Olympus','/slot.webp']);
+for (const name of ['Book of Dead', 'Starburst', 'Sweet Bonanza', 'Fruit Party']) {
+  await pg.query('INSERT INTO slots(name,image) VALUES($1,$2)', [name,'/slot.webp']);
+}
 await pg.query('INSERT INTO overlay_widgets(user_id,widget_type,config) VALUES($1,$2,$3)', [user.id,'bonus_hunt',{ srSeEnabled: true, srSeCost: 100 }]);
 await pg.query('INSERT INTO streamelements_connections(user_id,se_channel_id,se_jwt_token,verified_twitch_id,verified_at) VALUES($1,$2,$3,$4,now())', [user.id,channel,'test-token','123']);
 
@@ -126,6 +130,33 @@ try {
     const [row]=await rows();assert.equal(row.status,'pending');assert.equal(row.points_deducted,100);assert.equal(row.charged_channel_id,channel);
     assert.deepEqual(state.puts,[-100]);
     await createSlotRequest(db,user,params(),dependencies);assert.deepEqual(state.puts,[-100]);
+  });
+  await test('three active slots per viewer, replay allowed, and another viewer can join',async()=>{
+    const names=['Gates of Olympus','Book of Dead','Starburst'];
+    const messages=names.map(slot=>({...params(),slot}));
+    for(const input of messages) assert.equal((await createSlotRequest(db,user,input,dependencies)).success,true);
+    const fourth=await createSlotRequest(db,user,{...params(),slot:'Sweet Bonanza'},dependencies);
+    assert.equal(fourth.success,false);assert.match(fourth.message,/already have 3 slots/);
+    assert.deepEqual(state.puts,[-100,-100,-100],'Fourth request does not charge points');
+    assert.equal((await createSlotRequest(db,user,messages[0],dependencies)).replay,true);
+    const other={...params(),slot:'Sweet Bonanza',requester:'SecondViewer',chatter_id:'789'};
+    assert.equal((await createSlotRequest(db,user,other,{...dependencies,lookupTwitchUser:async()=> '789'})).success,true);
+    const [first]=await rows();
+    await pg.query("UPDATE slot_requests SET status='played' WHERE id=$1",[first.id]);
+    assert.equal((await createSlotRequest(db,user,{...params(),slot:'Fruit Party'},dependencies)).success,true);
+    assert.equal((await rows()).filter(row=>row.requested_by==='viewer'&&row.status==='pending').length,3);
+  });
+  await test('parallel free requests cannot exceed three, including a changed viewer name',async()=>{
+    await pg.query('UPDATE overlay_widgets SET config=$1 WHERE user_id=$2',[{srSeEnabled:false,srSeCost:0},user.id]);
+    const names=['Gates of Olympus','Book of Dead','Starburst','Sweet Bonanza'];
+    const replies=await Promise.all(names.map(slot=>createSlotRequest(db,user,{...params(),slot},dependencies)));
+    assert.equal(replies.filter(reply=>reply.success).length,3);
+    assert.equal(replies.filter(reply=>/already have 3 slots/.test(reply.message||'')).length,1);
+    assert.equal((await rows()).filter(row=>row.status==='pending').length,3);
+    const renamed=await createSlotRequest(db,user,{...params(),slot:'Fruit Party',requester:'RenamedViewer'},dependencies);
+    assert.match(renamed.message,/already have 3 slots/,'Twitch ID links active requests after a name change');
+    assert.deepEqual(state.puts,[]);
+    await pg.query('UPDATE overlay_widgets SET config=$1 WHERE user_id=$2',[{srSeEnabled:true,srSeCost:100},user.id]);
   });
   await test('insufficient balance and definite API rejection never create pending paid requests',async()=>{
     state.balance=10;await createSlotRequest(db,user,params(),dependencies);assert.equal((await rows())[0].status,'denied');assert.equal(state.puts.length,0);

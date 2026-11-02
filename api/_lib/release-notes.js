@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'slot-requests-three-per-viewer-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Give more viewers room in the Slot Requests queue',
+    summary: 'Each viewer can keep up to three active slot requests in a streamer’s queue at once.',
+    changes: [
+      'Reserve the fourth request only after an earlier one has been played or removed.',
+      'Count pending and in-progress requests together, including requests from the same Twitch viewer after a name change.',
+      'Reject requests at the limit before charging StreamElements points and explain the limit in chat and the queue controls.',
+    ],
+    action: 'Apply migration 20261102140500_limit_active_slot_requests_per_viewer.sql before releasing this change. Refresh Overlay Center after deployment. Live Twitch and OBS behavior was not verified.',
+  },
+  {
     id: 'clear-ice-current-game-readable-stats-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Improve Clear Ice Current Game stat readability',
     summary: 'Immersive Current Game statistics use clearer ice-glass rows and larger text, with individual typography controls in Fine tune.',

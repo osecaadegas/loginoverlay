@@ -2502,6 +2502,7 @@ function BonusHuntPanel({
                 </button>
               )}
             </div>
+            <p className="oc-config-hint">Each viewer can have up to 3 active slot requests. A place opens when one is played or removed.</p>
 
             {/* Toggle buttons row */}
             <div className="bh-sr-state-grid">
