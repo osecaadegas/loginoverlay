@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-ended-results-loop-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Continuous New Horizontal hunt results',
+    summary: 'New Horizontal Bonus Hunt uses slimmer cards, a seamless carousel, Arctic bonus artwork effects and state-specific summary tiles.',
+    changes: [
+      'Repeat enough cards for the first slot to follow the last without an empty gap, including one-slot hunts.',
+      'Show Start instead of Avg during hunt; show B.E., Avg and Start after the hunt ends.',
+      'Keep all slots moving on the right after completion and show the best and worst results on the left.',
+      'Reuse Mainstream Arctic Super and Extreme artwork effects, replacing the normal-tier circle.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Local browser rendering was tested; live OBS Studio playback was not tested.',
+  },
+  {
     id: 'arctic-compact-rtp-rail-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Slimmer Arctic RTP stats bar',
     summary: 'The Arctic RTP stats rail now uses the same compact 38px painted height as Clear Ice.',
