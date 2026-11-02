@@ -20,7 +20,6 @@ export default function NewHorizontalHunt({config:c,cards,state,totalPayout,curr
     return <article className="nh-card" key={`${item.id}-${index}`} data-state={status} data-tier={item.tier} data-bonus-id={item.id} aria-label={`${rank?`${rank} — `:''}${item.name} — ${status}${item.tier!=='normal'?` — ${item.tier} bonus`:''}`} {...part('slotRow')}>
       {item.image?<SlotImage src={item.image} alt={item.name} {...part('slotImage')}/>:<span className="nh-fallback" {...part('slotTitle')}>{item.name||'Slot'}</span>}
       {tierEffect&&<span className={`better-hunt-tier-fx better-hunt-tier-fx--${item.tier}`} aria-hidden="true"/>}
-      <div className="nh-card-shade" aria-hidden="true"/>
       <div className="nh-card-info"><strong {...part(item.opened?'winValue':'betValue')} title={item.opened?item.payout:item.bet}>{item.opened?item.payout:item.bet}</strong>{item.opened&&<small {...part('multiplierValue')}>{item.multiplier}</small>}</div>
       {item.tier!=='normal'&&!tierEffect&&<span className={`nh-type nh-type--${item.tier}`} title={item.tier}><Icon aria-hidden="true"/></span>}
       {rank&&<span className={`nh-rank nh-rank--${rank.toLowerCase()}`}>{rank}</span>}

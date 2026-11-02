@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'horizontal-hunt-artwork-colours-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Full-colour artwork in the horizontal hunt',
+    summary: 'Slot covers in the New Horizontal Hunt now display without the dark card veil or desaturation.',
+    changes: [
+      'Remove the navy shade over upcoming and opened slot artwork while keeping readable bet and number badges.',
+      'Preserve original artwork colours on Arctic Super and Extreme bonus cards.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'current-game-add-to-hunt-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Add a Current Game slot to Better Hunt',
     summary: 'Current Game now offers a bet field, Super and Extreme toggles, and an Add to Hunt action under slot search.',
