@@ -66,6 +66,7 @@ const overlaySource = fs.readFileSync(
 );
 assert.match(overlaySource, /data-render-mode=\{preserveLogicalLayout \? "logical" : "native"\}/);
 assert.match(overlaySource, /targetInstance\.config\?\.colourTheme === "clear_ice"/);
+assert.match(overlaySource, /targetInstance\?\.widgetType === "rtp_stats" && targetInstance\.config\?\.colourTheme === "arctic"/, 'Arctic RTP sources preserve editor geometry when OBS renders at high DPI');
 assert.match(overlaySource, /standalone: isSingleWidget && !preserveLogicalLayout/);
 assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);
 assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);

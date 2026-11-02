@@ -649,6 +649,10 @@ body.better-editor-document #root {
   height: 100%;
 }
 
+.better-editor-canvas-instance__content--arctic-rtp {
+  overflow: visible;
+}
+
 .better-editor-canvas-instance__content:has(> .better-hunt-root[data-drawer-mode="expand"]:not([data-orientation="horizontal"])) {
   overflow: visible;
 }

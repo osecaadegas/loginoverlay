@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-rtp-preview-obs-parity-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Matching Arctic RTP rail in preview and OBS',
+    summary: 'The Arctic RTP rail and its icicles now use the same placement and clipping in the editor and OBS source.',
+    changes: [
+      'Allow the Arctic RTP attachment to render through the editor widget boundary.',
+      'Place the slim rail at the top of its widget frame and fit its icicles within the saved source height.',
+      'Scale the completed Arctic rail in high-resolution single-widget OBS sources so its layout matches the editor.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'horizontal-hunt-artwork-colours-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Full-colour artwork in the horizontal hunt',
     summary: 'Slot covers in the New Horizontal Hunt now display without the dark card veil or desaturation.',

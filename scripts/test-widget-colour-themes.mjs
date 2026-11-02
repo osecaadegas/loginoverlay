@@ -335,6 +335,7 @@ try {
         frameStyle: (() => { const frame = document.querySelector('[data-preview] [aria-label="2x2 Bonus Hunt"]'); if (!frame) return null; const css = getComputedStyle(frame); return [css.backgroundColor, css.borderColor, css.borderRadius]; })() }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
+      let arcticRtpPreviewGeometry = null;
       if (type === 'rtp_stats' && ['arctic', 'clear_ice'].includes(theme)) {
         const height = await page.$eval('.rtp-stats-bar--better', element => element.getBoundingClientRect().height);
         assert(Math.abs(height - 38) < 1, `${theme}: editor RTP rail should be 38px high`);
@@ -344,6 +345,13 @@ try {
             return { top: element.getBoundingClientRect().top, bottom: bar.bottom };
           });
           assert(attachment.top >= attachment.bottom - 3, 'Arctic icicles stay attached below the slim rail');
+          arcticRtpPreviewGeometry = await page.$eval('[data-preview]', frame => {
+            const bar = frame.querySelector('.rtp-stats-bar--better').getBoundingClientRect();
+            const icicles = frame.querySelector('.arctic-rtp-icicle-attachment').getBoundingClientRect();
+            const bounds = frame.getBoundingClientRect();
+            return { barTop: Math.round(bar.top - bounds.top), icicleTop: Math.round(icicles.top - bounds.top), icicleBottom: Math.round(icicles.bottom - bounds.top), height: Math.round(bounds.height) };
+          });
+          assert(arcticRtpPreviewGeometry.icicleBottom <= arcticRtpPreviewGeometry.height, 'Arctic icicles fit inside the saved widget height');
           const bestWinSurface = await page.$eval('[data-better-element="personalBest"]', element => {
             const style = getComputedStyle(element);
             return { background: style.backgroundImage, border: style.borderColor, shadow: style.boxShadow };
@@ -399,6 +407,15 @@ try {
           if (type === 'rtp_stats' && ['arctic', 'clear_ice'].includes(theme)) {
             const height = await page.$eval('.rtp-stats-bar--better', element => element.getBoundingClientRect().height);
             assert(Math.abs(height - 38) < 1, `${theme}: OBS RTP rail should be 38px high`);
+            if (theme === 'arctic') {
+              const obsGeometry = await page.$eval('[data-preview]', frame => {
+                const bar = frame.querySelector('.rtp-stats-bar--better').getBoundingClientRect();
+                const icicles = frame.querySelector('.arctic-rtp-icicle-attachment').getBoundingClientRect();
+                const bounds = frame.getBoundingClientRect();
+                return { barTop: Math.round(bar.top - bounds.top), icicleTop: Math.round(icicles.top - bounds.top), icicleBottom: Math.round(icicles.bottom - bounds.top), height: Math.round(bounds.height) };
+              });
+              assert.deepEqual(obsGeometry, arcticRtpPreviewGeometry, 'Arctic RTP rail and icicles match between editor and OBS runtimes');
+            }
           }
         }
       }

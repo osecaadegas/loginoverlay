@@ -249,12 +249,12 @@ export default function BetterObsOverlay() {
     ? Number(targetInstance?.height || 0)
     : BETTER_CANVAS.height;
   const scaleMode = getObsScaleMode();
-  // Clear Ice's image cards depend on the saved widget width for their image
-  // columns and text wrapping. Scale that layout as a whole in a single-widget
-  // OBS source, just as the editor preview does.
+  // Keep layout-sensitive single widgets at their saved geometry and scale the
+  // completed surface. Arctic's slim RTP rail and attached icicles must keep
+  // the same proportions as the editor preview at high-DPI source sizes.
   const preserveLogicalLayout = isSingleWidget &&
-    targetInstance?.widgetType === "bonus_hunt" &&
-    targetInstance.config?.colourTheme === "clear_ice";
+    ((targetInstance?.widgetType === "bonus_hunt" && targetInstance.config?.colourTheme === "clear_ice") ||
+      (targetInstance?.widgetType === "rtp_stats" && targetInstance.config?.colourTheme === "arctic"));
   const geometry = getObsRenderGeometry({
     viewportWidth: viewport.width,
     viewportHeight: viewport.height,

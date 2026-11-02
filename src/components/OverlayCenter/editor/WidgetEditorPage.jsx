@@ -2326,7 +2326,7 @@ function BetterOverlayEditor({ overlayId, onSelectBuild }) {
                             beginInteraction(event, instance, "drag")
                           }
                         >
-                          <div className="better-editor-canvas-instance__content">
+                          <div className={`better-editor-canvas-instance__content${instance.widgetType === "rtp_stats" && instance.config?.colourTheme === "arctic" ? " better-editor-canvas-instance__content--arctic-rtp" : ""}`}>
                             <BetterEditorWidgetBoundary
                               instanceId={instance.instanceId}
                             >

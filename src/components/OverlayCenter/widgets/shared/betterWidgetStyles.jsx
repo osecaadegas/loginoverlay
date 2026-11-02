@@ -6558,7 +6558,7 @@ export function BetterRtpStatsStyle({
             top: "calc(100% - 2px)",
             right: "2%",
             left: "2%",
-            height: "clamp(20px, 3vw, 34px)",
+            height: `${Math.min(34, Math.max(0, Number(c.__betterInstanceHeight ?? 72) - 36))}px`,
             backgroundImage: 'url("/theme-effects/ice/icicles.png")',
             backgroundPosition: "top center",
             backgroundSize: "100% 100%",
@@ -6584,7 +6584,7 @@ export function BetterRtpStatsStyle({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: c.colourTheme === "arctic" ? "flex-start" : "center",
           boxSizing: "border-box",
         }}
       >
