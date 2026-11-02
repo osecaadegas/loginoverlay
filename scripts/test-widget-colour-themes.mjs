@@ -23,6 +23,7 @@ assert.equal(defaultBingo.squares.every(square => Number.isFinite(square.multipl
 
 const newThemes = ['gold', 'violet', 'rose', 'arctic', 'clear_ice', 'lime', 'luxe', 'gladiator', 'old_rome', 'orbital'];
 const clearIceCss = readFileSync(new URL('../src/components/OverlayCenter/editor/ClearIceTheme.css', import.meta.url), 'utf8');
+const arcticCss = readFileSync(new URL('../src/effects/ThemeEffects/ArcticPremium.css', import.meta.url), 'utf8');
 const chatWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/chat/ChatWidget.jsx', import.meta.url), 'utf8');
 const embeddedGiveawaySource = readFileSync(new URL('../src/components/OverlayCenter/widgets/giveaway/EmbeddedGiveaway.jsx', import.meta.url), 'utf8');
 const currentSlotWidgetSource = readFileSync(new URL('../src/components/OverlayCenter/widgets/current-slot/CurrentSlotWidget.jsx', import.meta.url), 'utf8');
@@ -74,6 +75,7 @@ assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway::after\s
 assert.match(currentSlotWidgetSource, /\['arctic', 'candy', 'clear_ice'\]\.includes/, 'Clear Ice Current Game renders provider artwork from the shared provider catalogue');
 assert.match(clearIceCss, /data-widget-type="current_slot"\] \.cg-current\s*\{[\s\S]*font-size:\s*calc\(17 \* var\(--cg-px\)\)/, 'Clear Ice Current Game label is larger and top aligned');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\] :is\(\.rtp-stats-inner, \.rtp-stats-bar--better\)\s*\{[\s\S]*height:\s*min\(100%, 38px\) !important;[\s\S]*padding-block:\s*0 !important;/, 'Clear Ice RTP bar stays slim with no vertical padding');
+assert.match(arcticCss, /data-widget-type="rtp_stats"\] :is\(\.rtp-stats-inner, \.rtp-stats-bar--better\)\s*\{[\s\S]*height:\s*min\(100%, 38px\) !important;[\s\S]*padding-block:\s*0 !important;/, 'Arctic RTP bar matches the compact Clear Ice rail');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\][\s\S]*:is\(\.rtp-stats-item--bestwin, \[data-better-element="personalBest"\]\)\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;[\s\S]*box-shadow:\s*none !important;/, 'Clear Ice Best Win appearance elements inherit the parent RTP glass instead of old navy');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\][\s\S]*:is\(\.rtp-stats-item--bestwin, \[data-better-element="personalBest"\], \.rtp-stats-item--bestwin \*, \[data-better-element="personalBest"\] \*\)\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;/, 'Clear Ice removes legacy navy fills from the Best Win appearance element and its children');
 assert.match(clearIceCss, /data-widget-type="rtp_stats"\][\s\S]*:is\(\.rtp-stats-item--bestwin, \[data-better-element="personalBest"\]\)\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;/, 'Clear Ice overrides the inline-styled personalBest appearance element');
@@ -333,6 +335,17 @@ try {
         frameStyle: (() => { const frame = document.querySelector('[data-preview] [aria-label="2x2 Bonus Hunt"]'); if (!frame) return null; const css = getComputedStyle(frame); return [css.backgroundColor, css.borderColor, css.borderRadius]; })() }));
       assert.equal(result.selected, theme, `${type}: selected theme`);
       assert(result.style.length > 0, `${type}: blank preview`);
+      if (type === 'rtp_stats' && ['arctic', 'clear_ice'].includes(theme)) {
+        const height = await page.$eval('.rtp-stats-bar--better', element => element.getBoundingClientRect().height);
+        assert(Math.abs(height - 38) < 1, `${theme}: editor RTP rail should be 38px high`);
+        if (theme === 'arctic') {
+          const attachment = await page.$eval('.arctic-rtp-icicle-attachment', element => {
+            const bar = element.closest('.rtp-stats-bar--better').getBoundingClientRect();
+            return { top: element.getBoundingClientRect().top, bottom: bar.bottom };
+          });
+          assert(attachment.top >= attachment.bottom - 3, 'Arctic icicles stay attached below the slim rail');
+        }
+      }
       if (type === 'bonus_hunt' && theme === 'clear_ice') {
         const statMaterial = await page.$eval('.better-widget-colour-scope[data-colour-theme="clear_ice"] .better-hunt-stat', element => {
           const style = getComputedStyle(element);
@@ -376,6 +389,10 @@ try {
           assert.deepEqual(obsFrameStyle, result.frameStyle, `${type}/${theme}: frame colour and corners match OBS`);
         } else {
           assert.deepEqual(await page.evaluate(() => window.themeTest.appearance()), result.style, `${type}/${theme}: OBS matches editor`);
+          if (type === 'rtp_stats' && ['arctic', 'clear_ice'].includes(theme)) {
+            const height = await page.$eval('.rtp-stats-bar--better', element => element.getBoundingClientRect().height);
+            assert(Math.abs(height - 38) < 1, `${theme}: OBS RTP rail should be 38px high`);
+          }
         }
       }
     }

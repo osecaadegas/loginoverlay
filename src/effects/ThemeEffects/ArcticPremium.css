@@ -400,3 +400,11 @@
   border-color: rgba(181, 231, 250, .78) !important;
   box-shadow: inset 0 1px 0 rgba(241, 253, 255, .42), inset 0 0 10px rgba(117, 201, 235, .2), 0 3px 8px rgba(0, 5, 12, .38) !important;
 }
+
+/* Match Clear Ice's compact RTP rail without shortening the icicles below it. */
+.better-widget-colour-scope.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+  align-self: center !important;
+  height: min(100%, 38px) !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
+}

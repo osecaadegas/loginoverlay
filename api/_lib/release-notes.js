@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-compact-rtp-rail-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Slimmer Arctic RTP stats bar',
+    summary: 'The Arctic RTP stats rail now uses the same compact 38px painted height as Clear Ice.',
+    changes: [
+      'Remove extra vertical padding from the Arctic RTP rail and center it within its saved widget area.',
+      'Keep the Arctic icicles attached below the painted rail without adding to its height.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'new-horizontal-portrait-cards-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Portrait cards in New Horizontal Bonus Hunt',
     summary: 'New Horizontal slot cards use a slimmer portrait shape, with bet or payout at the bottom and the bonus number at the top right.',
