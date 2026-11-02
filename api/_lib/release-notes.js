@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-portrait-cards-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Portrait cards in New Horizontal Bonus Hunt',
+    summary: 'New Horizontal slot cards use a slimmer portrait shape, with bet or payout at the bottom and the bonus number at the top right.',
+    changes: [
+      'Keep card width consistent between the opening layout and scrolling hunt queue.',
+      'Move card values to the bottom and bonus numbers to the top right.',
+      'Check card geometry in the editor renderer and published OBS route in a local browser test.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'new-horizontal-arctic-bounds-speed-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Contain Arctic frost and adjust the hunt carousel',
     summary: 'Arctic frost follows the rounded New Horizontal Bonus Hunt frame, and its hunt carousel moves more slowly with a Fine Tune speed slider.',
