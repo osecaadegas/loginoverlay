@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'apps-faster-refresh-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Load Apps tiles faster',
+    summary: 'The Apps page loads smaller images, avoids unrelated marketing code and completes access checks sooner.',
+    changes: [
+      'Generated tile-sized copies of the existing illustrations and app logos; the original files remain available for other uses.',
+      'Load tile artwork lazily and decode it asynchronously.',
+      'Load the landing page only on its own routes; the shared entry bundle became about 42 KB smaller after gzip in the local production build.',
+      'Run role and Premium entitlement checks together while preserving their existing access decisions and error handling.',
+    ],
+    action: 'Refresh the Apps page after deployment. Live production load time was not measured.',
+  },
+  {
     id: 'apps-categories-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Group Apps tiles by purpose',
     summary: 'Compact Apps tiles are now arranged under short Live tools, Downloads, Explore, Management and Account headings.',

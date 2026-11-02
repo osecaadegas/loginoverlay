@@ -6,7 +6,6 @@ import { AuthProvider } from "./context/AuthContext";
 import { StreamElementsProvider } from "./context/StreamElementsContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import LandingPage from "./components/LandingPage/LandingPage";
 import TopNavigation from "./components/Navigation/TopNavigation";
 import ProtectedAdminRoute from "./components/ProtectedRoute/ProtectedAdminRoute";
 import CookieConsent from "./components/CookieConsent/CookieConsent";
@@ -19,6 +18,7 @@ import { applyRouteSeo } from "./utils/seo";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 
 /* -- Lazy-loaded heavy routes (code-split) -- */
+const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
 const ToolLandingPage = lazy(() => import("./components/LandingPage/ToolLandingPage"));
 const OffersPage = lazy(() => import("./components/OffersPage/OffersPage"));
 const SlotManagerPage = lazy(() => import("./components/SlotManager/SlotManagerPage"));

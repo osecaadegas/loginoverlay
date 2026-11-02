@@ -1,5 +1,17 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import puppeteer from "puppeteer";
+
+const appsSource = readFileSync(new URL("../src/components/AppsPage/AppsPage.jsx", import.meta.url), "utf8");
+const thumbnailPaths = new Set(
+  [...appsSource.matchAll(/"\/(apps-tiles\/thumbs\/[^"]+)"/g)].map((match) => match[1]),
+);
+assert.ok(thumbnailPaths.size >= 15, "Apps should reference the full thumbnail set");
+for (const asset of thumbnailPaths) {
+  const file = new URL(`../public/${asset}`, import.meta.url);
+  assert.ok(existsSync(file), `Missing Apps thumbnail: ${asset}`);
+  assert.ok(statSync(file).size < 80_000, `Apps thumbnail is too large: ${asset}`);
+}
 
 const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] });
 try {
@@ -25,6 +37,19 @@ try {
   assert.ok(cards.every((card) => card.title && card.hasIcon && card.hasArt));
   assert.ok(cards.some((card) => card.title === "ScreenSplit Browser"));
   assert.ok(cards.some((card) => card.title === "SC Web Transitions"));
+  await page.waitForFunction(() => [...document.querySelectorAll(".apps-tile__art")]
+    .slice(0, 2).every((image) => image.complete && image.naturalWidth > 0));
+  assert.ok(await page.$$eval(".apps-tile__art", (images) =>
+    images.every((image) => image.getAttribute("loading") === "lazy" &&
+      image.getAttribute("src").startsWith("/apps-tiles/thumbs/"))));
+  assert.ok(await page.$$eval(".apps-tile__icon img", (images) =>
+    images.every((image) => image.getAttribute("src").startsWith("/apps-tiles/thumbs/"))));
+  const loadedResources = await page.evaluate(() =>
+    performance.getEntriesByType("resource").map((entry) => entry.name));
+  assert.ok(!loadedResources.some((url) => /\/assets\/LandingPage-/.test(url)),
+    "Apps should not fetch the marketing landing page chunk");
+  assert.ok(!loadedResources.some((url) => /\/iconLOGOs\/SC_(?:BROWSER|WEB_TRANSITIONS)\.png/.test(url)),
+    "Apps should fetch thumbnail logos instead of full-size app logos");
   if (process.env.SCREENSHOT_PATH) {
     await page.setViewport({ width: 1440, height: 900 });
     await page.screenshot({ path: process.env.SCREENSHOT_PATH, fullPage: true });
@@ -42,7 +67,7 @@ try {
       await page.screenshot({ path: process.env.SCREENSHOT_MOBILE_PATH, fullPage: true });
     }
   }
-  console.log("Apps page browser checks passed: category placement, compact grids and no overflow.");
+  console.log("Apps page browser checks passed: thumbnail assets, category placement, compact grids and no overflow.");
 } finally {
   await browser.close();
 }

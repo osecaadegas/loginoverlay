@@ -26,27 +26,32 @@ const SCREEN_SPLIT_VERSION = "0.1.18";
 const SCREEN_SPLIT_DOWNLOAD_URL = `https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v${SCREEN_SPLIT_VERSION}/StreamersCenterBrowserSetup-${SCREEN_SPLIT_VERSION}.exe`;
 
 const APP_TILE_ART = {
-  "/updates": "/apps-tiles/restart-tutorial.jpg",
-  "/overlay-center": "/apps-tiles/overlay-center.jpg",
-  "/editor": "/apps-tiles/presets.jpg",
-  "/slot-detector": "/apps-tiles/approvals.jpg",
-  "/opensource": "/apps-tiles/guided-setup.jpg",
-  "/community_overlays_share": "/apps-tiles/streamer-home.jpg",
-  "/player/bonus-hunt": "/apps-tiles/bonus-hunt.jpg",
-  "/webmod/slot-manager": "/apps-tiles/slot-manager.jpg",
-  "/offers": "/apps-tiles/deals.jpg",
-  "/affiliate": "/apps-tiles/profile.jpg",
-  "/premium": "/apps-tiles/premium.jpg",
-  "/admin": "/apps-tiles/admin.jpg",
-  "/admin/affiliates": "/apps-tiles/approvals.jpg",
-  "/admin/subscriptions": "/apps-tiles/premium.jpg",
-  "/analytics": "/apps-tiles/analytics.jpg",
-  "/developer": "/apps-tiles/developer.jpg",
-  "/profile": "/apps-tiles/profile.jpg",
-  "login": "/apps-tiles/login.jpg",
-  "logout": "/apps-tiles/logout.jpg",
-  "screensplit": "/apps-tiles/screensplit.jpg",
-  "transitions": "/iconLOGOs/SC_WEB_TRANSITIONS.png",
+  "/updates": "/apps-tiles/thumbs/restart-tutorial.jpg",
+  "/overlay-center": "/apps-tiles/thumbs/overlay-center.jpg",
+  "/editor": "/apps-tiles/thumbs/presets.jpg",
+  "/slot-detector": "/apps-tiles/thumbs/approvals.jpg",
+  "/opensource": "/apps-tiles/thumbs/guided-setup.jpg",
+  "/community_overlays_share": "/apps-tiles/thumbs/streamer-home.jpg",
+  "/player/bonus-hunt": "/apps-tiles/thumbs/bonus-hunt.jpg",
+  "/webmod/slot-manager": "/apps-tiles/thumbs/slot-manager.jpg",
+  "/offers": "/apps-tiles/thumbs/deals.jpg",
+  "/affiliate": "/apps-tiles/thumbs/profile.jpg",
+  "/premium": "/apps-tiles/thumbs/premium.jpg",
+  "/admin": "/apps-tiles/thumbs/admin.jpg",
+  "/admin/affiliates": "/apps-tiles/thumbs/approvals.jpg",
+  "/admin/subscriptions": "/apps-tiles/thumbs/premium.jpg",
+  "/analytics": "/apps-tiles/thumbs/analytics.jpg",
+  "/developer": "/apps-tiles/thumbs/developer.jpg",
+  "/profile": "/apps-tiles/thumbs/profile.jpg",
+  "login": "/apps-tiles/thumbs/login.jpg",
+  "logout": "/apps-tiles/thumbs/logout.jpg",
+  "screensplit": "/apps-tiles/thumbs/screensplit.jpg",
+  "transitions": "/apps-tiles/thumbs/SC_WEB_TRANSITIONS.png",
+};
+
+const APP_TILE_LOGOS = {
+  "/iconLOGOs/SC_BROWSER.png": "/apps-tiles/thumbs/SC_BROWSER.png",
+  "/iconLOGOs/SC_WEB_TRANSITIONS.png": "/apps-tiles/thumbs/SC_WEB_TRANSITIONS.png",
 };
 
 const APP_CATEGORIES = [
@@ -309,10 +314,10 @@ export default function AppsPage() {
       onAction={actionFor(tile)}
       className={`apps-tile apps-tile--${tile.tone}${tile.logo ? " apps-tile--download" : ""}${tile.logo === "/iconLOGOs/SC_WEB_TRANSITIONS.png" ? " apps-tile--transitions" : ""}`}
     >
-      {artwork && <span className="apps-tile__art" style={{ backgroundImage: `url("${artwork}")` }} aria-hidden="true" />}
+      {artwork && <img className="apps-tile__art" src={artwork} alt="" loading="lazy" decoding="async" />}
       <span className="apps-tile__top">
         <span className={`apps-tile__icon${tile.logo ? " apps-tile__icon--logo" : ""}`} aria-hidden="true">
-          {tile.logo ? <img src={tile.logo} alt="" /> : <Icon size={25} strokeWidth={2} />}
+          {tile.logo ? <img src={APP_TILE_LOGOS[tile.logo] || tile.logo} alt="" decoding="async" /> : <Icon size={25} strokeWidth={2} />}
         </span>
         {tile.href && <Download size={17} aria-hidden="true" />}
       </span>

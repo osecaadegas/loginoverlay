@@ -69,14 +69,14 @@ function shouldReplaceRolesWithServerRoles(roles, serverRoles) {
   );
 }
 
-async function loadPremiumAccess(roles) {
+async function loadPremiumAccess() {
   try {
     const token = await getAccessTokenWithFallback({
       timeoutMs: 6000,
       label: "Premium session token check",
     });
     if (!token)
-      return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+      return { hasStreamerEntitlement: false, serverRoles: null, serverRoleNames: [] };
 
     const response = await fetchWithTimeout(
       "/api/premium?action=status",
@@ -86,22 +86,20 @@ async function loadPremiumAccess(roles) {
       { timeoutMs: 8000, label: "Premium entitlement check" },
     );
     if (!response.ok)
-      return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+      return { hasStreamerEntitlement: false, serverRoles: null, serverRoleNames: [] };
 
     const payload = await response.json();
     const serverRoles = payload.access?.roles;
     return {
       hasStreamerEntitlement: !!payload.access?.hasStreamerAccess,
-      roles: shouldReplaceRolesWithServerRoles(roles, serverRoles)
-        ? serverRoles
-        : roles,
+      serverRoles: Array.isArray(serverRoles) ? serverRoles : null,
       serverRoleNames: Array.isArray(payload.access?.roleNames)
         ? payload.access.roleNames
         : [],
     };
   } catch (error) {
     console.warn("Premium entitlement check failed:", error);
-    return { hasStreamerEntitlement: false, roles, serverRoleNames: [] };
+    return { hasStreamerEntitlement: false, serverRoles: null, serverRoleNames: [] };
   }
 }
 
@@ -112,10 +110,17 @@ export const useAdmin = () => {
     queryKey: ['account', user?.id, 'roles'],
     enabled: !!user?.id && !authLoading,
     queryFn: async () => {
-      const { roles, rolesError } = await loadRoleAccess(user);
-      const premiumAccess = await loadPremiumAccess(roles);
+      const [{ roles, rolesError }, premiumAccess] = await Promise.all([
+        loadRoleAccess(user),
+        loadPremiumAccess(),
+      ]);
       if (rolesError && !premiumAccess.hasStreamerEntitlement) throw rolesError;
-      return buildAccessState(premiumAccess);
+      return buildAccessState({
+        ...premiumAccess,
+        roles: shouldReplaceRolesWithServerRoles(roles, premiumAccess.serverRoles)
+          ? premiumAccess.serverRoles
+          : roles,
+      });
     },
   });
 
