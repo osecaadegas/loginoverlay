@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'horizontal-hunt-six-slot-carousel-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Horizontal hunt carousel starts with six slots',
+    summary: 'Short hunts show each slot once and the first slot is no longer highlighted during Hunt.',
+    changes: [
+      'Keep one through five Hunt slots stationary and unique; start the seamless carousel when six queued slots are available.',
+      'Reserve the current-slot highlight for Bonus Opening, where a slot is actually being opened.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'current-game-setup-layout-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Simpler Current Game setup',
     summary: 'Current Game now groups slot selection and payout entry in one compact setup panel.',

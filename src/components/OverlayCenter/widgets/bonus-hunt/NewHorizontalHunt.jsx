@@ -6,14 +6,15 @@ import './NewHorizontalHunt.css';
 
 export default function NewHorizontalHunt({config:c,cards,state,totalPayout,currentBE,average,start,best,worst,opened,superOpened,superCount,extremeOpened,extremeCount,font,arcticTierEffects}) {
   const palette=newHorizontalPalette(c),sequence=newHorizontalSequence(cards,state,best,worst);
-  const scrollQueue=['hunt','ended'].includes(state)&&c.newHorizontal?.queueMotion!==false&&sequence.queue.length>0;
-  const loopCards=scrollQueue?Array.from({length:Math.max(6,sequence.queue.length)},(_,i)=>sequence.queue[i%sequence.queue.length]):[];
+  const scrollQueue=['hunt','ended'].includes(state)&&c.newHorizontal?.queueMotion!==false&&sequence.queue.length>=6;
+  const loopCards=scrollQueue?sequence.queue:[];
+  const staticCards=state==='hunt'&&sequence.queue.length?sequence.queue:sequence.right;
   const secondsPerCard=Number(c.newHorizontal?.queueSeconds);
   const scrollDuration=(Number.isFinite(secondsPerCard)&&secondsPerCard>=2&&secondsPerCard<=12?secondsPerCard:6)*loopCards.length;
   const part=id=>({...appearanceAttrs({config:{...c,__appearanceStyleId:'new_horizontal'},widgetId:c.__betterInstanceId,widgetType:'bonus_hunt',elementId:id}),style:subElementStyle(c,id,{})});
   const card=(item,index,side,rank)=>{
     if(!item)return <div key={`empty-${index}`} className="nh-placeholder" aria-hidden="true"/>;
-    const status=item.opened?'opened':side==='right'&&index===0?'current':'upcoming';
+    const status=item.opened?'opened':state==='opening'&&side==='right'&&index===0?'current':'upcoming';
     const Icon=item.tier==='super'?Crown:Zap;
     const tierEffect=arcticTierEffects&&item.tier!=='normal';
     return <article className="nh-card" key={`${item.id}-${index}`} data-state={status} data-tier={item.tier} data-bonus-id={item.id} aria-label={`${rank?`${rank} — `:''}${item.name} — ${status}${item.tier!=='normal'?` — ${item.tier} bonus`:''}`} {...part('slotRow')}>
@@ -38,11 +39,11 @@ export default function NewHorizontalHunt({config:c,cards,state,totalPayout,curr
       <div className="nh-counters"><span {...part('tierCounter')} aria-label="Super bonuses opened"><Crown/><b {...part('tierValue')}>{superOpened}/{superCount}</b></span><span {...part('tierCounter')} aria-label="Extreme bonuses opened"><Zap/><b {...part('tierValue')}>{extremeOpened}/{extremeCount}</b></span></div>
       <div className="nh-stats" data-session={state}>{(state==='hunt'?[['B.E.',currentBE],['START',start]]:state==='ended'?[['B.E.',currentBE],['AVG',average],['START',start]]:[['B.E.',currentBE],['AVG',average]]).map(([label,value])=><div key={label} {...part('statCell')}><small {...part('statLabel')}>{label}</small><strong {...part('statValue')} title={value}>{value}</strong></div>)}</div>
     </div>
-    <div className={`nh-cards nh-cards--queue${scrollQueue?' is-scrolling':''}`} style={scrollQueue?{'--nh-scroll-duration':`${scrollDuration}s`}:undefined}>
+    <div className={`nh-cards nh-cards--queue${scrollQueue?' is-scrolling':state==='hunt'?' is-static-hunt':''}`} style={scrollQueue?{'--nh-scroll-duration':`${scrollDuration}s`}:undefined}>
       {scrollQueue?<div className="nh-queue-track">
         <div className="nh-queue-cycle">{loopCards.map((item,i)=>card(item,i,'right'))}</div>
         <div className="nh-queue-cycle" aria-hidden="true">{loopCards.map((item,i)=>card(item,i,'right'))}</div>
-      </div>:sequence.right.map((item,i)=>card(item,i,'right'))}
+      </div>:staticCards.map((item,i)=>card(item,i,'right'))}
     </div>
   </section></div>;
 }
