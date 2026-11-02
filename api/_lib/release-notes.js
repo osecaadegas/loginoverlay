@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-hunt-summary-left-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Put the hunt summary first',
+    summary: 'During hunt state, the New Horizontal widget shows Bonus Hunt at the left with the scrolling bonus queue beside it.',
+    changes: [
+      'Replace the Bonus Collecting heading with Bonus Hunt during hunt state.',
+      'Hide the opened-slot column during hunt state and give its space to the bonus queue.',
+      'Keep the opened-slot column in opening and ended states.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Local browser rendering was tested; live OBS playback was not tested.',
+  },
+  {
     id: 'new-horizontal-hunt-live-be-loop-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'New Horizontal Bonus Hunt loop and live break-even',
     summary: 'Queued bonuses scroll continuously during the hunt, and the B.E. tile shows the current break-even multiplier.',

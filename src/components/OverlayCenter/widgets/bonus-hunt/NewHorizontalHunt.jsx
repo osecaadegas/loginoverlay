@@ -25,9 +25,9 @@ export default function NewHorizontalHunt({config:c,cards,state,totalPayout,curr
     '--nh-u':'min(.1369863014cqw,.6666666667cqh)','--nh-bg':palette.background,'--nh-accent':palette.accent,'--nh-text':palette.text,'--nh-muted':palette.muted,'--nh-line':palette.line,'--nh-tile':palette.tile,
     fontFamily:c.fontFamily||font,opacity:Math.max(0,Math.min(1,Number(c.opacity??100)/100)),borderWidth:`calc(${Math.max(0,Number(c.borderWidth??1.5)||0)} * var(--nh-u))`,borderRadius:`calc(${Math.max(0,Number(c.edgeRadius??12)||0)} * var(--nh-u))`,...part('container').style,
   }}>
-    <div className="nh-cards nh-cards--opened">{sequence.left.map((item,i)=>card(item,i,'left'))}</div>
+    {state!=='hunt'&&<div className="nh-cards nh-cards--opened">{sequence.left.map((item,i)=>card(item,i,'left'))}</div>}
     <div className="nh-summary">
-      <header><PlayCircle aria-hidden="true"/><strong {...part('headerTitle')}>BONUS <em>{state==='ended'?'COMPLETED':state==='opening'?'OPENING':'COLLECTING'}</em></strong>{c.huntNumber!=null&&c.huntNumber!==''&&<small {...part('huntNumber')}>#{c.huntNumber}</small>}</header>
+      <header><PlayCircle aria-hidden="true"/><strong {...part('headerTitle')}>BONUS <em>{state==='ended'?'COMPLETED':state==='opening'?'OPENING':'HUNT'}</em></strong>{c.huntNumber!=null&&c.huntNumber!==''&&<small {...part('huntNumber')}>#{c.huntNumber}</small>}</header>
       <div className="nh-total"><strong {...part('totalPayout')} title={totalPayout}>{totalPayout}</strong><span {...part('progressCount')}>{opened}/{cards.length}</span></div>
       <div className="nh-progress" role="progressbar" aria-label="Opened bonuses" aria-valuemin={0} aria-valuemax={cards.length||1} aria-valuenow={opened} {...part('progressBar')}><i {...part('progressBarFill')} style={{...part('progressBarFill').style,width:`${cards.length?opened/cards.length*100:0}%`}}/></div>
       <div className="nh-counters"><span {...part('tierCounter')} aria-label="Super bonuses opened"><Crown/><b {...part('tierValue')}>{superOpened}/{superCount}</b></span><span {...part('tierCounter')} aria-label="Extreme bonuses opened"><Zap/><b {...part('tierValue')}>{extremeOpened}/{extremeCount}</b></span></div>
