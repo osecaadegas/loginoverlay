@@ -91,7 +91,7 @@ try {
         React.createElement('div',{style:{width:1320,height:290}},registry.renderBetterWidgetInstance({instance,layout:{instances:[instance]},userId:owner,runtime})));
     }
     const root=DOM.createRoot(document.getElementById('root'));
-    function App(){const [config,setConfig]=React.useState(JSON.parse(localStorage.getItem('test-current-config')||'{}'));return React.createElement(Config,{config,onChange:value=>{localStorage.setItem('test-current-config',JSON.stringify(value));setConfig(value);}});}
+    function App(){const [config,setConfig]=React.useState(JSON.parse(localStorage.getItem('test-current-config')||'{}'));const [hunt,setHunt]=React.useState({id:'hunt-widget',widget_type:'bonus_hunt',config:{currency:'€',bonuses:[]}});return React.createElement(Config,{config,onChange:value=>{localStorage.setItem('test-current-config',JSON.stringify(value));setConfig(value);},allWidgets:[hunt],onSaveRelatedWidget:async related=>{if(window.currentTest.failHuntSave)throw new Error('Hunt save unavailable');window.currentTest.savedHunt=related;setHunt(related);}});}
     window.currentTest={
       themes:runtime=>root.render(React.createElement(Themes,{runtime,key:runtime})),
       mount:()=>root.render(React.createElement(MemoryRouter,null,React.createElement(AuthProvider,null,React.createElement(App)))),
@@ -132,20 +132,37 @@ try {
   await page.evaluate(() => [...document.querySelectorAll('.cg-search-results button')].find(button => button.textContent.includes('Le Vampire')).click());
   await page.waitForFunction(()=>document.querySelector('[data-better-element="bestWinValue"]')?.textContent.includes('540'));
   assert.equal(await page.$('.cg-page input[type="url"]'), null, 'Current Game no longer exposes the optional artwork form');
+  await page.type('[name=hunt-bet]','1.50');
+  await page.click('.cg-hunt-tier--super');
+  assert.equal(await page.$eval('.cg-hunt-tier--super',button=>button.getAttribute('aria-pressed')),'true');
+  await page.click('.cg-hunt-tier--extreme');
+  assert.deepEqual(await page.$$eval('.cg-hunt-tier',buttons=>buttons.map(button=>button.getAttribute('aria-pressed'))),['false','true'],'Super and Extreme are mutually exclusive');
+  await page.click('.cg-hunt-tier--extreme');
+  assert.deepEqual(await page.$$eval('.cg-hunt-tier',buttons=>buttons.map(button=>button.getAttribute('aria-pressed'))),['false','false'],'A selected category can be toggled off');
+  await page.click('.cg-hunt-tier--extreme');
+  await page.evaluate(()=>{window.currentTest.failHuntSave=true});
+  await page.click('.cg-add-hunt-submit');
+  await page.waitForFunction(()=>document.querySelector('.cg-page [role="alert"]')?.textContent.includes('Hunt save unavailable'));
+  assert.equal(await page.$eval('[name=hunt-bet]',input=>input.value),'1.50','A failed hunt save keeps the bet for retry');
+  await page.evaluate(()=>{window.currentTest.failHuntSave=false});
+  await page.click('.cg-add-hunt-submit');
+  await page.waitForFunction(()=>window.currentTest.savedHunt?.config?.bonuses?.length===1);
+  assert.deepEqual(await page.evaluate(()=>{const bonus=window.currentTest.savedHunt.config.bonuses[0];return {slotName:bonus.slotName,betSize:bonus.betSize,isSuperBonus:bonus.isSuperBonus,isExtremeBonus:bonus.isExtremeBonus,opened:bonus.opened};}),{slotName:'Le Vampire',betSize:1.5,isSuperBonus:false,isExtremeBonus:true,opened:false});
+  assert.equal(await page.$eval('[name=hunt-bet]',input=>input.value),'','Successful hunt add clears the bet');
   await (await page.$('.cg-setup-panel')).screenshot({ path: '.codex-dev/current-game-setup-review.png' });
   const fill=async(selector,value)=>{await page.$eval(selector,e=>e.select());await page.type(selector,value);};
   await fill('[name=current-bet]','2');await fill('[name=current-payout]','400');
-  await page.click('button[type=submit]');
-  await page.waitForFunction(()=>document.querySelector('button[type=submit]')?.textContent==='Retry this save');
+  await page.click('.cg-save-row button[type=submit]');
+  await page.waitForFunction(()=>document.querySelector('.cg-save-row button[type=submit]')?.textContent==='Retry this save');
   assert.equal(rows.length,2);
-  await page.click('button[type=submit]');
+  await page.click('.cg-save-row button[type=submit]');
   await page.waitForFunction(()=>document.body.textContent.includes('Result saved to your shared slot history'));
   assert.equal(rows.length,2,'Uncertain response retry must not duplicate payment');
   assert.equal(writeCount,2);
   await page.waitForFunction(()=>document.querySelector('[data-better-element="bestMultiValue"]')?.textContent.includes('200x'));
   assert.match(await page.$eval('[data-better-element="bestWinValue"]',e=>e.textContent),/540/);
   assert.match(await page.$eval('[data-better-element="averageWinValue"]',e=>e.textContent),/470/);
-  await fill('[name=current-payout]','0');await page.click('button[type=submit]');
+  await fill('[name=current-payout]','0');await page.click('.cg-save-row button[type=submit]');
   await page.waitForFunction(()=>document.querySelectorAll('.cg-page tbody tr').length===3);
   assert.equal(rows.length,3);
   for(const width of [1920,1440,1024,768,430,390,360]){

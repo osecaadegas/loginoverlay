@@ -6,7 +6,8 @@ Implemented in the existing Streamers Center application. Management route: `/ov
 
 - Horizontal cover / game identity / Info / Personal record layout with configurable colours and an immersive catalog-image background. All 14 shared themes recolour the frame, surfaces, badge, text, records and saved element colour overrides while preserving slot data and artwork.
 - Real catalog fields: name, provider, image, maximum multiplier, RTP and volatility. Missing catalog values display a dash.
-- Optional per-slot cover, transparent title and background URLs. The catalog does not expose separate title/background assets, so automatic title extraction is not claimed; text is the fallback.
+- Previously saved per-slot cover, transparent title and background URLs remain compatible; the Current Game setup page no longer exposes the optional artwork form. The catalog cover is used automatically.
+- The Current Game setup page can add its selected live or owner-submitted pending slot to the existing Better Hunt widget with a positive bet and mutually exclusive Super/Extreme category. The action uses the authenticated widget save path and requires Better Hunt to be enabled.
 - Explicit payout entry with positive bet size, nonnegative payout and a derived multiplier. Two decimal places match the existing result-table precision.
 - Every Current Game payment is inserted into the existing `user_slot_results` table with `hunt_name = 'Current Game'`. No migration or new database area is needed.
 - Shared personal-best reads combine that ledger with existing `user_slot_records` and the older Bonus Hunt history fallback. Best cash win and best multiplier are independent. Known winning bets are shown; unknown historical bet sizes are omitted.

@@ -1678,6 +1678,7 @@ function WidgetDetail({
                 });
               }}
               allWidgets={widgets}
+              onSaveRelatedWidget={(related) => saveWidget(related, { immediate: true, optimistic: false })}
               mode={useFullWidthConfig ? "full" : "sidebar"}
             />
           </div>

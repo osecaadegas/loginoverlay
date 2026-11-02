@@ -3776,6 +3776,7 @@ export default function WidgetManager({
                         config={w.config}
                         onChange={(cfg) => handleConfigChange(w, cfg)}
                         allWidgets={widgets}
+                        onSaveRelatedWidget={(related) => onSave(related, { immediate: true, optimistic: false })}
                         mode="widget"
                       />
                     </div>

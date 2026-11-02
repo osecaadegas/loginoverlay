@@ -259,15 +259,16 @@ export function useOverlay() {
   const saveTimersRef = useRef({});
 
   const saveWidget = useCallback(
-    async (widget, { immediate = false } = {}) => {
+    async (widget, { immediate = false, optimistic = true } = {}) => {
       if (!user) return;
-      // Optimistic update — reflect changes in UI immediately
-      setWidgets((prev) => prev.map((p) => (p.id === widget.id ? widget : p)));
+      // Confirmed saves keep the previous widget visible until the write succeeds.
+      if (optimistic || !immediate) setWidgets((prev) => prev.map((p) => (p.id === widget.id ? widget : p)));
 
       // Debounce the DB write per widget id (500ms)
       clearTimeout(saveTimersRef.current[widget.id]);
       if (immediate) {
         await upsertWidget(user.id, widget, instance?.id);
+        if (!optimistic) setWidgets((prev) => prev.map((p) => (p.id === widget.id ? widget : p)));
         return;
       }
       saveTimersRef.current[widget.id] = setTimeout(async () => {

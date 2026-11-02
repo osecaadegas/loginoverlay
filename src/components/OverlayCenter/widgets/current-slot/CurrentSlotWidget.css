@@ -280,6 +280,15 @@
 .cg-save-row strong { color: #d5f8e8; }
 .cg-page .cg-save-row button { flex: 0 0 auto; }
 .cg-page .cg-setup-grid .cg-own-pending { margin-top: 12px; padding-top: 12px; border-top: 1px solid #31455a; }
+.cg-add-hunt { margin-top: 12px; padding-top: 12px; border-top: 1px solid #31455a; }
+.cg-page .cg-add-hunt label { max-width: 190px; margin: 0 0 9px; }
+.cg-add-hunt-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cg-page .cg-add-hunt-actions button { min-height: 36px; padding: 7px 11px; font-size: .84rem; font-weight: 750; }
+.cg-page .cg-hunt-tier { background: rgba(17, 31, 48, .8); border-color: #425a6d; color: #bdccda; }
+.cg-page .cg-hunt-tier--super[aria-pressed="true"] { background: #56451e; border-color: #e8b94b; color: #ffe8a0; }
+.cg-page .cg-hunt-tier--extreme[aria-pressed="true"] { background: #54243a; border-color: #e76b91; color: #ffd0df; }
+.cg-page .cg-add-hunt-submit { margin-left: auto; }
+.cg-add-hunt small { display: block; margin-top: 8px; }
 .cg-panel h2 { font-size: 1.2rem; margin: 0 0 15px; }
 .cg-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
 .cg-panel-heading h2 { margin: 0; }

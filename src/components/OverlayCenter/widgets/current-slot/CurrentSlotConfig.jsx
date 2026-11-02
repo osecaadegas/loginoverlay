@@ -9,7 +9,7 @@ import { buildCurrentGameResult, persistCurrentGameResult, readSlotResults } fro
 import CurrentSlotWidget from './CurrentSlotWidget';
 import { currentGameSearchResults, currentSlotConfig, currentSlotIdentity, ownedPendingCurrentGameSlots, safeArtworkUrl } from './currentSlotModel';
 
-export default function CurrentSlotConfig({ config, onChange }) {
+export default function CurrentSlotConfig({ config, onChange, allWidgets = [], onSaveRelatedWidget }) {
   const { user } = useAuth();
   const c = currentSlotConfig(config), slot = currentSlotIdentity(c);
   const [search, setSearch] = useState(''), [matches, setMatches] = useState([]), [searching, setSearching] = useState(false);
@@ -17,11 +17,14 @@ export default function CurrentSlotConfig({ config, onChange }) {
   const [pendingError, setPendingError] = useState(''), [pendingRevision, setPendingRevision] = useState(0);
   const [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [bet, setBet] = useState(''), [payout, setPayout] = useState(''), [busy, setBusy] = useState(false);
+  const [huntBet, setHuntBet] = useState(''), [bonusType, setBonusType] = useState('normal'), [addingToHunt, setAddingToHunt] = useState(false);
   const [history, setHistory] = useState([]), [historyBusy, setHistoryBusy] = useState(false), [historyError, setHistoryError] = useState(''), [revision, setRevision] = useState(0);
   const attempt = useRef(null), saving = useRef(false);
   const [pending, setPending] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [providers, setProviders] = useState([]);
+  const huntWidget = allWidgets.find(widget => widget.widget_type === 'bonus_hunt' && widget.config?.huntActive)
+    || allWidgets.find(widget => widget.widget_type === 'bonus_hunt');
   const key = `${slot.id || ''}|${slot.name}|${slot.provider}`;
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +80,7 @@ export default function CurrentSlotConfig({ config, onChange }) {
     if (pending || busy) return;
     onChange({ ...c, slot: selected, slotId: selected.id, slotName: selected.name, provider: selected.provider, imageUrl: selected.image });
     setSearch(''); setMatches([]); setNotice(''); setError(''); setBet(''); setPayout('');
+    setHuntBet(''); setBonusType('normal');
   };
   useEffect(() => {
     if (!showSubmit) return undefined;
@@ -105,6 +109,32 @@ export default function CurrentSlotConfig({ config, onChange }) {
     } catch (err) { setError(err.message || 'Could not save the result. Retry to safely finish this save.'); }
     finally { saving.current = false; setBusy(false); }
   };
+  const addToHunt = async event => {
+    event.preventDefault();
+    if (addingToHunt || busy || pending) return;
+    setError(''); setNotice('');
+    const amount = Number(huntBet);
+    if (!user?.id || !slot.id || !slot.name || !huntWidget || !onSaveRelatedWidget || !Number.isFinite(amount) || amount <= 0) {
+      setError('Select a slot, enter a positive bet size, and enable Better Hunt before adding a bonus.');
+      return;
+    }
+    setAddingToHunt(true);
+    try {
+      const bonus = {
+        id: crypto.randomUUID(), slot, slotName: slot.name, betSize: amount,
+        isSuperBonus: bonusType === 'super', isExtremeBonus: bonusType === 'extreme',
+        opened: false, result: 0, payout: 0, requestedBy: null,
+      };
+      await onSaveRelatedWidget({
+        ...huntWidget,
+        config: { ...huntWidget.config, bonuses: [...(Array.isArray(huntWidget.config?.bonuses) ? huntWidget.config.bonuses : []), bonus], previewSlotName: '' },
+      });
+      setHuntBet(''); setBonusType('normal');
+      setNotice(`${slot.name} added to Better Hunt.`);
+    } catch (err) {
+      setError(err?.message || 'Could not add this slot to Better Hunt. Please retry.');
+    } finally { setAddingToHunt(false); }
+  };
   const selectedPending = ownedPending.some(item => item.id === slot.id);
   const num = value => Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const slotOption = item => <button type="button" key={`${item.pendingApproval ? 'pending' : 'live'}-${item.id}`} disabled={busy || pending} onClick={() => choose(item)}>{safeArtworkUrl(item.image || '') && <img src={item.image} alt="" />}<span><span translate="no" className="notranslate">{item.name}</span><small>{item.provider}{item.pendingApproval && <span className="cg-pending-badge">Pending approval · your submission</span>}</small></span></button>;
@@ -120,6 +150,15 @@ export default function CurrentSlotConfig({ config, onChange }) {
         {searching && <p role="status">Searching…</p>}
         {!searching && !error && search.length >= 2 && !matches.length && <p>No matching slots found.</p>}
         <div className="cg-search-results">{matches.map(slotOption)}</div>
+        <form className="cg-add-hunt" onSubmit={addToHunt}>
+          <label>Bet size ({huntWidget?.config?.currency || c.currency})<input name="hunt-bet" type="number" step="0.01" min="0.01" value={huntBet} onChange={event => setHuntBet(event.target.value)} disabled={busy || pending || addingToHunt} required placeholder="Bet size" /></label>
+          <div className="cg-add-hunt-actions" role="group" aria-label="Bonus category">
+            <button type="button" className="cg-hunt-tier cg-hunt-tier--super" aria-pressed={bonusType === 'super'} onClick={() => setBonusType(type => type === 'super' ? 'normal' : 'super')} disabled={addingToHunt}>★ Super</button>
+            <button type="button" className="cg-hunt-tier cg-hunt-tier--extreme" aria-pressed={bonusType === 'extreme'} onClick={() => setBonusType(type => type === 'extreme' ? 'normal' : 'extreme')} disabled={addingToHunt}>⚡ Extreme</button>
+            <button type="submit" className="cg-add-hunt-submit" disabled={!user?.id || !slot.id || !huntWidget || !onSaveRelatedWidget || busy || pending || addingToHunt || !Number.isFinite(Number(huntBet)) || Number(huntBet) <= 0}>{addingToHunt ? 'Adding…' : 'Add to Hunt'}</button>
+          </div>
+          {!huntWidget && <small><Link to="/overlay-center/widgets/bonus-hunt">Enable Better Hunt</Link> to add this slot.</small>}
+        </form>
         {user?.id && <div className="cg-own-pending"><h3>My pending slots <button type="button" onClick={() => setPendingRevision(value => value + 1)} disabled={pendingLoading}>Refresh</button></h3>{pendingLoading ? <p role="status">Loading your submissions…</p> : pendingError ? <p role="alert">{pendingError}</p> : ownedPending.length ? <div className="cg-search-results">{ownedPending.map(slotOption)}</div> : <p>No slots awaiting approval.</p>}</div>}
         {slot.name && <p>Selected: <strong translate="no" className="notranslate">{slot.name}</strong> · {slot.provider}{selectedPending && <span className="cg-pending-badge">Pending approval</span>}</p>}
       </section>

@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'current-game-add-to-hunt-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Add a Current Game slot to Better Hunt',
+    summary: 'Current Game now offers a bet field, Super and Extreme toggles, and an Add to Hunt action under slot search.',
+    changes: [
+      'Save the selected slot and positive bet to the existing Better Hunt widget using its normal owner-scoped save path.',
+      'Make Super and Extreme mutually exclusive and clear the entry controls after a successful save.',
+      'Show how to enable Better Hunt when the widget is not yet available.',
+    ],
+    action: 'Refresh the Current Game page after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'horizontal-hunt-six-slot-carousel-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Horizontal hunt carousel starts with six slots',
     summary: 'Short hunts show each slot once and the first slot is no longer highlighted during Hunt.',
