@@ -112,6 +112,7 @@ try {
     window.currentTest.mount();
   },{dependencies,owner,slot});
   await page.click('.cg-panel-heading button');
+  assert.equal(await page.$$eval('.cg-setup-panel > .cg-setup-grid > .cg-panel', panels => panels.length), 2, 'Slot selection and payout entry share one grouped setup card');
   await page.waitForSelector('.cg-slot-submit .sm-field input');
   await page.type('.cg-slot-submit .sm-field input[placeholder="Sweet Bonanza"]', 'New Test Slot');
   await page.type('.cg-slot-submit .sm-field input[placeholder="Pragmatic Play"]', 'Test Provider');
@@ -130,6 +131,8 @@ try {
   await page.waitForFunction(() => [...document.querySelectorAll('.cg-search-results button')].some(button => button.textContent.includes('Le Vampire')));
   await page.evaluate(() => [...document.querySelectorAll('.cg-search-results button')].find(button => button.textContent.includes('Le Vampire')).click());
   await page.waitForFunction(()=>document.querySelector('[data-better-element="bestWinValue"]')?.textContent.includes('540'));
+  assert.equal(await page.$('.cg-page input[type="url"]'), null, 'Current Game no longer exposes the optional artwork form');
+  await (await page.$('.cg-setup-panel')).screenshot({ path: '.codex-dev/current-game-setup-review.png' });
   const fill=async(selector,value)=>{await page.$eval(selector,e=>e.select());await page.type(selector,value);};
   await fill('[name=current-bet]','2');await fill('[name=current-payout]','400');
   await page.click('button[type=submit]');

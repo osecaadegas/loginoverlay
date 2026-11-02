@@ -266,6 +266,20 @@
 
 .cg-page-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .cg-page section.cg-panel { min-width: 0; padding: 22px; border: 1px solid #294658; background: #0b1722; border-radius: 14px; }
+.cg-page section.cg-setup-panel { min-width: 0; padding: 14px; border: 1px solid #30455e; border-radius: 16px; background: linear-gradient(120deg, #172737, #1a2038); }
+.cg-setup-heading { display: flex; align-items: center; gap: 14px; padding: 0 2px 13px; border-bottom: 1px solid #3a4c64; color: #9fb6c8; font-size: .84rem; }
+.cg-setup-chip,.cg-card-chip { display: inline-flex; align-items: center; width: fit-content; min-height: 30px; padding: 5px 10px; border: 1px solid #647c8c; border-radius: 9px; background: linear-gradient(135deg, #314b5a, #223645); color: #f2f8fc; font-size: .78rem; font-weight: 800; line-height: 1.1; white-space: nowrap; }
+.cg-setup-grid { gap: 16px; margin-top: 15px; }
+.cg-page .cg-setup-grid section.cg-panel { padding: 14px; border-color: #2b3d53; background: rgba(7, 20, 34, .38); }
+.cg-page .cg-setup-grid label { margin-block: 8px; color: #afc1d1; }
+.cg-page .cg-setup-grid input,.cg-page .cg-setup-grid select { min-height: 38px; }
+.cg-payout-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; border: 0; }
+.cg-currency-field { max-width: 180px; }
+.cg-save-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block: 8px; }
+.cg-save-row p { margin: 0; }
+.cg-save-row strong { color: #d5f8e8; }
+.cg-page .cg-save-row button { flex: 0 0 auto; }
+.cg-page .cg-setup-grid .cg-own-pending { margin-top: 12px; padding-top: 12px; border-top: 1px solid #31455a; }
 .cg-panel h2 { font-size: 1.2rem; margin: 0 0 15px; }
 .cg-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
 .cg-panel-heading h2 { margin: 0; }
@@ -307,3 +321,4 @@
 .cg-appearance-type-row input[type=range] { min-height: 36px; padding: 0; }
 @media(max-width:420px) { .cg-appearance-type-row { grid-template-columns: 1fr; } }
 @media(max-width:800px) { .cg-page-grid { grid-template-columns: 1fr; } }
+@media(max-width:520px) { .cg-setup-heading { flex-wrap: wrap; gap: 6px; } .cg-payout-fields { grid-template-columns: 1fr; gap: 0; } .cg-save-row { flex-wrap: wrap; } }

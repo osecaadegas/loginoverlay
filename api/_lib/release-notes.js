@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'current-game-setup-layout-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Simpler Current Game setup',
+    summary: 'Current Game now groups slot selection and payout entry in one compact setup panel.',
+    changes: [
+      'Remove the optional artwork URL form from the Current Game page; existing saved artwork settings remain compatible with the widget.',
+      'Present slot selection and payout entry as two clearly labeled cards with a responsive layout.',
+    ],
+    action: 'Refresh the Current Game page after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'arctic-rtp-best-win-inline-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Arctic Best Win on the RTP bar',
     summary: 'Best Win now sits directly on the Arctic ice rail without its separate pill surface.',
