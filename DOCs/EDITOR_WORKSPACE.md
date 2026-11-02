@@ -7,13 +7,15 @@ The existing `/editor` route uses `WidgetEditorPage.jsx`. The workspace is a UI 
 - `WidgetEditorPage.jsx`: draft history, canvas interactions, serialized saves, publication, source subscription and responsive panels.
 - `OverlayBuildFolders.jsx`: searchable build picker and existing create/duplicate/rename actions. Build summaries load only when opened.
 - `EditorWidgetPicker.jsx`: searchable catalogue backed by `BETTER_WIDGET_REGISTRY`.
-- `EditorInspector.jsx`: frame controls and Simple/Advanced navigation around one mounted `BetterWidgetControls` instance.
+- `EditorInspector.jsx`: Quick edit/Fine tune navigation and frame controls around one mounted `BetterWidgetControls` instance. The saved control modes remain `simple` and `advanced`.
 - `EditorControlScope.jsx`: section visibility, cross-category search and collapse state. Outside this provider, existing control panels retain their original behavior.
 - `editorWidgetMetadata.js`: per-widget categories, search terms, source routes and Simple section titles. This is navigation metadata, not a second configuration schema.
-- `editorPreferences.js`: account/build-scoped local UI preferences, including selected widget, zoom, snapping, panel visibility, and per-instance mode/tab/sections. These preferences never trigger database writes.
+- `editorPreferences.js`: account/build-scoped local UI preferences, including selected widget, zoom, snapping, panel visibility, and per-instance mode/tab/sections. Quick edit keeps its one-open-section state in `quickSections`; Fine tune keeps the existing `sections` state. These preferences never trigger database writes.
 - `EditorWorkspace.css`: workspace-only styling; widget rendering styles are unchanged.
 
 ## Compatibility
+
+Quick edit starts with compact, closed sections so users can open the setting they need. Fine tune exposes the existing widget-specific control categories and search. Size and position live in a separate collapsible panel in both modes. Switching modes changes only local editor navigation; widget config, draft saves and published OBS output use the same paths as before.
 
 Widget configuration remains instance-scoped in the existing draft/published JSON. Existing IDs, permissions, URLs, live source adapters, validation and OBS rendering remain in use. Appearance properties still belong to the existing appearance infrastructure.
 
@@ -33,7 +35,7 @@ Groups, multi-selection and version history should be separate changes with expl
 
 ## Verification
 
-Run `node scripts/test-editor-control-scope.mjs`, `npm.cmd run test:widget-control-categories`, `npm.cmd run test:editor-builds`, `npm.cmd run validate:widgets` and `npm.cmd run build`.
+Run `node scripts/test-editor-control-scope.mjs`, `npm.cmd run test:editor-inspector`, `npm.cmd run test:widget-control-categories`, `npm.cmd run test:editor-builds`, `npm.cmd run validate:widgets` and `npm.cmd run build`.
 
 With the existing Vite server running, run `node scripts/test-editor-builds-browser.mjs`. Set `TEST_BASE_URL` when not using port 3010; set `EDITOR_SCREENSHOT` to a PNG path for desktop/mobile screenshots. The browser test substitutes the database in the test page only and does not modify production records.
 

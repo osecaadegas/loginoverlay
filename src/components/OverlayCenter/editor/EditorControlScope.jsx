@@ -36,6 +36,6 @@ export function useEditorControlSection(title, children, defaultOpen = true, sim
   const open = search
     ? true
     : (scope?.sections?.[title] ??
-      (scope?.mode === "advanced" ? false : defaultOpen));
+      (scope?.mode === "advanced" || scope?.mode === "simple" ? false : defaultOpen));
   return { scope, visible, open, toggle: () => scope?.onSection(title, !open) };
 }

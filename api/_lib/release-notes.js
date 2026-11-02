@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'editor-inspector-quick-fine-tune-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Simplify widget settings in the overlay editor',
+    summary: 'The editor inspector now starts with a compact Quick edit view and keeps detailed customization in Fine tune.',
+    changes: [
+      'Replaced the small Simple and Advanced toggle with descriptive Quick edit and Fine tune choices.',
+      'Quick edit opens one setting section at a time; size and position are available in a separate collapsed panel.',
+      'Fine tune keeps the existing element-specific controls and adds a clearer category layout and settings search.',
+    ],
+    action: 'Refresh Overlay Center after deployment. Saved widget settings and published OBS sources are unchanged until you edit and publish a scene. Live OBS playback was not part of this inspector check.',
+  },
+  {
     id: 'current-game-submit-slot-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Submit new slots from Current Game',
     summary: 'Current Game now includes an Add slot action beside its slot selector.',

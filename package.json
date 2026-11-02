@@ -12,6 +12,7 @@
     "test:auto-draw-winners": "node --test scripts/test-auto-draw-winners.mjs",
     "test:updates-browser": "node scripts/test-updates-browser.mjs",
     "test:appearance-editor": "node scripts/test-appearance-editor.mjs",
+    "test:editor-inspector": "node scripts/test-editor-inspector.mjs",
     "test:widget-control-categories": "node scripts/test-widget-control-categories.mjs",
     "test:overlay-editor-audit": "node scripts/test-overlay-editor-control-audit.mjs",
     "test:preview-data-parity": "node scripts/test-preview-data-parity.mjs",

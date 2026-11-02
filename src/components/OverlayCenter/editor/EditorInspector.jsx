@@ -8,6 +8,8 @@ import {
   AlignEndVertical,
   ExternalLink,
   Search,
+  SlidersHorizontal,
+  Sparkles,
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -78,10 +80,11 @@ export default function EditorInspector({
       search,
       simpleSections: meta.simpleSections,
       tab: preferences.tab,
-      sections: preferences.sections,
+      sections: mode === "simple" ? preferences.quickSections : preferences.sections,
       onTab: (tab) => onPreferences({ tab }),
-      onSection: (title, open) =>
-        onPreferences({ sections: { ...preferences.sections, [title]: open } }),
+      onSection: (title, open) => onPreferences(mode === "simple"
+        ? { quickSections: { [title]: open } }
+        : { sections: { ...preferences.sections, [title]: open } }),
     }),
     [mode, search, meta, preferences, onPreferences],
   );
@@ -100,30 +103,40 @@ export default function EditorInspector({
   const supportsFit = ["bonus_hunt", "chat", "giveaway"].includes(
     instance.widgetType,
   );
+  const selectMode = nextMode => {
+    setSearch("");
+    onPreferences({ mode: nextMode });
+  };
   return (
     <div className="editor-inspector" data-mode={mode}>
       <div className="editor-inspector-tools">
+        <div className="editor-inspector-intro">
+          <span className="editor-inspector-eyebrow">Widget controls · {meta.category}</span>
+          <p>{mode === "simple" ? "Start with the look, then open only the settings you need." : "Choose a category to customize this widget in detail."}</p>
+        </div>
         <div
-          className="editor-segmented"
+          className="editor-inspector-mode-switch"
           role="group"
           aria-label="Control detail"
         >
           <button
             type="button"
             aria-pressed={mode === "simple"}
-            onClick={() => onPreferences({ mode: "simple" })}
+            onClick={() => selectMode("simple")}
           >
-            Simple
+            <Sparkles size={18} aria-hidden="true" />
+            <span><strong>Quick edit</strong><small>Look and essentials</small></span>
           </button>
           <button
             type="button"
             aria-pressed={mode === "advanced"}
-            onClick={() => onPreferences({ mode: "advanced" })}
+            onClick={() => selectMode("advanced")}
           >
-            Advanced
+            <SlidersHorizontal size={18} aria-hidden="true" />
+            <span><strong>Fine tune</strong><small>Every supported detail</small></span>
           </button>
         </div>
-        <label className="editor-search">
+        {mode === "advanced" && <label className="editor-search">
           <Search size={15} />
           <input
             type="search"
@@ -142,7 +155,7 @@ export default function EditorInspector({
               <X size={14} />
             </button>
           )}
-        </label>
+        </label>}
       </div>
       {meta.route && (
         <div className="editor-source-status">
@@ -167,22 +180,19 @@ export default function EditorInspector({
           </Link>
         </div>
       )}
-      <p className="bp-help" style={{ padding: "0 16px" }}>
-        {mode === "simple" ? "Essential settings. Switch to Advanced for detailed controls." : "Fine-tune each part. Search finds settings across all sections."}
-      </p>
       {!search && instance.widgetType !== "background" && (
         <details
           className="editor-geometry"
-          open={preferences.geometryOpen !== false}
+          open={preferences.geometryOpen === true}
           onToggle={(event) => {
             if (
               event.currentTarget.open !==
-              (preferences.geometryOpen !== false)
+              (preferences.geometryOpen === true)
             )
               onPreferences({ geometryOpen: event.currentTarget.open });
           }}
         >
-          <summary>Frame &amp; position</summary>
+          <summary><span>Size &amp; position</span><small>Move, resize and align the widget</small></summary>
           <fieldset disabled={locked}>
             <div className="editor-geometry-grid">
               {[
@@ -237,6 +247,7 @@ export default function EditorInspector({
         </details>
       )}
       <EditorControlContext.Provider value={scope}>
+        <div className="editor-inspector-section-label">{mode === "simple" ? "Quick settings" : "Detailed settings"}</div>
         <div
           className="editor-scoped-controls"
           data-searching={Boolean(search)}
@@ -255,6 +266,11 @@ export default function EditorInspector({
           <p className="editor-no-settings">No matching settings</p>
         </div>
       </EditorControlContext.Provider>
+      {mode === "simple" && <div className="editor-inspector-deeper">
+        <strong>Want to adjust individual parts?</strong>
+        <p>Fine tune gives you element controls, layout options and searchable settings.</p>
+        <button type="button" onClick={() => selectMode("advanced")}>Open Fine tune <SlidersHorizontal size={15} aria-hidden="true" /></button>
+      </div>}
     </div>
   );
 }
