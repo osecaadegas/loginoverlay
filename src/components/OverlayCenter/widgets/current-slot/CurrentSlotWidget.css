@@ -297,4 +297,13 @@
 .cg-appearance { padding: 12px; }
 .cg-appearance label:has(input[type=checkbox]) { display: flex; align-items: center; }
 .cg-appearance input[type=checkbox] { width: 18px; min-height: 18px; }
+.cg-appearance-typography { margin: 14px 0; padding: 12px; border: 1px solid #38556c; border-radius: 9px; }
+.cg-appearance-typography summary { cursor: pointer; font-weight: 700; color: #e6f7ff; }
+.cg-appearance-typography > p { color: #b7cad8; font-size: .8rem; line-height: 1.4; }
+.cg-appearance-type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; padding: 8px 0; border-top: 1px solid #294658; }
+.cg-appearance-type-row > strong { grid-column: 1 / -1; font-size: .84rem; }
+.cg-appearance-type-row label { min-width: 0; margin: 5px 0; }
+.cg-appearance-type-row output { display: inline-block; margin-left: 4px; color: #a7e8ff; font-weight: 700; }
+.cg-appearance-type-row input[type=range] { min-height: 36px; padding: 0; }
+@media(max-width:420px) { .cg-appearance-type-row { grid-template-columns: 1fr; } }
 @media(max-width:800px) { .cg-page-grid { grid-template-columns: 1fr; } }

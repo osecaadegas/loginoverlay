@@ -1,5 +1,7 @@
 import {GALACTIC_MODE_ROWS} from '../../../../effects/ThemeEffects/galactic-command/galacticCommandTheme.js';
 import { currentSlotConfig, CURRENT_SLOT_DEFAULTS, COMPACT_SLOT_DEFAULTS } from './currentSlotModel';
+import { useEditorControlScope } from '../../editor/EditorControlScope';
+import { getScopedAppearanceConfigValue, removeScopedAppearanceConfigValue, setScopedAppearanceConfigValue } from '../../appearance/v2/appearanceRouting';
 
 const CURRENT_SLOT_FONTS = [
   ["'Rajdhani', sans-serif", 'Rajdhani'],
@@ -8,8 +10,51 @@ const CURRENT_SLOT_FONTS = [
   ["'Inter', sans-serif", 'Inter'],
 ];
 
+const IMMERSIVE_TEXT_PARTS = [
+  ['Info heading', 'infoTitle', 20],
+  ['Personal record heading', 'recordsTitle', 20],
+  ['Potential label', 'potentialLabel', 20],
+  ['Potential value', 'potentialValue', 23],
+  ['RTP label', 'rtpLabel', 20],
+  ['RTP value', 'rtpValue', 23],
+  ['Volatility label', 'volatilityLabel', 20],
+  ['Volatility value', 'volatilityValue', 23],
+  ['Win label', 'bestWinLabel', 20],
+  ['Win value', 'bestWinValue', 23],
+  ['Multiplier label', 'bestMultiLabel', 20],
+  ['Multiplier value', 'bestMultiValue', 23],
+  ['Average win label', 'averageWinLabel', 20],
+  ['Average win value', 'averageWinValue', 23],
+];
+
+function ImmersiveTypographyControls({ config, onChange }) {
+  const route = (elementId, propertyId) => ({ widgetType: 'current_slot', widgetVariant: 'immersive_current', elementId, propertyId });
+  const change = (elementId, propertyId, value) => onChange(value === undefined
+    ? removeScopedAppearanceConfigValue(config, route(elementId, propertyId))
+    : setScopedAppearanceConfigValue(config, route(elementId, propertyId), value));
+  return <details className="cg-appearance-typography">
+    <summary>Immersive stat fonts and sizes</summary>
+    <p>Sizes follow the widget scale. Each heading, label and value can use its own font.</p>
+    {IMMERSIVE_TEXT_PARTS.map(([label, elementId, defaultSize]) => {
+      const family = getScopedAppearanceConfigValue(config, route(elementId, 'fontFamily')) || '';
+      const storedSize = getScopedAppearanceConfigValue(config, route(elementId, 'fontSize'));
+      const size = Number(String(storedSize ?? '').match(/calc\((\d+)/)?.[1]) || defaultSize;
+      return <div className="cg-appearance-type-row" key={elementId}>
+        <strong>{label}</strong>
+        <label>Font<select aria-label={`${label} font`} value={family} onChange={event => change(elementId, 'fontFamily', event.target.value || undefined)}>
+          <option value="">Widget font</option>
+          {family && !CURRENT_SLOT_FONTS.some(([value]) => value === family) && <option value={family}>Custom font</option>}
+          {CURRENT_SLOT_FONTS.map(([value, name]) => <option value={value} key={value}>{name}</option>)}
+        </select></label>
+        <label>Size <output>{size}</output><input aria-label={`${label} size`} type="range" min="12" max="38" step="1" value={size} onChange={event => change(elementId, 'fontSize', `calc(${Number(event.target.value)} * var(--cg-px))`)} /></label>
+      </div>;
+    })}
+  </details>;
+}
+
 export function CurrentSlotAppearanceControls({ config, onChange, onWidgetChange }) {
   const c = currentSlotConfig(config);
+  const controlScope = useEditorControlScope();
   const compact=c.displayStyle==='portrait_compact';
   const isGalactic=c.displayStyle?.startsWith('galactic_');
   const isStudio=c.displayStyle==='starter_studio_card';
@@ -29,6 +74,7 @@ export function CurrentSlotAppearanceControls({ config, onChange, onWidgetChange
     {[...(!['galactic_max','galactic_rail'].includes(c.displayStyle)?[[ 'showArtwork', 'Slot cover' ]]:[]), ...(!isPortraitCard && !isFooter ? [['showBackdrop', 'Immersive slot background']] : []), ...(!['galactic_max'].includes(c.displayStyle)?[['showPersonalRecords', isPortraitCard&&!isGalactic ? 'Best multiplier row' : 'Personal records']]:[])].map(([key, label]) => <label key={key}><input type="checkbox" checked={c[key]} onChange={event => set({ [key]: event.target.checked })} />{label}</label>)}
     {!isPortraitCard && !isFooter && c.showBackdrop && <label>Background image strength<input type="range" min="0" max="0.6" step="0.01" value={c.backgroundOpacity} onChange={event => set({ backgroundOpacity: Number(event.target.value) })} /></label>}
     <label>Font family<select value={c.fontFamily} onChange={event => set({ fontFamily: event.target.value })}>{!CURRENT_SLOT_FONTS.some(([value])=>value===c.fontFamily)&&<option value={c.fontFamily}>Theme / custom font</option>}{CURRENT_SLOT_FONTS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+    {controlScope?.mode === 'advanced' && c.colourTheme === 'clear_ice' && c.displayStyle === 'immersive_current' && <ImmersiveTypographyControls config={c} onChange={onChange} />}
     {isGalactic&&(GALACTIC_MODE_ROWS[c.displayStyle]||[]).map(id=><label key={id}><input type="checkbox" checked={c.statVisibility?.[id]!==false} onChange={event=>set({statVisibility:{...c.statVisibility,[id]:event.target.checked}})}/>{id} row</label>)}
     {isStudio&&[['bet','BET'],['rtp','RTP'],['volatility','VOLATILITY']].map(([id,label])=><label key={id}><input type="checkbox" checked={c.statVisibility?.[id]!==false} onChange={event=>set({statVisibility:{...c.statVisibility,[id]:event.target.checked}})}/>{label} row</label>)}
     {isStreet && [['bet','BET'],['rtp','RTP'],['volatility','VOLATILITY'],['potential','MAX WIN'],['bestWin','BEST PAYOUT'],['bestMulti','BEST X']].map(([id,label])=><label key={id}><input type="checkbox" checked={c.statVisibility?.[id]!==false} onChange={event=>set({statVisibility:{...c.statVisibility,[id]:event.target.checked}})}/>{label} row</label>)}

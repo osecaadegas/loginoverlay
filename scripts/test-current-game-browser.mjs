@@ -72,6 +72,7 @@ try {
     const registry=await import('/src/components/OverlayCenter/editor/betterWidgetRegistry.jsx');
     const {setScopedAppearanceConfigValue}=await import('/src/components/OverlayCenter/appearance/v2/appearanceRouting.js');
     const {applyWidgetColourTheme}=await import('/src/components/OverlayCenter/editor/widgetColourThemes.js');
+    const {EditorControlContext}=await import('/src/components/OverlayCenter/editor/EditorControlScope.jsx');
     let styledConfig={slot,displayStyle:'immersive_current'};
     for(const [elementId,propertyId,value] of [['slotTitle','textColor','#ff0000'],['slotImage','imageUrl','/favicon.ico']]) {
       styledConfig=setScopedAppearanceConfigValue(styledConfig,{widgetType:'current_slot',widgetVariant:'immersive_current',elementId,propertyId},value);
@@ -97,8 +98,17 @@ try {
       obs:()=>root.render(React.createElement('div',{style:{height:290,width:1320}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('current_slot'),layout:{instances:[]},userId:owner,publicOverlayId:'bo_'+'a'.repeat(48),liveWidgets:[{id:'source',widget_type:'current_slot',config:JSON.parse(localStorage.getItem('test-current-config'))}],runtime:'obs'}))),
       styled:()=>root.render(React.createElement('div',{style:{height:290,width:1320}},React.createElement(Widget,{widgetId:'appearance-test',userId:owner,config:styledConfig}))),
       layout:(width,height,config={},runtime='editor')=>root.render(React.createElement('div',{style:{width,height}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('current_slot',{width,height,config:{slot,...config}}),layout:{instances:[]},userId:owner,runtime}))),
+      fineTune:()=>root.render(React.createElement(EditorControlContext.Provider,{value:{mode:'advanced',search:'',sections:{},simpleSections:[],onSection:()=>{}}},React.createElement(FineTune))),
+      fineTuneObs:()=>root.render(React.createElement('div',{style:{width:680,height:140}},registry.renderBetterWidgetInstance({instance:registry.createBetterInstance('current_slot',{width:680,height:140,config:JSON.parse(localStorage.getItem('test-current-fine-tune'))}),layout:{instances:[]},userId:owner,runtime:'obs'}))),
       unmount:()=>root.render(null),
     };
+    function FineTune(){
+      const [config,setConfig]=React.useState(()=>JSON.parse(localStorage.getItem('test-current-fine-tune')||JSON.stringify(applyWidgetColourTheme('current_slot',{slot,displayStyle:'immersive_current'},'clear_ice'))));
+      const instance=registry.createBetterInstance('current_slot',{width:680,height:140,config});
+      return React.createElement(React.Fragment,null,
+        React.createElement(BetterWidgetControls,{type:'current_slot',config,onChange:next=>{localStorage.setItem('test-current-fine-tune',JSON.stringify(next));setConfig(next);}}),
+        React.createElement('div',{style:{width:680,height:140}},registry.renderBetterWidgetInstance({instance,layout:{instances:[instance]},userId:owner,runtime:'editor'})));
+    }
     window.currentTest.mount();
   },{dependencies,owner,slot});
   await page.click('.cg-panel-heading button');
@@ -228,6 +238,28 @@ try {
     await page.waitForFunction(()=>!document.querySelector('.cg-records') && !document.querySelector('.cg-cover'));
     assert.equal(await page.$$eval('.cg-widget > .cg-info',els=>els.length),1);
   }
+  await page.evaluate(()=>window.currentTest.fineTune());
+  await page.waitForSelector('.cg-appearance-typography summary');
+  await page.click('.cg-appearance-typography summary');
+  const initialIce=await page.$eval('.cg-widget',widget=>({
+    label:parseFloat(getComputedStyle(widget.querySelector('[data-better-element="rtpLabel"]')).fontSize),
+    value:parseFloat(getComputedStyle(widget.querySelector('[data-better-element="rtpValue"]')).fontSize),
+    surface:getComputedStyle(widget.querySelector('.cg-stat')).backgroundColor,
+  }));
+  assert.ok(initialIce.label >= 11 && initialIce.value >= 13, 'Clear Ice labels and values remain readable at 680 × 140');
+  assert.match(initialIce.surface,/rgba?\(5, 22, 44/,'Stat rows have a legible ice-glass surface');
+  assert.deepEqual(await page.$$eval('.cg-stat',rows=>rows.filter(row=>row.scrollWidth>row.clientWidth+1 || row.scrollHeight>row.clientHeight+1).map(row=>row.textContent)),[],'Clear Ice stats fit their rows');
+  await (await page.$('.cg-widget')).screenshot({path:'.codex-dev/clear-ice-current-game-readable.png'});
+  await page.select('select[aria-label="RTP value font"]',"'Inter', sans-serif");
+  await page.focus('input[aria-label="RTP value size"]');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(()=>document.querySelector('input[aria-label="RTP value size"]')?.value==='24');
+  assert.match(await page.$eval('[data-better-element="rtpValue"]',element=>getComputedStyle(element).fontFamily),/Inter/);
+  assert.ok(await page.$eval('[data-better-element="rtpValue"]',element=>parseFloat(getComputedStyle(element).fontSize)) > initialIce.value);
+  await page.evaluate(()=>window.currentTest.fineTuneObs());
+  await page.waitForFunction(()=>document.querySelector('[data-better-element="rtpValue"]')?.textContent.includes('%'));
+  assert.match(await page.$eval('[data-better-element="rtpValue"]',element=>getComputedStyle(element).fontFamily),/Inter/);
+  assert.ok(await page.$eval('[data-better-element="rtpValue"]',element=>parseFloat(getComputedStyle(element).fontSize)) > initialIce.value);
   assert.deepEqual(errors,[]);
   console.log('All registered Current Game themes passed through the real picker in editor and OBS, including saved element overrides and reload.');
   console.log('Current Game browser checks passed: real catalog artwork, selection, shared records, payment retry, zero payout, reload, seven widths, OBS and independent appearance.');

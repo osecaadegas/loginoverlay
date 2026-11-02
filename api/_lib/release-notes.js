@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'clear-ice-current-game-readable-stats-2026-11-02', date: '2026-11-02', category: 'overlays',
+    title: 'Improve Clear Ice Current Game stat readability',
+    summary: 'Immersive Current Game statistics use clearer ice-glass rows and larger text, with individual typography controls in Fine tune.',
+    changes: [
+      'Raised the default heading, stat label and value sizes for the Clear Ice immersive layout.',
+      'Added a translucent dark ice surface and stronger text contrast behind statistics.',
+      'Added per-element font and scaled size controls for the two headings and six stat labels and values in the editor Fine tune panel.',
+    ],
+    action: 'Refresh Overlay Center and republish changed scenes to apply custom font settings to OBS Browser Sources. Live OBS playback was not verified.',
+  },
+  {
     id: 'editor-inspector-quick-fine-tune-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Simplify widget settings in the overlay editor',
     summary: 'The editor inspector now starts with a compact Quick edit view and keeps detailed customization in Fine tune.',
