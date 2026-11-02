@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'apps-illustrated-tiles-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Make Apps easier to recognise',
+    summary: 'Apps is a single grid of visual tiles with a distinct image or app logo for each destination.',
+    changes: [
+      'Removed the quick-launch panel, categories and search from the Apps page.',
+      'Used the existing Apps artwork, app logos and icons to make destinations easier to recognise at a glance.',
+      'Kept the existing links, download versions and account access rules.',
+    ],
+    action: 'Refresh the Apps page after deployment. Available tiles still depend on your existing account access.',
+  },
+  {
     id: 'apps-quick-launch-directory-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Find apps and tools faster',
     summary: 'The Apps page now highlights a useful first action and organizes the remaining tools into searchable sections.',
