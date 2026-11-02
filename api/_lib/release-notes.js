@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'apps-quick-launch-directory-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Find apps and tools faster',
+    summary: 'The Apps page now highlights a useful first action and organizes the remaining tools into searchable sections.',
+    changes: [
+      'Added role-aware quick links for overlays, games and account tools.',
+      'Grouped available destinations and Windows downloads with category filters and search.',
+      'Simplified card descriptions and adapted the layout for narrow screens while keeping existing access rules and destinations.',
+    ],
+    action: 'Refresh the Apps page after deployment. Your available tools still depend on your existing account access.',
+  },
+  {
     id: 'clear-ice-current-game-readable-stats-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Improve Clear Ice Current Game stat readability',
     summary: 'Immersive Current Game statistics use clearer ice-glass rows and larger text, with individual typography controls in Fine tune.',

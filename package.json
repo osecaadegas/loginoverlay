@@ -23,6 +23,7 @@
     "test:camera-obs-route": "node scripts/test-camera-obs-route.mjs",
     "test:screensplit-download": "node scripts/test-screensplit-download.mjs",
     "test:global-navigation": "node scripts/test-global-navigation.mjs",
+    "test:apps-page-browser": "node scripts/test-apps-page-browser.mjs",
     "test:page-cache": "node scripts/test-page-cache.mjs",
     "test:connect-four": "node scripts/test-connect-four.mjs",
     "test:contact-messages": "node scripts/test-contact-messages.mjs",
