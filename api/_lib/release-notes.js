@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'overlay-center-emoji-compact-tools-2026-11-02', date: '2026-11-02', category: 'website',
+    title: 'Clearer dashboard navigation and tool cards',
+    summary: 'Dashboard navigation uses emoji, and available tool cards are smaller with clearer actions.',
+    changes: [
+      'Replaced the three dashboard navigation symbols with emoji while keeping their routes unchanged.',
+      'Shortened tool descriptions and made available cards more compact.',
+      'Clarified add and show actions; hidden tools retain OBS URL copying in their action menu.',
+    ],
+    action: 'Refresh the Overlay Center page after deployment.',
+  },
+  {
     id: 'overlay-center-clear-navigation-2026-11-02', date: '2026-11-02', category: 'website',
     title: 'Clearer Overlay Center navigation',
     summary: 'The Overlay Center navigation now says Dashboard, Settings and Appearance Editor.',

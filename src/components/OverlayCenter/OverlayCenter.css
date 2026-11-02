@@ -29692,3 +29692,42 @@ body.wm-resizing {
 .oc2-service-section[open] > summary::after { content: "−"; }
 .oc2-service-section[open] > summary { margin-bottom: 16px; }
 .oc2-service-section > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+/* Keep the dashboard choices recognizable without relying on icon glyphs. */
+.oc2-nav-emoji {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Available tools need one clear action; secondary actions remain in the menu. */
+.oc2-tool-card.oc2-tool-card--available {
+  min-height: 0 !important;
+  gap: 8px;
+  padding: 12px;
+}
+
+.oc2-tool-card--available .oc2-tool-card__header {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+}
+
+.oc2-tool-card--available .oc2-tool-card__icon {
+  width: 40px;
+  height: 40px;
+}
+
+.oc2-tool-card--available .oc2-tool-card__description {
+  min-height: 0;
+  line-height: 1.35;
+}
+
+.oc2-tool-card__state {
+  color: var(--oc-text-bluegray-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.oc2-tool-card--available .oc2-tool-card__actions {
+  margin-top: auto;
+}

@@ -17,13 +17,11 @@ import { ThemeEffectsLayer } from '../../effects/ThemeEffects';
 import {
   ArrowLeft,
   AlertTriangle,
-  Brush,
   CheckCircle2,
   Copy,
   ExternalLink,
   Eye,
   EyeOff,
-  Grid3X3,
   Link2,
   Lock,
   MonitorPlay,
@@ -119,7 +117,7 @@ const SETUP_STEPS = [
 const FEATURE_COPY = {
   slot_bingo: {
     title: "Slot Bingo",
-    description: "Track 25 slot milestones on a live 5 x 5 Bingo board.",
+    description: "Show a 5 × 5 slot milestone board in OBS.",
     action: "Configure Slot Bingo",
   },
   bonus_hunt: {
@@ -129,7 +127,7 @@ const FEATURE_COPY = {
   },
   bets: {
     title: "Viewer Bets",
-    description: "Create predictions and community betting events.",
+    description: "Let viewers bet points on your stream's results.",
     action: "Configure Bets",
   },
   slot_requests: {
@@ -144,7 +142,7 @@ const FEATURE_COPY = {
   },
   rtp_stats: {
     title: "RTP Stats",
-    description: "Display RTP, volatility and personal records.",
+    description: "Show slot RTP, volatility and personal bests in OBS.",
     action: "Configure RTP Stats",
   },
   navbar: {
@@ -154,12 +152,12 @@ const FEATURE_COPY = {
   },
   background: {
     title: "Overlay Background",
-    description: "Choose the visual background for your overlay.",
+    description: "Set the backdrop behind your overlay widgets.",
     action: "Change Background",
   },
   slideshow_frame: {
     title: "Slideshow Frame",
-    description: "Show image and video links inside a styled frame.",
+    description: "Display linked images or videos in a styled frame.",
     action: "Open Editor",
   },
   bonus_buys: {
@@ -169,7 +167,7 @@ const FEATURE_COPY = {
   },
   tournament: {
     title: "Tournament",
-    description: "Create brackets and live tournament standings.",
+    description: "Show live brackets and tournament results.",
     action: "Configure Tournament",
   },
   current_slot: {
@@ -179,7 +177,7 @@ const FEATURE_COPY = {
   },
   chat: {
     title: "Chat",
-    description: "Display Twitch, Kick or YouTube chat.",
+    description: "Show Twitch, Kick or YouTube chat in OBS.",
     action: "Configure Chat",
   },
   spotify_now_playing: {
@@ -195,8 +193,7 @@ const FEATURE_COPY = {
   },
   connect_four: {
     title: "Chat Connect 4",
-    description:
-      "Run viewer matches from Twitch chat with StreamElements point wagers.",
+    description: "Let Twitch viewers play Connect 4 with point wagers.",
     action: "Configure Connect 4",
   },
 };
@@ -657,21 +654,20 @@ function validateOverlay({ instance, widgets, setup, integrations = {} }) {
 
 function OverlayTopNavigation({ active, setupComplete }) {
   const navItems = [
-    { id: "home", label: "Dashboard", to: "/overlay-center", icon: Grid3X3 },
+    { id: "home", label: "Dashboard", to: "/overlay-center", emoji: "📊" },
     {
       id: "integrations",
       label: "Settings",
       to: "/overlay-center/integrations",
-      icon: Link2,
+      emoji: "⚙️",
     },
-    { id: "editor", label: "Appearance Editor", to: "/editor", icon: Brush },
+    { id: "editor", label: "Appearance Editor", to: "/editor", emoji: "🎨" },
   ];
 
   return (
     <header className="oc2-topbar oc2-topbar--section">
       <nav className="oc2-nav" aria-label="Overlay Center navigation">
         {navItems.map((item) => {
-          const Icon = item.icon;
           return (
             <Link
               key={item.id}
@@ -679,7 +675,7 @@ function OverlayTopNavigation({ active, setupComplete }) {
               title={item.label}
               className={`oc2-nav-link${active === item.id ? " oc2-nav-link--active" : ""}`}
             >
-              <Icon size={16} />
+              <span className="oc2-nav-emoji" aria-hidden="true">{item.emoji}</span>
               <span>{item.label}</span>
             </Link>
           );
@@ -720,11 +716,12 @@ function ToolCard({
   const { type, def, widget, copy, status } = tool;
   const installed = !!widget;
   const isDisabled = widget?.is_visible === false;
+  const isAvailable = mode === "add";
   const primaryLabel = installed
     ? isDisabled
-      ? "Enable tool"
+      ? "Show on overlay"
       : copy.action || "Open tool"
-    : "Add tool";
+    : "Add & set up";
 
   const handleCardOpen = () => {
     if (installed && !isDisabled) onOpen(type);
@@ -743,7 +740,7 @@ function ToolCard({
 
   return (
     <article
-      className={`oc2-tool-card oc2-tool-card--${status.type}${installed && !isDisabled ? " oc2-tool-card--clickable" : ""}`}
+      className={`oc2-tool-card oc2-tool-card--${status.type}${isAvailable ? " oc2-tool-card--available" : ""}${installed && !isDisabled ? " oc2-tool-card--clickable" : ""}`}
       role={installed && !isDisabled ? "button" : undefined}
       tabIndex={installed && !isDisabled ? 0 : undefined}
       onClick={handleCardOpen}
@@ -757,6 +754,9 @@ function ToolCard({
           <h3>{copy.title || def.label}</h3>
           {RECOMMENDED_TOOLS.has(type) && (
             <span className="oc2-pill oc2-pill--gold">Recommended</span>
+          )}
+          {isAvailable && (
+            <span className="oc2-tool-card__state">{installed ? "Hidden" : "Not added"}</span>
           )}
         </div>
         {installed && (
@@ -781,13 +781,16 @@ function ToolCard({
           "Configure this overlay feature."}
       </p>
 
-      <div className="oc2-tool-card__spacer" />
-
-      <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
-        <StatusIcon status={status.type} />
-        <span>{status.label}</span>
-        {status.detail && <small>{status.detail}</small>}
-      </div>
+      {!isAvailable && (
+        <>
+          <div className="oc2-tool-card__spacer" />
+          <div className={`oc2-tool-status oc2-tool-status--${status.type}`}>
+            <StatusIcon status={status.type} />
+            <span>{status.label}</span>
+            {status.detail && <small>{status.detail}</small>}
+          </div>
+        </>
+      )}
 
       <footer
         className="oc2-tool-card__actions"
@@ -820,6 +823,11 @@ function ToolCard({
               <button type="button" onClick={() => onToggle(widget)}>
                 {isDisabled ? "Enable on overlay" : "Disable on overlay"}
               </button>
+              {isAvailable && (
+                <button type="button" onClick={() => onCopyObsUrl(widget)}>
+                  {copied ? "Copied OBS URL" : "Copy OBS URL"}
+                </button>
+              )}
               <button
                 type="button"
                 className="oc2-card-menu__danger"
@@ -831,7 +839,7 @@ function ToolCard({
           </details>
         )}
 
-        {installed && (
+        {installed && !isAvailable && (
           <button
             type="button"
             className="oc2-btn oc2-tool-copy-url"
@@ -1388,6 +1396,7 @@ function ToolWorkspace({
 
       <ToolSection
         title="Add more tools"
+        subtitle="Choose a tool to add it and open its setup."
         emptyText="All available tools are already active."
         tools={addMoreTools.map((tool) => renderCard(tool, "add"))}
         tourId="add-tools"

@@ -43,9 +43,9 @@ assert.ok(
   "Page-local headers do not duplicate the shared navigation controls",
 );
 assert.ok(
-  overlayCenterSource.includes('{ id: "home", label: "Dashboard", to: "/overlay-center"') &&
+  overlayCenterSource.includes('{ id: "home", label: "Dashboard", to: "/overlay-center", emoji: "📊"') &&
     overlayCenterSource.includes('label: "Settings",\n      to: "/overlay-center/integrations"') &&
-    overlayCenterSource.includes('{ id: "editor", label: "Appearance Editor", to: "/editor"'),
+    overlayCenterSource.includes('{ id: "editor", label: "Appearance Editor", to: "/editor", emoji: "🎨"'),
   "Overlay Center uses clear navigation labels without changing destinations",
 );
 
