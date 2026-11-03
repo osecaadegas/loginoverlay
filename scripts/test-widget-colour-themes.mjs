@@ -619,6 +619,25 @@ try {
   assert.match(chatGiveawayPreview.headerBackground, /greek-key-horizontal\.webp/, 'Old Rome chat top has a carved Greek-key cornice');
   assert.equal(chatGiveawayPreview.iconColor, 'rgb(132, 81, 29)', 'Old Rome gift icon matches the bronze frame');
   assert.deepEqual(await readOldRomeChatGiveaway('obs'), chatGiveawayPreview, 'Old Rome chat giveaway matches in editor and OBS');
+  const emptyRomeChat = { ...oldRomeChat, showHeader: false, giveawayInChat: false, shoutoutInChat: false, showEmptyState: false, __previewGiveawayConfig: null, __appearancePreviewMessages: [] };
+  const readEmptyRomeChat = async runtime => {
+    await mount('chat', emptyRomeChat, { runtime, liveWidgets: [] });
+    return page.$eval('.ov-chat-widget', element => {
+      const cornice = element.querySelector('.ov-chat-rome-cornice');
+      return {
+        headerHidden: !element.querySelector('.ov-chat-header'),
+        height: getComputedStyle(cornice).height,
+        background: getComputedStyle(cornice).backgroundImage,
+        top: Math.round(cornice.getBoundingClientRect().top - element.getBoundingClientRect().top),
+      };
+    });
+  };
+  const emptyRomePreview = await readEmptyRomeChat('editor');
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-no-header-review.png' });
+  assert.equal(emptyRomePreview.headerHidden, true, 'Old Rome can keep the optional chat header hidden');
+  assert.equal(emptyRomePreview.height, '28px', 'Old Rome still has a visible top cornice without a header');
+  assert.match(emptyRomePreview.background, /greek-key-horizontal\.webp/, 'Old Rome empty chat top uses the carved Greek-key artwork');
+  assert.deepEqual(await readEmptyRomeChat('obs'), emptyRomePreview, 'Old Rome empty chat top matches in editor and OBS');
   const winnerGiveaway = { widget_type: 'giveaway', config: { ...liveGiveaway.config, isActive: false, winner: 'Stream Viewer' } };
   const winnerChat = { ...oldRomeChat, __previewGiveawayConfig: winnerGiveaway.config };
   const readOldRomeWinner = async runtime => {

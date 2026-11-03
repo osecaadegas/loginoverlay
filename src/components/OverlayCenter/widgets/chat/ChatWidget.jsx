@@ -1699,6 +1699,12 @@ function ChatWidget({
         />
       ) : null}
 
+      {c.colourTheme === 'old_rome' && (
+        <div className="ov-chat-rome-cornice" aria-hidden="true">
+          <span className="ov-chat-rome-cornice__crest" />
+        </div>
+      )}
+
       {showHeader && isStreamerOverlayChat && (
         <div className="ov-chat-header ov-chat-header--streamer-source" {...partAttrs("header")} style={headerPartStyle({ flex: "none", padding: "12px 16px", background: isLegacySourceChat ? "rgba(0,0,0,.2)" : (c.headerBg || sourcePalette.raised), color: isLegacySourceChat ? '#fff' : (c.headerText || sourcePalette.text), border: 0 })}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>

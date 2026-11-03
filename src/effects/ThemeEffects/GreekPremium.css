@@ -1837,6 +1837,40 @@
 
 /* A shallow carved cornice connects the chat header to the wall. The Greek-key
    edge is inside the widget, so it remains visible with or without a giveaway. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-rome-cornice {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  border-bottom: 2px solid #6e3c18;
+  background:
+    linear-gradient(90deg, rgba(42,19,7,.9), transparent 10%, transparent 90%, rgba(42,19,7,.9)),
+    var(--greek-key) center / auto 23px repeat-x,
+    linear-gradient(180deg, #f3d58e 0%, #b7772b 48%, #72411b 100%);
+  box-shadow: inset 0 2px 0 rgba(255,243,196,.78), inset 0 -2px 0 #43210d, 0 4px 9px rgba(49,24,7,.3);
+  pointer-events: none;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-rome-cornice__crest {
+  width: 48px;
+  height: 19px;
+  border: 1px solid #6e3c18;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 35%, #f7e8ba, #c9903a 72%, #704018);
+  box-shadow: inset 0 1px 0 #fff2c7, 0 1px 3px #39200e;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-rome-cornice__crest::after {
+  content: "✦";
+  display: block;
+  color: #5b2b12;
+  font-size: 13px;
+  line-height: 17px;
+  text-align: center;
+}
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget > :is([data-better-element="header"], .ov-chat-header) {
   position: relative;
   min-height: 42px;

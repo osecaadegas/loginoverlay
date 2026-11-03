@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-chat-permanent-cornice-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Keep the Old Rome chat top visible',
+    summary: 'Old Rome chat now keeps its carved bronze cornice even when the optional header is hidden.',
+    changes: [
+      'Add a permanent Greek-key and bronze crest above the chat content without changing message, giveaway or shoutout placement.',
+      'Verify the empty chat cornice in editor preview and OBS browser-source rendering.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'chat-follower-tip-alerts-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Live follower and tip alerts in Chat',
     summary: 'Chat widgets can display new StreamElements follow and tip activity using the selected colour theme.',
