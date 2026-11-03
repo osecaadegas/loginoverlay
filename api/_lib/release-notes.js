@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-navbar-independent-pieces-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Independent Old Rome navbar pieces',
+    summary: 'The temple navbar now lets streamers move and size its visible information separately.',
+    changes: [
+      'Add a Temple pieces panel in Fine tune for the avatar, name, subtitle, start values, clock and other navbar sections.',
+      'Apply each piece’s saved horizontal and vertical offsets and width and height in the preview and OBS browser source.',
+      'Keep the temple avatar’s central position as its default while allowing it to be repositioned and resized.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'old-rome-temple-avatar-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Old Rome temple avatar',
     summary: 'The Old Rome navbar places the streamer avatar in the temple medallion, with live text and clock on the side beams.',

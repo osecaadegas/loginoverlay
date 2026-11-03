@@ -2471,6 +2471,27 @@ function getTwitchIdentity(user) {
   return { isTwitch, username, displayName, avatarUrl };
 }
 
+const OLD_ROME_NAVBAR_PARTS = [
+  { key: "avatar", name: "Temple avatar" },
+  { key: "displayName", name: "Name and subtitle group" },
+  { key: "brandName", name: "Streamer name" },
+  { key: "motto", name: "Subtitle" },
+  { key: "balance", name: "Start balance group" },
+  { key: "startLabel", name: "Start label" },
+  { key: "startValue", name: "Start value" },
+  { key: "startIcon", name: "Start icon" },
+  { key: "clock", name: "Clock" },
+  { key: "music", name: "Now playing" },
+  { key: "crypto", name: "Crypto ticker" },
+  { key: "socials", name: "Social links" },
+  { key: "sponsor", name: "Responsible play badge" },
+  { key: "sponsorText", name: "Responsible play text" },
+  { key: "casino", name: "Casino information" },
+  { key: "casinoLogo", name: "Casino logo" },
+  { key: "casinoCommand", name: "Casino command" },
+  { key: "badgeImage", name: "Badge image" },
+];
+
 function BetterNavbarControls({
   config,
   onChange,
@@ -2479,6 +2500,20 @@ function BetterNavbarControls({
   onWidgetChange,
 }) {
   const c = ensureBetterWidgetConfig("navbar", config);
+  const [oldRomePart, setOldRomePart] = useState("avatar");
+  const appearanceKey = Object.hasOwn(c, "__appearanceExplicitSubElements")
+    ? "__appearanceExplicitSubElements"
+    : "subElements";
+  const partAppearance = c[appearanceKey] || {};
+  const setOldRomePartValue = (property, value) => {
+    const current = { ...partAppearance[oldRomePart] };
+    if ((property === "width" || property === "height") && value === 0) delete current[property];
+    else current[property] = value;
+    onChange({
+      ...c,
+      [appearanceKey]: { ...partAppearance, [oldRomePart]: current },
+    });
+  };
   const set = (patch) => {
     const nextPatch = { ...patch };
     if (Object.prototype.hasOwnProperty.call(nextPatch, "casinoCommand")) {
@@ -2553,6 +2588,7 @@ function BetterNavbarControls({
   const tabs = [
     ["sections", <Layers size={12} />, "Sections"],
     ["arrange", <SlidersHorizontal size={12} />, "Arrange"],
+    ...(c.colourTheme === "old_rome" ? [["pieces", <Maximize2 size={12} />, "Temple pieces"]] : []),
     ["music", <Music size={12} />, "Music"],
     ["crypto", <Coins size={12} />, "Crypto"],
     ["socials", <Users size={12} />, "Socials"],
@@ -2664,6 +2700,22 @@ function BetterNavbarControls({
             Move Spotify to the left, streamer name to the right, or reorder any
             section inside its zone.
           </p>
+        </Section>
+      )}
+
+      {c.colourTheme === "old_rome" && matchesControlTab(current, "pieces") && (
+        <Section title="Move and resize temple pieces" icon={<Maximize2 size={13} />}>
+          <SelectRow
+            label="Piece"
+            value={oldRomePart}
+            options={OLD_ROME_NAVBAR_PARTS}
+            onChange={setOldRomePart}
+          />
+          <p className="bp-hint">Move this piece independently within the navbar. Increase the widget height in Size if a taller piece reaches its edge.</p>
+          <NumberRow label="Move horizontally" value={Number(partAppearance[oldRomePart]?.offsetX) || 0} min={-960} max={960} onChange={(value) => setOldRomePartValue("offsetX", value)} />
+          <NumberRow label="Move vertically" value={Number(partAppearance[oldRomePart]?.offsetY) || 0} min={-150} max={150} onChange={(value) => setOldRomePartValue("offsetY", value)} />
+          <NumberRow label="Width (0 = automatic)" value={Number(partAppearance[oldRomePart]?.width) || 0} min={0} max={960} onChange={(value) => setOldRomePartValue("width", value)} />
+          <NumberRow label="Height (0 = automatic)" value={Number(partAppearance[oldRomePart]?.height) || 0} min={0} max={160} onChange={(value) => setOldRomePartValue("height", value)} />
         </Section>
       )}
 

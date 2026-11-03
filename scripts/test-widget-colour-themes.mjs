@@ -245,7 +245,7 @@ try {
         root.render(React.createElement('main', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 16, padding: 12 } },
           React.createElement('aside', { style: { width, flexShrink: 0 } },
             React.createElement(EditorControlContext.Provider, { value: { mode: controls, tab: '__all', search,
-              simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true }, onSection() {} } },
+              simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true, 'Move and resize temple pieces': true }, onSection() {} } },
               React.createElement(BetterWidgetControls, { type, config: c, isAdmin, widget: { ...instance, config: c }, onChange: next => {
                 window.themeTest.lastConfig = next;
                 this.mount(type, next, { runtime, controls, width, search, isAdmin });
@@ -497,6 +497,64 @@ try {
   assert.equal(navbarPreview.subtitleColor, 'rgb(96, 57, 30)', 'Old Rome subtitle remains readable on the carved beam');
   assert.match(navbarPreview.sponsorBackground, /linear-gradient/, 'Old Rome sponsor follows the carved beam material');
   assert.deepEqual(await readOldRomeNavbar('obs'), navbarPreview, 'Old Rome navbar materials match in editor and OBS runtimes');
+  const oldRomeAppearanceKey = Object.hasOwn(oldRomeNavbar, '__appearanceExplicitSubElements')
+    ? '__appearanceExplicitSubElements'
+    : 'subElements';
+  const oldRomeParts = {
+    ...oldRomeNavbar,
+    [oldRomeAppearanceKey]: {
+      ...oldRomeNavbar[oldRomeAppearanceKey],
+      avatar: { ...oldRomeNavbar[oldRomeAppearanceKey]?.avatar, offsetX: 24, offsetY: 4, width: 58, height: 58 },
+      displayName: { ...oldRomeNavbar[oldRomeAppearanceKey]?.displayName, offsetX: 18, width: 240 },
+      brandName: { ...oldRomeNavbar[oldRomeAppearanceKey]?.brandName, offsetX: 8, width: 190 },
+      balance: { ...oldRomeNavbar[oldRomeAppearanceKey]?.balance, offsetX: 12, width: 170 },
+      startValue: { ...oldRomeNavbar[oldRomeAppearanceKey]?.startValue, offsetX: 7, width: 68 },
+      startIcon: { ...oldRomeNavbar[oldRomeAppearanceKey]?.startIcon, width: 18, height: 18 },
+      clock: { ...oldRomeNavbar[oldRomeAppearanceKey]?.clock, offsetX: 15, width: 110 },
+      sponsorText: { ...oldRomeNavbar[oldRomeAppearanceKey]?.sponsorText, width: 150 },
+    },
+  };
+  const readOldRomeParts = async runtime => {
+    await mount('navbar', oldRomeParts, { runtime });
+    return page.$eval('[data-widget-type="navbar"] [data-widget-element="container"]', element => {
+      const root = element.getBoundingClientRect();
+      return Object.fromEntries(['avatar', 'displayName', 'brandName', 'balance', 'startValue', 'startIcon', 'clock', 'sponsorText'].map(id => {
+        const rect = element.querySelector(`[data-widget-element="${id}"]`).getBoundingClientRect();
+        return [id, { x: Math.round(rect.left - root.left), y: Math.round(rect.top - root.top), width: Math.round(rect.width), height: Math.round(rect.height) }];
+      }));
+    });
+  };
+  const movedOldRomeParts = await readOldRomeParts('editor');
+  assert.equal(movedOldRomeParts.avatar.width, 58, 'Old Rome avatar width is independently editable');
+  assert.equal(movedOldRomeParts.avatar.height, 58, 'Old Rome avatar height is independently editable');
+  assert.equal(movedOldRomeParts.displayName.width, 240, 'Old Rome identity group width is independently editable');
+  assert.equal(movedOldRomeParts.balance.width, 170, 'Old Rome balance width is independently editable');
+  assert.equal(movedOldRomeParts.startValue.width, 68, 'Old Rome start value width is independently editable');
+  assert.equal(movedOldRomeParts.startIcon.width, 18, 'Old Rome start icon size is independently editable');
+  assert.equal(movedOldRomeParts.clock.width, 110, 'Old Rome clock width is independently editable');
+  assert.equal(movedOldRomeParts.sponsorText.width, 150, 'Old Rome responsible play text width is independently editable');
+  assert.ok(movedOldRomeParts.avatar.x > navbarPreview.avatarCenterX - 25, 'Old Rome avatar offset moves it away from its default centre');
+  assert.deepEqual(await readOldRomeParts('obs'), movedOldRomeParts, 'Old Rome individual positions and sizes match in editor and OBS runtimes');
+  await mount('navbar', oldRomeNavbar, { controls: 'advanced' });
+  const templeControls = await page.$eval('[data-control-section="Move and resize temple pieces"]', section => ({
+    pieceOptions: [...section.querySelectorAll('select option')].map(option => option.value),
+    fields: [...section.querySelectorAll('input[type="number"]')].map(input => input.closest('label')?.textContent.trim()),
+  }));
+  assert.ok(templeControls.pieceOptions.includes('avatar') && templeControls.pieceOptions.includes('startValue'), 'Old Rome Fine tune lists independent temple pieces');
+  assert.deepEqual(templeControls.fields, ['Move horizontally', 'Move vertically', 'Width (0 = automatic)', 'Height (0 = automatic)']);
+  await page.$eval('[data-control-section="Move and resize temple pieces"] input[type="number"]', input => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '31');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await settle();
+  assert.equal(await page.evaluate(key => window.themeTest.lastConfig?.[key]?.avatar?.offsetX, oldRomeAppearanceKey), 31, 'Old Rome Fine tune saves an independent avatar offset');
+  await page.$eval('[data-control-section="Move and resize temple pieces"]', section => {
+    const input = section.querySelectorAll('input[type="number"]')[2];
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '62');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await settle();
+  assert.equal(await page.evaluate(key => window.themeTest.lastConfig?.[key]?.avatar?.width, oldRomeAppearanceKey), 62, 'Old Rome Fine tune saves an independent avatar width');
   await mount('navbar', { ...oldRomeNavbar, showTempleAvatar: false });
   assert.equal(await page.$('.old-rome-navbar-avatar'), null, 'Old Rome temple avatar visibility control can hide the portrait');
   const oldRomeHunt = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(

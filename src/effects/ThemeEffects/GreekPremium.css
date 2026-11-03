@@ -1673,23 +1673,12 @@
 /* The portrait belongs to the circular opening carved into the temple beam.
    Keep it anchored to the full widget instead of the left identity group. */
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] .old-rome-navbar-avatar {
-  position: absolute !important;
-  z-index: 4 !important;
-  left: 50% !important;
-  top: calc(50% - 8px) !important;
-  transform: translate(-50%, -50%) !important;
-  max-width: 4vw;
-  max-height: 4vw;
-  border: 2px solid #704114 !important;
-  border-radius: 50% !important;
-  background: #ad8254 !important;
-  box-shadow: 0 0 0 2px rgba(255, 224, 158, .75), inset 0 1px 4px rgba(61, 27, 8, .6) !important;
+  box-sizing: border-box;
 }
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] .old-rome-navbar-avatar img {
   width: 100%;
   height: 100%;
-  border-radius: 50% !important;
-  object-fit: cover;
+  border-radius: inherit;
 }
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] .better-navbar-zone--center {
   position: absolute !important;
@@ -1717,7 +1706,7 @@
   text-shadow: 0 1px 0 rgba(255, 246, 216, .7) !important;
 }
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="clock"] {
-  min-width: 96px !important;
+  min-width: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: none !important;

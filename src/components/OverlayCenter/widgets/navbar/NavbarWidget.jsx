@@ -2104,12 +2104,14 @@ function NavbarWidget({
         )}
       >
         <span
-          style={{
+          {...partAttrs("sponsorText")}
+          style={withElementOffset(c, "sponsorText", {
+            display: "inline-block",
             minWidth: 0,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-          }}
+          })}
         >
           {c.ctaText}
         </span>
@@ -2349,11 +2351,13 @@ function NavbarWidget({
     );
     const renderBolt = () => (
       <svg
+        {...partAttrs("startIcon")}
         width="13"
         height="13"
         viewBox="0 0 24 24"
         fill={packageGold}
         aria-hidden="true"
+        style={withElementOffset(c, "startIcon", { width: 13, height: 13, flexShrink: 0 })}
       >
         <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
       </svg>
@@ -2389,7 +2393,7 @@ function NavbarWidget({
       <div
         className={className}
         {...partAttrs("avatar")}
-        style={withElementOffset(c, "avatar", {
+        style={{ ...withElementOffset(c, "avatar", {
           width: packageAvatarSize,
           height: packageAvatarSize,
           flex: "0 0 auto",
@@ -2399,10 +2403,16 @@ function NavbarWidget({
           borderRadius: avatarRadius,
           border: avatarBorderWidth
             ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
-            : `1px solid ${alphaColor(packageBlue, 0.38)}`,
-          background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
-          boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
-        })}
+            : c.colourTheme === "old_rome" ? "2px solid #704114" : `1px solid ${alphaColor(packageBlue, 0.38)}`,
+          background: c.colourTheme === "old_rome" ? "#ad8254" : `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
+          boxShadow: c.colourTheme === "old_rome" ? "0 0 0 2px rgba(255, 224, 158, .75), inset 0 1px 4px rgba(61, 27, 8, .6)" : `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
+        }), ...(c.colourTheme === "old_rome" ? {
+          position: "absolute",
+          left: `calc(50% + ${Number(subValue(c, "avatar", "offsetX", 0)) || 0}px)`,
+          top: `calc(50% - 8px + ${Number(subValue(c, "avatar", "offsetY", 0)) || 0}px)`,
+          transform: "translate(-50%, -50%)",
+          zIndex: 4,
+        } : {}) }}
       >
         <img
           src={avatarUrl}
@@ -2440,7 +2450,9 @@ function NavbarWidget({
           >
             <span
               className="better-navbar-brand-name"
-              style={{
+              {...partAttrs("brandName")}
+              style={withElementOffset(c, "brandName", {
+                display: "inline-block",
                 overflow: "hidden",
                 color: textColor,
                 fontFamily,
@@ -2452,14 +2464,16 @@ function NavbarWidget({
                 textOverflow: "ellipsis",
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
-              }}
+              })}
             >
               {brandName}
             </span>
             {siteText && (
               <span
                 className="better-navbar-brand-subtitle"
-                style={{
+                {...partAttrs("motto")}
+                style={withElementOffset(c, "motto", {
+                  display: "inline-block",
                   overflow: "hidden",
                   color: alphaColor(mutedColor, 0.58),
                   fontSize: mottoFontSize,
@@ -2471,7 +2485,7 @@ function NavbarWidget({
                   textOverflow: "ellipsis",
                   textTransform: "uppercase",
                   whiteSpace: "nowrap",
-                }}
+                })}
               >
                 {siteText}
               </span>
@@ -2500,7 +2514,16 @@ function NavbarWidget({
       showStart ? (
         <div
           {...partAttrs("balance")}
-          style={orbitalPartStyle("balance", {
+          style={c.colourTheme === "old_rome" ? withElementOffset(c, "balance", {
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            minWidth: 0,
+            height: "100%",
+            position: "relative",
+            zIndex: 1,
+            flexShrink: 0,
+          }) : orbitalPartStyle("balance", {
             display: "flex",
             alignItems: "center",
             gap: 8,
@@ -2513,24 +2536,28 @@ function NavbarWidget({
         >
           {renderBolt()}
           <span
-            style={{
+            {...partAttrs("startLabel")}
+            style={withElementOffset(c, "startLabel", {
+              display: "inline-block",
               color: alphaColor(mutedColor, 0.75),
               fontSize: 11,
               fontWeight: 800,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-            }}
+            })}
           >
             {c.startLabel || "Start"}
           </span>
           <span
-            style={{
+            {...partAttrs("startValue")}
+            style={withElementOffset(c, "startValue", {
+              display: "inline-block",
               color: textColor,
               fontSize: 14,
               fontWeight: 950,
               letterSpacing: "0.04em",
               whiteSpace: "nowrap",
-            }}
+            })}
           >
             {startValue}
           </span>
@@ -2556,7 +2583,8 @@ function NavbarWidget({
             <img
               src={casinoLogoUrl}
               alt=""
-              style={{
+              {...partAttrs("casinoLogo")}
+              style={withElementOffset(c, "casinoLogo", {
                 width: "auto",
                 height: betterCasinoLogoSize,
                 maxWidth: betterCasinoLogoSize * 2.4,
@@ -2565,12 +2593,14 @@ function NavbarWidget({
                   casinoImageRadius ?? Math.max(3, betterCasinoLogoSize * 0.18),
                 filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.42))",
                 flexShrink: 0,
-              }}
+              })}
             />
           ) : null}
           {casinoCommand ? (
             <span
-              style={{
+              {...partAttrs("casinoCommand")}
+              style={withElementOffset(c, "casinoCommand", {
+                display: "inline-block",
                 color: textColor,
                 fontSize: 14,
                 fontWeight: 950,
@@ -2582,7 +2612,7 @@ function NavbarWidget({
                   ? "none"
                   : "uppercase",
                 whiteSpace: "nowrap",
-              }}
+              })}
             >
               {casinoCommand}
             </span>

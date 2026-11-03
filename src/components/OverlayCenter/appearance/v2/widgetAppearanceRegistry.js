@@ -3098,6 +3098,37 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Display name",
         kind: "text",
         capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      brandName: Object.freeze({
+        label: "Streamer name",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      motto: Object.freeze({
+        label: "Subtitle",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      startLabel: Object.freeze({
+        label: "Start label",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      startValue: Object.freeze({
+        label: "Start value",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      startIcon: Object.freeze({
+        label: "Start icon",
+        kind: "badge",
+        capabilities: ["stateColor", "position"],
+        controls: ["accentColor", "offsetX", "offsetY", "width", "height"],
       }),
       clock: Object.freeze({
         label: "Clock",
@@ -3151,6 +3182,25 @@ export const widgetAppearanceRegistry = Object.freeze({
         label: "Start balance",
         kind: "text",
         capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      sponsorText: Object.freeze({
+        label: "Responsible play text",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
+      }),
+      casinoLogo: Object.freeze({
+        label: "Casino logo",
+        kind: "image",
+        capabilities: ["image", "position"],
+        controls: ["imageSize", "imageFit", "offsetX", "offsetY", "width", "height"],
+      }),
+      casinoCommand: Object.freeze({
+        label: "Casino command",
+        kind: "text",
+        capabilities: ["typography", "stateColor", "position"],
+        controls: ["fontFamily", "fontSize", "fontWeight", "textColor", "offsetX", "offsetY", "width", "height"],
       }),
       casino: Object.freeze({
         label: "Casino area",
