@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'new-horizontal-break-even-parity-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'New Horizontal B.E. display parity',
+    summary: 'The New Horizontal hunt now presents a completed or zero break-even state consistently with the standard Bonus Hunt stat tiles.',
+    changes: [
+      'Keep the existing live break-even calculation based on the amount still needed and bets on unopened bonuses.',
+      'Show a dash when no further break-even multiplier is needed, instead of showing 0x.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'current-game-streamer-bonus-library-2026-11-02', date: '2026-11-02', category: 'overlays',
     title: 'Private bonus history in Current Game',
     summary: 'The Current Game setup page now shows each streamer their own saved hunts and recorded payouts.',
