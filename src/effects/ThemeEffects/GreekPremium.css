@@ -22,7 +22,7 @@
   --greek-bronze-texture: url("/theme-effects/greek-premium/materials/antique-bronze.webp");
   --greek-gold-texture: url("/theme-effects/greek-premium/materials/aged-gold.webp");
   --greek-key: url("/theme-effects/greek-premium/ornaments/greek-key-horizontal.webp");
-  --greek-scenario: url("/theme-effects/greek-premium/background/scenario-architecture.webp");
+  --greek-scenario: url("/theme-effects/greek-premium/background/scenario-architecture-navbar.png");
   --greek-bevel: inset 0 2px 0 rgba(255,250,222,.9), inset 0 -1px 0 rgba(104,58,20,.64), inset 0 -8px 13px rgba(65,31,10,.3);
   --greek-structural-shadow: 0 2px 0 #e4bc70, 0 5px 0 #321808, 0 9px 0 #86521f, 0 14px 26px rgba(0,0,0,.64);
   --greek-recess: inset 0 2px 7px rgba(49,23,7,.5), inset 0 -1px 0 rgba(255,244,207,.62), inset 0 0 0 1px rgba(85,43,14,.46);
@@ -1644,4 +1644,70 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="background"]
   .oc-bg-widget:is([data-background-source="transparent"], [data-background-source="chroma"])::before {
   content: none;
+}
+
+/* The scenario-architecture image already contains the carved top beam and
+   central medallion. Place the live navbar information on that architecture
+   instead of drawing a second bar, columns, or clock plaque over it. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"] {
+  top: 16px;
+  padding: 9px min(9%, 170px) !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  clip-path: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"]::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"]::after {
+  content: none !important;
+  background: none !important;
+}
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] .better-navbar-ambient,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] .better-navbar-sheen { display: none !important; }
+
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] :is(
+  .better-navbar-brand-name, .better-navbar-brand-subtitle,
+  [data-widget-element="displayName"], [data-widget-element="displayName"] span,
+  [data-widget-element="balance"], [data-widget-element="balance"] span,
+  [data-widget-element="crypto"], [data-widget-element="crypto"] span,
+  [data-widget-element="motto"], [data-widget-element="startBalance"]
+) {
+  color: #43250f !important;
+  -webkit-text-fill-color: #43250f !important;
+  text-shadow: 0 1px 0 rgba(255, 246, 216, .75) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="container"] [data-widget-element="displayName"] > div > span.better-navbar-brand-subtitle {
+  color: #60391e !important;
+  -webkit-text-fill-color: #60391e !important;
+  text-shadow: 0 1px 0 rgba(255, 246, 216, .7) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="clock"] {
+  min-width: 96px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #43250f !important;
+  -webkit-text-fill-color: #43250f !important;
+  text-shadow: 0 1px 0 rgba(255, 246, 216, .75) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="clock"]::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="clock"]::after {
+  content: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="sponsor"] {
+  border: 1px solid #8b571e !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, rgba(250, 235, 196, .83), rgba(185, 132, 68, .64)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 250, 224, .74), 0 1px 3px rgba(63, 33, 12, .27) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="navbar"] [data-widget-element="sponsor"] span {
+  color: #472712 !important;
+  -webkit-text-fill-color: #472712 !important;
+  text-shadow: 0 1px 0 rgba(255, 244, 207, .6) !important;
 }

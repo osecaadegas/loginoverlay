@@ -454,6 +454,34 @@ try {
   assert.match(oldRomeProviderLogo.wrapperFilter, /brightness\(0\)/, 'Old Rome provider mark enforces the black treatment');
   assert.equal(oldRomeProviderLogo.imageBlend, 'multiply');
   assert.equal(oldRomeProviderLogo.wrapperBlend, 'multiply');
+  const oldRomeNavbar = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
+    'navbar', { ...window.themeTest.base('navbar'), siteUrl: 'streamerscenter.com', showClock: true, showCTA: true }, 'old_rome',
+  ));
+  const readOldRomeNavbar = async runtime => {
+    await mount('navbar', oldRomeNavbar, { runtime });
+    return page.$eval('[data-widget-type="navbar"] [data-widget-element="container"]', element => {
+      const subtitle = element.querySelector('.better-navbar-brand-subtitle');
+      const sponsor = element.querySelector('[data-widget-element="sponsor"]');
+      const clock = element.querySelector('[data-widget-element="clock"]');
+      const style = getComputedStyle(element);
+      return {
+        background: style.backgroundImage,
+        subtitleColor: subtitle && getComputedStyle(subtitle).color,
+        sponsorBackground: sponsor && getComputedStyle(sponsor).backgroundImage,
+        leftColumn: getComputedStyle(element, '::before').backgroundImage,
+        clockBackground: clock && getComputedStyle(clock).backgroundImage,
+        clockLaurel: clock && getComputedStyle(clock, '::before').content,
+      };
+    });
+  };
+  const navbarPreview = await readOldRomeNavbar('editor');
+  assert.equal(navbarPreview.background, 'none', 'Old Rome uses the existing temple beam instead of painting a second bar');
+  assert.equal(navbarPreview.leftColumn, 'none', 'Old Rome uses the temple columns without duplicating them in the navbar');
+  assert.equal(navbarPreview.clockBackground, 'none', 'Old Rome clock sits within the temple medallion without a separate plaque');
+  assert.equal(navbarPreview.clockLaurel, 'none', 'Old Rome clock does not duplicate the temple laurels');
+  assert.equal(navbarPreview.subtitleColor, 'rgb(96, 57, 30)', 'Old Rome subtitle remains readable on the carved beam');
+  assert.match(navbarPreview.sponsorBackground, /linear-gradient/, 'Old Rome sponsor follows the carved beam material');
+  assert.deepEqual(await readOldRomeNavbar('obs'), navbarPreview, 'Old Rome navbar materials match in editor and OBS runtimes');
   for (const theme of ['gradient', 'matte']) {
     const legacy = await page.evaluate(theme => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), theme), theme);
     await mount('bets', legacy, { runtime: 'obs' });

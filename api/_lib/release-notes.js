@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-temple-navbar-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Old Rome temple navbar',
+    summary: 'Old Rome now places live navbar information directly on the carved temple beam.',
+    changes: [
+      'Add a temple foreground variant with a clear carved beam for live navbar information.',
+      'Remove the duplicate navbar slab and columns so the temple architecture frames live information.',
+      'Place the clock over the existing central medallion without a separate clock plaque or laurels.',
+      'Keep channel, balance, clock and sponsor values live, and restyle their text for the carved stone.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'new-horizontal-break-even-parity-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'New Horizontal B.E. display parity',
     summary: 'The New Horizontal hunt now presents a completed or zero break-even state consistently with the standard Bonus Hunt stat tiles.',
