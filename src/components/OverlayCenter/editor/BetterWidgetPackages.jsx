@@ -3245,6 +3245,7 @@ const CONTROL_TAB_CATEGORIES = {
   arrange: "layout",
   bar: "layout",
   layout: "layout",
+  pieces: "layout",
   size: "layout",
   board: "appearance",
   cards: "appearance",
@@ -3291,7 +3292,7 @@ const CONTROL_TAB_LABELS = {
 };
 
 const CONTROL_TAB_ORDER = {
-  layout: ["layout", "size", "arrange", "bar"],
+  layout: ["layout", "size", "arrange", "pieces", "bar"],
   appearance: [
     "presets",
     "theme",

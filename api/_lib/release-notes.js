@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-temple-pieces-fine-tune-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Old Rome temple controls in Fine tune',
+    summary: 'The Old Rome navbar Temple pieces controls are now reachable through Fine tune.',
+    changes: [
+      'Place Temple pieces in the Layout category so its individual move and resize controls can be opened.',
+      'Keep the existing saved positions and sizes compatible with editor preview and OBS browser sources.',
+    ],
+    action: 'Refresh the editor after deployment. Open the Old Rome navbar, then Fine tune, Layout and Temple pieces. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'old-rome-navbar-independent-pieces-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Independent Old Rome navbar pieces',
     summary: 'The temple navbar now lets streamers move and size its visible information separately.',

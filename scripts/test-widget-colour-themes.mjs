@@ -236,7 +236,7 @@ try {
           mediaText: '/player.webp|image|Live media', imageUrl: type === 'background' ? '/player.webp' : c.imageUrl,
         };
       },
-      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '', isAdmin = true, liveWidgets = [] } = {}) {
+      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '', isAdmin = true, liveWidgets = [], tab = '__all' } = {}) {
         const definition = registry.getBetterWidgetDefinition(type);
         const c = config || this.base(type);
         this.current = { type, config: c, runtime, controls, width, search, isAdmin };
@@ -244,11 +244,11 @@ try {
         this.instance = instance;
         root.render(React.createElement('main', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 16, padding: 12 } },
           React.createElement('aside', { style: { width, flexShrink: 0 } },
-            React.createElement(EditorControlContext.Provider, { value: { mode: controls, tab: '__all', search,
+            React.createElement(EditorControlContext.Provider, { value: { mode: controls, tab, search,
               simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true, 'Move and resize temple pieces': true }, onSection() {} } },
-              React.createElement(BetterWidgetControls, { type, config: c, isAdmin, widget: { ...instance, config: c }, onChange: next => {
+              React.createElement(BetterWidgetControls, { key: `${type}-${controls}-${tab}`, type, config: c, isAdmin, widget: { ...instance, config: c }, onChange: next => {
                 window.themeTest.lastConfig = next;
-                this.mount(type, next, { runtime, controls, width, search, isAdmin });
+                this.mount(type, next, { runtime, controls, width, search, isAdmin, tab });
               } }))),
           React.createElement('div', { 'data-preview': type, style: { width: instance.width, height: instance.height, flexShrink: 0 } },
             registry.renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime, liveWidgets }))));
@@ -535,7 +535,18 @@ try {
   assert.equal(movedOldRomeParts.sponsorText.width, 150, 'Old Rome responsible play text width is independently editable');
   assert.ok(movedOldRomeParts.avatar.x > navbarPreview.avatarCenterX - 25, 'Old Rome avatar offset moves it away from its default centre');
   assert.deepEqual(await readOldRomeParts('obs'), movedOldRomeParts, 'Old Rome individual positions and sizes match in editor and OBS runtimes');
-  await mount('navbar', oldRomeNavbar, { controls: 'advanced' });
+  await mount('navbar', oldRomeNavbar, { controls: 'advanced', tab: 'sections' });
+  assert.equal(await page.$('[data-control-section="Move and resize temple pieces"]'), null, 'Old Rome temple controls start behind their Layout tab');
+  await page.$eval('nav[aria-label="Widget control categories"]', nav => {
+    [...nav.querySelectorAll('[role="tab"]')].find(button => button.textContent.trim() === 'Layout').click();
+  });
+  await page.waitForSelector('nav[aria-label="Layout control subcategories"]');
+  await page.$eval('nav[aria-label="Layout control subcategories"]', nav => {
+    const button = [...nav.querySelectorAll('[role="tab"]')].find(item => item.textContent.trim() === 'Temple pieces');
+    if (!button) throw new Error('Temple pieces is missing from the Layout category');
+    button.click();
+  });
+  await page.waitForSelector('[data-control-section="Move and resize temple pieces"]');
   const templeControls = await page.$eval('[data-control-section="Move and resize temple pieces"]', section => ({
     pieceOptions: [...section.querySelectorAll('select option')].map(option => option.value),
     fields: [...section.querySelectorAll('input[type="number"]')].map(input => input.closest('label')?.textContent.trim()),
