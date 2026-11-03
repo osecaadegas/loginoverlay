@@ -29,6 +29,7 @@ try {
     fontFamily: 'Impact',
     twitchChannel: 'private-streamer',
     youtubeApiKey: 'super-secret',
+    streamElementsOverlayToken: 'private-overlay-activity-token',
     streamerName: 'Brutuspolus',
     messages: [{ username: 'private-viewer', message: 'private message' }],
     backgroundUrl: 'https://private.example/background.png',
@@ -56,6 +57,7 @@ try {
   for (const privateValue of [
     'private-streamer',
     'super-secret',
+    'private-overlay-activity-token',
     'Brutuspolus',
     'private-viewer',
     'private message',

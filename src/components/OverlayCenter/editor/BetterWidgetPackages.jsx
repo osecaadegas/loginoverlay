@@ -70,6 +70,7 @@ import {
   getHorizontalHuntMinHeight,
 } from "../widgets/bonus-hunt/shared/betterHuntSizing";
 import ChatWidget from "../widgets/chat/ChatWidget";
+import { isOverlayActivityToken } from "../widgets/chat/streamElementsActivityAlerts";
 import {
   BETTER_CHAT_STYLES,
   chatStyleDefaults,
@@ -1024,6 +1025,10 @@ const BASE_BETTER_CONFIG = {
       raidColor: "#ff2d8d",
     },
     shoutoutInChat: false,
+    activityAlertsEnabled: false,
+    followAlertsEnabled: true,
+    tipAlertsEnabled: true,
+    activityAlertDuration: 7,
     giveawayInChat: false,
     giveawayPosition: "top",
     shoutoutPosition: "top",
@@ -1642,6 +1647,10 @@ function normalizeBetterChatConfig(merged = {}) {
     defaults.roleEffects.intensity,
   );
   next.shoutoutInChat = next.shoutoutInChat === true;
+  next.activityAlertsEnabled = next.activityAlertsEnabled === true;
+  next.followAlertsEnabled = next.followAlertsEnabled !== false;
+  next.tipAlertsEnabled = next.tipAlertsEnabled !== false;
+  next.activityAlertDuration = clampNumber(next.activityAlertDuration, 3, 20, 7);
   next.giveawayInChat = next.giveawayInChat === true;
   next.giveawayPosition = next.giveawayPosition === "bottom" ? "bottom" : "top";
   next.shoutoutPosition = next.shoutoutPosition === "bottom" ? "bottom" : "top";
@@ -3941,6 +3950,24 @@ function BetterChatControls({ config, onChange, widget, onWidgetChange, allWidge
               set({ shoutoutDismissOnClipEnd })
             }
           />
+          </>}
+        </Section>
+        <Section title="Follower and Tip Alerts" icon={<Gift size={13} />} category="behavior">
+          <ToggleRow
+            label="Show live activity alerts"
+            checked={c.activityAlertsEnabled === true}
+            onChange={(activityAlertsEnabled) => set({ activityAlertsEnabled })}
+          />
+          {c.activityAlertsEnabled && <>
+            <ToggleRow label="New followers" checked={c.followAlertsEnabled !== false} onChange={(followAlertsEnabled) => set({ followAlertsEnabled })} />
+            <ToggleRow label="Donations and tips" checked={c.tipAlertsEnabled !== false} onChange={(tipAlertsEnabled) => set({ tipAlertsEnabled })} />
+            <label className="bp-text">
+              <span>StreamElements Overlay Token</span>
+              <input type="password" autoComplete="off" spellCheck="false" value={c.streamElementsOverlayToken || ''} onChange={(event) => set({ streamElementsOverlayToken: event.target.value.trim() })} />
+            </label>
+            <p>Use the Overlay Token from StreamElements, never your account JWT. Alerts appear in this chat when StreamElements reports a new follow or tip.</p>
+            {c.streamElementsOverlayToken && !isOverlayActivityToken(c.streamElementsOverlayToken) && <p role="alert">This does not look like a StreamElements Overlay Token. Check the token before publishing.</p>}
+            <SliderRow label="Alert duration" value={c.activityAlertDuration} min={3} max={20} step={1} unit="s" onChange={(activityAlertDuration) => set({ activityAlertDuration })} />
           </>}
         </Section>
         <Section

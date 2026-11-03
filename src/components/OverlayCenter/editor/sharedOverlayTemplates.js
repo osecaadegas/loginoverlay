@@ -41,6 +41,7 @@ const BLOCKED_KEYS = new Set(
     "kickChannelId",
     "messages",
     "overlayToken",
+    "streamElementsOverlayToken",
     "participants",
     "password",
     "pendingRequests",

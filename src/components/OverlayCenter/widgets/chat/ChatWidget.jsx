@@ -46,6 +46,7 @@ import {
 } from "../../../../services/shoutoutCommandService";
 
 import {premiumChatPalette,premiumMessageSurface} from './premiumChatPresentation';
+import { connectStreamElementsActivityAlerts, isOverlayActivityToken } from './streamElementsActivityAlerts';
 import { getWidgetColourThemeTokens } from '../../editor/widgetColourThemes';
 import './PremiumChat.css';
 
@@ -839,6 +840,7 @@ function ChatWidget({
     }),
   });
   const [messages, setMessages] = useState([]);
+  const [activityAlerts, setActivityAlerts] = useState([]);
   const [shoutoutActive, setShoutoutActive] = useState(false);
   const [visibleBetterChatCount, setVisibleBetterChatCount] = useState(1);
   const [connectedTwitchChannelId, setConnectedTwitchChannelId] = useState("");
@@ -1218,6 +1220,28 @@ function ChatWidget({
     handleMessage,
   );
   useKickChat(!previewOnly && c.kickEnabled ? c.kickChannelId : "", handleMessage);
+
+  const activityToken = String(c.streamElementsOverlayToken || '').trim();
+  useEffect(() => {
+    setActivityAlerts([]);
+    if (previewOnly || !c.activityAlertsEnabled || !isOverlayActivityToken(activityToken)) return undefined;
+    return connectStreamElementsActivityAlerts({
+      token: activityToken,
+      onAlert: (alert) => {
+        if ((alert.kind === 'follow' && c.followAlertsEnabled === false) ||
+            (alert.kind === 'tip' && c.tipAlertsEnabled === false)) return;
+        setActivityAlerts((previous) => [...previous.slice(-9), alert]);
+      },
+    });
+  }, [activityToken, c.activityAlertsEnabled, c.followAlertsEnabled, c.tipAlertsEnabled, previewOnly]);
+
+  const currentActivityAlert = activityAlerts[0];
+  useEffect(() => {
+    if (!currentActivityAlert) return undefined;
+    const timer = setTimeout(() => setActivityAlerts((previous) => previous.slice(1)),
+      Math.max(3, Math.min(20, Number(c.activityAlertDuration) || 7)) * 1000);
+    return () => clearTimeout(timer);
+  }, [currentActivityAlert, c.activityAlertDuration]);
 
   /* Auto-scroll */
   const previewMessages = Array.isArray(c.__appearancePreviewMessages)
@@ -1971,6 +1995,7 @@ function ChatWidget({
         {...partAttrs("messageList")}
         ref={scrollRef}
         style={messageListStyle({
+          position: "relative",
           lineHeight: msgLineHeight,
           ...(isBetterChat && {
             position: "relative",
@@ -1988,6 +2013,33 @@ function ChatWidget({
           ...(giveawayVisible && !embeddedShoutoutActive && { minHeight: "20%" }),
         })}
       >
+        {currentActivityAlert && (
+          <div
+            key={currentActivityAlert.id}
+            className={`ov-chat-activity-alert ov-chat-activity-alert--${currentActivityAlert.kind}`}
+            role="status"
+            aria-live="polite"
+            style={{
+              '--activity-surface': premiumPalette?.raised || sourcePalette.raised || c.bubble || '#12213a',
+              '--activity-border': premiumPalette?.border || sourcePalette.border || c.borderColor || '#45c8ff',
+              '--activity-accent': premiumPalette?.accent || sourcePalette.accent || c.glow || '#45c8ff',
+              '--activity-text': premiumPalette?.text || sourcePalette.text || c.text || '#fff',
+            }}
+          >
+            <span className="ov-chat-activity-alert__icon" aria-hidden="true">{currentActivityAlert.kind === 'follow' ? '💜' : '💝'}</span>
+            <span className="ov-chat-activity-alert__content">
+              <span className="ov-chat-activity-alert__label">{currentActivityAlert.kind === 'follow' ? 'New follower' : 'New tip'}</span>
+              <strong>{currentActivityAlert.username}</strong>
+              {currentActivityAlert.kind === 'tip' && currentActivityAlert.amount != null && (
+                <span className="ov-chat-activity-alert__amount">
+                  {currentActivityAlert.currency
+                    ? new Intl.NumberFormat(undefined, { style: 'currency', currency: currentActivityAlert.currency }).format(currentActivityAlert.amount)
+                    : currentActivityAlert.amount.toLocaleString()}
+                </span>
+              )}
+            </span>
+          </div>
+        )}
         {renderMessages.length === 0 &&
           isBetterChat &&
           showBetterChatEmptyState && (

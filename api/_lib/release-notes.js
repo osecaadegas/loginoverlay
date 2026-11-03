@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'chat-follower-tip-alerts-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Live follower and tip alerts in Chat',
+    summary: 'Chat widgets can display new StreamElements follow and tip activity using the selected colour theme.',
+    changes: [
+      'Add optional follower and tip alerts to every Chat style and colour theme.',
+      'Connect the browser-source chat to StreamElements Astro with a dedicated Overlay Token, with reconnects and duplicate-event filtering.',
+      'Provide separate follow/tip switches and alert duration controls in the chat editor.',
+    ],
+    action: 'In Chat settings, enable live activity alerts and enter your StreamElements Overlay Token (not the account JWT). Save and refresh the OBS Browser Source. Live StreamElements and OBS delivery were not verified in this environment.',
+  },
+  {
     id: 'old-rome-chat-cornice-giveaway-shoutout-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Old Rome chat top and embedded cards',
     summary: 'Old Rome chat now has a carved top edge with clearer giveaway text and matching shoutout materials.',

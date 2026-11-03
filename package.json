@@ -35,6 +35,7 @@
     "test:mainstream-carousel": "node scripts/test-mainstream-carousel.mjs",
     "test:better-bets": "node scripts/test-better-bets-browser.mjs",
     "test:broadcast-chat": "node scripts/test-broadcast-chat.mjs",
+    "test:chat-activity-alerts": "node scripts/test-chat-activity-alerts.mjs",
     "test:widget-colour-themes": "node scripts/test-widget-colour-themes.mjs",
     "test:scene-colour-theme": "node scripts/test-scene-colour-theme.mjs",
     "test:slot-bingo-config": "node scripts/test-slot-bingo-config.mjs",

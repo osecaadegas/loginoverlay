@@ -5,6 +5,7 @@ import { CHAT_STYLE_KEYS } from "../styleKeysRegistry";
 import useTwitchChannel from "../../../../hooks/useTwitchChannel";
 import { BROADCAST_CHAT_DEFAULTS, switchChatStyle } from "./chatStyles";
 import { ChatGiveawayAppearanceControls } from "../../editor/BetterWidgetPackages";
+import { isOverlayActivityToken } from "./streamElementsActivityAlerts";
 
 export default function ChatConfig({ config, onChange, allWidgets }) {
   const c = config || {};
@@ -293,6 +294,31 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             <span>Play !so inside chat</span>
           </label>
           <p className="oc-config-hint">Broadcasters and Twitch moderators can use !so username. Available with every chat style.</p>
+          <h4 className="nb-subtitle">Follower and tip alerts</h4>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.activityAlertsEnabled === true} onChange={(e) => set("activityAlertsEnabled", e.target.checked)} />
+            <span>Show live activity alerts inside chat</span>
+          </label>
+          {c.activityAlertsEnabled && <>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <input type="checkbox" checked={c.followAlertsEnabled !== false} onChange={(e) => set("followAlertsEnabled", e.target.checked)} />
+              <span>New followers</span>
+            </label>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <input type="checkbox" checked={c.tipAlertsEnabled !== false} onChange={(e) => set("tipAlertsEnabled", e.target.checked)} />
+              <span>Donations and tips</span>
+            </label>
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <span>StreamElements Overlay Token</span>
+              <input type="password" autoComplete="off" spellCheck="false" value={c.streamElementsOverlayToken || ""} onChange={(e) => set("streamElementsOverlayToken", e.target.value.trim())} />
+            </label>
+            <p className="oc-config-hint">Use the StreamElements Overlay Token, never the account JWT.</p>
+            {c.streamElementsOverlayToken && !isOverlayActivityToken(c.streamElementsOverlayToken) && <p className="oc-config-hint" role="alert">This does not look like an Overlay Token. Check it before publishing.</p>}
+            <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+              <span>Duration (seconds)</span>
+              <input type="number" min="3" max="20" value={c.activityAlertDuration || 7} onChange={(e) => set("activityAlertDuration", Math.max(3, Math.min(20, Number(e.target.value) || 7)))} />
+            </label>
+          </>}
           <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
             <span>Shoutout position</span>
             <select value={c.shoutoutPosition || "top"} onChange={(e) => set("shoutoutPosition", e.target.value)}>
