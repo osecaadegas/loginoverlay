@@ -2273,8 +2273,8 @@ function NavbarWidget({
     ).toUpperCase();
     const packageAvatarSize =
       avatarImageSize ||
-      (isVolcanicNavbar ? Math.min(30, packageHeight * 0.5) : packageHeight * 0.66) * ((Number(c.avatarSize) || 100) / 100);
-    const showPackageAvatarImage = c.showAvatar !== false && Boolean(avatarUrl);
+      (c.colourTheme === "old_rome" ? 46 : isVolcanicNavbar ? Math.min(30, packageHeight * 0.5) : packageHeight * 0.66) * ((Number(c.avatarSize) || 100) / 100);
+    const showPackageAvatarImage = Boolean(avatarUrl) && (c.colourTheme === "old_rome" ? c.showTempleAvatar !== false : c.showAvatar !== false);
     const siteText =
       c.siteUrl ||
       c.motto ||
@@ -2385,6 +2385,32 @@ function NavbarWidget({
       "equalizer",
       "vinyl",
     ].includes(betterMusicDisplayStyle);
+    const renderPackageAvatar = (className = "") => showPackageAvatarImage ? (
+      <div
+        className={className}
+        {...partAttrs("avatar")}
+        style={withElementOffset(c, "avatar", {
+          width: packageAvatarSize,
+          height: packageAvatarSize,
+          flex: "0 0 auto",
+          display: "grid",
+          placeItems: "center",
+          overflow: "hidden",
+          borderRadius: avatarRadius,
+          border: avatarBorderWidth
+            ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
+            : `1px solid ${alphaColor(packageBlue, 0.38)}`,
+          background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
+          boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
+        })}
+      >
+        <img
+          src={avatarUrl}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: avatarFit, borderRadius: avatarRadius, display: "block" }}
+        />
+      </div>
+    ) : null;
     const renderBetterIdentitySection = () => {
       if (c.showIdentity === false) return null;
       return (
@@ -2403,40 +2429,7 @@ function NavbarWidget({
             ...(isCandyNavbar ? { background: 'linear-gradient(#ffb4e8,#ff39be 46%,#ec0e96)' } : {}),
           })}
         >
-          {showPackageAvatarImage ? (
-            <div
-              {...partAttrs("avatar")}
-              style={withElementOffset(c, "avatar", {
-                width: packageAvatarSize,
-                height: packageAvatarSize,
-                flex: "0 0 auto",
-                display: "grid",
-                placeItems: "center",
-                overflow: "hidden",
-                borderRadius: avatarRadius,
-                border: avatarBorderWidth
-                  ? `${avatarBorderWidth}px solid ${avatarBorderColor}`
-                  : `1px solid ${alphaColor(packageBlue, 0.38)}`,
-                background: `linear-gradient(135deg, ${alphaColor(packageBlue, 0.22)}, ${alphaColor(packageGold, 0.12)})`,
-                boxShadow: `0 0 16px ${alphaColor(packageBlue, 0.18)}`,
-              })}
-            >
-              <img
-                src={avatarUrl}
-                alt=""
-                {...partAttrs("avatar")}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: avatarFit,
-                  borderRadius: avatarRadius,
-                  display: "block",
-                }}
-              />
-            </div>
-          ) : (
-            renderOrangeArc()
-          )}
+          {c.colourTheme === "old_rome" ? null : (renderPackageAvatar() || renderOrangeArc())}
           <div
             style={{
               minWidth: 0,
@@ -2828,6 +2821,8 @@ function NavbarWidget({
             {renderBetterZone("center")}
             {renderBetterZone("right")}
           </div>
+
+          {c.colourTheme === "old_rome" && c.showIdentity !== false && renderPackageAvatar("old-rome-navbar-avatar")}
 
           {isSolverdeNavbar && c.solverde?.decorations !== false && <SolverdeSun className="solverde-masthead-sun" />}
           {isVolcanicNavbar && <VolcanicWidgetLife config={c} />}

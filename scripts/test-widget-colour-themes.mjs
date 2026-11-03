@@ -455,14 +455,19 @@ try {
   assert.equal(oldRomeProviderLogo.imageBlend, 'multiply');
   assert.equal(oldRomeProviderLogo.wrapperBlend, 'multiply');
   const oldRomeNavbar = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
-    'navbar', { ...window.themeTest.base('navbar'), siteUrl: 'streamerscenter.com', showClock: true, showCTA: true }, 'old_rome',
+    'navbar', { ...window.themeTest.base('navbar'), avatarUrl: '/player.webp', showAvatar: false, siteUrl: 'streamerscenter.com', showClock: true, showCTA: true }, 'old_rome',
   ));
   const readOldRomeNavbar = async runtime => {
     await mount('navbar', oldRomeNavbar, { runtime });
+    if (process.env.CAPTURE_OLD_ROME === '1' && runtime === 'editor') await (await page.$('[data-preview="navbar"]')).screenshot({ path: '.codex-dev/old-rome-navbar-avatar-review.png' });
     return page.$eval('[data-widget-type="navbar"] [data-widget-element="container"]', element => {
       const subtitle = element.querySelector('.better-navbar-brand-subtitle');
       const sponsor = element.querySelector('[data-widget-element="sponsor"]');
       const clock = element.querySelector('[data-widget-element="clock"]');
+      const avatar = element.querySelector('.old-rome-navbar-avatar');
+      const containerRect = element.getBoundingClientRect();
+      const avatarRect = avatar?.getBoundingClientRect();
+      const clockRect = clock?.getBoundingClientRect();
       const style = getComputedStyle(element);
       return {
         background: style.backgroundImage,
@@ -471,17 +476,29 @@ try {
         leftColumn: getComputedStyle(element, '::before').backgroundImage,
         clockBackground: clock && getComputedStyle(clock).backgroundImage,
         clockLaurel: clock && getComputedStyle(clock, '::before').content,
+        avatarSource: avatar?.querySelector('img')?.getAttribute('src'),
+        avatarCenterX: avatarRect && Math.round(avatarRect.left + avatarRect.width / 2 - containerRect.left),
+        avatarCenterY: avatarRect && Math.round(avatarRect.top + avatarRect.height / 2 - containerRect.top),
+        containerWidth: Math.round(containerRect.width),
+        containerHeight: Math.round(containerRect.height),
+        clockLeft: clockRect && Math.round(clockRect.left - containerRect.left),
       };
     });
   };
   const navbarPreview = await readOldRomeNavbar('editor');
   assert.equal(navbarPreview.background, 'none', 'Old Rome uses the existing temple beam instead of painting a second bar');
   assert.equal(navbarPreview.leftColumn, 'none', 'Old Rome uses the temple columns without duplicating them in the navbar');
-  assert.equal(navbarPreview.clockBackground, 'none', 'Old Rome clock sits within the temple medallion without a separate plaque');
+  assert.equal(navbarPreview.clockBackground, 'none', 'Old Rome clock has no separate plaque');
   assert.equal(navbarPreview.clockLaurel, 'none', 'Old Rome clock does not duplicate the temple laurels');
+  assert.equal(navbarPreview.avatarSource, '/player.webp', 'Old Rome temple medallion uses the live configured avatar');
+  assert.ok(Math.abs(navbarPreview.avatarCenterX - navbarPreview.containerWidth / 2) <= 2, 'Old Rome avatar is centred in the temple medallion');
+  assert.ok(Math.abs(navbarPreview.avatarCenterY - (navbarPreview.containerHeight / 2 - 8)) <= 2, 'Old Rome avatar sits on the medallion height');
+  assert.ok(navbarPreview.clockLeft > navbarPreview.avatarCenterX + 50, 'Old Rome clock is on the beam beside the avatar');
   assert.equal(navbarPreview.subtitleColor, 'rgb(96, 57, 30)', 'Old Rome subtitle remains readable on the carved beam');
   assert.match(navbarPreview.sponsorBackground, /linear-gradient/, 'Old Rome sponsor follows the carved beam material');
   assert.deepEqual(await readOldRomeNavbar('obs'), navbarPreview, 'Old Rome navbar materials match in editor and OBS runtimes');
+  await mount('navbar', { ...oldRomeNavbar, showTempleAvatar: false });
+  assert.equal(await page.$('.old-rome-navbar-avatar'), null, 'Old Rome temple avatar visibility control can hide the portrait');
   const oldRomeHunt = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
     'bonus_hunt', window.themeTest.base('bonus_hunt'), 'old_rome',
   ));

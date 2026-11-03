@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-temple-avatar-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Old Rome temple avatar',
+    summary: 'The Old Rome navbar places the streamer avatar in the temple medallion, with live text and clock on the side beams.',
+    changes: [
+      'Use the configured streamer avatar in the central circular opening of the temple architecture.',
+      'Keep channel name and balance on the left beam and move the clock to the right beam.',
+      'Apply the same Old Rome layout in the editor preview and OBS browser source.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'old-rome-widget-finishing-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Old Rome widget finishing',
     summary: 'Bonus Hunt, chat giveaways and Current Game now fit the Old Rome temple materials more consistently.',

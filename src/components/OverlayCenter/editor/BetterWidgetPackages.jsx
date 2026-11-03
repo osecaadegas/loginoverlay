@@ -2576,9 +2576,9 @@ function BetterNavbarControls({
               onChange={(showIdentity) => set({ showIdentity })}
             />
             <ToggleRow
-              label="Streamer avatar"
-              checked={c.showAvatar !== false}
-              onChange={(showAvatar) => set({ showAvatar })}
+              label={c.colourTheme === "old_rome" ? "Temple avatar" : "Streamer avatar"}
+              checked={c.colourTheme === "old_rome" ? c.showTempleAvatar !== false : c.showAvatar !== false}
+              onChange={(visible) => set(c.colourTheme === "old_rome" ? { showTempleAvatar: visible } : { showAvatar: visible })}
             />
             <ToggleRow
               label="Clock"
