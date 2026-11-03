@@ -1711,3 +1711,107 @@
   -webkit-text-fill-color: #472712 !important;
   text-shadow: 0 1px 0 rgba(255, 244, 207, .6) !important;
 }
+
+/* The scene already has full-height columns. The extra columns attached to
+   Bonus Hunt's sides only duplicate that architecture outside the widget. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::before,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="bonus_hunt"] .better-hunt-root::after {
+  content: none !important;
+  background: none !important;
+  filter: none !important;
+}
+
+/* Embedded chat giveaways use a native source card while active. Give it the
+   same carved stone and dark ink as the rest of the Old Rome chat wall. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"] .ov-chat-giveaway-source-card {
+  gap: 12px !important;
+  padding: 10px 13px !important;
+  border: 2px solid #8b5722 !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, rgba(255, 250, 226, .55), rgba(180, 125, 58, .16)), var(--greek-warm-marble) center / 330px 330px repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255, 250, 226, .8), inset 0 0 0 1px rgba(106, 59, 20, .35), 0 4px 8px rgba(49, 23, 8, .3) !important;
+  color: var(--greek-ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > span:first-child {
+  font-size: 26px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div {
+  gap: 5px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div :is(strong, span) {
+  color: var(--greek-ink) !important;
+  text-shadow: 0 1px 0 rgba(255, 250, 226, .7) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > strong {
+  font-size: 15px !important;
+  letter-spacing: .04em !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > span {
+  font-size: 12px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > span:last-child {
+  color: var(--greek-crimson) !important;
+  font-weight: 900 !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="winner"] {
+  flex: 0 0 94px !important;
+  width: calc(100% - 16px) !important;
+  height: 94px !important;
+  max-height: none !important;
+  margin: 8px auto 10px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="winner"] .ov-chat-giveaway-source-card > div :is(strong, span, i) {
+  color: var(--greek-ink) !important;
+  text-shadow: 0 1px 0 rgba(255, 250, 226, .7) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="winner"] .ov-chat-giveaway-source-card > div > strong {
+  font-size: 15px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="winner"] .ov-chat-giveaway-source-card > div > span {
+  font-size: 11px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="winner"] .ov-chat-giveaway-source-card > div > i {
+  border-color: var(--greek-gold) !important;
+  background: var(--greek-crimson) !important;
+  color: var(--greek-ivory-hi) !important;
+  text-shadow: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-header svg {
+  color: var(--greek-crimson) !important;
+}
+
+/* Immersive Current Game shares the carved material system instead of keeping
+   its default dark glass panel when the whole scene changes to Old Rome. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] {
+  border: calc(4 * var(--cg-px)) solid #704117 !important;
+  border-radius: calc(17 * var(--cg-px)) !important;
+  background: linear-gradient(180deg, rgba(255, 250, 226, .3), rgba(105, 56, 20, .13)), var(--greek-warm-marble) center / 690px 690px repeat !important;
+  box-shadow: 0 0 0 calc(2 * var(--cg-px)) #c08a37, 0 calc(8 * var(--cg-px)) calc(20 * var(--cg-px)) rgba(0, 0, 0, .5), var(--greek-bevel) !important;
+  color: var(--greek-ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] .cg-cover {
+  border-color: #8b5722 !important;
+  box-shadow: 0 0 0 calc(2 * var(--cg-px)) rgba(240, 199, 106, .6), inset 0 0 calc(8 * var(--cg-px)) rgba(0, 0, 0, .32) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] :is(.cg-name-block h2, h3, .cg-stat strong) {
+  color: var(--greek-ink) !important;
+  text-shadow: 0 1px 0 rgba(255, 250, 226, .75) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] :is(.cg-name-block p, .cg-stat > span, .cg-record-bet) {
+  color: #62452e !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] :is(.cg-info, .cg-records) {
+  border-left-color: rgba(107, 59, 20, .5) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] .cg-current,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] .cg-stat {
+  border-color: #956027 !important;
+  background: linear-gradient(180deg, rgba(255, 250, 226, .5), rgba(162, 102, 40, .12)), var(--greek-marble-texture) center / 300px 300px repeat !important;
+  box-shadow: var(--greek-recess) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] .cg-current,
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] h3 svg {
+  color: var(--greek-crimson) !important;
+}

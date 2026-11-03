@@ -236,7 +236,7 @@ try {
           mediaText: '/player.webp|image|Live media', imageUrl: type === 'background' ? '/player.webp' : c.imageUrl,
         };
       },
-      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '', isAdmin = true } = {}) {
+      mount(type, config, { runtime = 'editor', controls = 'simple', width = 320, search = '', isAdmin = true, liveWidgets = [] } = {}) {
         const definition = registry.getBetterWidgetDefinition(type);
         const c = config || this.base(type);
         this.current = { type, config: c, runtime, controls, width, search, isAdmin };
@@ -251,7 +251,7 @@ try {
                 this.mount(type, next, { runtime, controls, width, search, isAdmin });
               } }))),
           React.createElement('div', { 'data-preview': type, style: { width: instance.width, height: instance.height, flexShrink: 0 } },
-            registry.renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime }))));
+            registry.renderBetterWidgetInstance({ instance, layout: { instances: [instance] }, mode: 'live', runtime, liveWidgets }))));
       },
       appearance() {
         const host = document.querySelector('[data-preview]');
@@ -482,6 +482,68 @@ try {
   assert.equal(navbarPreview.subtitleColor, 'rgb(96, 57, 30)', 'Old Rome subtitle remains readable on the carved beam');
   assert.match(navbarPreview.sponsorBackground, /linear-gradient/, 'Old Rome sponsor follows the carved beam material');
   assert.deepEqual(await readOldRomeNavbar('obs'), navbarPreview, 'Old Rome navbar materials match in editor and OBS runtimes');
+  const oldRomeHunt = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
+    'bonus_hunt', window.themeTest.base('bonus_hunt'), 'old_rome',
+  ));
+  await mount('bonus_hunt', oldRomeHunt);
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="bonus_hunt"]')).screenshot({ path: '.codex-dev/old-rome-hunt-review.png' });
+  const huntSideContent = await page.$eval('.better-hunt-root', element => [
+    getComputedStyle(element, '::before').content,
+    getComputedStyle(element, '::after').content,
+  ]);
+  assert.deepEqual(huntSideContent, ['none', 'none'], 'Old Rome Bonus Hunt has no duplicate side columns');
+  const oldRomeCurrent = await page.evaluate(() => window.themeTest.applyWidgetColourTheme(
+    'current_slot', window.themeTest.base('current_slot'), 'old_rome',
+  ));
+  const readOldRomeCurrent = async runtime => {
+    await mount('current_slot', oldRomeCurrent, { runtime });
+    return page.$eval('.cg-widget[data-style="immersive-current"]', element => ({
+      background: getComputedStyle(element).backgroundImage,
+      text: getComputedStyle(element.querySelector('.cg-name-block h2')).color,
+      stat: getComputedStyle(element.querySelector('.cg-stat')).backgroundImage,
+    }));
+  };
+  const currentPreview = await readOldRomeCurrent('editor');
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="current_slot"]')).screenshot({ path: '.codex-dev/old-rome-current-review.png' });
+  assert.match(currentPreview.background, /warm-marble\.webp/, 'Old Rome Current Game uses the shared warm marble');
+  assert.equal(currentPreview.text, 'rgb(44, 26, 16)', 'Old Rome Current Game title uses readable ink');
+  assert.match(currentPreview.stat, /ivory-marble\.webp/, 'Old Rome Current Game stats use carved marble');
+  assert.deepEqual(await readOldRomeCurrent('obs'), currentPreview, 'Old Rome Current Game matches in editor and OBS');
+  const liveGiveaway = { widget_type: 'giveaway', config: { title: 'Giveaway', prize: '20 EUR', keyword: 'rome', participants: ['Stream Viewer', 'Roman Viewer', 'Temple Viewer'], isActive: true } };
+  const oldRomeChat = await page.evaluate(giveaway => window.themeTest.applyWidgetColourTheme(
+    'chat', { ...window.themeTest.base('chat'), chatStyle: 'broadcast_chat', orientation: 'source_panel', giveawayInChat: true, shoutoutInChat: false, __previewShoutoutAlert: null, streamerOverlay: { role: 'chat' }, __previewGiveawayConfig: giveaway }, 'old_rome',
+  ), liveGiveaway.config);
+  const readOldRomeChatGiveaway = async runtime => {
+    await mount('chat', oldRomeChat, { runtime, liveWidgets: [liveGiveaway] });
+    return page.$eval('.ov-chat-giveaway-source-card', element => ({
+      background: getComputedStyle(element).backgroundImage,
+      text: getComputedStyle(element).color,
+      titleSize: getComputedStyle(element.querySelector('div > strong')).fontSize,
+    }));
+  };
+  const chatGiveawayPreview = await readOldRomeChatGiveaway('editor');
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-review.png' });
+  assert.match(chatGiveawayPreview.background, /warm-marble\.webp/, 'Old Rome chat giveaway uses stone instead of inherited blue');
+  assert.equal(chatGiveawayPreview.text, 'rgb(44, 26, 16)', 'Old Rome chat giveaway uses readable ink');
+  assert.equal(chatGiveawayPreview.titleSize, '15px', 'Old Rome chat giveaway title has readable type');
+  assert.deepEqual(await readOldRomeChatGiveaway('obs'), chatGiveawayPreview, 'Old Rome chat giveaway matches in editor and OBS');
+  const winnerGiveaway = { widget_type: 'giveaway', config: { ...liveGiveaway.config, isActive: false, winner: 'Stream Viewer' } };
+  const winnerChat = { ...oldRomeChat, __previewGiveawayConfig: winnerGiveaway.config };
+  const readOldRomeWinner = async runtime => {
+    await mount('chat', winnerChat, { runtime, liveWidgets: [winnerGiveaway] });
+    return page.$eval('.ov-chat-giveaway[data-giveaway-state="winner"]', element => ({
+      width: getComputedStyle(element).width,
+      height: getComputedStyle(element).height,
+      background: getComputedStyle(element.querySelector('.ov-chat-giveaway-source-card')).backgroundImage,
+      badgeBackground: getComputedStyle(element.querySelector('.ov-chat-giveaway-source-card i')).backgroundColor,
+    }));
+  };
+  const winnerPreview = await readOldRomeWinner('editor');
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-winner-review.png' });
+  assert.equal(winnerPreview.height, '94px', 'Old Rome chat winner keeps a readable card height');
+  assert.match(winnerPreview.background, /warm-marble\.webp/, 'Old Rome winner retains the carved chat material');
+  assert.equal(winnerPreview.badgeBackground, 'rgb(101, 14, 19)', 'Old Rome winner badge does not retain the inherited navy');
+  assert.deepEqual(await readOldRomeWinner('obs'), winnerPreview, 'Old Rome winner matches in editor and OBS');
   for (const theme of ['gradient', 'matte']) {
     const legacy = await page.evaluate(theme => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), theme), theme);
     await mount('bets', legacy, { runtime: 'obs' });

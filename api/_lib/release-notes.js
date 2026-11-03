@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-widget-finishing-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Old Rome widget finishing',
+    summary: 'Bonus Hunt, chat giveaways and Current Game now fit the Old Rome temple materials more consistently.',
+    changes: [
+      'Remove the duplicate columns attached to the sides of the Old Rome Bonus Hunt widget.',
+      'Replace inherited blue active and winner giveaway cards in chat with readable carved marble and dark ink.',
+      'Give immersive Current Game the Old Rome marble frame, stat cards and readable typography.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'old-rome-temple-navbar-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Old Rome temple navbar',
     summary: 'Old Rome now places live navbar information directly on the carved temple beam.',
