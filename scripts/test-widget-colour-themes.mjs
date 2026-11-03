@@ -69,7 +69,7 @@ assert.match(clearIceCss, /\.better-bets-stage :is\(\.bet-option, \.bet-bar\)/, 
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-messages/, 'Clear Ice textures the chat message surface');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway-source-card[\s\S]*clear-ice-fractures\.png/, 'Clear Ice overrides the inline-styled giveaway card embedded in streamer chat');
 assert.match(clearIceCss, /data-colour-theme="clear_ice"\] \.better-gw-metric-panel\s*\{[\s\S]*background-color:\s*var\(--clear-ice-card-surface\) !important;[\s\S]*clear-ice-glass-20\.png/, 'Clear Ice giveaway metric tiles use the shared translucent glass surface');
-assert.match(chatWidgetSource, /\['clear_ice','volcanic','solverde','street_art','starter_studio','galactic_command'\]\.includes\(c\.colourTheme\) \? 'top'/, 'Clear Ice keeps the embedded giveaway directly beneath the chat header');
+assert.match(chatWidgetSource, /\['clear_ice','old_rome','volcanic','solverde','street_art','starter_studio','galactic_command'\]\.includes\(c\.colourTheme\) \? 'top'/, 'Clear Ice and Old Rome keep embedded giveaways beneath the chat header');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway\s*\{[\s\S]*background:\s*transparent !important;[\s\S]*background-image:\s*none !important;[\s\S]*box-shadow:\s*none !important;/, 'Clear Ice removes the duplicate frame behind the embedded giveaway');
 assert.match(clearIceCss, /data-widget-type="chat"\] \.ov-chat-giveaway::after\s*\{\s*display:\s*none !important;\s*content:\s*none !important;/, 'Clear Ice removes the duplicate fracture layer behind the embedded giveaway');
 assert.match(currentSlotWidgetSource, /\['arctic', 'candy', 'clear_ice'\]\.includes/, 'Clear Ice Current Game renders provider artwork from the shared provider catalogue');
@@ -245,7 +245,7 @@ try {
         root.render(React.createElement('main', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 16, padding: 12 } },
           React.createElement('aside', { style: { width, flexShrink: 0 } },
             React.createElement(EditorControlContext.Provider, { value: { mode: controls, tab, search,
-              simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true, 'Move and resize temple pieces': true }, onSection() {} } },
+              simpleSections: definition.editor.simpleSections, sections: { 'Colour Theme': true, 'Move and resize temple pieces': true }, onSection() {}, onTab() {} } },
               React.createElement(BetterWidgetControls, { key: `${type}-${controls}-${tab}`, type, config: c, isAdmin, widget: { ...instance, config: c }, onChange: next => {
                 window.themeTest.lastConfig = next;
                 this.mount(type, next, { runtime, controls, width, search, isAdmin, tab });
@@ -605,13 +605,19 @@ try {
       background: getComputedStyle(element).backgroundImage,
       text: getComputedStyle(element).color,
       titleSize: getComputedStyle(element.querySelector('div > strong')).fontSize,
+      frameHeight: getComputedStyle(element.parentElement).height,
+      headerBackground: getComputedStyle(element.closest('.ov-chat-widget').querySelector('.ov-chat-header')).backgroundImage,
+      iconColor: getComputedStyle(element.querySelector('.ov-chat-giveaway-rome-icon')).color,
     }));
   };
   const chatGiveawayPreview = await readOldRomeChatGiveaway('editor');
   if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-review.png' });
-  assert.match(chatGiveawayPreview.background, /warm-marble\.webp/, 'Old Rome chat giveaway uses stone instead of inherited blue');
+  assert.match(chatGiveawayPreview.background, /ivory-marble\.webp/, 'Old Rome chat giveaway uses light stone instead of inherited blue');
   assert.equal(chatGiveawayPreview.text, 'rgb(44, 26, 16)', 'Old Rome chat giveaway uses readable ink');
-  assert.equal(chatGiveawayPreview.titleSize, '15px', 'Old Rome chat giveaway title has readable type');
+  assert.equal(chatGiveawayPreview.titleSize, '18px', 'Old Rome chat giveaway title has readable type');
+  assert.equal(chatGiveawayPreview.frameHeight, '108px', 'Old Rome giveaway retains its height when chat messages arrive');
+  assert.match(chatGiveawayPreview.headerBackground, /greek-key-horizontal\.webp/, 'Old Rome chat top has a carved Greek-key cornice');
+  assert.equal(chatGiveawayPreview.iconColor, 'rgb(132, 81, 29)', 'Old Rome gift icon matches the bronze frame');
   assert.deepEqual(await readOldRomeChatGiveaway('obs'), chatGiveawayPreview, 'Old Rome chat giveaway matches in editor and OBS');
   const winnerGiveaway = { widget_type: 'giveaway', config: { ...liveGiveaway.config, isActive: false, winner: 'Stream Viewer' } };
   const winnerChat = { ...oldRomeChat, __previewGiveawayConfig: winnerGiveaway.config };
@@ -627,9 +633,28 @@ try {
   const winnerPreview = await readOldRomeWinner('editor');
   if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-winner-review.png' });
   assert.equal(winnerPreview.height, '94px', 'Old Rome chat winner keeps a readable card height');
-  assert.match(winnerPreview.background, /warm-marble\.webp/, 'Old Rome winner retains the carved chat material');
+  assert.match(winnerPreview.background, /ivory-marble\.webp/, 'Old Rome winner retains the light carved chat material');
   assert.equal(winnerPreview.badgeBackground, 'rgb(101, 14, 19)', 'Old Rome winner badge does not retain the inherited navy');
   assert.deepEqual(await readOldRomeWinner('obs'), winnerPreview, 'Old Rome winner matches in editor and OBS');
+  const shoutoutChat = {
+    ...oldRomeChat, giveawayInChat: false, shoutoutInChat: true,
+    __previewShoutoutAlert: { raider_username: 'Stream Viewer', clip_thumbnail_url: '/player.webp' },
+  };
+  await mount('chat', shoutoutChat, { runtime: 'editor' });
+  await page.waitForSelector('.ov-chat-shoutout[data-has-media="true"] .better-shoutout-media img');
+  const shoutoutPreview = await page.$eval('.ov-chat-shoutout[data-has-media="true"]', element => {
+    const media = element.querySelector('.better-shoutout-media');
+    const rect = media.getBoundingClientRect();
+    return {
+      maxHeight: getComputedStyle(element).maxHeight,
+      ratio: rect.width / rect.height,
+      imageFit: getComputedStyle(media.querySelector('img')).objectFit,
+    };
+  });
+  if (process.env.CAPTURE_OLD_ROME === '1') await (await page.$('[data-preview="chat"]')).screenshot({ path: '.codex-dev/old-rome-chat-shoutout-review.png' });
+  assert.equal(shoutoutPreview.maxHeight, 'none', 'Old Rome shoutout is not shortened by the chat height cap');
+  assert.ok(Math.abs(shoutoutPreview.ratio - 16 / 9) < 0.02, 'Old Rome shoutout reserves a full 16:9 clip');
+  assert.equal(shoutoutPreview.imageFit, 'contain', 'Old Rome clip artwork is not cropped');
   for (const theme of ['gradient', 'matte']) {
     const legacy = await page.evaluate(theme => window.themeTest.applyWidgetColourTheme('bets', window.themeTest.base('bets'), theme), theme);
     await mount('bets', legacy, { runtime: 'obs' });

@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'old-rome-chat-cornice-giveaway-shoutout-2026-11-03', date: '2026-11-03', category: 'overlays',
+    title: 'Old Rome chat top and embedded cards',
+    summary: 'Old Rome chat now has a carved top edge with clearer giveaway text and matching shoutout materials.',
+    changes: [
+      'Replace the dark chat header surface with warm marble and a restrained Greek-key cornice.',
+      'Keep active giveaways at the top with a fixed readable height and larger title and entry text.',
+      'Give embedded shoutouts a matching stone frame and reserve space for the complete 16:9 clip.',
+    ],
+    action: 'Refresh the editor and OBS browser source after deployment. Live OBS Studio playback and Twitch clip delivery were not tested.',
+  },
+  {
     id: 'old-rome-temple-pieces-fine-tune-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Old Rome temple controls in Fine tune',
     summary: 'The Old Rome navbar Temple pieces controls are now reachable through Fine tune.',

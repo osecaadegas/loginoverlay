@@ -1834,3 +1834,91 @@
 .better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="current_slot"] .cg-widget[data-style="immersive-current"] h3 svg {
   color: var(--greek-crimson) !important;
 }
+
+/* A shallow carved cornice connects the chat header to the wall. The Greek-key
+   edge is inside the widget, so it remains visible with or without a giveaway. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget > :is([data-better-element="header"], .ov-chat-header) {
+  position: relative;
+  min-height: 42px;
+  padding: 13px 14px 5px !important;
+  color: var(--greek-ink) !important;
+  border-bottom: 2px solid #926027 !important;
+  background:
+    var(--greek-key) center top / 148px 11px no-repeat,
+    linear-gradient(90deg, #82501e, #d8a64b 30%, #f0c76a 50%, #d8a64b 70%, #82501e) center top / 100% 4px no-repeat,
+    linear-gradient(180deg, rgba(255, 248, 216, .72), rgba(193, 147, 83, .16)),
+    var(--greek-warm-marble) center / 440px 440px repeat !important;
+  box-shadow: inset 0 1px 0 #fff1c6, inset 0 -1px 0 rgba(255, 248, 218, .8), 0 3px 6px rgba(70, 35, 12, .2) !important;
+  text-shadow: 0 1px 0 rgba(255, 248, 218, .8) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget > :is(.ov-chat-header, [data-better-element="header"]) :is(span, strong, svg) {
+  color: var(--greek-ink) !important;
+  -webkit-text-fill-color: var(--greek-ink) !important;
+  text-shadow: 0 1px 0 rgba(255, 248, 218, .8) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-widget > .ov-chat-header svg {
+  stroke: #84511d !important;
+}
+
+/* The live announcement sits directly beneath the cornice as a readable inset. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] {
+  flex: 0 0 108px !important;
+  width: calc(100% - 16px) !important;
+  height: 108px !important;
+  max-height: none !important;
+  margin: 6px auto 8px !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"] .ov-chat-giveaway-source-card {
+  border-color: #84511d !important;
+  border-radius: 11px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 230, .72), rgba(184, 133, 66, .12)),
+    var(--greek-marble-texture) center / 360px 360px repeat !important;
+  box-shadow: inset 0 2px 0 rgba(255, 252, 232, .88), inset 0 -3px 7px rgba(101, 57, 19, .15), 0 2px 5px rgba(48, 23, 8, .22) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway-rome-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  color: #84511d;
+  stroke-width: 1.8;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > strong {
+  font-size: 18px !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > span {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-giveaway[data-giveaway-theme="old_rome"][data-giveaway-state="active"] .ov-chat-giveaway-source-card > div > span:last-child {
+  font-size: 10px !important;
+  letter-spacing: .04em !important;
+}
+
+/* !so uses the same marble inset and reserves its complete 16:9 clip. */
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-shoutout {
+  max-height: none !important;
+  padding-inline: 0 !important;
+  border: 1px solid #84511d;
+  box-shadow: 0 3px 8px rgba(48, 23, 8, .24);
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-shoutout .better-shoutout-card {
+  border: 0 !important;
+  border-radius: inherit !important;
+  background: var(--greek-warm-marble) center / 420px 420px repeat !important;
+  box-shadow: inset 0 2px 0 rgba(255, 251, 230, .84) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-shoutout :is(.better-shoutout-header, .better-shoutout-footer) {
+  color: var(--greek-ink) !important;
+  border-color: rgba(132, 81, 29, .48) !important;
+  background: linear-gradient(180deg, rgba(255, 251, 230, .64), rgba(184, 133, 66, .14)) !important;
+}
+.better-widget-colour-scope[data-colour-theme="old_rome"][data-widget-type="chat"] .ov-chat-shoutout[data-has-media="true"] .better-shoutout-media {
+  flex: 0 0 auto !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  background: #1e170f;
+}

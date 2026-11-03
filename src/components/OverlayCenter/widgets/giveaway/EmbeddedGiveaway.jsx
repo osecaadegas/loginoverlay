@@ -2,6 +2,7 @@ import {GalacticGiveawayNotice} from '../../../../effects/ThemeEffects/galactic-
 import {StarterGiveawayNotice} from '../../../../effects/ThemeEffects/starter-studio/StarterStudioTheme.jsx';
 import { StreetArtGiveawayNotice } from '../../../../effects/ThemeEffects/street-art/StreetArtTheme.jsx';
 import React, { useLayoutEffect, useRef, useState } from "react";
+import { Gift } from "lucide-react";
 import { getWidgetColourThemeTokens } from '../../editor/widgetColourThemes';
 import './EmbeddedGiveaway.css';
 import { SolverdeGiveawayNotice } from '../../../../effects/ThemeEffects/solverde/SolverdeTheme.jsx';
@@ -128,7 +129,9 @@ export default function EmbeddedGiveaway({ config, layout = {}, children }) {
             </>
             ) : (
             <>
-              <span aria-hidden="true" style={{ flex: "0 0 auto", fontSize: 21 }}>🎁</span>
+              {winnerTheme === 'old_rome'
+                ? <Gift className="ov-chat-giveaway-rome-icon" aria-hidden="true" />
+                : <span aria-hidden="true" style={{ flex: "0 0 auto", fontSize: 21 }}>🎁</span>}
               <div style={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column", gap: 3 }}>
                 <strong style={{ overflow: "hidden", color: themedSource ? sourcePalette?.text : "#fff", fontSize: 10, fontWeight: 900, letterSpacing: ".08em", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>{config.title || "Giveaway"}</strong>
                 <span style={{ overflow: "hidden", color: themedSource ? sourcePalette?.muted : "#bfdbfe", fontSize: 9, fontWeight: 700, textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sourcePrize || (sourceKeyword ? `Type !${sourceKeyword.replace(/^!/, "")} to join` : "Live giveaway")}</span>
