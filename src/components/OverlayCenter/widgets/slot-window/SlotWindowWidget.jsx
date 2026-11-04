@@ -46,6 +46,7 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
   const iframeRef = useRef(null);
   const [bounds, setBounds] = useState(null);
   const [reported, setReported] = useState(null);
+  const [sourceState, setSourceState] = useState(null);
   useEffect(() => {
     const element = hostRef.current;
     if (!element) return undefined;
@@ -59,21 +60,29 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
     if (!sourceUrl) return undefined;
     const origin = new URL(sourceUrl).origin;
     const receive = event => {
-      if (event.origin !== origin || event.source !== iframeRef.current?.contentWindow || event.data?.type !== 'screensplit:source-size') return;
+      if (event.origin !== origin || event.source !== iframeRef.current?.contentWindow) return;
+      if (event.data?.type === 'screensplit:source-state') {
+        if (typeof event.data.available === 'boolean') setSourceState({ sourceUrl, available: event.data.available });
+        return;
+      }
+      if (event.data?.type !== 'screensplit:source-size') return;
       const { width, height } = event.data;
       if (![width, height].every(value => Number.isInteger(value) && value > 0 && value <= 32768)) return;
       setReported(current => current?.sourceUrl === sourceUrl && current.width === width && current.height === height ? current : { sourceUrl, width, height });
+      setSourceState({ sourceUrl, available: true });
     };
     window.addEventListener('message', receive);
     iframeRef.current?.contentWindow?.postMessage({ type: 'streamerscenter:request-source-size' }, origin);
     return () => window.removeEventListener('message', receive);
   }, [sourceUrl]);
   const size = reported?.sourceUrl === sourceUrl ? reported : null;
+  const sourceAvailable = Boolean(sourceUrl && size && sourceState?.sourceUrl === sourceUrl && sourceState.available);
+  const showFallback = Boolean(normalized.fallbackImageUrl && (normalized.showFallbackImage || !sourceAvailable));
   const fitted = size && bounds ? fitSlotWindowSource(size.width, size.height, bounds.width, bounds.height, normalized.fit) : null;
   const streamerOverlayOpening = config.streamerOverlay?.role === "gameplay";
-  const showSetup = !sourceUrl && !streamerOverlayOpening && runtime !== "obs" && !['starter_studio','galactic_command'].includes(normalized.colourTheme);
+  const showSetup = !sourceUrl && !normalized.fallbackImageUrl && !streamerOverlayOpening && runtime !== "obs" && !['starter_studio','galactic_command'].includes(normalized.colourTheme);
 
-  if (!sourceUrl && !showSetup && !streamerOverlayOpening) return null;
+  if (!sourceUrl && !showSetup && !streamerOverlayOpening && !showFallback) return null;
 
   return (
     <section
@@ -82,8 +91,10 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
       data-element-id="root"
       data-connected={sourceUrl ? "true" : "false"}
       data-mask-shape={normalized.maskShape}
+      data-source-available={sourceAvailable ? "true" : "false"}
       style={outerMaskStyle(normalized)}
     >
+      {showFallback && <img className="slot-window-widget__fallback" src={normalized.fallbackImageUrl} alt="" aria-hidden="true" />}
       {sourceUrl ? (
         <iframe
           ref={iframeRef}
@@ -97,10 +108,10 @@ export default function SlotWindowWidget({ config = {}, runtime = "editor" }) {
           referrerPolicy="no-referrer"
           scrolling="no"
           onLoad={() => iframeRef.current?.contentWindow?.postMessage({ type: 'streamerscenter:request-source-size' }, new URL(sourceUrl).origin)}
-          style={{ ...outerMaskStyle(normalized), ...(streamerOverlayOpening && !fitted ? { inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' } : {}), ...(fitted ? { inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: fitted.width, height: fitted.height } : {}) }}
+          style={{ visibility: showFallback ? 'hidden' : 'visible', ...(streamerOverlayOpening && !fitted ? { inset: '2px', width: 'calc(100% - 4px)', height: 'calc(100% - 4px)' } : {}), ...(fitted ? { inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: fitted.width, height: fitted.height } : {}) }}
         />
       ) : (
-        streamerOverlayOpening ? (
+        showFallback ? null : streamerOverlayOpening ? (
           <div className="slot-window-widget__streamer-frame" aria-hidden="true" />
         ) : <div className="slot-window-widget__setup" data-element-id="emptyState">
           <span aria-hidden="true">▣</span>

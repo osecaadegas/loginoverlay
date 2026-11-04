@@ -112,6 +112,7 @@ import {
   SLOT_WINDOW_DEFAULTS,
   SLOT_WINDOW_MASK_OPTIONS,
   getSlotWindowPanelLabel,
+  normalizeSlotWindowFallbackImageUrl,
   normalizeSlotWindowSourceUrl,
   sanitizeSlotWindowConfig,
 } from "../widgets/slot-window/slotWindowModel";
@@ -1725,10 +1726,12 @@ export function ensureBetterWidgetConfig(type, config = {}) {
 function SlotWindowControls({ config, onChange }) {
   const c = sanitizeSlotWindowConfig(config);
   const [sourceDraft, setSourceDraft] = useState(c.sourceUrl);
+  const [fallbackDraft, setFallbackDraft] = useState(c.fallbackImageUrl);
   const set = (patch) => onChange(sanitizeSlotWindowConfig({ ...c, ...patch }));
   useEffect(() => {
     if (c.sourceUrl) setSourceDraft(c.sourceUrl);
   }, [c.sourceUrl]);
+  useEffect(() => setFallbackDraft(c.fallbackImageUrl), [c.fallbackImageUrl]);
   const connectSource = (value = sourceDraft) => {
     const normalized = normalizeSlotWindowSourceUrl(value);
     if (!normalized) return false;
@@ -1773,6 +1776,18 @@ function SlotWindowControls({ config, onChange }) {
         <p className="bp-hint" data-slot-window-status={c.sourceUrl ? "connected" : "empty"}>
           {getSlotWindowPanelLabel(c)}
         </p>
+      </Section>
+
+      <Section title="Image when slot is unavailable" icon={<ImagePlus size={13} />} defaultOpen simple>
+        <BackgroundLibraryPicker value={c.fallbackImageUrl} onChange={(fallbackImageUrl) => set({ fallbackImageUrl })} />
+        <TextRow label="Or image URL" value={fallbackDraft} onChange={(value) => {
+          setFallbackDraft(value);
+          if (!value.trim() || normalizeSlotWindowFallbackImageUrl(value)) set({ fallbackImageUrl: value });
+        }} />
+        {fallbackDraft && !normalizeSlotWindowFallbackImageUrl(fallbackDraft) && <p className="bp-hint" role="alert">Enter an HTTPS image URL or select an image above.</p>}
+        {c.fallbackImageUrl && <ToggleRow label="Show replacement image now" checked={c.showFallbackImage} onChange={(showFallbackImage) => set({ showFallbackImage })} />}
+        {c.fallbackImageUrl && <button className="bp-reset" type="button" onClick={() => set({ fallbackImageUrl: "" })}>Remove replacement image</button>}
+        <p className="bp-hint">Shown until ScreenSplit reports a slot image. The browser must signal when Slot mode ends for the image to replace an already connected feed.</p>
       </Section>
 
       <SelectRow label="Frame sizing" value={c.fit} options={[{value:"cover",label:"Fill frame (crop edges)"},{value:"contain",label:"Fit entire slot"}]} onChange={fit=>set({fit})}/>

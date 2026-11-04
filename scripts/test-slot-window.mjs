@@ -62,6 +62,9 @@ try {
   assert.equal(configuredUrl.searchParams.get("cropTop"), "3");
   assert.equal(configuredUrl.searchParams.get("cropLeft"), "4");
   assert.equal(configuredUrl.searchParams.get("fps"), "24");
+  assert.equal(new URL(model.buildSlotWindowSourceUrl({ sourceUrl: SOURCE, maskShape: "rounded", cornerTopLeft: 72 })).searchParams.get("shape"), "rectangle");
+  assert.equal(model.sanitizeSlotWindowConfig({ fallbackImageUrl: "/backgrounds/example.png" }).fallbackImageUrl, "/backgrounds/example.png");
+  assert.equal(model.sanitizeSlotWindowConfig({ fallbackImageUrl: "javascript:alert(1)" }).fallbackImageUrl, "");
 
   const first = registry.createBetterInstance("slot_window", {
     config: { sourceUrl: SOURCE, cropTop: 2 },
@@ -130,7 +133,7 @@ try {
       onChange: () => {},
     }),
   );
-  for (const label of ["Source URL", "Shape", "Top-left corner", "Top-right corner", "Bottom-right corner", "Bottom-left corner", "Soft edge"]) {
+  for (const label of ["Source URL", "Image when slot is unavailable", "Shape", "Top-left corner", "Top-right corner", "Bottom-right corner", "Bottom-left corner", "Soft edge"]) {
     assert.ok(controlMarkup.includes(label), `Slot Window exposes ${label}`);
   }
   assert.ok(controlMarkup.includes("Paste &amp; connect"));

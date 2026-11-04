@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'slot-window-corners-and-replacement-image-2026-11-04', date: '2026-11-04', category: 'overlays',
+    title: 'Cleaner slot corners and replacement images',
+    summary: 'Slot Window now clips the capture at the widget edge and can show a chosen image while the browser source is unavailable.',
+    changes: [
+      'Use one outer mask for the slot image to avoid a light seam at independently rounded corners.',
+      'Choose a replacement image from the background library or an image URL for each Slot Window, including each cell of the 2x2 Bonus Hunt.',
+      'Show the image until ScreenSplit reports source dimensions, and support source-availability messages when provided by the browser.',
+      'Provide a manual replacement-image switch for an already connected source while changing games.',
+    ],
+    action: 'Choose the replacement image in Slot Window settings, save the overlay and refresh the OBS Browser Source. Automatic replacement after an already connected slot stops requires a ScreenSplit build that reports source availability; live OBS Studio was not tested.',
+  },
+  {
     id: 'old-rome-chat-permanent-cornice-2026-11-03', date: '2026-11-03', category: 'overlays',
     title: 'Keep the Old Rome chat top visible',
     summary: 'Old Rome chat now keeps its carved bronze cornice even when the optional header is hidden.',

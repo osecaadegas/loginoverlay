@@ -71,11 +71,14 @@ try {
       cornerBottomLeft: 0,
     };
     const angled = { sourceUrl: source, maskShape: "angled" };
+    const withFallback = { ...rounded, fallbackImageUrl: "/placeholder.png" };
     const samples = [
       ["rounded-editor", rounded, "editor"],
       ["rounded-obs", rounded, "obs"],
       ["angled-editor", angled, "editor"],
       ["angled-obs", angled, "obs"],
+      ["fallback-obs", withFallback, "obs"],
+      ["forced-obs", { ...withFallback, showFallbackImage: true }, "obs"],
     ];
     ReactDOM.createRoot(document.getElementById("root")).render(
       React.createElement(
@@ -91,6 +94,8 @@ try {
   }, { version: browserHash, sourceUrl });
   await page.waitForSelector("#angled-obs iframe");
   await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.equal(await page.$eval('#fallback-obs iframe', iframe => getComputedStyle(iframe).visibility), 'hidden', 'Replacement image covers an unavailable source');
+  assert.equal(await page.$eval('#fallback-obs img', image => getComputedStyle(image).display), 'block');
 
   for (const runtime of ["editor", "obs"]) {
     const captureMask = await page.$eval(`#rounded-${runtime} iframe`, (iframe) => ({
@@ -100,13 +105,13 @@ try {
       bottomLeftRadius: getComputedStyle(iframe).borderBottomLeftRadius,
       clipPath: getComputedStyle(iframe).clipPath,
     }));
-    assert.equal(captureMask.topLeftRadius, "80px", `${runtime} applies the selected radius to the iframe layer itself`);
+    assert.equal(captureMask.topLeftRadius, "0px", `${runtime} keeps the capture rectangular beneath the outer mask`);
     assert.deepEqual(
       [captureMask.topRightRadius, captureMask.bottomRightRadius, captureMask.bottomLeftRadius],
       ["0px", "0px", "0px"],
       `${runtime} preserves independent radii on the other iframe corners`,
     );
-    assert.match(captureMask.clipPath, /inset\(0px round 80px 0px 0px(?: 0px)?\)/, `${runtime} clips the iframe layer at the selected corner`);
+    assert.equal(captureMask.clipPath, "none", `${runtime} does not apply a second antialiased mask to the iframe`);
 
     const roundedAlpha = await readAlpha(page, `#rounded-${runtime}`, [
       [1, 1],
@@ -137,14 +142,19 @@ try {
     }), {}, {width,height});
     for (const runtime of ['editor','obs']) {
       const dimensions=await page.$eval('#rounded-'+runtime+' iframe',frame=>({width:frame.getBoundingClientRect().width,height:frame.getBoundingClientRect().height}));
-      assert.ok(dimensions.width<=240.1&&dimensions.height<=160.1, runtime+' fits the whole source inside the existing widget');
+      assert.ok(dimensions.width>=239.9&&dimensions.height>=159.9, runtime+' fills the frame without distorting the source');
     }
   }
   await page.$eval('#rounded-obs',element=>{element.style.width='400px';element.style.height='100px';});
-  await page.waitForFunction(()=>{const r=document.querySelector('#rounded-obs iframe').getBoundingClientRect();return Math.abs(r.width-100)<0.1&&Math.abs(r.height-100)<0.1;});
+  await page.waitForFunction(()=>{const r=document.querySelector('#rounded-obs iframe').getBoundingClientRect();return Math.abs(r.width-400)<0.1&&Math.abs(r.height-400)<0.1;});
   await page.evaluate(()=>window.postMessage({type:'screensplit:source-size',width:999,height:1},'*'));
   await new Promise(resolve=>setTimeout(resolve,50));
-  assert.equal(Math.round(await page.$eval('#rounded-obs iframe',frame=>frame.getBoundingClientRect().width)),100,'Untrusted dimension messages cannot stretch the source');
+  assert.equal(Math.round(await page.$eval('#rounded-obs iframe',frame=>frame.getBoundingClientRect().width)),400,'Untrusted dimension messages cannot stretch the source');
+  assert.equal(await page.$('#fallback-obs img'), null, 'Replacement image clears when the browser reports a valid source');
+  assert.ok(await page.$('#forced-obs img'), 'Manual replacement stays visible even when the source is connected');
+  const fallbackFrame = await (await page.$('#fallback-obs iframe')).contentFrame();
+  await fallbackFrame.evaluate(() => parent.postMessage({ type: 'screensplit:source-state', available: false }, '*'));
+  await page.waitForSelector('#fallback-obs img');
   await page.screenshot({ path: ".codex-dev/slot-window-corner-masks.png", omitBackground: true });
   console.log("Slot Window corner masks passed independent-radius and transparent-cutout checks in editor and OBS runtimes.");
 } finally {

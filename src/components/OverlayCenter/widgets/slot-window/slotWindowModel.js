@@ -1,6 +1,8 @@
 export const SLOT_WINDOW_DEFAULTS = Object.freeze({
   displayStyle: "screen_split",
   sourceUrl: "",
+  fallbackImageUrl: "",
+  showFallbackImage: false,
   maskShape: "rounded",
   cornerRadius: 24,
   feather: 0,
@@ -66,6 +68,8 @@ export function sanitizeSlotWindowConfig(config = {}) {
     ...config,
     displayStyle: "screen_split",
     sourceUrl: normalizeSlotWindowSourceUrl(config.sourceUrl),
+    fallbackImageUrl: normalizeSlotWindowFallbackImageUrl(config.fallbackImageUrl),
+    showFallbackImage: config.showFallbackImage === true,
     maskShape: VALID_SHAPES.has(config.maskShape)
       ? config.maskShape
       : SLOT_WINDOW_DEFAULTS.maskShape,
@@ -84,25 +88,35 @@ export function sanitizeSlotWindowConfig(config = {}) {
   };
 }
 
+export function normalizeSlotWindowFallbackImageUrl(value) {
+  const input = String(value || "").trim();
+  if (!input) return "";
+  if (input.startsWith("/") && !input.startsWith("//")) return input;
+  try {
+    const url = new URL(input);
+    if (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) return "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
 export function buildSlotWindowSourceUrl(config = {}) {
   const normalized = sanitizeSlotWindowConfig(config);
   if (!normalized.sourceUrl) return "";
   const url = new URL(normalized.sourceUrl);
-  url.searchParams.set("shape", normalized.maskShape);
-  const cornerRadii = [
-    normalized.cornerTopLeft,
-    normalized.cornerTopRight,
-    normalized.cornerBottomRight,
-    normalized.cornerBottomLeft,
-  ];
-  const uniformRadius = cornerRadii.every((radius) => radius === cornerRadii[0])
-    ? cornerRadii[0]
-    : 0;
-  url.searchParams.set("radius", String(uniformRadius));
-  url.searchParams.set("radiusTopLeft", String(normalized.cornerTopLeft));
-  url.searchParams.set("radiusTopRight", String(normalized.cornerTopRight));
-  url.searchParams.set("radiusBottomRight", String(normalized.cornerBottomRight));
-  url.searchParams.set("radiusBottomLeft", String(normalized.cornerBottomLeft));
+  // The parent widget owns the visible mask. Masking the source as well leaves
+  // antialiased white fringes in OBS where the two rounded edges overlap.
+  const sourceFeather = normalized.feather > 0;
+  url.searchParams.set("shape", sourceFeather ? normalized.maskShape : "rectangle");
+  const corners = sourceFeather
+    ? [normalized.cornerTopLeft, normalized.cornerTopRight, normalized.cornerBottomRight, normalized.cornerBottomLeft]
+    : [0, 0, 0, 0];
+  url.searchParams.set("radius", String(corners.every((radius) => radius === corners[0]) ? corners[0] : 0));
+  url.searchParams.set("radiusTopLeft", String(corners[0]));
+  url.searchParams.set("radiusTopRight", String(corners[1]));
+  url.searchParams.set("radiusBottomRight", String(corners[2]));
+  url.searchParams.set("radiusBottomLeft", String(corners[3]));
   url.searchParams.set("feather", String(normalized.feather));
   url.searchParams.set("cropTop", String(normalized.cropTop));
   url.searchParams.set("cropRight", String(normalized.cropRight));
