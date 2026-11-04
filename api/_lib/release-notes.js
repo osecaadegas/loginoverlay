@@ -1,6 +1,19 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'screensplit-slot-isolation-recovery-2026-11-04', date: '2026-11-04', category: 'browser', version: 'ScreenSplit Browser 0.1.19',
+    title: 'More reliable Slot isolation',
+    summary: 'Slot mode now preserves the active game viewport and recovers more safely when casino pages change.',
+    changes: [
+      'Keep the selected iframe at its original viewport size while fitting it into the browser panel, avoiding a WebGL resize that could produce a black screen.',
+      'Avoid repeatedly resetting the iframe when unrelated casino page elements change.',
+      'Recheck the live iframe when Slot mode is enabled again, and retry capture activation when a selected frame is temporarily unavailable.',
+      'Validated with 72 browser tests, typecheck, lint, a renderer build and a Windows installer build. Live casino and OBS playback were not tested.',
+    ],
+    action: 'Download Browser 0.1.19 from Apps, close the previous browser and install the update. Select Slot again after changing games. Refresh the OBS Browser Source if it is already open.',
+    link: { label: 'Download Browser 0.1.19', url: 'https://github.com/osecaadegas/loginoverlay/releases/download/screensplit-browser-v0.1.19/StreamersCenterBrowserSetup-0.1.19.exe' },
+  },
+  {
     id: 'slot-window-corners-and-replacement-image-2026-11-04', date: '2026-11-04', category: 'overlays',
     title: 'Cleaner slot corners and replacement images',
     summary: 'Slot Window now clips the capture at the widget edge and can show a chosen image while the browser source is unavailable.',
