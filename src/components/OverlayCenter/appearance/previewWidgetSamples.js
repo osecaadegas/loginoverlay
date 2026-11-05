@@ -582,7 +582,9 @@ const PREVIEW_FRAME_BUILDERS = Object.freeze({
   giveaway: () => ({ width: 480, height: 360 }),
   slot_requests: getSlotRequestsPreviewFrame,
   spotify_now_playing: getSpotifyPreviewFrame,
-  tournament: () => ({ width: 960, height: 720 }),
+  tournament: (config) => config.layout === "pro"
+    ? { width: 560, height: 1080 }
+    : { width: 960, height: 720 },
 });
 
 function getPreviewFrame(widgetType, config = {}) {

@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-portrait-cards-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Portrait artwork in PRO tournaments',
+    summary: 'PRO tournaments use a wider frame and taller slot cards while keeping all three rounds stacked vertically.',
+    changes: [
+      'Switching a tournament to PRO sets a 560 × 1080 broadcast frame that fits the 1080px overlay canvas; existing PRO widgets can apply the same size from Layout settings.',
+      'Use 3:4 portrait artwork areas with proportional slot images, compact round spacing and larger participant avatars.',
+      'Keep the existing score, payout, round progression and loser shatter targets.',
+    ],
+    action: 'Select PRO or use its recommended size button in Layout settings, save the overlay, then refresh the OBS Browser Source. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'tournament-pro-player-avatars-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Participant avatars in PRO tournaments',
     summary: 'PRO tournament scoreboards show entered Twitch usernames and viewer portraits while wide slot cards keep portrait artwork intact.',

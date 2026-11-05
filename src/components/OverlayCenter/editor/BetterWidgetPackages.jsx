@@ -6637,9 +6637,16 @@ function BetterTournamentControls({
     ["type", <Type size={12} />, "Text"],
     ["palette", <Palette size={12} />, "Palette"],
   ];
-  const set = (patch) => onChange(c.layout === "pro" || patch.layout === "pro"
-    ? { ...c, ...patch, styleConfigs: { ...c.styleConfigs, pro: { ...c.styleConfigs?.pro, ...patch } } }
-    : { ...c, ...patch });
+  const set = (patch) => {
+    const nextConfig = c.layout === "pro" || patch.layout === "pro"
+      ? { ...c, ...patch, styleConfigs: { ...c.styleConfigs, pro: { ...c.styleConfigs?.pro, ...patch } } }
+      : { ...c, ...patch };
+    if (patch.layout === "pro" && c.layout !== "pro" && typeof onWidgetChange === "function") {
+      onWidgetChange({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 560)), width: 560, height: 1080, y: 0, config: nextConfig });
+      return;
+    }
+    onChange(nextConfig);
+  };
   const setSize = (patch) => {
     if (typeof onWidgetChange !== "function") return;
     onWidgetChange({
@@ -6769,6 +6776,7 @@ function BetterTournamentControls({
             />
           </Section>
           <Section title="Canvas & spacing" icon={<Maximize2 size={13} />}>
+            {c.layout === "pro" && <button className="bp-reset" type="button" onClick={() => onWidgetChange?.({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 560)), width: 560, height: 1080, y: 0, config: c })}>Use recommended PRO size (560 × 1080)</button>}
             <SliderRow
               label="Widget width"
               value={Number(widget?.width) || 960}

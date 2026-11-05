@@ -27,7 +27,7 @@ try {
         { roundNum: 3, player1: { bonusCost: 20, bonusPayout: null }, player2: { bonusCost: 20, bonusPayout: null } },
       ],
     };
-    document.body.innerHTML = '<div id="pro-host" style="width:440px;height:820px"></div><div id="old-host" style="width:440px;height:820px"></div>';
+    document.body.innerHTML = '<div id="pro-host" style="width:560px;height:1080px"></div><div id="old-host" style="width:440px;height:820px"></div>';
     window.__match = match;
     window.__React = React;
     window.__TournamentWidget = TournamentWidget;
@@ -45,7 +45,8 @@ try {
     values: [...document.querySelectorAll(".tw-pro-values b")].map((node) => node.textContent),
     footer: document.querySelector(".tw-pro-footer").textContent,
     oldLayout: Boolean(document.querySelector("#old-host .tw-root")),
-    cardBounds: [...document.querySelectorAll(".tw-pro-card")].map((node) => node.getBoundingClientRect().toJSON()),
+    cardBounds: [...document.querySelectorAll("#pro-host .tw-pro-card")].map((node) => node.getBoundingClientRect().toJSON()),
+    portraitArt: [...document.querySelectorAll("#pro-host .tw-pro-art")].every((node) => { const bounds = node.getBoundingClientRect(); return bounds.height > bounds.width * 1.25; }),
     valuesVisible: [...document.querySelectorAll(".tw-pro-card")].every((card) => {
       const cardBottom = card.getBoundingClientRect().bottom;
       return [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= cardBottom - 1);
@@ -55,11 +56,13 @@ try {
   assert.equal(initial.score, "1–0");
   assert.equal(initial.rounds, 3);
   assert.equal(initial.oldLayout, true, "Vertical layout remains available");
+  assert.equal(initial.portraitArt, true, "All six PRO artwork areas retain a portrait ratio");
+  assert.ok(initial.firstCardMetrics.art >= 180, "Recommended PRO artwork uses the available round height");
   assert.equal(initial.valuesVisible, true, `Cost and pay values remain inside every card: ${JSON.stringify(initial.firstCardMetrics)}`);
   assert.match(initial.footer, /ROUND 2/);
   assert.ok(initial.values.includes("—"), "Unpaid rounds display dashes");
   assert.ok(initial.values.includes("€80.00"), "Recorded payouts appear in the cards");
-  assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > 0 && bounds.y >= 0 && bounds.y + bounds.height <= 820), "All six cards fit within portrait widget height");
+  assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > bounds.width && bounds.y >= 0 && bounds.y + bounds.height <= 1080), "All six portrait cards fit within the recommended widget height");
   await page.waitForFunction(() => [...document.querySelectorAll("#pro-host .tw-pro-person img, #pro-host .tw-pro-art-main")].every((image) => image.complete && image.naturalWidth > 0));
   const imagery = await page.evaluate(() => ({
     avatars: document.querySelectorAll("#pro-host .tw-pro-person img").length,
@@ -98,18 +101,22 @@ try {
   if (process.argv[2]) {
     if (process.argv[3] === "reference") {
       const host = await page.$("#pro-host");
-      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:900px;height:1600px"; });
-      const referenceValuesVisible = await page.evaluate(() => [...document.querySelectorAll("#pro-host .tw-pro-card")].every((card) => [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= card.getBoundingClientRect().bottom - 1)));
-      assert.equal(referenceValuesVisible, true, "Reference-size cards show full cost and pay values");
+      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:680px;height:1380px"; });
+      const referenceMetrics = await page.evaluate(() => ({
+        valuesVisible: [...document.querySelectorAll("#pro-host .tw-pro-card")].every((card) => [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= card.getBoundingClientRect().bottom - 1)),
+        portraitArt: [...document.querySelectorAll("#pro-host .tw-pro-art")].every((art) => { const box = art.getBoundingClientRect(); return box.height > box.width * 1.25 && box.height >= 230; }),
+      }));
+      assert.equal(referenceMetrics.valuesVisible, true, "680 × 1380 cards show full cost and pay values");
+      assert.equal(referenceMetrics.portraitArt, true, "680 × 1380 cards use large portrait artwork");
       await host.screenshot({ path: process.argv[2] });
-      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:440px;height:820px"; });
+      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:560px;height:1080px"; });
     } else {
       await (await page.$("#pro-host")).screenshot({ path: process.argv[2] });
     }
   }
   await page.setViewport({ width: 1920, height: 1080 });
   const afterViewport = await page.evaluate(() => [...document.querySelectorAll(".tw-pro-card")].map((node) => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
-  assert.deepEqual(afterViewport, initial.cardBounds.map(({ width, height }) => ({ width, height })), "PRO dimensions depend on saved widget size, not OBS viewport");
+  assert.ok(afterViewport.every((bounds, index) => Math.abs(bounds.width - initial.cardBounds[index].width) < 1 && Math.abs(bounds.height - initial.cardBounds[index].height) < 1), "PRO dimensions depend on saved widget size, not OBS viewport");
   const narrow = await page.evaluate(() => {
     const host = document.getElementById("pro-host");
     host.style.width = "320px";
