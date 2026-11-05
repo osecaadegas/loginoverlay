@@ -44,16 +44,31 @@ try {
     footer: document.querySelector(".tw-pro-footer").textContent,
     oldLayout: Boolean(document.querySelector("#old-host .tw-root")),
     cardBounds: [...document.querySelectorAll(".tw-pro-card")].map((node) => node.getBoundingClientRect().toJSON()),
+    valuesVisible: [...document.querySelectorAll(".tw-pro-card")].every((card) => {
+      const cardBottom = card.getBoundingClientRect().bottom;
+      return [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= cardBottom - 1);
+    }),
+    firstCardMetrics: (() => { const card = document.querySelector(".tw-pro-card"); return { card: card.getBoundingClientRect().height, art: card.querySelector(".tw-pro-art").getBoundingClientRect().height, copy: card.querySelector(".tw-pro-card-copy").getBoundingClientRect().height, lastValueBottom: card.querySelector(".tw-pro-values b:last-child").getBoundingClientRect().bottom - card.getBoundingClientRect().top }; })(),
   }));
   assert.equal(initial.score, "1–0");
   assert.equal(initial.rounds, 3);
   assert.equal(initial.oldLayout, true, "Vertical layout remains available");
+  assert.equal(initial.valuesVisible, true, `Cost and pay values remain inside every card: ${JSON.stringify(initial.firstCardMetrics)}`);
   assert.match(initial.footer, /ROUND 2/);
   assert.ok(initial.values.includes("—"), "Unpaid rounds display dashes");
   assert.ok(initial.values.includes("€80.00"), "Recorded payouts appear in the cards");
   assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > 0 && bounds.y >= 0 && bounds.y + bounds.height <= 820), "All six cards fit within portrait widget height");
   if (process.argv[2]) {
-    await (await page.$("#pro-host")).screenshot({ path: process.argv[2] });
+    if (process.argv[3] === "reference") {
+      const host = await page.$("#pro-host");
+      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:900px;height:1600px"; });
+      const referenceValuesVisible = await page.evaluate(() => [...document.querySelectorAll("#pro-host .tw-pro-card")].every((card) => [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= card.getBoundingClientRect().bottom - 1)));
+      assert.equal(referenceValuesVisible, true, "Reference-size cards show full cost and pay values");
+      await host.screenshot({ path: process.argv[2] });
+      await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:440px;height:820px"; });
+    } else {
+      await (await page.$("#pro-host")).screenshot({ path: process.argv[2] });
+    }
   }
   await page.setViewport({ width: 1920, height: 1080 });
   const afterViewport = await page.evaluate(() => [...document.querySelectorAll(".tw-pro-card")].map((node) => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
@@ -69,10 +84,13 @@ try {
         const box = card.getBoundingClientRect();
         return box.width > 0 && box.height > 0 && box.left >= bounds.left && box.right <= bounds.right && box.bottom <= bounds.bottom;
       }),
+      valuesVisible: [...host.querySelectorAll(".tw-pro-card")].every((card) => [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= card.getBoundingClientRect().bottom - 1)),
+      firstCardMetrics: (() => { const card = host.querySelector(".tw-pro-card"); return { card: card.getBoundingClientRect().height, art: card.querySelector(".tw-pro-art").getBoundingClientRect().height, copy: card.querySelector(".tw-pro-card-copy").getBoundingClientRect().height, valueBottom: card.querySelector(".tw-pro-values b:last-child").getBoundingClientRect().bottom - card.getBoundingClientRect().top }; })(),
     };
   });
   assert.equal(narrow.overflow, false, "Narrow PRO widget has no vertical overflow");
   assert.equal(narrow.cardsInside, true, "Narrow PRO cards stay inside the widget");
+  assert.equal(narrow.valuesVisible, true, `Narrow PRO widget keeps cost and pay readable: ${JSON.stringify(narrow.firstCardMetrics)}`);
   await page.evaluate(() => {
     window.__proAppearance = { subElements: { statValue: { fontSize: 17, textColor: "#ffdd55" } } };
     window.__renderPro();
@@ -88,10 +106,17 @@ try {
     window.__renderPro();
   });
   await page.waitForFunction(() => document.querySelector(".tw-pro-score")?.textContent === "2–0");
+  await page.waitForSelector('.tw-pro [data-pro-shatter-target="true"]');
+  await page.waitForSelector('.tw-pro canvas');
+  const targetSide = await page.evaluate(() => [...document.querySelectorAll('.tw-pro-round:nth-child(2) .tw-pro-card')].findIndex((card) => card.dataset.proShatterTarget === "true"));
+  assert.equal(targetSide, 1, "The shatter targets the losing card in the deciding round");
   const complete = await page.evaluate(() => ({ footer: document.querySelector(".tw-pro-footer").textContent, winnerCards: document.querySelectorAll(".tw-pro-card--winner").length, pending: document.querySelectorAll(".tw-pro-round--pending").length }));
   assert.match(complete.footer, /MATCH COMPLETE.*Long Player One Username/);
   assert.equal(complete.winnerCards, 2);
   assert.equal(complete.pending, 1);
+  await page.waitForFunction(() => !document.querySelector('.tw-pro canvas'), { timeout: 7000 });
+  const restoredVisibility = await page.evaluate(() => document.querySelector('[data-pro-shatter-target="true"]')?.style.visibility || "");
+  assert.equal(restoredVisibility, "", "Shatter cleanup restores the card visibility");
   console.log("PRO tournament layout, BO3 progression, portrait bounds, and legacy Vertical checks passed.");
 } finally {
   await browser?.close();

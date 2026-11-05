@@ -58,7 +58,7 @@ function partAttrs(partId) {
  * Available layout modes:
  *   vertical  → matches stacked top-to-bottom, horizontal rows
  *   esports   → Cyberpunk 3D glass panels, bracket grid + current match
- *   pro       → Best-of-3 scoreboard and three compact round cards
+ *   pro       → Best-of-3 scoreboard and three portrait round panels
  */
 function TournamentWidget({ config, theme }) {
   const c = config || {};
@@ -92,7 +92,6 @@ function TournamentWidget({ config, theme }) {
 
   const winnersKey = allMatches.map((m) => m.winner || "-").join("|");
   React.useLayoutEffect(() => {
-    if (c.layout === "pro") return;
     const prev = prevWinnersRef.current;
     prevWinnersRef.current = winnersKey;
     if (prev) {
@@ -499,7 +498,15 @@ function TournamentWidget({ config, theme }) {
             : scoreNeutralColor;
 
   if (layout === "pro") {
-    return <TournamentLayoutPro match={matches[currentMatchIdx] || null} config={c} />;
+    const activeMatch = shatterInfo && shatterMatchIdx !== null
+      ? allMatches[shatterMatchIdx]
+      : matches[currentMatchIdx];
+    return <TournamentLayoutPro
+      match={activeMatch || null}
+      config={c}
+      shatterInfo={shatterInfo}
+      onShatterComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
+    />;
   }
 
   /* ─── Empty state ─── */

@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-portrait-frame-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Larger PRO tournament broadcast frame',
+    summary: 'The portrait PRO tournament now gives the scoreboard, three rounds and live result cards the proportions of the approved broadcast design.',
+    changes: [
+      'Expand the cyan framed header, player scoreboard, beveled round panels, hexagonal VS markers and current round footer.',
+      'Present portrait slot artwork in landscape cards using a blurred fill behind the complete image, while keeping provider, cost and payout readable.',
+      'Run the existing ice shatter on the losing PRO card and restore that card after the animation finishes.',
+      'Verify card bounds and values at 900 × 1600, 440 × 820 and 320 × 600 in Chromium; live OBS Studio playback remains unverified.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment to load the updated PRO portrait layout.',
+  },
+  {
     id: 'tournament-pro-layout-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'PRO tournament layout',
     summary: 'A new portrait Best of 3 tournament layout adds a live scoreboard and three readable round cards.',

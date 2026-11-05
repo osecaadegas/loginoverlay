@@ -169,7 +169,7 @@ function drawSparkles(ctx, cx, cy, t, color, count) {
 /* ═══════════════════════════════════════════════════════════
    Main React Component
    ═══════════════════════════════════════════════════════════ */
-export default function ShatterEffect({ imageUrl, side, onComplete, accentColor = '#00e5ff', ice = false }) {
+export default function ShatterEffect({ imageUrl, side, onComplete, accentColor = '#00e5ff', ice = false, targetSelector }) {
   const canvasRef = React.useRef(null);
   const animRef = React.useRef(null);
   const completeRef = React.useRef(onComplete);
@@ -191,7 +191,7 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
 
     const parent = canvas.parentElement;
     const cards = parent.querySelectorAll('.tw-ice-material-card');
-    const source = cards[side === 'left' ? 0 : cards.length - 1];
+    const source = targetSelector ? parent.querySelector(targetSelector) : cards[side === 'left' ? 0 : cards.length - 1];
     const originalVisibility = source?.style.visibility || '';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cw = parent.clientWidth;
@@ -419,7 +419,7 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (source) source.style.visibility = originalVisibility;
     };
-  }, [ice, imageUrl, side, accentColor]);
+  }, [ice, imageUrl, side, accentColor, targetSelector]);
 
   return (
     <canvas ref={canvasRef} aria-hidden="true" style={{
