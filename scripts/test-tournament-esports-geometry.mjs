@@ -97,6 +97,51 @@ try {
   assert.equal(portrait.cardCount, 8);
   assert.ok(portrait.firstCardHeight > 90, `Portrait artwork should grow beyond the 90px minimum: ${JSON.stringify(portrait)}`);
   assert.ok(portrait.bottomGap < 20, `Portrait tournament should not leave empty space below the last match: ${JSON.stringify(portrait)}`);
+  await page.evaluate(async () => {
+    const React = (await import("/node_modules/.vite/deps/react.js")).default;
+    const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
+    const TournamentWidget = (await import("/src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx")).default;
+    await import("/src/components/OverlayCenter/editor/WidgetEditorPage.css");
+    await import("/src/components/OverlayCenter/editor/BetterObsOverlay.css");
+    const matches = Array.from({ length: 4 }, (_, index) => ({
+      id: `parity-${index}`, player1: `Left ${index}`, player2: `Right ${index}`,
+      status: index === 3 ? "in_progress" : "pending", type: "bonus", winner: null,
+      rounds: [{ player1: { bonusCost: 20 }, player2: { bonusCost: 20 } }],
+    }));
+    const config = { layout: "esports", colourTheme: "arctic", data: { matches, currentMatchIdx: 3 } };
+    const editorHost = document.createElement("div");
+    editorHost.innerHTML = '<div class="better-editor-canvas-instance" data-effect-widget-type="tournament" style="position:relative;width:320px;height:820px"><div class="better-editor-canvas-instance__content"><div class="better-widget-colour-scope" data-colour-theme="arctic" data-widget-type="tournament" id="editor-parity"></div></div></div>';
+    document.body.append(editorHost);
+    const obsHost = document.createElement("div");
+    obsHost.innerHTML = '<div class="better-obs-overlay better-obs-overlay--single" data-render-mode="logical" style="position:relative;width:640px;height:1640px"><div class="better-obs-frame" style="width:640px;height:1640px"><div class="better-obs-canvas better-obs-canvas--single" style="width:320px;height:820px;transform:scale(2)"><div class="better-obs-instance" data-effect-widget-type="tournament" style="left:0;top:0;width:320px;height:820px"><div class="better-widget-colour-scope" data-colour-theme="arctic" data-widget-type="tournament" id="obs-parity"></div></div></div></div></div>';
+    document.body.append(obsHost);
+    ReactDOM.createRoot(document.getElementById("editor-parity")).render(React.createElement(TournamentWidget, { config }));
+    ReactDOM.createRoot(document.getElementById("obs-parity")).render(React.createElement(TournamentWidget, { config }));
+  });
+  await page.waitForSelector("#obs-parity .tw-ice-material-card");
+  await page.addStyleTag({ content: "#editor-parity *, #obs-parity *, #editor-parity *::before, #obs-parity *::before { animation: none !important; transition: none !important; }" });
+  const parity = await page.evaluate(() => {
+    const measure = (id, scale) => {
+      const root = document.querySelector(`#${id} .tw-root`);
+      const cards = [...root.querySelectorAll(".tw-ice-material-card")];
+      const bounds = root.getBoundingClientRect();
+      return {
+        width: bounds.width / scale,
+        height: bounds.height / scale,
+        cards: cards.map((card) => {
+          const rect = card.getBoundingClientRect();
+          return {
+            x: Math.round((rect.left - bounds.left) / scale),
+            y: Math.round((rect.top - bounds.top) / scale),
+            width: Math.round(rect.width / scale),
+            height: Math.round(rect.height / scale),
+          };
+        }),
+      };
+    };
+    return { editor: measure("editor-parity", 1), obs: measure("obs-parity", 2) };
+  });
+  assert.deepEqual(parity.obs, parity.editor, `Editor and OBS tournament layout should match at the saved widget size: ${JSON.stringify(parity)}`);
   console.log("Esports geometry and Arctic tournament glass match the shared widget materials.");
 } finally {
   await browser.close();

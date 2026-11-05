@@ -611,7 +611,9 @@ body.better-editor-document #root {
 .better-editor-canvas-instance {
   position: absolute;
   overflow: visible;
-  border: 1px solid transparent;
+  /* The separate selection layer draws the editor outline. A border here
+     shrinks widget content by 2px compared with the saved OBS geometry. */
+  border: 0;
   background: transparent;
   cursor: move;
   user-select: none;

@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'editor-obs-widget-geometry-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Matching tournament preview and OBS proportions',
+    summary: 'Editor widget content now uses the same saved dimensions as its OBS Browser Source.',
+    changes: [
+      'Remove a transparent editor-only border that reduced widget content by two pixels in each dimension.',
+      'Verify Esports tournament card positions and sizes match between editor and scaled OBS wrappers at a portrait widget size.',
+      'Keep the editor selection outline in its separate overlay layer.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'esports-tournament-portrait-spacing-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Taller tournament artwork in portrait widgets',
     summary: 'The Esports tournament uses more of its widget height for slot cards in narrow layouts.',
