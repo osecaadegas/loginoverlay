@@ -46,7 +46,8 @@
   .better-hunt-panel,
   .slot-bingo-widget,
   .better-slideshow-frame,
-  .ov-chat-widget
+  .ov-chat-widget,
+  .tw-root[data-material-surface="panel"]
 ) {
   border-color: rgba(215, 247, 255, 0.96) !important;
   box-shadow:
@@ -319,7 +320,8 @@
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="chat"] .ov-chat-widget,
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov, .bet-widget),
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget,
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better) {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better),
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-root[data-material-surface="panel"] {
   background-color: rgba(3, 20, 34, .96) !important;
   background-image:
     url("/theme-effects/ice/frost-corners.png"),
@@ -386,6 +388,17 @@
   background-blend-mode: normal, screen, soft-light, soft-light, normal !important;
   border-color: rgba(180, 231, 249, .62) !important;
   box-shadow: inset 0 1px 0 rgba(233, 250, 255, .32), inset 0 0 8px rgba(117, 202, 234, .16), 0 3px 9px rgba(0, 5, 12, .3) !important;
+}
+
+/* Tournament cards share Chat's quiet mist reading layer beneath the outer
+   fractured glass. Keep winner/loser borders and slot artwork intact. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
+  :is([data-widget-element="matchCard"], .tw-ice-material-card) {
+  background-color: transparent !important;
+  background-image: linear-gradient(155deg, rgba(24, 49, 63, .76), rgba(3, 15, 25, .9)),
+    url("/theme-effects/ice/mist.png") !important;
+  background-size: cover, 295px 235px !important;
+  background-position: center !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov__card, .bets-ov__row, .bets-ov__stat) {

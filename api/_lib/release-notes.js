@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-tournament-glass-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Matching Arctic tournament glass',
+    summary: 'Arctic tournaments now share the frozen glass material used by Bonus Hunt and Chat.',
+    changes: [
+      'Apply the same deep blue glass, fine fracture layers and bright ice rim to the tournament panel.',
+      'Match the tournament card reading surface to the softer mist glass used by Arctic chat messages.',
+      'Keep player artwork, winner and loser colours, match data and the transparent panel option intact.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'esports-tournament-preview-obs-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Esports tournament layout in OBS',
     summary: 'The Esports tournament now keeps its saved proportions in a standalone OBS Browser Source.',
