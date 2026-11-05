@@ -65,6 +65,38 @@ try {
   assert.equal(materials.tournamentGlass, materials.bonusGlass, "Tournament and Bonus Hunt use the same Arctic glass layers");
   assert.equal(materials.tournamentRim, materials.bonusRim, "Tournament and Bonus Hunt use the same ice rim");
   assert.equal(materials.tournamentCard, materials.chatCard, "Tournament cards use the same fractured material as Chat");
+  await page.evaluate(async () => {
+    const React = (await import("/node_modules/.vite/deps/react.js")).default;
+    const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
+    const TournamentWidget = (await import("/src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx")).default;
+    const host = document.createElement("div");
+    host.id = "tournament-portrait";
+    host.style.cssText = "width:180px;height:460px";
+    document.body.append(host);
+    const matches = Array.from({ length: 4 }, (_, index) => ({
+      id: `portrait-${index}`, player1: `Left ${index}`, player2: `Right ${index}`,
+      status: "in_progress", type: "bonus", winner: null,
+      rounds: [{ player1: { bonusCost: 20 }, player2: { bonusCost: 20 } }],
+    }));
+    ReactDOM.createRoot(host).render(React.createElement(TournamentWidget, {
+      config: { layout: "esports", data: { matches, currentMatchIdx: 3 } },
+    }));
+  });
+  await page.waitForSelector("#tournament-portrait .tw-ice-material-card");
+  await page.addStyleTag({ content: "#tournament-portrait *, #tournament-portrait *::before, #tournament-portrait *::after { animation: none !important; transition: none !important; }" });
+  const portrait = await page.evaluate(() => {
+    const host = document.getElementById("tournament-portrait");
+    const root = host.querySelector(".tw-root");
+    const cards = [...root.querySelectorAll(".tw-ice-material-card")];
+    return {
+      cardCount: cards.length,
+      firstCardHeight: cards[0].getBoundingClientRect().height,
+      bottomGap: root.getBoundingClientRect().bottom - cards.at(-1).getBoundingClientRect().bottom,
+    };
+  });
+  assert.equal(portrait.cardCount, 8);
+  assert.ok(portrait.firstCardHeight > 90, `Portrait artwork should grow beyond the 90px minimum: ${JSON.stringify(portrait)}`);
+  assert.ok(portrait.bottomGap < 20, `Portrait tournament should not leave empty space below the last match: ${JSON.stringify(portrait)}`);
   console.log("Esports geometry and Arctic tournament glass match the shared widget materials.");
 } finally {
   await browser.close();

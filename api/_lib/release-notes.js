@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'esports-tournament-portrait-spacing-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Taller tournament artwork in portrait widgets',
+    summary: 'The Esports tournament uses more of its widget height for slot cards in narrow layouts.',
+    changes: [
+      'Grow queued and current match rows into the available widget space, reducing the empty area below the bracket.',
+      'Tighten match-card padding so slot artwork appears taller without changing tournament data or saved settings.',
+      'Allow queued matches to scroll when a long bracket cannot fit in a short widget.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'arctic-tournament-glass-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Matching Arctic tournament glass',
     summary: 'Arctic tournaments now share the frozen glass material used by Bonus Hunt and Chat.',

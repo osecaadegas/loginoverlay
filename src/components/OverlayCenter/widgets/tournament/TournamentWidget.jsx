@@ -1588,12 +1588,13 @@ function TournamentWidget({ config, theme }) {
             background: "rgba(0,0,0,0.3)",
             border: `1px solid ${isCurrent ? esCyan : esBorder}`,
             borderRadius: 10,
-            padding: "clamp(4px, 0.6cqw, 8px)",
+            padding: "clamp(2px, 0.4cqw, 6px)",
             position: "relative",
             overflow: "hidden",
             backdropFilter: "blur(6px)",
             WebkitBackdropFilter: "blur(6px)",
             transition: "border-color 0.3s",
+            flex: 1,
             minHeight: "clamp(90px, 18cqh, 160px)",
             animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
           }}
@@ -1687,9 +1688,12 @@ function TournamentWidget({ config, theme }) {
     return (
       <div
         style={{
+          flex: 1,
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
+          overflowY: "auto",
+          overflowX: "hidden",
           fontFamily: esFont,
           background: "transparent",
           perspective: "1200px",
@@ -1699,12 +1703,14 @@ function TournamentWidget({ config, theme }) {
         {queuedMatches.length > 0 && (
           <div
             style={{
-              flexShrink: 0,
+              flex: queuedMatches.length,
+              minHeight: 0,
               display: "flex",
               flexDirection: "column",
               gap: "clamp(3px, 0.5cqw, 8px)",
               padding: "clamp(3px, 0.5cqw, 8px)",
-              overflow: "hidden",
+              overflowY: "auto",
+              overflowX: "hidden",
             }}
           >
             {queuedMatches.map((m, i) => renderEsOverviewMatch(m, i))}
@@ -1738,8 +1744,11 @@ function TournamentWidget({ config, theme }) {
         {currentMatch && (
           <div
             style={{
-              flexShrink: 0,
-              padding: "clamp(4px, 0.8cqw, 12px)",
+              flex: 1.15,
+              minHeight: "clamp(110px, 21cqh, 180px)",
+              display: "flex",
+              flexDirection: "column",
+              padding: "clamp(2px, 0.6cqw, 8px)",
               position: "relative",
             }}
           >
@@ -1789,13 +1798,14 @@ function TournamentWidget({ config, theme }) {
                 background: "rgba(0,0,0,0.3)",
                 border: `1px solid ${esCyan}`,
                 borderRadius: 10,
-                padding: "clamp(4px, 0.6cqw, 8px)",
+                padding: "clamp(2px, 0.4cqw, 6px)",
                 position: "relative",
                 zIndex: 1,
                 overflow: "hidden",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
                 minHeight: "clamp(90px, 18cqh, 160px)",
+                flex: 1,
                 animation:
                   "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
                 transformStyle: "preserve-3d",
