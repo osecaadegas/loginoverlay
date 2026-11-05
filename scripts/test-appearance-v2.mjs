@@ -202,7 +202,7 @@ try {
   const runtimeStyleCoverage = {
     bonus_hunt: ["v3", "v5_horizontal", "v11_fever", "v12_classic_sr"],
     current_slot: ["immersive_current", "portrait_card"],
-    tournament: ["vertical", "esports"],
+    tournament: ["vertical", "esports", "pro"],
     giveaway: ["v1", "v2", "v3", "v4", "metal", "bh_stats", "v12"],
     navbar: ["v1", "metallic", "StyleSecaNav", "glass", "retro"],
     chat: [
@@ -4216,22 +4216,22 @@ try {
   );
   assert.match(
     builtinWidgetsSource,
-    /type: "tournament"[\s\S]*?styles: \[\s*\{ id: "vertical"[\s\S]*?\{ id: "esports"[\s\S]*?\],\s*defaults: \{\s*layout: "vertical"/,
-    "Tournament's main style picker exposes only Vertical and Esports",
+    /type: "tournament"[\s\S]*?styles: \[\s*\{ id: "vertical"[\s\S]*?\{ id: "esports"[\s\S]*?\{ id: "pro"[\s\S]*?\],\s*defaults: \{\s*layout: "vertical"/,
+    "Tournament's main style picker exposes Vertical, Esports and PRO",
   );
   assert.match(
     betterWidgetPackagesSource,
-    /const TOURNAMENT_LAYOUTS = \[\s*\{ key: "vertical", name: "Vertical" \},\s*\{ key: "esports", name: "Esports" \},\s*\];/,
-    "Tournament quick settings expose only Vertical and Esports",
+    /const TOURNAMENT_LAYOUTS = \[\s*\{ key: "vertical", name: "Vertical" \},\s*\{ key: "esports", name: "Esports" \},\s*\{ key: "pro", name: "PRO" \},\s*\];/,
+    "Tournament quick settings expose Vertical, Esports and PRO",
   );
   assert.match(
     tournamentRendererSource,
-    /const layout = c\.layout === "esports" \? "esports" : "vertical";/,
+    /const layout = c\.layout === "esports" \|\| c\.layout === "pro" \? c\.layout : "vertical";/,
     "retired Tournament renderer layouts fall back to Vertical",
   );
   assert.match(
     tournamentConfigSource,
-    /const currentStyle = c\.layout === "esports" \? "esports" : "vertical";/,
+    /const currentStyle = c\.layout === "esports" \|\| c\.layout === "pro" \? c\.layout : "vertical";/,
     "Tournament configuration edits legacy style values using the Vertical schema",
   );
   assertRendererPartTargets(tournamentRendererSource, "Tournament", [

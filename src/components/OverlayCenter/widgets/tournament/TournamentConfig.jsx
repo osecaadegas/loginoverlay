@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { makePerStyleSetters } from "../shared/perStyleConfig";
+import { makePerStyleSetters, swapStyleConfig } from "../shared/perStyleConfig";
 import { TOURNAMENT_STYLE_KEYS } from "../styleKeysRegistry";
 import {
   getAllSlots,
@@ -82,7 +82,7 @@ function NumInput({
 export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const { user } = useAuth();
   const c = config || {};
-  const currentStyle = c.layout === "esports" ? "esports" : "vertical";
+  const currentStyle = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
   const { set, setMulti } = makePerStyleSetters(
     onChange,
     c,
@@ -228,6 +228,21 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
         esBorder: "rgba(0,229,255,0.18)",
       },
     },
+    {
+      name: "🏆 PRO",
+      builtin: true,
+      values: {
+        layout: "pro",
+        showBg: true,
+        bgColor: "#07111d",
+        borderColor: "#00d9ff",
+        borderRadius: 20,
+        borderWidth: 1,
+        nameColor: "#f3f8ff",
+        multiColor: "#00d9ff",
+        fontFamily: "'Rajdhani', sans-serif",
+      },
+    },
   ];
 
   const savePreset = () => {
@@ -248,7 +263,26 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     set("tournamentPresets", updated);
     setPresetName("");
   };
-  const loadPreset = (preset) => setMulti(preset.values);
+  const loadPreset = (preset) => {
+    const targetStyle = ["vertical", "esports", "pro"].includes(preset.values?.layout)
+      ? preset.values.layout
+      : currentStyle;
+    const base = targetStyle === currentStyle
+      ? c
+      : swapStyleConfig(c, currentStyle, targetStyle, TOURNAMENT_STYLE_KEYS, "layout");
+    const styleValues = Object.fromEntries(
+      Object.entries(preset.values).filter(([key]) => TOURNAMENT_STYLE_KEYS.includes(key)),
+    );
+    onChange({
+      ...base,
+      ...preset.values,
+      layout: targetStyle,
+      styleConfigs: {
+        ...base.styleConfigs,
+        [targetStyle]: { ...base.styleConfigs?.[targetStyle], ...styleValues },
+      },
+    });
+  };
   const deletePreset = (name) =>
     set(
       "tournamentPresets",

@@ -542,6 +542,7 @@ registerWidget({
   styles: [
     { id: "vertical", icon: "↕", label: "Vertical" },
     { id: "esports", icon: "🎮", label: "Esports" },
+    { id: "pro", icon: "🏆", label: "PRO", defaultSize: { width: 440, height: 820 } },
   ],
   defaults: {
     layout: "vertical",

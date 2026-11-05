@@ -1317,6 +1317,10 @@ export const widgetAppearanceRegistry = Object.freeze({
           "statusBadge",
         ],
       }),
+      makeRuntimeStyle("pro", "PRO", "Best-of-3 scoreboard and round cards.", {
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, rows: true, columns: true },
+        elementIds: ["container", "header", "playerName", "scoreValue", "roundHeading", "matchCard", "slotImage", "slotName", "provider", "statLabel", "statValue", "statusBadge"],
+      }),
     ],
     responsive: {
       minWidth: 320,
@@ -1344,6 +1348,31 @@ export const widgetAppearanceRegistry = Object.freeze({
       }),
       scoreValue: Object.freeze({
         label: "Score values",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      roundHeading: Object.freeze({
+        label: "Round headings",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      slotName: Object.freeze({
+        label: "Slot names",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      provider: Object.freeze({
+        label: "Providers",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      statLabel: Object.freeze({
+        label: "Cost and pay labels",
+        kind: "text",
+        capabilities: ["typography", "stateColor"],
+      }),
+      statValue: Object.freeze({
+        label: "Cost and pay values",
         kind: "text",
         capabilities: ["typography", "stateColor"],
       }),

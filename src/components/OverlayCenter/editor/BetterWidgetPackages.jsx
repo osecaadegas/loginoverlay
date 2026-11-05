@@ -6547,6 +6547,7 @@ function BetterSlideshowFrameControls({
 const TOURNAMENT_LAYOUTS = [
   { key: "vertical", name: "Vertical" },
   { key: "esports", name: "Esports" },
+  { key: "pro", name: "PRO" },
 ];
 
 const TOURNAMENT_FONTS = [
@@ -6636,7 +6637,9 @@ function BetterTournamentControls({
     ["type", <Type size={12} />, "Text"],
     ["palette", <Palette size={12} />, "Palette"],
   ];
-  const set = (patch) => onChange({ ...c, ...patch });
+  const set = (patch) => onChange(c.layout === "pro" || patch.layout === "pro"
+    ? { ...c, ...patch, styleConfigs: { ...c.styleConfigs, pro: { ...c.styleConfigs?.pro, ...patch } } }
+    : { ...c, ...patch });
   const setSize = (patch) => {
     if (typeof onWidgetChange !== "function") return;
     onWidgetChange({
@@ -6651,6 +6654,10 @@ function BetterTournamentControls({
       if (Object.prototype.hasOwnProperty.call(defaults, key))
         next[key] = defaults[key];
       else delete next[key];
+    }
+    if (c.layout === "pro" && next.styleConfigs?.pro) {
+      next.styleConfigs = { ...next.styleConfigs };
+      delete next.styleConfigs.pro;
     }
     onChange(next);
   };

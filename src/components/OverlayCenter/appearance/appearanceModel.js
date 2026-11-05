@@ -1290,7 +1290,7 @@ export function getWidgetActiveStyleId(widget, appearance) {
   const activeStyleId = entry.activeStyleId || widget.config?.[key];
   if (widget.widget_type === 'tournament' && activeStyleId) {
     if (entry.customStyles?.[activeStyleId]) return activeStyleId;
-    if (!['vertical', 'esports'].includes(activeStyleId)) return 'vertical';
+    if (!['vertical', 'esports', 'pro'].includes(activeStyleId)) return 'vertical';
   }
   return activeStyleId || getWidgetDef(widget.widget_type)?.styles?.[0]?.id || 'default';
 }

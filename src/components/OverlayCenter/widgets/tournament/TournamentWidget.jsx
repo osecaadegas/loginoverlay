@@ -9,6 +9,7 @@ import {
   MATCH_STATUS,
 } from "./tournamentEngine";
 import ShatterEffect from "./ShatterEffect";
+import TournamentLayoutPro from "./TournamentLayoutPro";
 import { subValue } from "../shared/appearanceStyles";
 import SlotImage from "../SlotImage";
 import { THEME_EFFECT_DEFINITIONS } from "../../../../effects/ThemeEffects/themes/themeDefinitions";
@@ -57,6 +58,7 @@ function partAttrs(partId) {
  * Available layout modes:
  *   vertical  → matches stacked top-to-bottom, horizontal rows
  *   esports   → Cyberpunk 3D glass panels, bracket grid + current match
+ *   pro       → Best-of-3 scoreboard and three compact round cards
  */
 function TournamentWidget({ config, theme }) {
   const c = config || {};
@@ -90,6 +92,7 @@ function TournamentWidget({ config, theme }) {
 
   const winnersKey = allMatches.map((m) => m.winner || "-").join("|");
   React.useLayoutEffect(() => {
+    if (c.layout === "pro") return;
     const prev = prevWinnersRef.current;
     prevWinnersRef.current = winnersKey;
     if (prev) {
@@ -118,9 +121,8 @@ function TournamentWidget({ config, theme }) {
 
   /* ─── Layout mode ─── */
   // Existing saved overlays may still contain retired layout IDs. Keep those
-  // overlays readable by mapping every retired value to the supported Vertical
-  // layout while preserving Esports as the only alternate visual system.
-  const layout = c.layout === "esports" ? "esports" : "vertical";
+  // overlays readable by mapping retired values to Vertical.
+  const layout = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
   const isMinimalLayout = false;
 
   /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
@@ -495,6 +497,10 @@ function TournamentWidget({ config, theme }) {
           : val < 0
             ? scoreNegativeColor
             : scoreNeutralColor;
+
+  if (layout === "pro") {
+    return <TournamentLayoutPro match={matches[currentMatchIdx] || null} config={c} />;
+  }
 
   /* ─── Empty state ─── */
   if (matches.length === 0) {

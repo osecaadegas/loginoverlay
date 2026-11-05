@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-layout-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'PRO tournament layout',
+    summary: 'A new portrait Best of 3 tournament layout adds a live scoreboard and three readable round cards.',
+    changes: [
+      'Choose PRO alongside Vertical and Esports in tournament appearance settings.',
+      'Show real player names, round scores, slot artwork, provider, cost and payout from saved tournament data.',
+      'Highlight completed round winners and update the current round or match result as scores change.',
+      'Preserve PRO widget proportions in standalone OBS Browser Sources.',
+    ],
+    action: 'Select PRO for a tournament widget, size the portrait panel in the editor, then refresh the OBS Browser Source after deployment. Live OBS Studio playback has not been verified.',
+  },
+  {
     id: 'arctic-tournament-result-shatter-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Smoother Arctic tournament result reveal',
     summary: 'Completed Esports matches now play a continuous frost and ice-shard sequence before moving into result history.',
