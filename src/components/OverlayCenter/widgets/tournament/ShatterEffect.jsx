@@ -93,6 +93,20 @@ function rrPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+export function measureShatterCardRect(parent, source) {
+  if (!parent || !source) return null;
+  const parentRect = parent.getBoundingClientRect();
+  const cardRect = source.getBoundingClientRect();
+  const scaleX = parentRect.width ? parent.clientWidth / parentRect.width : 1;
+  const scaleY = parentRect.height ? parent.clientHeight / parentRect.height : 1;
+  return {
+    x: (cardRect.left - parentRect.left) * scaleX,
+    y: (cardRect.top - parentRect.top) * scaleY,
+    w: cardRect.width * scaleX,
+    h: cardRect.height * scaleY,
+  };
+}
+
 /* ── Crack lines from center ── */
 function drawCracks(ctx, cx, cy, w, h, progress, color) {
   const n = 10;
@@ -170,21 +184,15 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
       const timer = window.setTimeout(() => completeRef.current?.(), 3500);
       return () => window.clearTimeout(timer);
     }
-    if (ice) {
-      const cards = canvas.parentElement.querySelectorAll('.tw-ice-material-card');
-      const source = cards[side === 'left' ? 0 : cards.length - 1] || canvas.parentElement;
-      source.classList.add('tw-ice-impact');
-      emitIceEvent(canvas, 'tournament', source);
-      // Preserve the existing match hand-off interval; the finite burst settles
-      // early, leaving the winner readable instead of a sustained white flash.
-      const timer = window.setTimeout(() => completeRef.current?.(), 3500);
-      return () => {
-        window.clearTimeout(timer);
-        source.classList.remove('tw-ice-impact');
-      };
+    if (ice && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const timer = window.setTimeout(() => completeRef.current?.(), 0);
+      return () => window.clearTimeout(timer);
     }
 
     const parent = canvas.parentElement;
+    const cards = parent.querySelectorAll('.tw-ice-material-card');
+    const source = cards[side === 'left' ? 0 : cards.length - 1];
+    const originalVisibility = source?.style.visibility || '';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cw = parent.clientWidth;
     const ch = parent.clientHeight;
@@ -193,23 +201,27 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
 
-    // Approximate card rect (flex: 1 + VS + gap)
+    const cardRect = measureShatterCardRect(parent, source);
     const cardW = cw * 0.455;
-    const cr = side === 'left'
-      ? { x: 0, y: 0, w: cardW, h: ch }
-      : { x: cw - cardW, y: 0, w: cardW, h: ch };
+    const cr = cardRect
+      ? cardRect
+      : side === 'left'
+        ? { x: 0, y: 0, w: cardW, h: ch }
+        : { x: cw - cardW, y: 0, w: cardW, h: ch };
 
     const img = new Image();
+    const sourceImg = source?.querySelector('img');
+    let srcImg = sourceImg?.complete && sourceImg.naturalWidth ? sourceImg : null;
 
-    const run = (srcImg) => {
-      const shards = tessellate(cr.x, cr.y, cr.w, cr.h, 90);
-      const DURATION = 3500;
+    const run = () => {
+      const shards = tessellate(cr.x, cr.y, cr.w, cr.h, ice ? 56 : 90);
+      const DURATION = ice ? 4200 : 3500;
       const t0 = performance.now();
+      let burstFired = false;
 
       // Phase boundaries (normalised 0–1)
-      const P1 = 0.10;   // tension end   ~350 ms
-      const P2 = 0.28;   // crack end     ~630 ms
-      const P3 = 0.34;   // shatter point ~210 ms
+      const P1 = ice ? 0.20 : 0.10;
+      const P3 = ice ? 0.42 : 0.34;
 
       const cardCx = cr.x + cr.w / 2;
       const cardCy = cr.y + cr.h / 2;
@@ -224,7 +236,7 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
           ctx.save();
 
           // Phase 1: tension tilt
-          if (t < P1) {
+          if (!ice && t < P1) {
             const tp = t / P1;
             ctx.translate(cardCx, cardCy);
             ctx.rotate(Math.sin(tp * Math.PI) * 4 * Math.PI / 180);
@@ -232,7 +244,7 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
           }
 
           // Phase 2: vibration
-          if (t >= P1) {
+          if (!ice && t >= P1) {
             const intensity = 2.5 * (1 + (t - P1) * 4);
             ctx.translate(
               intensity * Math.sin(elapsed * 0.08),
@@ -245,14 +257,20 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
           rrPath(ctx, cr.x, cr.y, cr.w, cr.h, 14);
           ctx.clip();
 
-          // dark fill (ensures no transparency leak)
-          ctx.fillStyle = '#0a0a18';
-          ctx.fillRect(cr.x, cr.y, cr.w, cr.h);
-
-          if (srcImg) drawCover(ctx, srcImg, cr.x, cr.y, cr.w, cr.h);
+          if (ice) {
+            const frost = ctx.createRadialGradient(cardCx, cardCy, cr.w * 0.1, cardCx, cardCy, Math.max(cr.w, cr.h) * 0.8);
+            frost.addColorStop(0, 'rgba(195,237,251,0)');
+            frost.addColorStop(1, `rgba(181,225,245,${(0.48 * Math.min(1, t / P3)).toFixed(3)})`);
+            ctx.fillStyle = frost;
+            ctx.fillRect(cr.x, cr.y, cr.w, cr.h);
+          } else {
+            ctx.fillStyle = '#0a0a18';
+            ctx.fillRect(cr.x, cr.y, cr.w, cr.h);
+            if (srcImg) drawCover(ctx, srcImg, cr.x, cr.y, cr.w, cr.h);
+          }
 
           // Glow pulse (phase 1)
-          if (t < P1) {
+          if (!ice && t < P1) {
             const gp = Math.sin((t / P1) * Math.PI);
             ctx.fillStyle = accentColor;
             ctx.globalAlpha = 0.18 * gp;
@@ -265,23 +283,28 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
           // Cracks
           if (t > P1 * 0.4) {
             const cp = Math.min(1, (t - P1 * 0.4) / (P3 - P1 * 0.4));
-            drawCracks(ctx, cardCx, cardCy, cr.w, cr.h, cp, accentColor);
+            drawCracks(ctx, cardCx, cardCy, cr.w, cr.h, cp, ice ? '#d8f4ff' : accentColor);
           }
 
           // Pre-flash ramp
           if (t > P3 - 0.04) {
             const fp = (t - (P3 - 0.04)) / 0.04;
-            ctx.fillStyle = `rgba(255,255,255,${(0.55 * fp).toFixed(3)})`;
-            ctx.fillRect(cr.x - 20, cr.y - 20, cr.w + 40, cr.h + 40);
+            ctx.fillStyle = `rgba(224,248,255,${((ice ? 0.22 : 0.55) * fp).toFixed(3)})`;
+            ctx.fillRect(ice ? cr.x : cr.x - 20, ice ? cr.y : cr.y - 20, cr.w + (ice ? 0 : 40), cr.h + (ice ? 0 : 40));
           }
         } else {
           /* === PHASES 3-5: Shards flying === */
           const st = (t - P3) / (1 - P3);
+          if (ice && !burstFired) {
+            burstFired = true;
+            emitIceEvent(canvas, 'tournament', source || parent);
+            if (source) source.style.visibility = 'hidden';
+          }
 
           // Flash
           if (st < 0.06) {
-            ctx.fillStyle = `rgba(255,255,255,${(0.7 * (1 - st / 0.06)).toFixed(3)})`;
-            ctx.fillRect(0, 0, cw, ch);
+            ctx.fillStyle = `rgba(224,248,255,${((ice ? 0.28 : 0.7) * (1 - st / 0.06)).toFixed(3)})`;
+            ctx.fillRect(ice ? cr.x : 0, ice ? cr.y : 0, ice ? cr.w : cw, ice ? cr.h : ch);
           }
 
           // Image drawParams for shards (cover-mode offsets)
@@ -299,15 +322,15 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
           for (let si = 0; si < shards.length; si++) {
             const s = shards[si];
             const lt = Math.max(0, st - s.delay);
-            if (lt <= 0) continue;
+            if (lt <= 0 && !ice) continue;
 
-            const expandT = Math.min(lt / 0.65, 1);
-            const dissolveT = lt > 0.5 ? (lt - 0.5) / 0.5 : 0;
+            const expandT = Math.min(lt / (ice ? 0.95 : 0.65), 1);
+            const dissolveT = lt > (ice ? 0.68 : 0.5) ? (lt - (ice ? 0.68 : 0.5)) / (ice ? 0.32 : 0.5) : 0;
             const ease = 1 - Math.pow(1 - expandT, 2.5);
 
-            const x = s.center[0] + s.vx * ease * 0.85;
-            const y = s.center[1] + s.vy * ease * 0.85 + 55 * ease * ease;
-            const rot = s.rotSpeed * ease * 2.2;
+            const x = s.center[0] + s.vx * ease * (ice ? 0.42 : 0.85);
+            const y = s.center[1] + s.vy * ease * (ice ? 0.42 : 0.85) + (ice ? 78 : 55) * ease * ease;
+            const rot = s.rotSpeed * ease * (ice ? 0.35 : 2.2);
             const scale = Math.max(0, 1 - dissolveT * 0.55);
             const opacity = Math.max(0, 1 - dissolveT);
             if (opacity < 0.01) continue;
@@ -336,8 +359,12 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
                 imgDw, imgDh,
               );
             } else {
-              ctx.fillStyle = '#1a1040';
+              ctx.fillStyle = ice ? '#8cc6dc' : '#1a1040';
               ctx.fillRect(-60, -60, 120, 120);
+            }
+            if (ice) {
+              ctx.fillStyle = 'rgba(179,230,248,0.3)';
+              ctx.fillRect(-cr.w, -cr.h, cr.w * 2, cr.h * 2);
             }
 
             // Neon edge glow
@@ -348,18 +375,28 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
               vi === 0 ? ctx.moveTo(vx, vy) : ctx.lineTo(vx, vy);
             }
             ctx.closePath();
-            ctx.strokeStyle = accentColor;
-            ctx.lineWidth = 1.2;
-            ctx.globalAlpha = opacity * 0.45;
-            ctx.shadowColor = accentColor;
-            ctx.shadowBlur = 4;
+            ctx.strokeStyle = ice ? '#e4faff' : accentColor;
+            ctx.lineWidth = ice ? 1.5 : 1.2;
+            ctx.globalAlpha = opacity * (ice ? 0.8 : 0.45);
+            ctx.shadowColor = ice ? '#83d9f5' : accentColor;
+            ctx.shadowBlur = ice ? 3 : 4;
             ctx.stroke();
+            if (ice) {
+              ctx.shadowBlur = 0;
+              ctx.strokeStyle = '#ffffff';
+              ctx.globalAlpha = opacity * 0.58;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(s.verts[0][0] - s.center[0], s.verts[0][1] - s.center[1]);
+              ctx.lineTo(s.verts[1][0] - s.center[0], s.verts[1][1] - s.center[1]);
+              ctx.stroke();
+            }
 
             ctx.restore();
           }
 
           // Sparkles
-          if (st < 0.85) drawSparkles(ctx, cardCx, cardCy, st, accentColor, 30);
+          if (st < 0.85) drawSparkles(ctx, cardCx, cardCy, st, ice ? '#bceeff' : accentColor, ice ? 18 : 30);
         }
 
         if (t < 1) animRef.current = requestAnimationFrame(frame);
@@ -370,23 +407,22 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
     };
 
     if (imageUrl) {
-      img.onload = () => run(img);
-      img.onerror = () => run(null);
+      img.onload = () => { srcImg = img; if (!ice) run(); };
+      img.onerror = () => { if (!ice) run(); };
       img.src = imageUrl;
-    } else {
-      run(null);
     }
+    if (ice || !imageUrl) run();
 
     return () => {
       img.onload = null;
       img.onerror = null;
       if (animRef.current) cancelAnimationFrame(animRef.current);
+      if (source) source.style.visibility = originalVisibility;
     };
   }, [ice, imageUrl, side, accentColor]);
 
-  if (ice) return <span ref={canvasRef} aria-hidden="true" style={{ display: 'none' }} />;
   return (
-    <canvas ref={canvasRef} style={{
+    <canvas ref={canvasRef} aria-hidden="true" style={{
       position: 'absolute', inset: 0, width: '100%', height: '100%',
       zIndex: 50, pointerEvents: 'none',
     }} />

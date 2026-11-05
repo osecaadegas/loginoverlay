@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-tournament-result-shatter-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Smoother Arctic tournament result reveal',
+    summary: 'Completed Esports matches now play a continuous frost and ice-shard sequence before moving into result history.',
+    changes: [
+      'Grow frost and cracks over the losing card before its artwork breaks into slower moving, tinted ice pieces.',
+      'Keep the winner visible with a restrained ice highlight and delay the history handoff until the shards disperse.',
+      'Use the losing-card bounds in widget coordinates so the shatter stays aligned in scaled editor and OBS views, then clear the temporary canvas.',
+      'Queue rapid back-to-back results so each loser receives its own complete shatter before the next handoff.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. The transition was reviewed in Chromium; live OBS Studio playback was not tested.',
+  },
+  {
     id: 'esports-tournament-readable-results-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Readable Esports tournament results',
     summary: 'Tournament cards retain their proportions as matches finish, with larger card stats and result history.',

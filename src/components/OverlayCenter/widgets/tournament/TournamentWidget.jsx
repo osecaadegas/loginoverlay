@@ -84,6 +84,7 @@ function TournamentWidget({ config, theme }) {
   /* ─── Shatter effect: detect newly completed matches ─── */
   const [shatterInfo, setShatterInfo] = React.useState(null);
   const prevWinnersRef = React.useRef("");
+  const pendingShattersRef = React.useRef([]);
   /* Keep the just-finished match index visible during shatter animation */
   const [shatterMatchIdx, setShatterMatchIdx] = React.useState(null);
 
@@ -91,28 +92,29 @@ function TournamentWidget({ config, theme }) {
   React.useLayoutEffect(() => {
     const prev = prevWinnersRef.current;
     prevWinnersRef.current = winnersKey;
-    if (!prev) return; // first render — skip
-    const prevArr = prev.split("|");
-    const currArr = winnersKey.split("|");
-    for (let i = 0; i < currArr.length; i++) {
-      if (currArr[i] !== "-" && prevArr[i] === "-") {
-        const m = allMatches[i];
-        if (!m) continue;
-        const loserKey = m.winner === "player1" ? "player2" : "player1";
-        const loserSlot = loserKey === "player1" ? m.slot1 : m.slot2;
-        setShatterMatchIdx(i);
-        setShatterInfo((old) =>
-          old
-            ? old
-            : {
-                imageUrl: loserSlot?.image || null,
-                side: loserKey === "player1" ? "left" : "right",
-              },
-        );
-        break;
+    if (prev) {
+      const prevArr = prev.split("|");
+      const currArr = winnersKey.split("|");
+      for (let i = 0; i < currArr.length; i++) {
+        if (currArr[i] !== "-" && prevArr[i] === "-") {
+          const m = allMatches[i];
+          if (!m) continue;
+          const loserKey = m.winner === "player1" ? "player2" : "player1";
+          const loserSlot = loserKey === "player1" ? m.slot1 : m.slot2;
+          pendingShattersRef.current.push({
+            matchIdx: i,
+            imageUrl: loserSlot?.image || null,
+            side: loserKey === "player1" ? "left" : "right",
+          });
+        }
       }
     }
-  }, [winnersKey]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!shatterInfo && pendingShattersRef.current.length) {
+      const next = pendingShattersRef.current.shift();
+      setShatterMatchIdx(next.matchIdx);
+      setShatterInfo({ imageUrl: next.imageUrl, side: next.side });
+    }
+  }, [winnersKey, shatterInfo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Layout mode ─── */
   // Existing saved overlays may still contain retired layout IDs. Keep those
@@ -1402,6 +1404,7 @@ function TournamentWidget({ config, theme }) {
       const hasWinner = match.winner != null;
       const isWinner = match.winner === playerKey;
       const isLoser = hasWinner && !isWinner;
+      const isShatteringLoser = isLoser && isShatterHolding && match === currentMatch;
       const vals = getVals(match, playerKey);
 
       const nameFs = large
@@ -1428,15 +1431,17 @@ function TournamentWidget({ config, theme }) {
             borderRadius: large ? 14 : 8,
             overflow: "hidden",
             transition: "all 0.5s ease",
-            opacity: isLoser ? 0.35 : 1,
-            filter: isLoser ? "grayscale(0.85) brightness(0.5)" : "none",
+            opacity: isLoser && !isShatteringLoser ? 0.35 : 1,
+            filter: isLoser && !isShatteringLoser ? "grayscale(0.85) brightness(0.5)" : "none",
             boxShadow: isWinner
               ? `0 0 16px ${esGreen}50, 0 0 40px ${esGreen}18`
               : isLoser
                 ? `0 0 8px ${esRed}25`
                 : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
-            ...(isLoser
+            ...(isLoser && !isShatteringLoser
               ? { animation: "grid-loser-fade 0.8s ease-out forwards" }
+              : iceEvents && isShatterHolding && isWinner && match === currentMatch
+                ? { animation: "tw-ice-winner-reveal 2.4s ease-out both" }
               : {}),
           }}
         >
@@ -1842,6 +1847,7 @@ function TournamentWidget({ config, theme }) {
               {/* Shatter overlay */}
               {layout === "esports" && shatterInfo && (
                 <ShatterEffect
+                  key={shatterMatchIdx}
                   ice={Boolean(iceEvents)}
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
@@ -3332,6 +3338,7 @@ function TournamentWidget({ config, theme }) {
               {/* Shatter overlay */}
               {layout === "grid" && shatterInfo && (
                 <ShatterEffect
+                  key={shatterMatchIdx}
                   ice={Boolean(iceEvents)}
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
@@ -3729,6 +3736,11 @@ function TournamentWidget({ config, theme }) {
         @keyframes tw-done-enter {
           0%   { opacity: 0; transform: translateY(-8px) translateX(-5px) scale(0.97); }
           100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
+        }
+        @keyframes tw-ice-winner-reveal {
+          0% { filter: brightness(1); }
+          45% { filter: brightness(1.16) drop-shadow(0 0 6px rgba(190, 239, 255, .45)); }
+          100% { filter: brightness(1.04); }
         }
       `}</style>
 
