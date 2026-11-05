@@ -254,7 +254,8 @@ export default function BetterObsOverlay() {
   // the same proportions as the editor preview at high-DPI source sizes.
   const preserveLogicalLayout = isSingleWidget &&
     ((targetInstance?.widgetType === "bonus_hunt" && targetInstance.config?.colourTheme === "clear_ice") ||
-      (targetInstance?.widgetType === "rtp_stats" && targetInstance.config?.colourTheme === "arctic"));
+      (targetInstance?.widgetType === "rtp_stats" && targetInstance.config?.colourTheme === "arctic") ||
+      (targetInstance?.widgetType === "tournament" && targetInstance.config?.layout === "esports"));
   const geometry = getObsRenderGeometry({
     viewportWidth: viewport.width,
     viewportHeight: viewport.height,

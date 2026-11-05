@@ -67,6 +67,7 @@ const overlaySource = fs.readFileSync(
 assert.match(overlaySource, /data-render-mode=\{preserveLogicalLayout \? "logical" : "native"\}/);
 assert.match(overlaySource, /targetInstance\.config\?\.colourTheme === "clear_ice"/);
 assert.match(overlaySource, /targetInstance\?\.widgetType === "rtp_stats" && targetInstance\.config\?\.colourTheme === "arctic"/, 'Arctic RTP sources preserve editor geometry when OBS renders at high DPI');
+assert.match(overlaySource, /targetInstance\?\.widgetType === "tournament" && targetInstance\.config\?\.layout === "esports"/, 'Esports tournament sources preserve their editor geometry');
 assert.match(overlaySource, /standalone: isSingleWidget && !preserveLogicalLayout/);
 assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);
 assert.match(overlaySource, /renderScale: preserveLogicalLayout \? 1 : geometry\.renderScale/);
@@ -91,6 +92,15 @@ const obsCss = fs.readFileSync(
 );
 assert.match(obsCss, /\[data-render-mode="native"\] \.better-hunt-image-stats-panel/);
 assert.doesNotMatch(obsCss, /\.better-obs-overlay--single \.better-hunt-image-stats-panel/);
+
+const tournamentSource = fs.readFileSync(
+  path.join(root, "src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx"),
+  "utf8",
+);
+const esportsSource = tournamentSource.split("  const renderEsports = () => {")[1]?.split("  const renderScoreboard = () => {")[0];
+assert.ok(esportsSource, "Esports renderer is present");
+assert.match(tournamentSource, /containerType: layout === "esports" \? "size" : undefined/);
+assert.doesNotMatch(esportsSource, /\d+(?:\.\d+)?v[wh]\b/, "Esports sizing follows the saved widget dimensions, not the OBS viewport");
 
 for (const widgetType of ["chat", "giveaway", "navbar", "rtp_stats", "bets"]) {
   const instance = { width: 720, height: 480 };

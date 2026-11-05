@@ -1154,6 +1154,7 @@ function TournamentWidget({ config, theme }) {
   /* ── Shared stats bar — matches classic bonus hunt V12 style ── */
   const renderStatBar = (vals, font, large = false) => {
     const payColor = vals.pay > (vals.cost || 0) ? "#4ade80" : "#f87171";
+    const sizeUnit = layout === "esports" ? "cqw" : "vw";
     return (
       <div
         style={{
@@ -1176,8 +1177,8 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               fontSize: large
-                ? "clamp(6px, 0.6vw, 8px)"
-                : "clamp(5px, 0.55vw, 7px)",
+                ? `clamp(6px, 0.6${sizeUnit}, 8px)`
+                : `clamp(5px, 0.55${sizeUnit}, 7px)`,
               fontWeight: 600,
               color: "#93c5fd",
               opacity: 0.55,
@@ -1193,8 +1194,8 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               fontSize: large
-                ? "clamp(11px, 1.3vw, 14px)"
-                : "clamp(9px, 1vw, 12px)",
+                ? `clamp(11px, 1.3${sizeUnit}, 14px)`
+                : `clamp(9px, 1${sizeUnit}, 12px)`,
               fontWeight: 800,
               color: "#fff",
               fontFamily: font,
@@ -1224,8 +1225,8 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               fontSize: large
-                ? "clamp(6px, 0.6vw, 8px)"
-                : "clamp(5px, 0.55vw, 7px)",
+                ? `clamp(6px, 0.6${sizeUnit}, 8px)`
+                : `clamp(5px, 0.55${sizeUnit}, 7px)`,
               fontWeight: 600,
               color: "#93c5fd",
               opacity: 0.55,
@@ -1241,8 +1242,8 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               fontSize: large
-                ? "clamp(11px, 1.3vw, 14px)"
-                : "clamp(9px, 1vw, 12px)",
+                ? `clamp(11px, 1.3${sizeUnit}, 14px)`
+                : `clamp(9px, 1${sizeUnit}, 12px)`,
               fontWeight: 800,
               color: payColor,
               fontFamily: font,
@@ -1338,7 +1339,7 @@ function TournamentWidget({ config, theme }) {
         <div
           style={{
             display: "flex",
-            gap: "clamp(3px, 0.5vw, 5px)",
+            gap: "clamp(3px, 0.5cqw, 5px)",
             justifyContent: "center",
             marginTop: 2,
           }}
@@ -1353,8 +1354,8 @@ function TournamentWidget({ config, theme }) {
               <div
                 key={i}
                 style={{
-                  width: "clamp(7px, 1vw, 10px)",
-                  height: "clamp(7px, 1vw, 10px)",
+                  width: "clamp(7px, 1cqw, 10px)",
+                  height: "clamp(7px, 1cqw, 10px)",
                   borderRadius: "50%",
                   background: won
                     ? esGreen
@@ -1390,14 +1391,14 @@ function TournamentWidget({ config, theme }) {
       const vals = getVals(match, playerKey);
 
       const nameFs = large
-        ? "clamp(12px, 1.8vw, 16px)"
-        : "clamp(10px, 1.4vw, 13px)";
+        ? "clamp(12px, 1.8cqw, 16px)"
+        : "clamp(10px, 1.4cqw, 13px)";
       const statFs = large
-        ? "clamp(12px, 1.4vw, 14px)"
-        : "clamp(10px, 1.1vw, 12px)";
+        ? "clamp(12px, 1.4cqw, 14px)"
+        : "clamp(10px, 1.1cqw, 12px)";
       const labelFs = large
-        ? "clamp(7px, 0.7vw, 9px)"
-        : "clamp(6px, 0.6vw, 8px)";
+        ? "clamp(7px, 0.7cqw, 9px)"
+        : "clamp(6px, 0.6cqw, 8px)";
       const borderGlow = isWinner ? esGreen : isLoser ? esRed : esBorder;
 
       return (
@@ -1482,7 +1483,7 @@ function TournamentWidget({ config, theme }) {
               {match.activePlayer === playerKey && !match.winner && (
                 <span
                   style={{
-                    fontSize: "clamp(6px, 0.6vw, 8px)",
+                    fontSize: "clamp(6px, 0.6cqw, 8px)",
                     color: "#818cf8",
                     marginLeft: 4,
                     fontStyle: "normal",
@@ -1513,8 +1514,8 @@ function TournamentWidget({ config, theme }) {
               <span
                 style={{
                   fontSize: large
-                    ? "clamp(16px, 2.5vw, 28px)"
-                    : "clamp(12px, 1.6vw, 16px)",
+                    ? "clamp(16px, 2.5cqw, 28px)"
+                    : "clamp(12px, 1.6cqw, 16px)",
                   fontWeight: 900,
                   fontFamily: esFont,
                   color: result > 0 ? esGreen : result < 0 ? esRed : "#94a3b8",
@@ -1539,7 +1540,7 @@ function TournamentWidget({ config, theme }) {
 
     /* ── VS badge (compact) ── */
     const renderEsVs = (large = false) => {
-      const sz = large ? "clamp(22px, 3vw, 36px)" : "clamp(14px, 1.8vw, 22px)";
+      const sz = large ? "clamp(22px, 3cqw, 36px)" : "clamp(14px, 1.8cqw, 22px)";
       const isCurrent = large;
       return (
         <div
@@ -1554,8 +1555,8 @@ function TournamentWidget({ config, theme }) {
             alignItems: "center",
             justifyContent: "center",
             fontSize: large
-              ? "clamp(9px, 1.2vw, 14px)"
-              : "clamp(6px, 0.9vw, 10px)",
+              ? "clamp(9px, 1.2cqw, 14px)"
+              : "clamp(6px, 0.9cqw, 10px)",
             fontWeight: 900,
             color: "#fff",
             fontFamily: esFont,
@@ -1583,17 +1584,17 @@ function TournamentWidget({ config, theme }) {
           style={{
             display: "flex",
             alignItems: "stretch",
-            gap: "clamp(3px, 0.5vw, 8px)",
+            gap: "clamp(3px, 0.5cqw, 8px)",
             background: "rgba(0,0,0,0.3)",
             border: `1px solid ${isCurrent ? esCyan : esBorder}`,
             borderRadius: 10,
-            padding: "clamp(4px, 0.6vw, 8px)",
+            padding: "clamp(4px, 0.6cqw, 8px)",
             position: "relative",
             overflow: "hidden",
             backdropFilter: "blur(6px)",
             WebkitBackdropFilter: "blur(6px)",
             transition: "border-color 0.3s",
-            minHeight: "clamp(90px, 18vh, 160px)",
+            minHeight: "clamp(90px, 18cqh, 160px)",
             animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
           }}
         >
@@ -1615,15 +1616,15 @@ function TournamentWidget({ config, theme }) {
       const p2Won = winner === "player2";
       const p1 = match.player1 || "TBD";
       const p2 = match.player2 || "TBD";
-      const fs = "clamp(8px, 1.2vw, 13px)";
+      const fs = "clamp(8px, 1.2cqw, 13px)";
       return (
         <div
           key={`${p1}|${p2}`}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "clamp(4px, 0.6vw, 10px)",
-            padding: "clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)",
+            gap: "clamp(4px, 0.6cqw, 10px)",
+            padding: "clamp(2px, 0.3cqw, 5px) clamp(6px, 0.8cqw, 12px)",
             background: "rgba(0,0,0,0.25)",
             border: `1px solid ${esBorder}`,
             borderRadius: 6,
@@ -1652,7 +1653,7 @@ function TournamentWidget({ config, theme }) {
           </span>
           <span
             style={{
-              fontSize: "clamp(6px, 0.8vw, 9px)",
+              fontSize: "clamp(6px, 0.8cqw, 9px)",
               fontWeight: 800,
               color: "#475569",
               fontFamily: esFont,
@@ -1701,8 +1702,8 @@ function TournamentWidget({ config, theme }) {
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
-              gap: "clamp(3px, 0.5vw, 8px)",
-              padding: "clamp(3px, 0.5vw, 8px)",
+              gap: "clamp(3px, 0.5cqw, 8px)",
+              padding: "clamp(3px, 0.5cqw, 8px)",
               overflow: "hidden",
             }}
           >
@@ -1738,7 +1739,7 @@ function TournamentWidget({ config, theme }) {
           <div
             style={{
               flexShrink: 0,
-              padding: "clamp(4px, 0.8vw, 12px)",
+              padding: "clamp(4px, 0.8cqw, 12px)",
               position: "relative",
             }}
           >
@@ -1757,14 +1758,14 @@ function TournamentWidget({ config, theme }) {
             <div
               style={{
                 textAlign: "center",
-                marginBottom: "clamp(2px, 0.4vh, 6px)",
+                marginBottom: "clamp(2px, 0.4cqh, 6px)",
                 position: "relative",
                 zIndex: 1,
               }}
             >
               <span
                 style={{
-                  fontSize: "clamp(8px, 1.2vw, 14px)",
+                  fontSize: "clamp(8px, 1.2cqw, 14px)",
                   fontWeight: 800,
                   color: esGold,
                   textTransform: "uppercase",
@@ -1784,17 +1785,17 @@ function TournamentWidget({ config, theme }) {
               style={{
                 display: "flex",
                 alignItems: "stretch",
-                gap: "clamp(3px, 0.5vw, 8px)",
+                gap: "clamp(3px, 0.5cqw, 8px)",
                 background: "rgba(0,0,0,0.3)",
                 border: `1px solid ${esCyan}`,
                 borderRadius: 10,
-                padding: "clamp(4px, 0.6vw, 8px)",
+                padding: "clamp(4px, 0.6cqw, 8px)",
                 position: "relative",
                 zIndex: 1,
                 overflow: "hidden",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
-                minHeight: "clamp(90px, 18vh, 160px)",
+                minHeight: "clamp(90px, 18cqh, 160px)",
                 animation:
                   "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
                 transformStyle: "preserve-3d",
@@ -1854,8 +1855,8 @@ function TournamentWidget({ config, theme }) {
               flexShrink: 0,
               display: "flex",
               flexDirection: "column",
-              gap: "clamp(2px, 0.3vw, 4px)",
-              padding: "clamp(3px, 0.5vw, 8px)",
+              gap: "clamp(2px, 0.3cqw, 4px)",
+              padding: "clamp(3px, 0.5cqw, 8px)",
             }}
           >
             {doneMatches.map((m, i) => renderEsDoneRow(m, i))}
@@ -3549,6 +3550,7 @@ function TournamentWidget({ config, theme }) {
       style={{
         width: "100%",
         height: "100%",
+        containerType: layout === "esports" ? "size" : undefined,
         fontFamily,
         background: containerBackground,
         borderRadius: cssLength(borderRadius),

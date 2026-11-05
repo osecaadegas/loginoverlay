@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'esports-tournament-preview-obs-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Esports tournament layout in OBS',
+    summary: 'The Esports tournament now keeps its saved proportions in a standalone OBS Browser Source.',
+    changes: [
+      'Render the standalone Esports source at the editor widget size before scaling the complete surface to the OBS source.',
+      'Size Esports cards, spacing and text from the widget dimensions so OBS window size does not change their layout.',
+      'Leave saved tournament data and the Vertical tournament style unchanged.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback has not been verified.',
+  },
+  {
     id: 'screensplit-slot-isolation-recovery-2026-11-04', date: '2026-11-04', category: 'browser', version: 'ScreenSplit Browser 0.1.19',
     title: 'More reliable Slot isolation',
     summary: 'Slot mode now preserves the active game viewport and recovers more safely when casino pages change.',
