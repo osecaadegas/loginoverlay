@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'esports-tournament-readable-results-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Readable Esports tournament results',
+    summary: 'Tournament cards retain their proportions as matches finish, with larger card stats and result history.',
+    changes: [
+      'Keep Esports match cards at a consistent aspect ratio instead of stretching them to fill space after bracket updates.',
+      'Enlarge Cost and Pay labels and values on an opaque footer so bright slot artwork cannot show through the text.',
+      'Display finished match winners and eliminated players on separate, larger lines.',
+    ],
+    action: 'Refresh the editor and OBS Browser Source after deployment. Live OBS Studio playback was not tested.',
+  },
+  {
     id: 'editor-obs-widget-geometry-parity-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Matching tournament preview and OBS proportions',
     summary: 'Editor widget content now uses the same saved dimensions as its OBS Browser Source.',

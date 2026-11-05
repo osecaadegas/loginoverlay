@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import puppeteer from "puppeteer";
 import { createServer } from "vite";
 
@@ -71,32 +73,69 @@ try {
     const TournamentWidget = (await import("/src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx")).default;
     const host = document.createElement("div");
     host.id = "tournament-portrait";
-    host.style.cssText = "width:180px;height:460px";
+    host.style.cssText = "width:320px;height:820px";
     document.body.append(host);
     const matches = Array.from({ length: 4 }, (_, index) => ({
       id: `portrait-${index}`, player1: `Left ${index}`, player2: `Right ${index}`,
-      status: "in_progress", type: "bonus", winner: null,
+      status: index === 3 ? "in_progress" : "pending", type: "bonus", winner: null,
       rounds: [{ player1: { bonusCost: 20 }, player2: { bonusCost: 20 } }],
     }));
-    ReactDOM.createRoot(host).render(React.createElement(TournamentWidget, {
+    window.__portraitMatches = matches;
+    window.__portraitRoot = ReactDOM.createRoot(host);
+    window.__portraitRoot.render(React.createElement(TournamentWidget, {
       config: { layout: "esports", data: { matches, currentMatchIdx: 3 } },
     }));
   });
   await page.waitForSelector("#tournament-portrait .tw-ice-material-card");
   await page.addStyleTag({ content: "#tournament-portrait *, #tournament-portrait *::before, #tournament-portrait *::after { animation: none !important; transition: none !important; }" });
-  const portrait = await page.evaluate(() => {
+  const measurePortrait = () => page.evaluate(() => {
     const host = document.getElementById("tournament-portrait");
     const root = host.querySelector(".tw-root");
     const cards = [...root.querySelectorAll(".tw-ice-material-card")];
+    const first = cards[0].getBoundingClientRect();
+    const current = cards.at(-1).getBoundingClientRect();
+    const statBar = cards[0].querySelector(".tw-es-stat-bar");
     return {
       cardCount: cards.length,
-      firstCardHeight: cards[0].getBoundingClientRect().height,
-      bottomGap: root.getBoundingClientRect().bottom - cards.at(-1).getBoundingClientRect().bottom,
+      firstAspect: first.width / first.height,
+      currentAspect: current.width / current.height,
+      statLabelSize: parseFloat(getComputedStyle(statBar.firstElementChild.firstElementChild).fontSize),
+      statValueSize: parseFloat(getComputedStyle(statBar.firstElementChild.lastElementChild).fontSize),
+      statBackground: getComputedStyle(statBar).backgroundImage,
+      historyCount: root.querySelectorAll(".tw-es-done-row").length,
+      historyFontSize: parseFloat(getComputedStyle(root.querySelector(".tw-es-done-row span") || cards[0]).fontSize),
+      historyText: [...root.querySelectorAll(".tw-es-done-row")].map((row) => row.textContent),
     };
   });
+  const portrait = await measurePortrait();
   assert.equal(portrait.cardCount, 8);
-  assert.ok(portrait.firstCardHeight > 90, `Portrait artwork should grow beyond the 90px minimum: ${JSON.stringify(portrait)}`);
-  assert.ok(portrait.bottomGap < 20, `Portrait tournament should not leave empty space below the last match: ${JSON.stringify(portrait)}`);
+  assert.ok(portrait.statLabelSize >= 12 && portrait.statValueSize >= 16, `Card stats must be readable: ${JSON.stringify(portrait)}`);
+  assert.match(portrait.statBackground, /linear-gradient/, "Card stats need an opaque reading surface over bright artwork");
+  if (process.env.TOURNAMENT_CAPTURE_DIR) {
+    fs.mkdirSync(process.env.TOURNAMENT_CAPTURE_DIR, { recursive: true });
+    await (await page.$("#tournament-portrait")).screenshot({ path: path.join(process.env.TOURNAMENT_CAPTURE_DIR, "queued.png") });
+  }
+  await page.evaluate(async () => {
+    const React = (await import("/node_modules/.vite/deps/react.js")).default;
+    const TournamentWidget = (await import("/src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx")).default;
+    const matches = window.__portraitMatches.map((match, index) => index === 3 ? match : {
+      ...match, status: "completed", winner: "player1",
+    });
+    window.__portraitRoot.render(React.createElement(TournamentWidget, {
+      config: { layout: "esports", data: { matches, currentMatchIdx: 3 } },
+    }));
+  });
+  await page.waitForFunction(() => document.querySelectorAll("#tournament-portrait .tw-es-done-row").length === 3);
+  const progressed = await measurePortrait();
+  assert.equal(progressed.cardCount, 2);
+  assert.equal(progressed.historyCount, 3);
+  assert.ok(progressed.historyFontSize >= 16, `Winner and loser history must be readable: ${JSON.stringify(progressed)}`);
+  assert.ok(progressed.historyText.every((row) => row.includes("WIN") && row.includes("OUT")), "History must identify winners and eliminated players");
+  assert.ok(Math.abs(portrait.currentAspect - progressed.currentAspect) < 0.03,
+    `Current cards must keep their aspect ratio as matches finish: ${JSON.stringify({ portrait, progressed })}`);
+  if (process.env.TOURNAMENT_CAPTURE_DIR) {
+    await (await page.$("#tournament-portrait")).screenshot({ path: path.join(process.env.TOURNAMENT_CAPTURE_DIR, "progressed.png") });
+  }
   await page.evaluate(async () => {
     const React = (await import("/node_modules/.vite/deps/react.js")).default;
     const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;

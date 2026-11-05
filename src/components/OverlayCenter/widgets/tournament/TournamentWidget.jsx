@@ -1155,14 +1155,20 @@ function TournamentWidget({ config, theme }) {
   const renderStatBar = (vals, font, large = false) => {
     const payColor = vals.pay > (vals.cost || 0) ? "#4ade80" : "#f87171";
     const sizeUnit = layout === "esports" ? "cqw" : "vw";
+    const compactEsports = layout === "esports" && !large;
     return (
       <div
+        className={compactEsports ? "tw-es-stat-bar" : undefined}
         style={{
           position: "relative",
           zIndex: 2,
           display: "flex",
-          background: "rgba(255,255,255,0.04)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          background: compactEsports
+            ? "linear-gradient(180deg, rgba(3,24,39,0.96), rgba(1,12,24,0.98))"
+            : "rgba(255,255,255,0.04)",
+          borderTop: compactEsports
+            ? "1px solid rgba(135,217,244,0.55)"
+            : "1px solid rgba(255,255,255,0.06)",
           borderRadius: large ? "0 0 10px 10px" : "0 0 8px 8px",
           overflow: "hidden",
         }}
@@ -1171,19 +1177,21 @@ function TournamentWidget({ config, theme }) {
           style={{
             flex: 1,
             textAlign: "center",
-            padding: large ? "6px 4px" : "4px 3px",
+            padding: large ? "6px 4px" : compactEsports ? "4px 2px" : "4px 3px",
           }}
         >
           <div
             style={{
-              fontSize: large
+              fontSize: compactEsports
+                ? "clamp(12px, 4cqw, 14px)"
+                : large
                 ? `clamp(6px, 0.6${sizeUnit}, 8px)`
                 : `clamp(5px, 0.55${sizeUnit}, 7px)`,
               fontWeight: 600,
-              color: "#93c5fd",
-              opacity: 0.55,
+              color: compactEsports ? "#d5f3ff" : "#93c5fd",
+              opacity: compactEsports ? 1 : 0.55,
               textTransform: "uppercase",
-              letterSpacing: "1px",
+              letterSpacing: compactEsports ? "0.4px" : "1px",
               fontFamily: font,
               lineHeight: 1,
               marginBottom: 1,
@@ -1193,7 +1201,9 @@ function TournamentWidget({ config, theme }) {
           </div>
           <div
             style={{
-              fontSize: large
+              fontSize: compactEsports
+                ? "clamp(16px, 5.2cqw, 19px)"
+                : large
                 ? `clamp(11px, 1.3${sizeUnit}, 14px)`
                 : `clamp(9px, 1${sizeUnit}, 12px)`,
               fontWeight: 800,
@@ -1219,19 +1229,21 @@ function TournamentWidget({ config, theme }) {
           style={{
             flex: 1,
             textAlign: "center",
-            padding: large ? "6px 4px" : "4px 3px",
+            padding: large ? "6px 4px" : compactEsports ? "4px 2px" : "4px 3px",
           }}
         >
           <div
             style={{
-              fontSize: large
+              fontSize: compactEsports
+                ? "clamp(12px, 4cqw, 14px)"
+                : large
                 ? `clamp(6px, 0.6${sizeUnit}, 8px)`
                 : `clamp(5px, 0.55${sizeUnit}, 7px)`,
               fontWeight: 600,
-              color: "#93c5fd",
-              opacity: 0.55,
+              color: compactEsports ? "#d5f3ff" : "#93c5fd",
+              opacity: compactEsports ? 1 : 0.55,
               textTransform: "uppercase",
-              letterSpacing: "1px",
+              letterSpacing: compactEsports ? "0.4px" : "1px",
               fontFamily: font,
               lineHeight: 1,
               marginBottom: 1,
@@ -1241,7 +1253,9 @@ function TournamentWidget({ config, theme }) {
           </div>
           <div
             style={{
-              fontSize: large
+              fontSize: compactEsports
+                ? "clamp(16px, 5.2cqw, 19px)"
+                : large
                 ? `clamp(11px, 1.3${sizeUnit}, 14px)`
                 : `clamp(9px, 1${sizeUnit}, 12px)`,
               fontWeight: 800,
@@ -1392,7 +1406,7 @@ function TournamentWidget({ config, theme }) {
 
       const nameFs = large
         ? "clamp(12px, 1.8cqw, 16px)"
-        : "clamp(10px, 1.4cqw, 13px)";
+        : "clamp(13px, 4cqw, 16px)";
       const statFs = large
         ? "clamp(12px, 1.4cqw, 14px)"
         : "clamp(10px, 1.1cqw, 12px)";
@@ -1594,8 +1608,8 @@ function TournamentWidget({ config, theme }) {
             backdropFilter: "blur(6px)",
             WebkitBackdropFilter: "blur(6px)",
             transition: "border-color 0.3s",
-            flex: 1,
-            minHeight: "clamp(90px, 18cqh, 160px)",
+            flexShrink: 0,
+            aspectRatio: "1.7 / 1",
             animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
           }}
         >
@@ -1610,22 +1624,25 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── Done match (list row: name vs name + winner badge) ── */
+    /* ── Done match: two readable lines instead of squeezed name columns ── */
     const renderEsDoneRow = (match, idx) => {
       const winner = match.winner;
       const p1Won = winner === "player1";
       const p2Won = winner === "player2";
       const p1 = match.player1 || "TBD";
       const p2 = match.player2 || "TBD";
-      const fs = "clamp(8px, 1.2cqw, 13px)";
+      const winnerName = p1Won ? p1 : p2Won ? p2 : null;
+      const loserName = p1Won ? p2 : p2Won ? p1 : null;
       return (
         <div
+          className="tw-es-done-row"
           key={`${p1}|${p2}`}
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "clamp(4px, 0.6cqw, 10px)",
-            padding: "clamp(2px, 0.3cqw, 5px) clamp(6px, 0.8cqw, 12px)",
+            flexDirection: "column",
+            gap: 3,
+            minWidth: 0,
+            padding: "7px 9px",
             background: "rgba(0,0,0,0.25)",
             border: `1px solid ${esBorder}`,
             borderRadius: 6,
@@ -1636,51 +1653,35 @@ function TournamentWidget({ config, theme }) {
         >
           <span
             style={{
-              flex: 1,
-              textAlign: "right",
-              fontSize: fs,
-              fontWeight: 700,
-              fontFamily: esFont,
-              color: p1Won ? esGreen : "rgba(255,255,255,0.35)",
-              textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              textShadow: p1Won ? `0 0 6px ${esGreen}40` : "none",
-            }}
-          >
-            {p1Won ? "🏆 " : ""}
-            {p1}
-          </span>
-          <span
-            style={{
-              fontSize: "clamp(6px, 0.8cqw, 9px)",
+              fontSize: "clamp(16px, 5cqw, 20px)",
               fontWeight: 800,
-              color: "#475569",
               fontFamily: esFont,
-              flexShrink: 0,
-            }}
-          >
-            VS
-          </span>
-          <span
-            style={{
-              flex: 1,
-              textAlign: "left",
-              fontSize: fs,
-              fontWeight: 700,
-              fontFamily: esFont,
-              color: p2Won ? esGreen : "rgba(255,255,255,0.35)",
+              color: winnerName ? esGreen : esGold,
               textTransform: "uppercase",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              textShadow: p2Won ? `0 0 6px ${esGreen}40` : "none",
+              textShadow: winnerName ? `0 0 6px ${esGreen}40` : "none",
             }}
           >
-            {p2}
-            {p2Won ? " 🏆" : ""}
+            {winnerName ? `🏆 WIN · ${winnerName}` : `DRAW · ${p1} / ${p2}`}
           </span>
+          {loserName && (
+            <span
+              style={{
+                fontSize: "clamp(15px, 4.6cqw, 18px)",
+                fontWeight: 700,
+                fontFamily: esFont,
+                color: "rgba(235,248,255,0.82)",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              OUT · {loserName}
+            </span>
+          )}
         </div>
       );
     };
@@ -1703,14 +1704,12 @@ function TournamentWidget({ config, theme }) {
         {queuedMatches.length > 0 && (
           <div
             style={{
-              flex: queuedMatches.length,
-              minHeight: 0,
+              flexShrink: 0,
               display: "flex",
               flexDirection: "column",
               gap: "clamp(3px, 0.5cqw, 8px)",
               padding: "clamp(3px, 0.5cqw, 8px)",
-              overflowY: "auto",
-              overflowX: "hidden",
+              overflow: "visible",
             }}
           >
             {queuedMatches.map((m, i) => renderEsOverviewMatch(m, i))}
@@ -1744,8 +1743,7 @@ function TournamentWidget({ config, theme }) {
         {currentMatch && (
           <div
             style={{
-              flex: 1.15,
-              minHeight: "clamp(110px, 21cqh, 180px)",
+              flexShrink: 0,
               display: "flex",
               flexDirection: "column",
               padding: "clamp(2px, 0.6cqw, 8px)",
@@ -1804,8 +1802,8 @@ function TournamentWidget({ config, theme }) {
                 overflow: "hidden",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
-                minHeight: "clamp(90px, 18cqh, 160px)",
-                flex: 1,
+                aspectRatio: "1.7 / 1",
+                flexShrink: 0,
                 animation:
                   "tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
                 transformStyle: "preserve-3d",
