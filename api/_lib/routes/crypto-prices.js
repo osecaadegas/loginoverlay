@@ -1,4 +1,4 @@
-import { setCors } from "./_lib/api-auth.js";
+import { setCors } from "../api-auth.js";
 
 const CRYPTO_IDS = {
   btc: "bitcoin",

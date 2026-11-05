@@ -89,18 +89,12 @@ try {
   await page.waitForSelector("#pro-host .tw-pro-player--right .tw-pro-person img");
   const resolved = await page.evaluate(async () => {
     const { resolveTournamentPlayers } = await import('/src/services/tournamentParticipantService.js');
-    return resolveTournamentPlayers([{ name: 'Custom label', twitchUsername: 'TurboSpin' }, { name: 'Guest', twitchUsername: 'unknown' }], {
-      client: { auth: { getSession: async () => ({ data: { session: { access_token: 'test-session' } }, error: null }) } },
-      fetcher: async (_url, options) => {
-        if (options.headers.Authorization !== 'Bearer test-session') throw new Error('Missing session');
-        return { ok: true, json: async () => ({ profiles: { turbospin: { username: 'TurboSpin', avatarUrl: 'https://example.com/avatar.png' } } }) };
-      },
-    });
+    return resolveTournamentPlayers([{ name: 'Custom label', twitchUsername: 'TurboSpin' }, { name: 'Guest player' }]);
   });
-  assert.equal(resolved.players[0].name, 'TurboSpin', 'Resolved Twitch display name replaces the editor label');
-  assert.equal(resolved.players[0].avatarUrl, 'https://example.com/avatar.png');
-  assert.equal(resolved.players[1].name, 'Guest', 'Unmatched usernames keep their entered name');
-  assert.equal(resolved.players[1].avatarUrl, '', 'Unmatched usernames use the icon fallback');
+  assert.equal(resolved[0].name, 'TurboSpin', 'Entered Twitch username appears in the header');
+  assert.equal(resolved[0].avatarUrl, 'https://unavatar.io/twitch/turbospin', 'Tournament avatars use the chat widget image service');
+  assert.equal(resolved[1].name, 'Guest player', 'Non-Twitch names remain unchanged');
+  assert.equal(resolved[1].avatarUrl, '', 'Non-Twitch names use the icon fallback');
   if (process.argv[2]) {
     if (process.argv[3] === "reference") {
       const host = await page.$("#pro-host");

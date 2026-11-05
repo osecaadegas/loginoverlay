@@ -747,7 +747,7 @@ try {
     "utf8",
   );
   const cryptoPricesSource = readFileSync(
-    new URL("../api/crypto-prices.js", import.meta.url),
+    new URL("../api/_lib/routes/crypto-prices.js", import.meta.url),
     "utf8",
   );
   assert.ok(

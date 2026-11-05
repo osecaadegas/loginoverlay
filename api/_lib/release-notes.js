@@ -3,9 +3,11 @@ export const releaseNotes = [
   {
     id: 'tournament-pro-player-avatars-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Participant avatars in PRO tournaments',
-    summary: 'PRO tournament scoreboards now show saved participant avatars and usernames, while wide slot cards keep portrait artwork intact.',
+    summary: 'PRO tournament scoreboards show entered Twitch usernames and viewer portraits while wide slot cards keep portrait artwork intact.',
     changes: [
-      'Resolve Twitch display names and profile photos from entered participant usernames when a bracket starts, and save them with the match for preview and OBS.',
+      'Use the same browser-side Twitch avatar image service as Chat, with no additional serverless function.',
+      'Keep the existing market-price URL while routing it through the shared API handler so the deployment stays within 12 functions.',
+      'Store the entered Twitch username and avatar image URL with each bracket match for preview and OBS.',
       'Carry winning participant avatars into later bracket rounds and use a user icon when an avatar is missing or fails to load.',
       'Fill wide slot card artwork areas with a softened copy of the source image behind a sharp, proportionally scaled copy.',
       'Verify the PRO layout and avatar mapping in Chromium; live OBS Studio playback remains unverified.',

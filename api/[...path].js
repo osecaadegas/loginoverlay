@@ -3,6 +3,7 @@ import autoDrawWinnersHandler from "./_lib/routes/auto-draw-winners.js";
 import affiliateHandler from "./_lib/routes/affiliate.js";
 import bettingHandler from "./_lib/routes/betting.js";
 import chatHandler from "./_lib/routes/chat.js";
+import cryptoPricesHandler from "./_lib/routes/crypto-prices.js";
 import connectFourHandler from "./_lib/routes/connect-four.js";
 import connectFourTurnHandler from "./_lib/routes/connect-four-turn.js";
 import contactMessagesHandler from "./_lib/routes/contact-messages.js";
@@ -24,6 +25,7 @@ const ROUTES = {
   "auto-draw-winners": autoDrawWinnersHandler,
   betting: bettingHandler,
   chat: chatHandler,
+  "crypto-prices": cryptoPricesHandler,
   "connect-four": connectFourHandler,
   "connect-four-turn": connectFourTurnHandler,
   "contact-messages": contactMessagesHandler,

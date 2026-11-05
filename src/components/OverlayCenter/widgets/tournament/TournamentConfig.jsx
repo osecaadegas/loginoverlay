@@ -332,8 +332,6 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     }
     return arr;
   });
-  const [resolvingParticipants, setResolvingParticipants] = useState(false);
-  const [participantWarning, setParticipantWarning] = useState("");
 
   /* ─── Persist setup state: sync localBracketPlayers → widget config on change ─── */
   const persistPlayersRef = useRef(null);
@@ -480,20 +478,9 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     (p) => p.name.trim().length > 0,
   );
 
-  const startBracketTournament = async () => {
-    if (!canStartBracket || resolvingParticipants) return;
-    setResolvingParticipants(true);
-    setParticipantWarning("");
-    let resolvedPlayers = localBracketPlayers;
-    try {
-      const result = await resolveTournamentPlayers(localBracketPlayers);
-      resolvedPlayers = result.players;
-      setParticipantWarning(result.warning);
-    } catch {
-      setParticipantWarning("Participant avatars could not be loaded. Fallback icons will be used.");
-    } finally {
-      setResolvingParticipants(false);
-    }
+  const startBracketTournament = () => {
+    if (!canStartBracket) return;
+    const resolvedPlayers = resolveTournamentPlayers(localBracketPlayers);
     const seeded = seedPlayers(resolvedPlayers);
     const cfg =
       bracketType === "spins"
@@ -1256,11 +1243,10 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                   <button
                     className={`bk-start-btn ${!canStartBracket ? "bk-start-btn--disabled" : ""}`}
                     onClick={startBracketTournament}
-                    disabled={!canStartBracket || resolvingParticipants}
+                    disabled={!canStartBracket}
                   >
-                    {resolvingParticipants ? "Loading player avatars…" : "Start Bracket Tournament"}
+                    Start Bracket Tournament
                   </button>
-                  {participantWarning && <p role="status" className="tm-participant-warning">{participantWarning}</p>}
                 </div>
               </div>
             </>
@@ -1268,7 +1254,6 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
 
           {(bracketPhase === "active" || bracketPhase === "completed") && (
             <div className="bk-active">
-              {participantWarning && <p role="status" className="tm-participant-warning">{participantWarning}</p>}
               <div className="tm-section-heading tm-section-heading--active">
                 <div>
                   <span className="tm-section-eyebrow">Match Operations</span>
