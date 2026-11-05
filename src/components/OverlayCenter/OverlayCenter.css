@@ -12593,6 +12593,16 @@ body.wm-resizing {
   padding: 8px 10px;
   font-size: 13px;
 }
+.tm-player-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .8fr);
+  gap: 6px;
+}
+.tm-player-identity .bk-input { min-width: 0; }
+.tm-participant-warning { margin: 4px 0 0; color: #f8d796; font-size: 12px; }
+@media (max-width: 620px) {
+  .tm-player-identity { grid-template-columns: minmax(0, 1fr); }
+}
 .bk-player-fields .bk-slot-wrap {
   width: 100%;
 }

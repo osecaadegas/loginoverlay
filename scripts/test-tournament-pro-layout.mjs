@@ -17,8 +17,10 @@ try {
     const match = {
       id: "pro-check", type: "bonus_bo3", status: "in_progress", winner: null,
       player1: "Long Player One Username", player2: "Second Player",
-      slot1: { name: "First Real Slot", provider: "Studio One", image: null },
-      slot2: { name: "Second Real Slot", provider: "Studio Two", image: null },
+      player1Avatar: "/images/widgets/freeze-shatter/demo-streamer.png",
+      player2Avatar: "/player.webp",
+      slot1: { name: "First Real Slot", provider: "Studio One", image: "/images/widgets/freeze-shatter/demo-streamer.png" },
+      slot2: { name: "Second Real Slot", provider: "Studio Two", image: "/player.webp" },
       rounds: [
         { roundNum: 1, player1: { bonusCost: 20, bonusPayout: 80 }, player2: { bonusCost: 20, bonusPayout: 30 } },
         { roundNum: 2, player1: { bonusCost: 20, bonusPayout: null }, player2: { bonusCost: 20, bonusPayout: null } },
@@ -58,6 +60,47 @@ try {
   assert.ok(initial.values.includes("—"), "Unpaid rounds display dashes");
   assert.ok(initial.values.includes("€80.00"), "Recorded payouts appear in the cards");
   assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > 0 && bounds.y >= 0 && bounds.y + bounds.height <= 820), "All six cards fit within portrait widget height");
+  await page.waitForFunction(() => [...document.querySelectorAll("#pro-host .tw-pro-person img, #pro-host .tw-pro-art-main")].every((image) => image.complete && image.naturalWidth > 0));
+  const imagery = await page.evaluate(() => ({
+    avatars: document.querySelectorAll("#pro-host .tw-pro-person img").length,
+    backdropFit: getComputedStyle(document.querySelector("#pro-host .tw-pro-art-backdrop")).objectFit,
+    mainFit: getComputedStyle(document.querySelector("#pro-host .tw-pro-art-main")).objectFit,
+    avatarRadius: getComputedStyle(document.querySelector("#pro-host .tw-pro-person")).borderRadius,
+  }));
+  assert.equal(imagery.avatars, 2, "Both player avatars render from match data");
+  assert.equal(imagery.backdropFit, "cover");
+  assert.equal(imagery.mainFit, "contain");
+  assert.notEqual(imagery.avatarRadius, "0px", "Player avatars remain circular");
+  const headerBounds = await page.evaluate(() => {
+    const leftName = document.querySelector("#pro-host .tw-pro-player strong").getBoundingClientRect();
+    const score = document.querySelector("#pro-host .tw-pro-score").getBoundingClientRect();
+    return { nameRight: leftName.right, scoreLeft: score.left };
+  });
+  assert.ok(headerBounds.nameRight <= headerBounds.scoreLeft, "Long usernames do not overlap the score");
+  await page.evaluate(() => {
+    window.__match = { ...window.__match, player2Avatar: "/missing-tournament-avatar.png" };
+    window.__renderPro();
+  });
+  await page.waitForSelector("#pro-host .tw-pro-player--right .tw-pro-person svg");
+  await page.evaluate(() => {
+    window.__match = { ...window.__match, player2Avatar: "/player.webp" };
+    window.__renderPro();
+  });
+  await page.waitForSelector("#pro-host .tw-pro-player--right .tw-pro-person img");
+  const resolved = await page.evaluate(async () => {
+    const { resolveTournamentPlayers } = await import('/src/services/tournamentParticipantService.js');
+    return resolveTournamentPlayers([{ name: 'Custom label', twitchUsername: 'TurboSpin' }, { name: 'Guest', twitchUsername: 'unknown' }], {
+      client: { auth: { getSession: async () => ({ data: { session: { access_token: 'test-session' } }, error: null }) } },
+      fetcher: async (_url, options) => {
+        if (options.headers.Authorization !== 'Bearer test-session') throw new Error('Missing session');
+        return { ok: true, json: async () => ({ profiles: { turbospin: { username: 'TurboSpin', avatarUrl: 'https://example.com/avatar.png' } } }) };
+      },
+    });
+  });
+  assert.equal(resolved.players[0].name, 'TurboSpin', 'Resolved Twitch display name replaces the editor label');
+  assert.equal(resolved.players[0].avatarUrl, 'https://example.com/avatar.png');
+  assert.equal(resolved.players[1].name, 'Guest', 'Unmatched usernames keep their entered name');
+  assert.equal(resolved.players[1].avatarUrl, '', 'Unmatched usernames use the icon fallback');
   if (process.argv[2]) {
     if (process.argv[3] === "reference") {
       const host = await page.$("#pro-host");

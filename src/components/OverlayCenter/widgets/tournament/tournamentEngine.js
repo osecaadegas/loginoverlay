@@ -64,7 +64,7 @@ export const genId = () => `m_${Date.now()}_${++_idCounter}`;
 /* ════════════════════════════════════════════════════════
    CREATE MATCH
    ════════════════════════════════════════════════════════ */
-export function createMatch({ player1, player2, slot1, slot2, type, config = {} }) {
+export function createMatch({ player1, player2, player1Avatar = '', player2Avatar = '', slot1, slot2, type, config = {} }) {
   const roundCount = (type === 'bonus_bo3' || type === 'bonus_bo3_classic') ? 3 : 1;
   const rounds = Array.from({ length: roundCount }, (_, i) => createEmptyRound(i + 1, type));
 
@@ -72,6 +72,8 @@ export function createMatch({ player1, player2, slot1, slot2, type, config = {} 
     id: genId(),
     player1,
     player2,
+    player1Avatar,
+    player2Avatar,
     slot1: slot1 || { name: '', image: null },
     slot2: slot2 || { name: '', image: null },
     type,

@@ -7,6 +7,7 @@ import {
 } from "../../../../utils/slotUtils";
 import { useAuth } from "../../../../context/AuthContext";
 import { updateSlotRecordsFromHunt } from "../../../../services/slotRecordService";
+import { resolveTournamentPlayers } from "../../../../services/tournamentParticipantService";
 import TabBar from "../shared/TabBar";
 import {
   TOURNAMENT_TYPES,
@@ -331,6 +332,8 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     }
     return arr;
   });
+  const [resolvingParticipants, setResolvingParticipants] = useState(false);
+  const [participantWarning, setParticipantWarning] = useState("");
 
   /* ─── Persist setup state: sync localBracketPlayers → widget config on change ─── */
   const persistPlayersRef = useRef(null);
@@ -376,7 +379,11 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
 
   const updateBracketPlayer = (idx, field, value) => {
     setLocalBracketPlayers((prev) =>
-      prev.map((p, i) => (i === idx ? { ...p, [field]: value } : p)),
+      prev.map((p, i) => (i === idx ? {
+        ...p,
+        [field]: value,
+        ...(field === "name" || field === "twitchUsername" ? { avatarUrl: "" } : {}),
+      } : p)),
     );
   };
 
@@ -450,6 +457,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     const filled = localBracketPlayers.map((p, i) => ({
       ...p,
       name: shuffled[i % shuffled.length],
+      avatarUrl: "",
       slot: randomSlots[i]
         ? {
             id: randomSlots[i].id || null,
@@ -472,9 +480,21 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     (p) => p.name.trim().length > 0,
   );
 
-  const startBracketTournament = () => {
-    if (!canStartBracket) return;
-    const seeded = seedPlayers(localBracketPlayers);
+  const startBracketTournament = async () => {
+    if (!canStartBracket || resolvingParticipants) return;
+    setResolvingParticipants(true);
+    setParticipantWarning("");
+    let resolvedPlayers = localBracketPlayers;
+    try {
+      const result = await resolveTournamentPlayers(localBracketPlayers);
+      resolvedPlayers = result.players;
+      setParticipantWarning(result.warning);
+    } catch {
+      setParticipantWarning("Participant avatars could not be loaded. Fallback icons will be used.");
+    } finally {
+      setResolvingParticipants(false);
+    }
+    const seeded = seedPlayers(resolvedPlayers);
     const cfg =
       bracketType === "spins"
         ? { numSpins: bracketTypeConfig.numSpins || 50 }
@@ -491,7 +511,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     setMulti({
       bracketPhase: "active",
       bracketData: newBracket,
-      bracketPlayers: localBracketPlayers,
+      bracketPlayers: resolvedPlayers,
       bracketType,
       bracketPlayerCount,
       bracketTypeConfig,
@@ -1080,15 +1100,24 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                       <div key={idx} className="bk-player-row">
                         <div className="bk-player-seed">#{idx + 1}</div>
                         <div className="bk-player-fields">
-                          <input
-                            className="bk-input"
-                            type="text"
-                            value={player.name}
-                            placeholder="Player name"
-                            onChange={(e) =>
-                              updateBracketPlayer(idx, "name", e.target.value)
-                            }
-                          />
+                          <div className="tm-player-identity">
+                            <input
+                              className="bk-input"
+                              type="text"
+                              value={player.name}
+                              placeholder="Player name"
+                              aria-label={`Player ${idx + 1} name`}
+                              onChange={(e) => updateBracketPlayer(idx, "name", e.target.value)}
+                            />
+                            <input
+                              className="bk-input"
+                              type="text"
+                              value={player.twitchUsername || ""}
+                              placeholder="Twitch username (optional)"
+                              aria-label={`Player ${idx + 1} Twitch username`}
+                              onChange={(e) => updateBracketPlayer(idx, "twitchUsername", e.target.value)}
+                            />
+                          </div>
                           <div className="bk-slot-wrap">
                             {player.slot?.name && !bkEditingSlot[idx] ? (
                               /* ── Locked slot view ── */
@@ -1227,10 +1256,11 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                   <button
                     className={`bk-start-btn ${!canStartBracket ? "bk-start-btn--disabled" : ""}`}
                     onClick={startBracketTournament}
-                    disabled={!canStartBracket}
+                    disabled={!canStartBracket || resolvingParticipants}
                   >
-                    Start Bracket Tournament
+                    {resolvingParticipants ? "Loading player avatars…" : "Start Bracket Tournament"}
                   </button>
+                  {participantWarning && <p role="status" className="tm-participant-warning">{participantWarning}</p>}
                 </div>
               </div>
             </>
@@ -1238,6 +1268,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
 
           {(bracketPhase === "active" || bracketPhase === "completed") && (
             <div className="bk-active">
+              {participantWarning && <p role="status" className="tm-participant-warning">{participantWarning}</p>}
               <div className="tm-section-heading tm-section-heading--active">
                 <div>
                   <span className="tm-section-eyebrow">Match Operations</span>

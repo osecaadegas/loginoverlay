@@ -24,6 +24,16 @@ function money(value, currency) {
   return `${currency}${amount.toFixed(2)}`;
 }
 
+function ProPlayerAvatar({ url }) {
+  const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => setFailed(false), [url]);
+  return <span className="tw-pro-person" aria-hidden="true">
+    {url && !failed
+      ? <img src={url} alt="" onError={() => setFailed(true)} referrerPolicy="no-referrer" />
+      : <svg viewBox="0 0 32 32"><circle cx="16" cy="9" r="6"/><path d="M3 30v-3c0-7 5-11 13-11s13 4 13 11v3Z"/></svg>}
+  </span>;
+}
+
 function ProSlotCard({ match, round, side, result, currency, config, shatterTarget }) {
   const playerKey = side === "left" ? "player1" : "player2";
   const slot = round?.[side === "left" ? "slot1" : "slot2"] || match?.[side === "left" ? "slot1" : "slot2"];
@@ -72,8 +82,14 @@ export default function TournamentLayoutPro({ match, config, shatterInfo, onShat
   const winner = match?.winner || calcMatchWinner(match);
   const firstOpen = results.findIndex((result) => result === null);
   const currentRound = firstOpen >= 0 ? firstOpen + 1 : Math.min(match?.rounds?.length || 1, 3);
-  const playerOne = match?.player1 || "Player 1";
-  const playerTwo = match?.player2 || "Player 2";
+  const playerOne = match?.player1Profile?.username || match?.player1 || "Player 1";
+  const playerTwo = match?.player2Profile?.username || match?.player2 || "Player 2";
+  const playerAvatar = (key) => {
+    const direct = match?.[`${key}Avatar`] || match?.[`${key}Profile`]?.avatarUrl;
+    if (direct) return direct;
+    const seeded = (c.bracketPlayers || []).filter((participant) => participant.name === match?.[key]);
+    return seeded.length === 1 ? seeded[0].avatarUrl || "" : "";
+  };
   const completed = Boolean(winner);
   const lastPlayedRound = results.findLastIndex((result) => result !== null);
 
@@ -95,7 +111,7 @@ export default function TournamentLayoutPro({ match, config, shatterInfo, onShat
         <div className="tw-pro-scoreboard">
           <div className={`tw-pro-player${p1Wins > p2Wins ? " tw-pro-player--leading" : ""}`} {...element("playerName")} title={playerOne}
             style={textAppearance(c, "playerName", { color: c.styleConfigs?.pro?.nameColor, fontSize: c.styleConfigs?.pro?.nameSize })}>
-            <span className="tw-pro-person" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="9" r="6"/><path d="M3 30v-3c0-7 5-11 13-11s13 4 13 11v3Z"/></svg></span><strong>{playerOne}</strong>
+            <ProPlayerAvatar url={playerAvatar("player1")} /><strong>{playerOne}</strong>
           </div>
           <div className="tw-pro-score" key={`${p1Wins}:${p2Wins}`} {...element("scoreValue")}
             style={textAppearance(c, "scoreValue", { fontSize: c.styleConfigs?.pro?.multiSize })}>
@@ -103,7 +119,7 @@ export default function TournamentLayoutPro({ match, config, shatterInfo, onShat
           </div>
           <div className={`tw-pro-player tw-pro-player--right${p2Wins > p1Wins ? " tw-pro-player--leading" : ""}`} {...element("playerName")} title={playerTwo}
             style={textAppearance(c, "playerName", { color: c.styleConfigs?.pro?.nameColor, fontSize: c.styleConfigs?.pro?.nameSize })}>
-            <strong>{playerTwo}</strong><span className="tw-pro-person" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="9" r="6"/><path d="M3 30v-3c0-7 5-11 13-11s13 4 13 11v3Z"/></svg></span>
+            <strong>{playerTwo}</strong><ProPlayerAvatar url={playerAvatar("player2")} />
           </div>
         </div>
         <div className="tw-pro-rounds">

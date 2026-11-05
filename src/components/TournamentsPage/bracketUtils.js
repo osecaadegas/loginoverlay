@@ -12,7 +12,7 @@ import {
   createMatch,
   updateRoundData,
   MATCH_STATUS,
-} from "../OverlayCenter/widgets/tournament/tournamentEngine";
+} from "../OverlayCenter/widgets/tournament/tournamentEngine.js";
 
 /* ─── Round label by match count ─── */
 const ROUND_LABELS = {
@@ -52,7 +52,7 @@ export function seedPlayers(players = []) {
 /**
  * Generate a full single-elimination bracket from a seeded players array.
  *
- * @param {Array}  seededPlayers  Player objects: { id, name, slot: { name, image } }
+ * @param {Array}  seededPlayers  Player objects: { id, name, avatarUrl?, slot: { name, image } }
  * @param {string} bracketType   'bonus' | 'bonus_bo3' | 'bonus_bo3_classic' | 'spins'
  * @param {object} cfg           Type-specific config (e.g. { numSpins: 50 })
  * @returns {Array<{ label: string, round: number, matches: Match[] }>}
@@ -75,6 +75,8 @@ export function generateBracket(
       createMatch({
         player1: p1?.name || "TBD",
         player2: p2?.name || "TBD",
+        player1Avatar: p1?.avatarUrl || "",
+        player2Avatar: p2?.avatarUrl || "",
         slot1: p1?.slot || { name: "", image: null },
         slot2: p2?.slot || { name: "", image: null },
         type: bracketType,
@@ -200,6 +202,7 @@ function _propagateWinner(bracketData, roundIdx, matchIdx) {
   const fillPlayer1 = matchIdx % 2 === 0; // even → player1, odd → player2
 
   const winnerName = match.winner === "player1" ? match.player1 : match.player2;
+  const winnerAvatar = match.winner === "player1" ? match.player1Avatar : match.player2Avatar;
   const winnerSlot = match.winner === "player1" ? match.slot1 : match.slot2;
 
   return bracketData.map((r, rIdx) => {
@@ -209,8 +212,8 @@ function _propagateWinner(bracketData, roundIdx, matchIdx) {
       matches: r.matches.map((m, mIdx) => {
         if (mIdx !== nextMatchIdx) return m;
         return fillPlayer1
-          ? { ...m, player1: winnerName, slot1: winnerSlot }
-          : { ...m, player2: winnerName, slot2: winnerSlot };
+          ? { ...m, player1: winnerName, player1Avatar: winnerAvatar || "", slot1: winnerSlot }
+          : { ...m, player2: winnerName, player2Avatar: winnerAvatar || "", slot2: winnerSlot };
       }),
     };
   });

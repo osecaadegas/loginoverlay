@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-player-avatars-2026-11-05', date: '2026-11-05', category: 'overlays',
+    title: 'Participant avatars in PRO tournaments',
+    summary: 'PRO tournament scoreboards now show saved participant avatars and usernames, while wide slot cards keep portrait artwork intact.',
+    changes: [
+      'Resolve Twitch display names and profile photos from entered participant usernames when a bracket starts, and save them with the match for preview and OBS.',
+      'Carry winning participant avatars into later bracket rounds and use a user icon when an avatar is missing or fails to load.',
+      'Fill wide slot card artwork areas with a softened copy of the source image behind a sharp, proportionally scaled copy.',
+      'Verify the PRO layout and avatar mapping in Chromium; live OBS Studio playback remains unverified.',
+    ],
+    action: 'Enter each player name and, optionally, a Twitch username before starting a new bracket. Refresh the editor and OBS Browser Source after deployment.',
+  },
+  {
     id: 'tournament-pro-portrait-frame-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Larger PRO tournament broadcast frame',
     summary: 'The portrait PRO tournament now gives the scoreboard, three rounds and live result cards the proportions of the approved broadcast design.',
