@@ -512,12 +512,17 @@ function applyBonusHuntPreviewSample(config = {}, slotCatalog) {
 
 function applyTournamentPreviewSample(config = {}, slotCatalog) {
   const existingMatches = config.data?.matches;
+  const bracket = config.layout === "pro_bracket" && config.bracketData?.length
+    ? config.bracketData
+    : config.layout === "pro_bracket"
+      ? SAMPLE_TOURNAMENT_BRACKET.map((stage, stageIndex) => ({ ...stage, matches: stage.matches.map((match) => stageIndex === 0 ? { ...match, winner: null, status: "in_progress" } : match) }))
+      : SAMPLE_TOURNAMENT_BRACKET;
   return {
     ...config,
     bracketName: config.bracketName || "Friday Night Showdown",
     bracketPhase: "completed",
     bracketPlayerCount: 8,
-    bracketData: SAMPLE_TOURNAMENT_BRACKET.map((round) => ({
+    bracketData: bracket.map((round) => ({
       ...round,
       matches: hydratePreviewMatches(round.matches, slotCatalog),
     })),
@@ -584,6 +589,8 @@ const PREVIEW_FRAME_BUILDERS = Object.freeze({
   spotify_now_playing: getSpotifyPreviewFrame,
   tournament: (config) => config.layout === "pro"
     ? { width: 560, height: 1080 }
+    : config.layout === "pro_bracket"
+      ? { width: 680, height: 1080 }
     : { width: 960, height: 720 },
 });
 

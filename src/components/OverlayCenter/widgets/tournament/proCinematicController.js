@@ -25,7 +25,7 @@ export class ProCinematicController {
   async payout(roundIndex, payouts) {
     if (!this.options.payoutCounter || !payouts?.length) return;
     await this.together(payouts.map(async ({ side, value }) => {
-      const cell = select(this.root, `[data-pro-round="${roundIndex}"] [data-pro-side="${side}"] [data-pro-pay-cell]`);
+      const cell = select(this.scopeRoot || this.root, `[data-pro-round="${roundIndex}"] [data-pro-side="${side}"] [data-pro-pay-cell]`) || select(this.scopeRoot, `[data-pro-side="${side}"] [data-pro-pay-cell]`);
       const number = cell?.querySelector("[data-pro-pay-value]");
       if (!number || !Number.isFinite(value)) return;
       const canonical = number.textContent;
@@ -75,7 +75,7 @@ export class ProCinematicController {
 
   async winner(roundIndex, side) {
     if (!this.options.winnerEffects) return;
-    const card = select(this.root, `[data-pro-round="${roundIndex}"] [data-pro-side="${side}"]`);
+    const card = select(this.scopeRoot || this.root, `[data-pro-round="${roundIndex}"] [data-pro-side="${side}"]`) || select(this.scopeRoot, `[data-pro-side="${side}"]`);
     const trace = card?.querySelector(".tw-pro-energy-trace");
     const badge = card?.querySelector(".tw-pro-win-tag");
     await this.together([
@@ -89,7 +89,7 @@ export class ProCinematicController {
     await this.together(["left", "right"].map(async (side) => {
       const key = side === "left" ? "player1" : "player2";
       if (event.toScore[key] === event.fromScore[key]) return;
-      const digit = select(this.root, `[data-pro-score="${side}"]`);
+      const digit = select(this.scopeRoot || this.root, `[data-pro-score="${side}"]`);
       if (!digit) return;
       const canonical = digit.textContent;
       digit.textContent = String(event.fromScore[key]);
@@ -103,7 +103,7 @@ export class ProCinematicController {
 
   async activate(index) {
     if (!this.options.roundTransitions || index > 2) return;
-    const heading = select(this.root, `[data-pro-round="${index}"] .tw-pro-round-heading`);
+    const heading = select(this.scopeRoot || this.root, `[data-pro-round="${index}"] .tw-pro-round-heading`);
     const round = heading?.closest(".tw-pro-round");
     await this.together([
       this.animate(heading, [{ opacity: .45 }, { opacity: 1 }], 500 * this.scale),
@@ -140,6 +140,8 @@ export class ProCinematicController {
 
   async play(event, shatter) {
     if (this.cancelled) return false;
+    this.scopeRoot = [...(this.root?.querySelectorAll("[data-pro-match-id]") || [])].find((node) => String(node.dataset.proMatchId) === String(event.matchId)) || this.root;
+    const bracket = this.root?.dataset.layout === "pro_bracket";
     this.root?.setAttribute("data-cinematic-phase", event.type);
     if (event.type === "intro") await this.intro();
     if (event.type === "payout") await this.payout(event.roundIndex, event.payouts);
@@ -148,10 +150,10 @@ export class ProCinematicController {
       if (!this.cancelled && event.winner !== "draw") await shatter(event);
       if (!this.cancelled && event.winner !== "draw") await this.winner(event.roundIndex, event.winner === "player1" ? "left" : "right");
       if (!this.cancelled) await this.score(event);
-      if (!this.cancelled && event.champion) await this.champion(event.champion);
-      else if (!this.cancelled) await this.activate(event.roundIndex + 1);
+      if (!this.cancelled && event.champion && !bracket) await this.champion(event.champion);
+      else if (!this.cancelled && !bracket) await this.activate(event.roundIndex + 1);
     }
-    if (event.type === "champion") await this.champion(event.champion);
+    if (event.type === "champion" && !bracket) await this.champion(event.champion);
     this.root?.setAttribute("data-cinematic-phase", "idle");
     return !this.cancelled;
   }

@@ -10,6 +10,7 @@ import {
 } from "./tournamentEngine";
 import ShatterEffect from "./ShatterEffect";
 import TournamentLayoutPro from "./TournamentLayoutPro";
+import TournamentLayoutProBracket from "./TournamentLayoutProBracket";
 import { normalizeProCinematicSettings } from "./proVisualEvents";
 import { subValue } from "../shared/appearanceStyles";
 import SlotImage from "../SlotImage";
@@ -68,10 +69,10 @@ function TournamentWidget({ config, theme }) {
 
   /* Filter out future bracket matches where both players are still TBD */
   const allMatches = tData.matches || [];
-  const layout = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
+  const layout = ["esports", "pro", "pro_bracket"].includes(c.layout) ? c.layout : "vertical";
   const proMotion = normalizeProCinematicSettings(c);
-  const proCinematic = layout === "pro" && proMotion.preset === "cinematic" && proMotion.enabled;
-  const proAnimationOff = layout === "pro" && proMotion.preset === "none";
+  const proCinematic = ["pro", "pro_bracket"].includes(layout) && proMotion.preset === "cinematic" && proMotion.enabled;
+  const proAnimationOff = ["pro", "pro_bracket"].includes(layout) && proMotion.preset === "none";
   const matches = allMatches.filter(
     (m) =>
       (m.player1 && m.player1 !== "TBD") || (m.player2 && m.player2 !== "TBD"),
@@ -141,7 +142,7 @@ function TournamentWidget({ config, theme }) {
   /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
   const [flipperTick, setFlipperTick] = React.useState(0);
   React.useEffect(() => {
-    if (layout === "pro") return undefined;
+    if (layout === "pro" || layout === "pro_bracket") return undefined;
     const id = setInterval(() => setFlipperTick((t) => t + 1), 15000);
     return () => clearInterval(id);
   }, [layout]);
@@ -511,6 +512,19 @@ function TournamentWidget({ config, theme }) {
           : val < 0
             ? scoreNegativeColor
             : scoreNeutralColor;
+
+  if (layout === "pro_bracket") {
+    const activeShatter = shatterInfo && shatterMatchIdx !== null
+      ? { ...shatterInfo, matchId: allMatches[shatterMatchIdx]?.id }
+      : null;
+    return <TournamentLayoutProBracket
+      config={c}
+      allMatches={allMatches}
+      selectedMatch={allMatches[tData.currentMatchIdx ?? 0] || null}
+      shatterInfo={activeShatter}
+      onShatterComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
+    />;
+  }
 
   if (layout === "pro") {
     const activeMatch = shatterInfo && shatterMatchIdx !== null

@@ -255,7 +255,7 @@ export default function BetterObsOverlay() {
   const preserveLogicalLayout = isSingleWidget &&
     ((targetInstance?.widgetType === "bonus_hunt" && targetInstance.config?.colourTheme === "clear_ice") ||
       (targetInstance?.widgetType === "rtp_stats" && targetInstance.config?.colourTheme === "arctic") ||
-      (targetInstance?.widgetType === "tournament" && ["esports", "pro"].includes(targetInstance.config?.layout)));
+      (targetInstance?.widgetType === "tournament" && ["esports", "pro", "pro_bracket"].includes(targetInstance.config?.layout)));
   const geometry = getObsRenderGeometry({
     viewportWidth: viewport.width,
     viewportHeight: viewport.height,

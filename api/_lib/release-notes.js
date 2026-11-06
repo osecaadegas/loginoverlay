@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-bracket-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'PRO BRACKET knockout presentation',
+    summary: 'A new icy PRO tournament mode presents the current saved knockout stage with all of its matchups.',
+    changes: [
+      'Show four quarter-final matches, two semi-final matches or one grand-final match using saved bracket outcomes.',
+      'Keep the existing PRO Vertical layout and reuse its cyan frame, portrait slot cards, provider labels, readable COST/PAY values and losing-card shatter.',
+      'Add participant avatars, bracket display controls and a contained champion reveal that does not replay on Browser Source refresh.',
+      'Preserve logical widget dimensions for OBS and use a 680 × 1080 recommended PRO BRACKET size.',
+    ],
+    action: 'Select PRO BRACKET in the tournament widget layout, save, and refresh the OBS Browser Source after deployment. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'tournament-pro-card-readability-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'Clearer PRO tournament card results',
     summary: 'PRO slot cards give providers and COST/PAY amounts more readable space at broadcast size.',

@@ -414,7 +414,7 @@
   --pro-line: rgba(193, 239, 253, .78);
 }
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
-  :is(.tw-pro-scoreboard, .tw-pro-round, .tw-pro-footer) {
+  :is(.tw-pro-scoreboard, .tw-pro-round, .tw-pro-footer, .tw-pro-bracket-stage-title, .tw-pro-bracket-players) {
   border-color: rgba(193, 239, 253, .78) !important;
   background-color: rgba(3, 20, 34, .87) !important;
   background-image:

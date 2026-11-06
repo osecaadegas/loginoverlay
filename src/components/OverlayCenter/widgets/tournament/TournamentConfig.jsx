@@ -9,6 +9,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { updateSlotRecordsFromHunt } from "../../../../services/slotRecordService";
 import { resolveTournamentPlayers } from "../../../../services/tournamentParticipantService";
 import TabBar from "../shared/TabBar";
+import TournamentLayoutProBracket from "./TournamentLayoutProBracket";
 import {
   TOURNAMENT_TYPES,
   MATCH_STATUS,
@@ -83,7 +84,7 @@ function NumInput({
 export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const { user } = useAuth();
   const c = config || {};
-  const currentStyle = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
+  const currentStyle = c.layout === "esports" || c.layout === "pro" ? c.layout : c.layout === "pro_bracket" ? "pro" : "vertical";
   const { set, setMulti } = makePerStyleSetters(
     onChange,
     c,
@@ -299,6 +300,9 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const bracketActiveRound = c.bracketActiveRound ?? 0;
   const bracketActiveMatch = c.bracketActiveMatch ?? 0;
   const [selectedPreviewMatchId, setSelectedPreviewMatchId] = useState(null);
+  const [bracketPreviewOpen, setBracketPreviewOpen] = useState(false);
+  const [bracketPreviewStage, setBracketPreviewStage] = useState(null);
+  const [bracketReplayKey, setBracketReplayKey] = useState(0);
   const bracketTypeConfig = c.bracketTypeConfig || {
     numSpins: 50,
     drawRule: "no_point",
@@ -596,7 +600,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     let nextRound = pinnedRound;
     let nextMatch = pinnedMatch;
 
-    if (matchCompleted && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
+    if (matchCompleted && (!["pro", "pro_bracket"].includes(c.layout) || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(newBracket, pinnedRound, pinnedMatch);
       if (next) {
         nextRound = next.round;
@@ -759,7 +763,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     let nextMatch = pinnedMatch;
     const finalMatch = finalBracket[pinnedRound]?.matches[pinnedMatch];
     const matchDone = finalMatch?.status === "completed";
-    if (matchDone && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
+    if (matchDone && (!["pro", "pro_bracket"].includes(c.layout) || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(finalBracket, pinnedRound, pinnedMatch);
       if (next) {
         nextRound = next.round;
@@ -812,7 +816,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
 
     let nextRound = bracketActiveRound;
     let nextMatch = bracketActiveMatch;
-    if (newWinner && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
+    if (newWinner && (!["pro", "pro_bracket"].includes(c.layout) || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(
         newBracket,
         bracketActiveRound,
@@ -1350,7 +1354,28 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                 </div>
               )}
 
-              {c.layout === "pro" && c.matchNavigationEnabled !== false && previewEntry && (
+              {c.layout === "pro_bracket" && <div className="tm-card" style={{ padding: 10, marginBottom: 10 }}>
+                <button type="button" onClick={() => { setBracketPreviewStage(null); setBracketPreviewOpen(true); }}>Preview PRO BRACKET stages</button>
+                <small style={{ display: "block", marginTop: 5 }}>Dashboard preview only. Browsing and replaying here do not change the live OBS stage.</small>
+              </div>}
+              {bracketPreviewOpen && c.layout === "pro_bracket" && <div role="dialog" aria-modal="true" aria-label="PRO BRACKET preview" style={{ position: "fixed", inset: 0, zIndex: 100000, display: "grid", placeItems: "center", background: "rgba(0,8,20,.92)", overflow: "auto", padding: 12 }}>
+                <div style={{ maxWidth: "100%" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", marginBottom: 8 }}>
+                    <label>Stage <select value={bracketPreviewStage ?? "live"} onChange={(event) => setBracketPreviewStage(event.target.value === "live" ? null : Number(event.target.value))}>
+                      <option value="live">Live stage</option>
+                      {bracketData.map((stage, index) => <option key={index} value={index}>{stage.label}</option>)}
+                    </select></label>
+                    <button type="button" onClick={() => setBracketReplayKey((value) => value + 1)}>Replay effect</button>
+                    <button type="button" onClick={() => setBracketPreviewOpen(false)}>Close preview</button>
+                  </div>
+                  <div style={{ width: 340, height: 540, maxWidth: "100%", overflow: "hidden" }}>
+                    <div style={{ width: 680, height: 1080, transform: "scale(.5)", transformOrigin: "top left" }}>
+                      <TournamentLayoutProBracket config={{ ...c, animationPreset: "none" }} allMatches={c.data?.matches || []} selectedMatch={currentBracketMatch} previewStageIndex={bracketPreviewStage} previewReplayKey={bracketReplayKey} />
+                    </div>
+                  </div>
+                </div>
+              </div>}
+              {["pro", "pro_bracket"].includes(c.layout) && c.matchNavigationEnabled !== false && previewEntry && (
                 <section className="tm-card" aria-label="Match queue" style={{ padding: 12, marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <strong style={{ marginRight: "auto" }}>Match {previewQueueIndex + 1} / {matchQueue.length}</strong>
@@ -1400,7 +1425,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                                   key={mIdx}
                                   className={`bk-match-card ${isActive ? "bk-match-card--active" : ""} ${isComplete ? "bk-match-card--done" : ""}`}
                                   onClick={() => {
-                                    if (c.layout === "pro") {
+                                    if (["pro", "pro_bracket"].includes(c.layout)) {
                                       if (c.matchNavigationEnabled !== false) setSelectedPreviewMatchId(match.id);
                                       return;
                                     }

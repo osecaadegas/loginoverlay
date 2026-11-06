@@ -6559,6 +6559,7 @@ const TOURNAMENT_LAYOUTS = [
   { key: "vertical", name: "Vertical" },
   { key: "esports", name: "Esports" },
   { key: "pro", name: "PRO" },
+  { key: "pro_bracket", name: "PRO BRACKET" },
 ];
 
 const TOURNAMENT_FONTS = [
@@ -6647,14 +6648,20 @@ function BetterTournamentControls({
     ["cards", <Layers size={12} />, "Cards"],
     ["type", <Type size={12} />, "Text"],
     ["palette", <Palette size={12} />, "Palette"],
-    ...(c.layout === "pro" ? [["queue", <Layers size={12} />, "Match queue"], ["motion", <Wand2 size={12} />, "Motion"]] : []),
+    ...(c.layout === "pro" ? [["queue", <Layers size={12} />, "Match queue"]] : []),
+    ...(["pro", "pro_bracket"].includes(c.layout) ? [["motion", <Wand2 size={12} />, "Motion"]] : []),
+    ...(c.layout === "pro_bracket" ? [["bracket", <Layers size={12} />, "Bracket"]] : []),
   ];
   const set = (patch) => {
-    const nextConfig = c.layout === "pro" || patch.layout === "pro"
+    const nextConfig = ["pro", "pro_bracket"].includes(c.layout) || ["pro", "pro_bracket"].includes(patch.layout)
       ? { ...c, ...patch, styleConfigs: { ...c.styleConfigs, pro: { ...c.styleConfigs?.pro, ...patch } } }
       : { ...c, ...patch };
     if (patch.layout === "pro" && c.layout !== "pro" && typeof onWidgetChange === "function") {
       onWidgetChange({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 560)), width: 560, height: 1080, y: 0, config: nextConfig });
+      return;
+    }
+    if (patch.layout === "pro_bracket" && c.layout !== "pro_bracket" && typeof onWidgetChange === "function") {
+      onWidgetChange({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 680)), width: 680, height: 1080, y: 0, config: nextConfig });
       return;
     }
     onChange(nextConfig);
@@ -6674,7 +6681,7 @@ function BetterTournamentControls({
         next[key] = defaults[key];
       else delete next[key];
     }
-    if (c.layout === "pro" && next.styleConfigs?.pro) {
+    if (["pro", "pro_bracket"].includes(c.layout) && next.styleConfigs?.pro) {
       next.styleConfigs = { ...next.styleConfigs };
       delete next.styleConfigs.pro;
     }
@@ -6695,7 +6702,18 @@ function BetterTournamentControls({
         </Section>
       )}
 
-      {c.layout === "pro" && matchesControlTab(tab, "motion") && (
+      {c.layout === "pro_bracket" && matchesControlTab(tab, "bracket") && (
+        <Section title="PRO BRACKET display" icon={<Layers size={13} />}>
+          <p className="bp-hint">Shows every match in the first unresolved knockout stage. Winners and stage changes come from saved bracket results.</p>
+          <ToggleRow label="Participant avatars" checked={c.showBracketAvatars !== false} onChange={(showBracketAvatars) => set({ showBracketAvatars })} />
+          <ToggleRow label="COST and PAY" checked={c.showBracketCostPay !== false} onChange={(showBracketCostPay) => set({ showBracketCostPay })} />
+          <ToggleRow label="Dashboard match preview" checked={c.matchNavigationEnabled !== false} onChange={(matchNavigationEnabled) => set({ matchNavigationEnabled })} />
+          <ToggleRow label="Automatically activate next match" checked={c.autoNextMatchActivation === true} onChange={(autoNextMatchActivation) => set({ autoNextMatchActivation })} />
+          <p className="bp-hint">Provider names are the only slot captions in this mode. Match preview does not switch OBS.</p>
+        </Section>
+      )}
+
+      {["pro", "pro_bracket"].includes(c.layout) && matchesControlTab(tab, "motion") && (
         <Section title="PRO tournament animation" icon={<Wand2 size={13} />}>
           <SelectRow label="Preset" value={c.animationPreset || "subtle"} options={[
             { value: "none", label: "None" },
@@ -6811,13 +6829,14 @@ function BetterTournamentControls({
           <Section title="Visual layout" icon={<MonitorPlay size={13} />}>
             <Segmented
               value={c.layout}
-              columns={3}
+              columns={2}
               options={TOURNAMENT_LAYOUTS}
               onChange={(layout) => set({ layout })}
             />
           </Section>
           <Section title="Canvas & spacing" icon={<Maximize2 size={13} />}>
             {c.layout === "pro" && <button className="bp-reset" type="button" onClick={() => onWidgetChange?.({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 560)), width: 560, height: 1080, y: 0, config: c })}>Use recommended PRO size (560 × 1080)</button>}
+            {c.layout === "pro_bracket" && <button className="bp-reset" type="button" onClick={() => onWidgetChange?.({ x: Math.max(0, Math.min(Number(widget?.x) || 0, STANDARD_BETTER_WIDGET_GEOMETRY.background.width - 680)), width: 680, height: 1080, y: 0, config: c })}>Use recommended PRO BRACKET size (680 × 1080)</button>}
             <SliderRow
               label="Widget width"
               value={Number(widget?.width) || 960}

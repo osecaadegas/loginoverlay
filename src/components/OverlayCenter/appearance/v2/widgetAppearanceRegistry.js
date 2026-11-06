@@ -1321,6 +1321,10 @@ export const widgetAppearanceRegistry = Object.freeze({
         capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, rows: true, columns: true },
         elementIds: ["container", "header", "playerName", "scoreValue", "roundHeading", "matchCard", "slotImage", "provider", "statLabel", "statValue", "statusBadge"],
       }),
+      makeRuntimeStyle("pro_bracket", "PRO BRACKET", "Icy knockout-stage match panels.", {
+        capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, rows: true, columns: true },
+        elementIds: ["container", "header", "playerName", "scoreValue", "roundHeading", "matchCard", "slotImage", "provider", "statLabel", "statValue", "statusBadge"],
+      }),
     ],
     responsive: {
       minWidth: 320,

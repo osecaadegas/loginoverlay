@@ -19,6 +19,7 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
     registryRef.current = createProProcessedRegistry(storage);
   }
   const [heldId, setHeldId] = React.useState(null);
+  const [playingEvent, setPlayingEvent] = React.useState(null);
   const [shatterInfo, setShatterInfo] = React.useState(null);
 
   const cancel = React.useCallback(() => {
@@ -30,6 +31,7 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
     shatterResolveRef.current = null;
     setShatterInfo(null);
     setHeldId(null);
+    setPlayingEvent(null);
   }, []);
 
   const shatter = React.useCallback((event) => {
@@ -39,7 +41,7 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
       || latestMatch?.[loser === "left" ? "slot1" : "slot2"];
     return new Promise((resolve) => {
       shatterResolveRef.current = resolve;
-      setShatterInfo({ side: loser, imageUrl: slot?.image || null, roundIndex: event.roundIndex });
+      setShatterInfo({ matchId: event.matchId, side: loser, imageUrl: slot?.image || null, roundIndex: event.roundIndex });
     });
   }, []);
 
@@ -59,6 +61,7 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
       const visualMatch = live.allMatches.find((item) => String(item.id) === event.matchId);
       if (!visualMatch || !rootRef.current) continue;
       setHeldId(event.matchId);
+      setPlayingEvent(event);
       playingRef.current = event;
       // Let React commit the held match before querying its cards.
       await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -79,6 +82,7 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
         }
       } else registryRef.current.add(event.key);
       if (playingRef.current === event) playingRef.current = null;
+      setPlayingEvent(null);
     }
     setHeldId(null);
   }, [shatter]);
@@ -126,5 +130,5 @@ export default function useProCinematics({ allMatches, match, tournamentId, sett
   }, [cancel]);
 
   const renderMatch = heldId ? allMatches.find((item) => String(item.id) === heldId) || match : match;
-  return { rootRef, renderMatch, shatterInfo, onShatterComplete };
+  return { rootRef, renderMatch, heldMatchId: heldId, playingEvent, shatterInfo, onShatterComplete };
 }

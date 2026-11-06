@@ -1,0 +1,59 @@
+.tw-pro-bracket { gap: 4px; padding: 5px; isolation: isolate; }
+.tw-pro-bracket .tw-pro-header { flex: 0 0 7%; min-height: 65px; }
+.tw-pro-bracket .tw-pro-crown svg { width: clamp(26px, 5cqw, 42px); }
+.tw-pro-bracket .tw-pro-header h2 { font-size: clamp(22px, 4.65cqw, 39px); }
+.tw-pro-bracket .tw-pro-header p { font-size: clamp(12px, 2cqw, 18px); }
+.tw-pro-bracket-stage-title { flex: none; min-height: 27px; display: flex; justify-content: space-between; align-items: center; padding: 2px 9px; border: 1px solid #42caffaa; border-radius: 8px; color: #d9f6ff; background: linear-gradient(90deg, #0a273e, #0d3955, #09233a); box-shadow: inset 0 0 9px #3ccaff22; letter-spacing: .13em; font-size: clamp(13px, 2.5cqw, 20px); }
+.tw-pro-bracket-stage-title span { color: #a9eaff; font-size: .76em; white-space: nowrap; }
+.tw-pro-bracket-matches { flex: 1 1 auto; min-height: 0; padding-top: 0; grid-template-rows: repeat(var(--bracket-count), minmax(0, 1fr)); gap: 4px; }
+.tw-pro-bracket-match { padding: 3px; border-color: #348ec8; }
+.tw-pro-bracket-match-heading { flex: none; min-height: 18px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; color: #e8f9ff; font-size: clamp(12px, 2cqw, 16px); font-weight: 900; letter-spacing: .08em; }
+.tw-pro-bracket-match-status { color: #8adfff; font-size: .76em; }
+.tw-pro-bracket-players { flex: none; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; min-height: 27px; margin-bottom: 2px; border: 1px solid #42b5ec88; border-radius: 8px; background: linear-gradient(90deg,#123750,#071b30,#123750); }
+.tw-pro-bracket-player { min-width: 0; display: flex; align-items: center; gap: 4px; padding: 1px 4px; color: #f2fbff; font-size: clamp(13px, 2.55cqw, 19px); font-weight: 900; }
+.tw-pro-bracket-player--right { justify-content: flex-end; text-align: right; }
+.tw-pro-bracket-player strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tw-pro-bracket-player .tw-pro-person { width: clamp(22px, 3.3cqw, 34px); height: clamp(22px, 3.3cqw, 34px); }
+.tw-pro-bracket-score { display: flex; align-items: center; justify-content: center; min-width: 45px; padding: 0 7px; color: #fff; background: #082639; border-inline: 1px solid #44dcff; clip-path: polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%); font-size: clamp(18px, 3cqw, 25px); font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tw-pro-bracket-score span { color: #4be9ff; padding: 0 2px; }
+.tw-pro-bracket .tw-pro-round-grid { flex: 1 1 auto; min-height: 0; }
+.tw-pro-bracket .tw-pro-card { border-radius: 9px; }
+.tw-pro-bracket .tw-pro-art { flex: 1 1 auto; min-height: 0; }
+.tw-pro-bracket .tw-pro-provider { font-size: clamp(13px, 2.6cqw, 19px); }
+.tw-pro-bracket .tw-pro-values small { font-size: clamp(11px, 1.95cqw, 15px); }
+.tw-pro-bracket .tw-pro-values b { font-size: clamp(15px, 3.15cqw, 24px); }
+.tw-pro-bracket-hide-values .tw-pro-values { display: none; }
+.tw-pro-bracket .tw-pro-vs { min-height: 34px; }
+.tw-pro-bracket-footer { flex: 0 0 5%; min-height: 47px; }
+.tw-pro-bracket-footer small { font-size: clamp(11px, 1.75cqw, 16px); }
+.tw-pro-bracket-footer strong { font-size: clamp(19px, 3.65cqw, 33px); }
+.tw-pro-bracket--semi .tw-pro-bracket-match-heading, .tw-pro-bracket--final .tw-pro-bracket-match-heading { min-height: 24px; font-size: clamp(16px, 2.7cqw, 23px); }
+.tw-pro-bracket--semi .tw-pro-bracket-players, .tw-pro-bracket--final .tw-pro-bracket-players { min-height: 40px; }
+.tw-pro-bracket--semi .tw-pro-bracket-player, .tw-pro-bracket--final .tw-pro-bracket-player { font-size: clamp(17px, 3.1cqw, 25px); }
+.tw-pro-bracket--semi .tw-pro-bracket-player .tw-pro-person, .tw-pro-bracket--final .tw-pro-bracket-player .tw-pro-person { width: clamp(30px, 4.8cqw, 45px); height: clamp(30px, 4.8cqw, 45px); }
+.tw-pro-bracket-final-scoreboard { flex: 0 0 7%; }
+.tw-pro-bracket-final-scoreboard .tw-pro-bracket-player { padding-inline: 5%; }
+.tw-pro-bracket-final-scoreboard .tw-pro-score { font-size: clamp(34px, 7cqw, 58px); font-variant-numeric: tabular-nums; }
+.tw-pro-bracket--final .tw-pro-bracket-match > .tw-pro-bracket-players { display: none; }
+.tw-pro-bracket--final .tw-pro-bracket-score { font-size: clamp(28px, 5cqw, 42px); }
+.tw-pro-bracket-champion { position: absolute; z-index: 5; inset: 20% 5% 8%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.4%; overflow: hidden; border: 1px solid #73e9ff; border-radius: 20px; background: radial-gradient(ellipse at 50% 34%, #166290 0%, #09263d 45%, #041321 85%); box-shadow: inset 0 0 45px #45ceff66, 0 0 25px #00bfff99; text-align: center; }
+.tw-pro-bracket-champion .tw-pro-person { width: 25cqw; height: 25cqw; max-width: 200px; max-height: 200px; }
+.tw-pro-bracket-champion-crown { color: #72efff; font-size: clamp(70px, 13cqw, 140px); line-height: .9; text-shadow: 0 0 24px #13caff; }
+.tw-pro-bracket-champion small { color: #a9edff; font-size: clamp(22px, 4.2cqw, 37px); font-weight: 900; letter-spacing: .16em; }
+.tw-pro-bracket-champion strong { z-index: 1; max-width: 94%; overflow: hidden; text-overflow: ellipsis; color: #f2fcff; font-size: clamp(38px, 8cqw, 75px); font-weight: 900; text-shadow: 0 0 15px #1ac9ff; white-space: nowrap; }
+.tw-pro-bracket-champion-rays { position: absolute; inset: 0; opacity: var(--bracket-ray-opacity, .48); pointer-events: none; background: repeating-conic-gradient(from 0deg at 50% 45%, #8aefff22 0 2deg, transparent 2deg 19deg); }
+.tw-pro-bracket-ice { position: absolute; left: 50%; top: 45%; width: 7px; height: 16px; opacity: 0; background: linear-gradient(140deg,#edffff,#20a6df 70%,#0e4b85); clip-path: polygon(50% 0,100% 30%,70% 100%,0 75%); transform: rotate(calc(var(--ice-index) * 30deg)) translateY(-22cqw); }
+@media (prefers-reduced-motion: no-preference) {
+  .tw-pro-bracket[data-stage-transition="exit"] .tw-pro-bracket-matches { animation: pro-bracket-exit .37s ease-in both; }
+  .tw-pro-bracket[data-stage-transition="stage"] .tw-pro-bracket-stage-title { animation: pro-bracket-stage 1.8s ease-out both; }
+  .tw-pro-bracket[data-stage-transition="stage"] .tw-pro-bracket-match { animation: pro-bracket-panel .8s ease-out both; }
+  .tw-pro-bracket-champion--reveal { animation: pro-bracket-reveal 5.8s ease-out both; }
+  .tw-pro-bracket-champion--reveal .tw-pro-bracket-ice { animation: pro-bracket-ice 2.2s ease-out 2.2s both; }
+  .tw-pro-bracket-champion--reveal .tw-pro-bracket-champion-crown { animation: pro-bracket-crown 2s ease-out .7s both; }
+}
+@keyframes pro-bracket-stage { 0% { opacity: 0; transform: translateX(-10px); } 35% { opacity: 1; } 100% { transform: none; } }
+@keyframes pro-bracket-exit { from { opacity: 1; transform: none; } to { opacity: .1; transform: translateY(-7px) scale(.985); } }
+@keyframes pro-bracket-panel { from { opacity: .3; transform: translateY(7px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes pro-bracket-reveal { 0% { opacity: 0; transform: scale(.96); } 16%,85% { opacity: 1; transform: scale(1); } 100% { opacity: 1; } }
+@keyframes pro-bracket-crown { from { opacity: 0; transform: translateY(18px) scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes pro-bracket-ice { 0% { opacity: 0; transform: rotate(calc(var(--ice-index) * 30deg)) translateY(-10cqw) scale(.3); } 38% { opacity: .9; } 100% { opacity: 0; transform: rotate(calc(var(--ice-index) * 30deg)) translateY(-45cqw) scale(.7); } }

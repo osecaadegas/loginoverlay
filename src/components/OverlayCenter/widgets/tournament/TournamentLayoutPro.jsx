@@ -27,7 +27,7 @@ function money(value, currency) {
   return `${currency}${amount.toFixed(2)}`;
 }
 
-function ProPlayerAvatar({ url }) {
+export function ProPlayerAvatar({ url }) {
   const [failed, setFailed] = React.useState(false);
   React.useEffect(() => setFailed(false), [url]);
   return <span className="tw-pro-person" aria-hidden="true">
@@ -37,7 +37,7 @@ function ProPlayerAvatar({ url }) {
   </span>;
 }
 
-function ProSlotCard({ match, round, side, result, currency, config, shatterTarget }) {
+export function ProSlotCard({ match, round, side, result, currency, config, shatterTarget }) {
   const playerKey = side === "left" ? "player1" : "player2";
   const slot = round?.[side === "left" ? "slot1" : "slot2"] || match?.[side === "left" ? "slot1" : "slot2"];
   const values = round?.[playerKey];
