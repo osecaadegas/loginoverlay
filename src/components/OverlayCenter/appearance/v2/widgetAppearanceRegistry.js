@@ -1319,7 +1319,7 @@ export const widgetAppearanceRegistry = Object.freeze({
       }),
       makeRuntimeStyle("pro", "PRO", "Best-of-3 scoreboard and round cards.", {
         capabilities: { ...IMAGE_QUICK_CAPABILITIES, statCards: true, rows: true, columns: true },
-        elementIds: ["container", "header", "playerName", "scoreValue", "roundHeading", "matchCard", "slotImage", "slotName", "provider", "statLabel", "statValue", "statusBadge"],
+        elementIds: ["container", "header", "playerName", "scoreValue", "roundHeading", "matchCard", "slotImage", "provider", "statLabel", "statValue", "statusBadge"],
       }),
     ],
     responsive: {

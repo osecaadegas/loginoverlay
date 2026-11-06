@@ -62,10 +62,8 @@ function ProSlotCard({ match, round, side, result, currency, config, shatterTarg
         {isWinner && <span className="tw-pro-win-tag">WIN</span>}
       </div>
       <div className="tw-pro-card-copy">
-        <strong className="tw-pro-slot-name" {...element("slotName")} title={slot?.name || "Slot pending"}
-          style={textAppearance(config, "slotName")}>{slot?.name || "Slot pending"}</strong>
-        <span className="tw-pro-provider" {...element("provider")} title={slot?.provider || slot?.provider_name || ""}
-          style={textAppearance(config, "provider")}>{slot?.provider || slot?.provider_name || "—"}</span>
+        <strong className="tw-pro-provider" {...element("provider")} title={slot?.provider || slot?.provider_name || "Provider pending"}
+          style={textAppearance(config, "provider")}>{slot?.provider || slot?.provider_name || "Provider pending"}</strong>
         <div className="tw-pro-values">
           <span><small {...element("statLabel")} style={textAppearance(config, "statLabel")}>COST</small><b {...element("statValue")} style={textAppearance(config, "statValue")}>{money(values?.bonusCost, currency)}</b></span>
           <span data-pro-pay-cell><small {...element("statLabel")} style={textAppearance(config, "statLabel")}>PAY</small><b data-pro-pay-value data-canonical={money(values?.bonusPayout, currency)} data-currency={currency} {...element("statValue")} style={textAppearance(config, "statValue")}>{money(values?.bonusPayout, currency)}</b></span>

@@ -38,8 +38,7 @@
 .tw-pro-art-empty { display: grid; place-items: center; height: 100%; color: var(--pro-muted); font-size: clamp(9px, 1.4cqw, 12px); }
 .tw-pro-win-tag { position: absolute; top: 4px; right: 4px; padding: 1px 5px; border-radius: 4px; background: #0b7285; color: white; font-size: clamp(8px, 1.3cqw, 11px); font-weight: 900; }
 .tw-pro-card-copy { flex: 0 0 auto; min-width: 0; padding: 3px clamp(4px, .8cqw, 9px); }
-.tw-pro-slot-name, .tw-pro-provider { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tw-pro-slot-name { font-size: clamp(13px, 2.1cqw, 18px); line-height: 1.08; }
+.tw-pro-provider { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tw-pro-provider { color: var(--pro-muted); font-size: clamp(11px, 1.7cqw, 14px); line-height: 1.1; }
 .tw-pro-values { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 2px; padding-top: 2px; border-top: 1px solid rgba(112, 194, 235, .3); }
 .tw-pro-values span { min-width: 0; display: flex; flex-direction: column; align-items: center; }
@@ -118,13 +117,13 @@
 .tw-pro-art-main { padding: 0; filter: drop-shadow(0 2px 6px #000b); }
 .tw-pro-art-empty { font-size: clamp(12px, 1.8cqw, 18px); }
 .tw-pro-win-tag { top: 5%; right: 4%; padding: 2px 7px; font-size: clamp(10px, 1.4cqw, 14px); }
-.tw-pro-slot-name { font-size: clamp(12px, 2.1cqw, 18px); text-align: center; }
 .tw-pro-card-copy { padding: 2px 3px 3px; }
-.tw-pro-provider { padding: 0 0 1%; color: #d8eafa; font-size: clamp(11px, 1.9cqw, 18px); text-align: center; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid #4b8db044; }
-.tw-pro-values { gap: 0; margin: 0; padding: 0; border: 0; background: linear-gradient(180deg, #153a56, #082039); border-radius: 9px; }
-.tw-pro-values span + span { border-left: 1px solid #84d8ff77; }
-.tw-pro-values small { color: #e4f3ff; font-size: clamp(10px, 1.7cqw, 17px); letter-spacing: .08em; }
-.tw-pro-values b { color: #f8fdff; font-size: clamp(12px, 2.5cqw, 24px); line-height: 1.15; }
+.tw-pro-provider { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px 1px; color: #f5fbff; font-size: clamp(14px, 2.7cqw, 19px); font-weight: 800; line-height: 1.15; text-align: center; text-transform: uppercase; letter-spacing: .025em; }
+.tw-pro-values { gap: 0; margin: 0; padding: 0; border: 1px solid #66cfff99; background: linear-gradient(180deg, #164262, #071c33); border-radius: 9px; box-shadow: inset 0 1px 5px #52d7ff24; }
+.tw-pro-values span { justify-content: center; padding: 1px 2px 2px; }
+.tw-pro-values span + span { border-left: 1px solid #84d8ff99; }
+.tw-pro-values small { color: #addef5; font-size: clamp(11px, 2cqw, 15px); font-weight: 800; letter-spacing: .1em; line-height: 1; }
+.tw-pro-values b { max-width: 100%; overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; color: #fff; font-size: clamp(14px, 3.45cqw, 23px); font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.025em; line-height: 1.05; text-align: center; text-shadow: 0 1px 2px #001320, 0 0 8px #b2eaff66; }
 .tw-pro-vs { position: relative; isolation: isolate; z-index: 1; width: clamp(18px, 3.5cqw, 24px); min-height: clamp(42px, 7cqh, 70px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; border: 1px solid var(--pro-cyan); border-radius: 11px; background: linear-gradient(180deg, #103e5d, #061522 48%, #103e5d); color: #8ff4ff; font-size: clamp(16px, 3.3cqw, 23px); font-weight: 900; font-style: normal; line-height: .95; text-shadow: 0 0 8px #00d9ff; box-shadow: 0 0 10px #00d9ff77, inset 0 0 8px #00d9ff33; }
 .tw-pro-vs span { display: block; }
 .tw-pro-footer { flex: 0 0 5.7%; min-height: 0; position: relative; border: 1.5px solid #2bc7ff; border-radius: clamp(12px, 2.5cqw, 22px); background: linear-gradient(100deg, #092e48, #081b2c 25%, #0e3a57 50%, #081b2c 75%, #092e48); box-shadow: inset 0 0 16px #08baff25, 0 0 11px #00c8ff55; }

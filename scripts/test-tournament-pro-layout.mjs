@@ -44,6 +44,9 @@ try {
     score: document.querySelector(".tw-pro-score").textContent,
     rounds: document.querySelectorAll(".tw-pro-round").length,
     values: [...document.querySelectorAll(".tw-pro-values b")].map((node) => node.textContent),
+    providerLabels: [...document.querySelectorAll("#pro-host .tw-pro-provider")].map((node) => node.textContent),
+    slotTitleRows: document.querySelectorAll("#pro-host .tw-pro-slot-name").length,
+    resultFontSize: parseFloat(getComputedStyle(document.querySelector("#pro-host .tw-pro-values b")).fontSize),
     footer: document.querySelector(".tw-pro-footer").textContent,
     oldLayout: Boolean(document.querySelector("#old-host .tw-root")),
     cardBounds: [...document.querySelectorAll("#pro-host .tw-pro-card")].map((node) => node.getBoundingClientRect().toJSON()),
@@ -58,6 +61,9 @@ try {
   assert.equal(initial.score, "1–0");
   assert.equal(initial.rounds, 3);
   assert.equal(initial.oldLayout, true, "Vertical layout remains available");
+  assert.equal(initial.slotTitleRows, 0, "PRO cards use one provider caption without a slot-name row");
+  assert.deepEqual(initial.providerLabels.slice(0, 2), ["Studio One", "Studio Two"]);
+  assert.ok(initial.resultFontSize >= 18, "COST and PAY values use broadcast-readable default type at 560px");
   assert.ok(initial.artBounds.every((bounds) => bounds.height >= 190), "All six PRO artwork areas use the available round height");
   assert.ok(initial.cardBounds.every((bounds, index) => bounds.width >= 200 && bounds.height >= initial.roundGridBounds[Math.floor(index / 2)].height - 1), "All six cards fill their round columns vertically");
   assert.ok(initial.roundGridBounds.every((grid, index) => initial.cardBounds[index * 2].left <= grid.left + 1 && initial.cardBounds[index * 2 + 1].right >= grid.right - 1), "Cards reach both edges of each round grid");
@@ -85,6 +91,24 @@ try {
   assert.equal(imagery.backdropFit, "cover");
   assert.equal(imagery.mainFit, "contain");
   assert.notEqual(imagery.avatarRadius, "0px", "Player avatars remain circular");
+  await page.evaluate(() => {
+    window.__match = { ...window.__match, rounds: window.__match.rounds.map((round, index) =>
+      index === 0 ? { ...round, player1: { bonusCost: 1234567.89, bonusPayout: 9876543.21 } } : round) };
+    window.__renderPro();
+  });
+  await page.waitForFunction(() => document.querySelector("#pro-host .tw-pro-values b")?.textContent === "€1234567.89");
+  const largeAmounts = await page.evaluate(() => [...document.querySelectorAll("#pro-host .tw-pro-round:first-child .tw-pro-values b")].filter((node) => node.textContent.length > 8).map((node) => ({
+    text: node.textContent, withinCell: node.getBoundingClientRect().width <= node.parentElement.getBoundingClientRect().width + 1,
+    withinCard: node.getBoundingClientRect().bottom <= node.closest(".tw-pro-card").getBoundingClientRect().bottom - 1,
+  })));
+  assert.equal(largeAmounts.length, 2);
+  assert.ok(largeAmounts.every((amount) => amount.withinCell && amount.withinCard), `Long COST/PAY values remain visible: ${JSON.stringify(largeAmounts)}`);
+  await page.evaluate(() => {
+    window.__match = { ...window.__match, rounds: window.__match.rounds.map((round, index) =>
+      index === 0 ? { ...round, player1: { bonusCost: 20, bonusPayout: 80 } } : round) };
+    window.__renderPro();
+  });
+  await page.waitForFunction(() => document.querySelector("#pro-host .tw-pro-values b")?.textContent === "€20.00");
   const headerBounds = await page.evaluate(() => {
     const leftName = document.querySelector("#pro-host .tw-pro-player strong").getBoundingClientRect();
     const score = document.querySelector("#pro-host .tw-pro-score").getBoundingClientRect();

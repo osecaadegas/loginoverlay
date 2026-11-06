@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-card-readability-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'Clearer PRO tournament card results',
+    summary: 'PRO slot cards give providers and COST/PAY amounts more readable space at broadcast size.',
+    changes: [
+      'Show the provider as the single card caption while retaining the slot name in the artwork description.',
+      'Increase default result typography and contrast, and allow long amounts to wrap instead of truncating.',
+      'Remove the unused PRO slot-name appearance target while preserving provider and statistic controls.',
+    ],
+    action: 'Save the PRO tournament widget and refresh its OBS Browser Source after deployment. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'tournament-pro-match-queue-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'Upcoming matches in PRO tournaments',
     summary: 'PRO tournament widgets show the next assigned matchup and use a clearer vertical VS marker.',
