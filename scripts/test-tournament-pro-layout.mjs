@@ -46,7 +46,8 @@ try {
     footer: document.querySelector(".tw-pro-footer").textContent,
     oldLayout: Boolean(document.querySelector("#old-host .tw-root")),
     cardBounds: [...document.querySelectorAll("#pro-host .tw-pro-card")].map((node) => node.getBoundingClientRect().toJSON()),
-    portraitArt: [...document.querySelectorAll("#pro-host .tw-pro-art")].every((node) => { const bounds = node.getBoundingClientRect(); return bounds.height > bounds.width * 1.25; }),
+    artBounds: [...document.querySelectorAll("#pro-host .tw-pro-art")].map((node) => node.getBoundingClientRect().toJSON()),
+    roundGridBounds: [...document.querySelectorAll("#pro-host .tw-pro-round-grid")].map((node) => node.getBoundingClientRect().toJSON()),
     valuesVisible: [...document.querySelectorAll(".tw-pro-card")].every((card) => {
       const cardBottom = card.getBoundingClientRect().bottom;
       return [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= cardBottom - 1);
@@ -56,13 +57,15 @@ try {
   assert.equal(initial.score, "1–0");
   assert.equal(initial.rounds, 3);
   assert.equal(initial.oldLayout, true, "Vertical layout remains available");
-  assert.equal(initial.portraitArt, true, "All six PRO artwork areas retain a portrait ratio");
-  assert.ok(initial.firstCardMetrics.art >= 180, "Recommended PRO artwork uses the available round height");
+  assert.ok(initial.artBounds.every((bounds) => bounds.height >= 190), "All six PRO artwork areas use the available round height");
+  assert.ok(initial.cardBounds.every((bounds, index) => bounds.width >= 200 && bounds.height >= initial.roundGridBounds[Math.floor(index / 2)].height - 1), "All six cards fill their round columns vertically");
+  assert.ok(initial.roundGridBounds.every((grid, index) => initial.cardBounds[index * 2].left <= grid.left + 1 && initial.cardBounds[index * 2 + 1].right >= grid.right - 1), "Cards reach both edges of each round grid");
+  assert.ok(initial.firstCardMetrics.art / initial.firstCardMetrics.card >= .7, "Artwork dominates the card height");
   assert.equal(initial.valuesVisible, true, `Cost and pay values remain inside every card: ${JSON.stringify(initial.firstCardMetrics)}`);
   assert.match(initial.footer, /ROUND 2/);
   assert.ok(initial.values.includes("—"), "Unpaid rounds display dashes");
   assert.ok(initial.values.includes("€80.00"), "Recorded payouts appear in the cards");
-  assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > bounds.width && bounds.y >= 0 && bounds.y + bounds.height <= 1080), "All six portrait cards fit within the recommended widget height");
+  assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > 0 && bounds.y >= 0 && bounds.y + bounds.height <= 1080), "All six cards fit within the recommended widget height");
   await page.waitForFunction(() => [...document.querySelectorAll("#pro-host .tw-pro-person img, #pro-host .tw-pro-art-main")].every((image) => image.complete && image.naturalWidth > 0));
   const imagery = await page.evaluate(() => ({
     avatars: document.querySelectorAll("#pro-host .tw-pro-person img").length,
@@ -104,10 +107,10 @@ try {
       await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:680px;height:1380px"; });
       const referenceMetrics = await page.evaluate(() => ({
         valuesVisible: [...document.querySelectorAll("#pro-host .tw-pro-card")].every((card) => [...card.querySelectorAll(".tw-pro-values b")].every((value) => value.getBoundingClientRect().bottom <= card.getBoundingClientRect().bottom - 1)),
-        portraitArt: [...document.querySelectorAll("#pro-host .tw-pro-art")].every((art) => { const box = art.getBoundingClientRect(); return box.height > box.width * 1.25 && box.height >= 230; }),
+        largeArt: [...document.querySelectorAll("#pro-host .tw-pro-art")].every((art) => art.getBoundingClientRect().height >= 230),
       }));
       assert.equal(referenceMetrics.valuesVisible, true, "680 × 1380 cards show full cost and pay values");
-      assert.equal(referenceMetrics.portraitArt, true, "680 × 1380 cards use large portrait artwork");
+      assert.equal(referenceMetrics.largeArt, true, "680 × 1380 cards use the available height for larger artwork");
       await host.screenshot({ path: process.argv[2] });
       await page.evaluate(() => { document.getElementById("pro-host").style.cssText = "width:560px;height:1080px"; });
     } else {
@@ -161,7 +164,7 @@ try {
   await page.waitForFunction(() => !document.querySelector('.tw-pro canvas'), { timeout: 7000 });
   const restoredVisibility = await page.evaluate(() => document.querySelector('[data-pro-shatter-target="true"]')?.style.visibility || "");
   assert.equal(restoredVisibility, "", "Shatter cleanup restores the card visibility");
-  console.log("PRO tournament layout, BO3 progression, portrait bounds, and legacy Vertical checks passed.");
+  console.log("PRO tournament card fill, BO3 progression, artwork scaling, and legacy Vertical checks passed.");
 } finally {
   await browser?.close();
   await server.close();

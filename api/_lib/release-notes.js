@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-space-utilization-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'Larger slot cards in PRO tournaments',
+    summary: 'PRO tournament cards fill their round panels with larger, undistorted slot artwork and more compact spacing.',
+    changes: [
+      'Remove the round-width and card-width caps that left unused space around every matchup.',
+      'Give both cards equal grid columns with a compact VS marker and let artwork use the remaining card height.',
+      'Preserve the sharp full slot image over a softened background fill, the three-round layout and the existing losing-card shatter target.',
+      'Verify the layout in Chromium at the saved 560 × 1080 size and a 680 × 1380 comparison size; live OBS Studio playback remains unverified.',
+    ],
+    action: 'Save the overlay and refresh its OBS Browser Source after deployment. Existing widget dimensions are preserved.',
+  },
+  {
     id: 'tournament-pro-portrait-cards-2026-11-05', date: '2026-11-05', category: 'overlays',
     title: 'Portrait artwork in PRO tournaments',
     summary: 'PRO tournaments use a wider frame and taller slot cards while keeping all three rounds stacked vertically.',
