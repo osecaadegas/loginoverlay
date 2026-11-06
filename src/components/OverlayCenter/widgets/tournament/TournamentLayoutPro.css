@@ -73,6 +73,9 @@
 .tw-pro::after { right: 0; transform: scaleX(-1); }
 .tw-pro > * { position: relative; z-index: 1; }
 .tw-pro-header { flex: 0 0 8%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35cqh; }
+.tw-pro-header { position: relative; overflow: hidden; }
+.tw-pro-light-sweep, .tw-pro-score-sweep { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent 0%, #84edff33 48%, transparent 55%); }
+.tw-pro-header > :not(.tw-pro-light-sweep), .tw-pro-scoreboard > :not(.tw-pro-score-sweep) { position: relative; z-index: 1; }
 .tw-pro-crown { color: #42e8ff; font-size: clamp(22px, 4.8cqw, 48px); font-family: Georgia, serif; line-height: 1; text-shadow: 0 0 14px #00d9ff; }
 .tw-pro-crown svg { display: block; width: clamp(30px, 6.5cqw, 63px); height: auto; filter: drop-shadow(0 0 8px #00d9ff); }
 .tw-pro-header h2 { margin: 0; color: #f3f8ff; font-family: 'Rajdhani', sans-serif; font-size: clamp(23px, 7cqw, 68px); font-weight: 900; line-height: .98; letter-spacing: .025em; text-transform: uppercase; text-shadow: 0 2px 0 #7893ae, 0 4px 9px #000b; white-space: nowrap; }
@@ -96,6 +99,17 @@
 .tw-pro-round-heading { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); width: 29%; min-width: 95px; padding: .55cqh 4px; border: 1.5px solid #19d9ff; background: linear-gradient(#0c344d, #061625); clip-path: polygon(7% 0, 93% 0, 100% 50%, 93% 100%, 7% 100%, 0 50%); color: #f2fbff; font-size: clamp(12px, 2.5cqw, 24px); line-height: 1; white-space: nowrap; text-align: center; box-shadow: 0 0 8px #00d9ff66; }
 .tw-pro-round-grid { grid-template-columns: minmax(0,1fr) clamp(18px, 3.5cqw, 24px) minmax(0,1fr); align-items: stretch; gap: clamp(2px, .45cqw, 4px); }
 .tw-pro-card { align-self: stretch; justify-self: stretch; width: 100%; height: 100%; max-height: none; border: 1.5px solid #7dccff; border-radius: clamp(12px, 2.4cqw, 22px); background: linear-gradient(#0c304c, #071827); box-shadow: 0 3px 13px #0009, inset 0 0 13px #1496ed22; }
+.tw-pro-card { position: relative; }
+.tw-pro-energy { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+.tw-pro-energy-trace { fill: none; stroke: #76f7ff; stroke-width: 1.4; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 3px #00d9ff); }
+.tw-pro-champion-crown { position: relative; z-index: 2; color: #f9d46b; font-size: .85em; line-height: 1; }
+.tw-pro-champion-sparks { position: absolute; inset: 0; pointer-events: none; }
+.tw-pro-champion-sparks i { position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; border-radius: 50%; background: #ffe5a0; opacity: 0; }
+.tw-pro[data-cinematic-phase="result"] .tw-pro-champion-crown { opacity: 0; }
+.tw-pro-score .tw-pro-score-winner { color: #ffe5a0; text-shadow: 0 0 9px #ffd36a99; }
+.tw-pro-player { position: relative; }
+.tw-pro-player > strong, .tw-pro-person { position: relative; z-index: 2; }
+.tw-pro-score b { display: inline-block; font: inherit; min-width: .65em; text-align: center; }
 .tw-pro-card--winner { border-color: #86eeff; box-shadow: 0 0 15px #00d9ff7a, inset 0 0 10px #1af7ff33; }
 .tw-pro-card--loser { opacity: .8; }
 .tw-pro-art { flex: 1 1 auto; min-height: 0; width: 100%; border: 0 solid transparent; background: #0b2a42; }
@@ -120,10 +134,13 @@
 .tw-pro-footer small { font-size: clamp(11px, 2.2cqw, 22px); font-style: italic; letter-spacing: .3em; line-height: 1; }
 .tw-pro-footer strong { font-size: clamp(20px, 5.5cqw, 53px); font-style: italic; line-height: 1; text-shadow: 0 0 13px #00d9ff88; }
 @media (prefers-reduced-motion: no-preference) {
-  .tw-pro-round--active { animation: tw-pro-active-enter .38s ease-out both; }
-  .tw-pro-card--winner { animation: tw-pro-winner-in .5s ease-out both; }
-  .tw-pro-score { animation: tw-pro-score-change .48s ease-out both; }
-  .tw-pro-footer--complete strong { animation: tw-pro-champion-in .6s ease-out both; }
+  .tw-pro[data-animation-preset="subtle"] .tw-pro-round--active { animation: tw-pro-active-enter .38s ease-out both; }
+  .tw-pro[data-animation-preset="subtle"] .tw-pro-card--winner { animation: tw-pro-winner-in .5s ease-out both; }
+  .tw-pro[data-animation-preset="subtle"] .tw-pro-score { animation: tw-pro-score-change .48s ease-out both; }
+  .tw-pro[data-animation-preset="subtle"] .tw-pro-footer--complete strong { animation: tw-pro-champion-in .6s ease-out both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-pro *, .tw-pro *::before, .tw-pro *::after { animation: none !important; transition: none !important; }
 }
 @keyframes tw-pro-active-enter { from { opacity: .75; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 @keyframes tw-pro-winner-in { from { filter: brightness(1.35); } to { filter: brightness(1); } }

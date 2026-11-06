@@ -10,6 +10,7 @@ import {
 } from "./tournamentEngine";
 import ShatterEffect from "./ShatterEffect";
 import TournamentLayoutPro from "./TournamentLayoutPro";
+import { normalizeProCinematicSettings } from "./proVisualEvents";
 import { subValue } from "../shared/appearanceStyles";
 import SlotImage from "../SlotImage";
 import { THEME_EFFECT_DEFINITIONS } from "../../../../effects/ThemeEffects/themes/themeDefinitions";
@@ -67,6 +68,10 @@ function TournamentWidget({ config, theme }) {
 
   /* Filter out future bracket matches where both players are still TBD */
   const allMatches = tData.matches || [];
+  const layout = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
+  const proMotion = normalizeProCinematicSettings(c);
+  const proCinematic = layout === "pro" && proMotion.preset === "cinematic" && proMotion.enabled;
+  const proAnimationOff = layout === "pro" && proMotion.preset === "none";
   const matches = allMatches.filter(
     (m) =>
       (m.player1 && m.player1 !== "TBD") || (m.player2 && m.player2 !== "TBD"),
@@ -94,6 +99,11 @@ function TournamentWidget({ config, theme }) {
   React.useLayoutEffect(() => {
     const prev = prevWinnersRef.current;
     prevWinnersRef.current = winnersKey;
+    if (proCinematic || proAnimationOff) {
+      pendingShattersRef.current = [];
+      if (shatterInfo) { setShatterInfo(null); setShatterMatchIdx(null); }
+      return;
+    }
     if (prev) {
       const prevArr = prev.split("|");
       const currArr = winnersKey.split("|");
@@ -116,20 +126,20 @@ function TournamentWidget({ config, theme }) {
       setShatterMatchIdx(next.matchIdx);
       setShatterInfo({ imageUrl: next.imageUrl, side: next.side });
     }
-  }, [winnersKey, shatterInfo]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [winnersKey, shatterInfo, proCinematic, proAnimationOff]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Layout mode ─── */
   // Existing saved overlays may still contain retired layout IDs. Keep those
   // overlays readable by mapping retired values to Vertical.
-  const layout = c.layout === "esports" || c.layout === "pro" ? c.layout : "vertical";
   const isMinimalLayout = false;
 
   /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
   const [flipperTick, setFlipperTick] = React.useState(0);
   React.useEffect(() => {
+    if (layout === "pro") return undefined;
     const id = setInterval(() => setFlipperTick((t) => t + 1), 15000);
     return () => clearInterval(id);
-  }, []);
+  }, [layout]);
 
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
@@ -503,6 +513,7 @@ function TournamentWidget({ config, theme }) {
       : matches[currentMatchIdx];
     return <TournamentLayoutPro
       match={activeMatch || null}
+      allMatches={allMatches}
       config={c}
       shatterInfo={shatterInfo}
       onShatterComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}

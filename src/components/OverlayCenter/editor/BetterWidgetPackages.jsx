@@ -751,6 +751,13 @@ const BASE_BETTER_CONFIG = {
   slot_requests: {...IMAGE_CARDS_DEFAULTS,maxDisplay:50},
   tournament: {
     layout: "vertical",
+    animationPreset: "subtle",
+    cinematicEnabled: true,
+    cinematicIntensity: 100,
+    enablePayoutCounter: true,
+    enableWinnerEffects: true,
+    enableChampionReveal: true,
+    enableRoundTransitions: true,
     showBg: true,
     panelHi: "#0c1c40",
     bgColor: "#0a1734",
@@ -6636,6 +6643,7 @@ function BetterTournamentControls({
     ["cards", <Layers size={12} />, "Cards"],
     ["type", <Type size={12} />, "Text"],
     ["palette", <Palette size={12} />, "Palette"],
+    ...(c.layout === "pro" ? [["motion", <Wand2 size={12} />, "Motion"]] : []),
   ];
   const set = (patch) => {
     const nextConfig = c.layout === "pro" || patch.layout === "pro"
@@ -6672,6 +6680,25 @@ function BetterTournamentControls({
   return (
     <div className="bp-controls">
       <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {c.layout === "pro" && matchesControlTab(tab, "motion") && (
+        <Section title="PRO tournament animation" icon={<Wand2 size={13} />}>
+          <SelectRow label="Preset" value={c.animationPreset || "subtle"} options={[
+            { value: "none", label: "None" },
+            { value: "subtle", label: "Subtle" },
+            { value: "cinematic", label: "Cinematic" },
+          ]} onChange={(animationPreset) => set({ animationPreset })} />
+          {c.animationPreset === "cinematic" && <>
+            <ToggleRow label="Enable cinematic motion" checked={c.cinematicEnabled !== false} onChange={(cinematicEnabled) => set({ cinematicEnabled })} />
+            <SliderRow label="Intensity" value={Number(c.cinematicIntensity ?? 100)} min={0} max={100} unit="%" onChange={(cinematicIntensity) => set({ cinematicIntensity })} />
+            <ToggleRow label="Payout counter" checked={c.enablePayoutCounter !== false} onChange={(enablePayoutCounter) => set({ enablePayoutCounter })} />
+            <ToggleRow label="Winner effects" checked={c.enableWinnerEffects !== false} onChange={(enableWinnerEffects) => set({ enableWinnerEffects })} />
+            <ToggleRow label="Champion reveal" checked={c.enableChampionReveal !== false} onChange={(enableChampionReveal) => set({ enableChampionReveal })} />
+            <ToggleRow label="Round transitions" checked={c.enableRoundTransitions !== false} onChange={(enableRoundTransitions) => set({ enableRoundTransitions })} />
+            <p className="bp-hint">Live tournament events trigger the effects. Refreshing OBS shows the saved result without replaying old animations. The losing-card shatter remains unchanged.</p>
+          </>}
+        </Section>
+      )}
 
       {matchesControlTab(tab, "surface") && (
         <>

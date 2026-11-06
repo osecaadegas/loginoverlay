@@ -1,6 +1,19 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-cinematic-events-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'Event-driven cinematic PRO tournaments',
+    summary: 'PRO tournament widgets can sequence payout, round and champion motion from confirmed match updates.',
+    changes: [
+      'Add None, Subtle and Cinematic choices with payout, winner, champion, round and intensity controls in tournament Motion settings.',
+      'Sequence payout counting, the existing losing-card ice shatter, winner border trace, changed score digit and next-round or champion reveal.',
+      'Use saved match and round outcomes for stable event identities, skip historical results on refresh and cancel obsolete animation work.',
+      'Respect reduced motion and hidden browser sources; the default Subtle behavior remains available.',
+      'Validate event deduplication and editor behavior locally; live OBS Studio 60 FPS remains unverified.',
+    ],
+    action: 'Choose PRO, open Motion, select Cinematic, save, then refresh the OBS Browser Source after deployment.',
+  },
+  {
     id: 'tournament-pro-space-utilization-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'Larger slot cards in PRO tournaments',
     summary: 'PRO tournament cards fill their round panels with larger, undistorted slot artwork and more compact spacing.',

@@ -92,6 +92,7 @@ function createEmptyRound(roundNum, type) {
 
   return {
     roundNum,
+    revision: 0,
     player1: { ...emptyData },
     player2: { ...emptyData },
     winner: null,
@@ -250,6 +251,9 @@ export function updateRoundData(match, roundIdx, playerKey, data) {
   const newRounds = match.rounds.map((r, i) => {
     if (i !== roundIdx) return r;
     const updated = { ...r, [playerKey]: { ...r[playerKey], ...data } };
+    if (Object.entries(data).some(([field, value]) => r[playerKey]?.[field] !== value)) {
+      updated.revision = (Number(r.revision) || 0) + 1;
+    }
     // Auto-calc round winner
     const rw = calcRoundWinner(updated, match.type);
     updated.winner = rw;
@@ -274,6 +278,7 @@ export function setManualWinner(match, winner) {
   return {
     ...match,
     winner,
+    revision: match.winner === winner ? match.revision : (Number(match.revision) || 0) + 1,
     status: winner ? MATCH_STATUS.COMPLETED : match.status,
   };
 }
