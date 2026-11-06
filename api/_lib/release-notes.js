@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'arctic-tournament-material-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'Arctic glass on tournament layouts',
+    summary: 'Tournament frames and PRO match panels now inherit the newer Arctic cracked-glass material.',
+    changes: [
+      'Apply the shared Arctic frost corners, pale rim light and deep blue glass to the PRO tournament frame in editor and OBS rendering.',
+      'Use the same fracture and mist layers as Arctic Chat for tournament cards while preserving slot artwork and winner states.',
+      'Carry the Arctic inset material through PRO scoreboards, round panels and status footer without changing tournament results or animations.',
+    ],
+    action: 'Select the Arctic colour theme, save the overlay, then refresh its OBS Browser Source after deployment. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'tournament-pro-cinematic-events-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'Event-driven cinematic PRO tournaments',
     summary: 'PRO tournament widgets can sequence payout, round and champion motion from confirmed match updates.',

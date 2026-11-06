@@ -66,7 +66,8 @@ try {
   });
   assert.equal(materials.tournamentGlass, materials.bonusGlass, "Tournament and Bonus Hunt use the same Arctic glass layers");
   assert.equal(materials.tournamentRim, materials.bonusRim, "Tournament and Bonus Hunt use the same ice rim");
-  assert.equal(materials.tournamentCard, materials.chatCard, "Tournament cards use the same fractured material as Chat");
+  assert.match(materials.tournamentCard, /clear-ice-fractures\.png/, "Tournament cards show the new Arctic fracture layer");
+  assert.match(materials.tournamentCard, /ice\/mist\.png/, "Tournament cards retain the dark mist reading layer");
   await page.evaluate(async () => {
     const React = (await import("/node_modules/.vite/deps/react.js")).default;
     const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
@@ -181,6 +182,40 @@ try {
     return { editor: measure("editor-parity", 1), obs: measure("obs-parity", 2) };
   });
   assert.deepEqual(parity.obs, parity.editor, `Editor and OBS tournament layout should match at the saved widget size: ${JSON.stringify(parity)}`);
+  await page.evaluate(async () => {
+    const React = (await import("/node_modules/.vite/deps/react.js")).default;
+    const ReactDOM = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
+    const TournamentWidget = (await import("/src/components/OverlayCenter/widgets/tournament/TournamentWidget.jsx")).default;
+    const host = document.createElement("div");
+    host.className = "better-widget-colour-scope";
+    host.dataset.colourTheme = "arctic";
+    host.dataset.widgetType = "tournament";
+    host.style.cssText = "width:560px;height:1080px";
+    document.body.append(host);
+    const match = {
+      id: "arctic-pro", type: "bonus_bo3", status: "in_progress", player1: "One", player2: "Two",
+      rounds: Array.from({ length: 3 }, (_, index) => ({ roundNum: index + 1,
+        player1: { bonusCost: 10, bonusPayout: null }, player2: { bonusCost: 10, bonusPayout: null } })),
+    };
+    ReactDOM.createRoot(host).render(React.createElement(TournamentWidget, { config: { layout: "pro", data: { matches: [match] } } }));
+    window.__proArcticHost = host;
+  });
+  await page.waitForSelector('.better-widget-colour-scope[data-widget-type="tournament"] .tw-pro');
+  const proMaterial = await page.evaluate(() => {
+    const host = window.__proArcticHost;
+    const root = host.querySelector(".tw-pro");
+    return {
+      frame: getComputedStyle(root).backgroundImage,
+      border: getComputedStyle(root).borderColor,
+      round: getComputedStyle(root.querySelector(".tw-pro-round")).backgroundImage,
+      card: getComputedStyle(root.querySelector(".tw-pro-card")).backgroundImage,
+    };
+  });
+  assert.match(proMaterial.frame, /frost-corners\.png/, "PRO frame inherits Arctic frost corners");
+  assert.match(proMaterial.frame, /clear-ice-fractures\.png/, "PRO frame inherits Arctic shattered glass");
+  assert.match(proMaterial.round, /clear-ice-fractures\.png/, "PRO rounds inherit Arctic glass");
+  assert.match(proMaterial.card, /clear-ice-fractures\.png/, "PRO cards inherit Arctic glass");
+  assert.equal(proMaterial.border, materials.bonusRim, "PRO frame shares the Arctic ice rim");
   console.log("Esports geometry and Arctic tournament glass match the shared widget materials.");
 } finally {
   await browser.close();

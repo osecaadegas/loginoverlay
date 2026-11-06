@@ -111,7 +111,7 @@ export default function TournamentLayoutPro({ match: selectedMatch, allMatches =
         borderRadius: subValue(c, "container", "radius", c.styleConfigs?.pro?.borderRadius ?? c.borderRadius ?? 20),
         borderColor: subValue(c, "container", "borderColor", c.styleConfigs?.pro?.borderColor || undefined),
         background: c.showBg === false ? "transparent" : subValue(c, "container", "background", c.styleConfigs?.pro?.bgColor || undefined),
-        "--pro-cyan": c.styleConfigs?.pro?.multiColor || "#00d9ff",
+        "--pro-cyan": c.styleConfigs?.pro?.multiColor || undefined,
       }}>
       <header className="tw-pro-header" {...element("header")}>
         <span className="tw-pro-light-sweep" aria-hidden="true" />

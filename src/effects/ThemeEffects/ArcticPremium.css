@@ -34,6 +34,7 @@
   .rtp-stats-inner,
   .rtp-stats-bar--better,
   .tw-root[data-material-surface="panel"],
+  .tw-pro,
   [data-widget-element="container"]
 ) {
   border-color: var(--arctic-rim) !important;
@@ -47,7 +48,8 @@
   .slot-bingo-widget,
   .better-slideshow-frame,
   .ov-chat-widget,
-  .tw-root[data-material-surface="panel"]
+  .tw-root[data-material-surface="panel"],
+  .tw-pro
 ) {
   border-color: rgba(215, 247, 255, 0.96) !important;
   box-shadow:
@@ -321,7 +323,7 @@
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov, .bet-widget),
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="current_slot"] .cg-widget,
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="rtp_stats"] :is(.rtp-stats-inner, .rtp-stats-bar--better),
-.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-root[data-material-surface="panel"] {
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] :is(.tw-root[data-material-surface="panel"], .tw-pro) {
   background-color: rgba(3, 20, 34, .96) !important;
   background-image:
     url("/theme-effects/ice/frost-corners.png"),
@@ -390,15 +392,44 @@
   box-shadow: inset 0 1px 0 rgba(233, 250, 255, .32), inset 0 0 8px rgba(117, 202, 234, .16), 0 3px 9px rgba(0, 5, 12, .3) !important;
 }
 
-/* Tournament cards share Chat's quiet mist reading layer beneath the outer
-   fractured glass. Keep winner/loser borders and slot artwork intact. */
+/* Tournament cards use the same fractured dark glass reading layer as Chat.
+   Artwork and winner/loser state sit above this material. */
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
   :is([data-widget-element="matchCard"], .tw-ice-material-card) {
   background-color: transparent !important;
-  background-image: linear-gradient(155deg, rgba(24, 49, 63, .76), rgba(3, 15, 25, .9)),
+  background-image:
+    linear-gradient(155deg, rgba(13, 39, 57, .78), rgba(2, 14, 26, .93)),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
     url("/theme-effects/ice/mist.png") !important;
-  background-size: cover, 295px 235px !important;
+  background-size: cover, 100% 100%, 295px 235px !important;
   background-position: center !important;
+  background-blend-mode: normal, screen, soft-light !important;
+}
+
+/* PRO uses its own renderer instead of .tw-root. Carry the frozen-glass
+   material through its scoreboard, rounds and footer without changing the
+   match animations or the artwork layers. */
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-pro {
+  --pro-cyan: #8eeaff;
+  --pro-line: rgba(193, 239, 253, .78);
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"]
+  :is(.tw-pro-scoreboard, .tw-pro-round, .tw-pro-footer) {
+  border-color: rgba(193, 239, 253, .78) !important;
+  background-color: rgba(3, 20, 34, .87) !important;
+  background-image:
+    linear-gradient(150deg, rgba(27, 70, 91, .52), rgba(2, 15, 28, .84)),
+    url("/theme-effects/clear-ice/clear-ice-fractures.png"),
+    url("/theme-effects/ice/ice-noise.webp") !important;
+  background-size: cover, 100% 100%, 100% 100% !important;
+  background-blend-mode: normal, screen, soft-light !important;
+  box-shadow: inset 0 1px 0 rgba(240, 252, 255, .46), inset 0 -1px 0 rgba(123, 214, 245, .4), 0 0 8px rgba(103, 204, 241, .2) !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-pro-round--active {
+  border-color: #c3f4ff !important;
+}
+.better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="tournament"] .tw-pro-card:not(.tw-pro-card--winner) {
+  border-color: rgba(173, 225, 244, .8) !important;
 }
 
 .better-widget-colour-scope[data-colour-theme="arctic"][data-widget-type="bets"] :is(.bets-ov__card, .bets-ov__row, .bets-ov__stat) {
