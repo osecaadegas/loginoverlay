@@ -13,6 +13,8 @@ try {
       player1: { bonusCost: 10, bonusPayout: null }, player2: { bonusCost: 10, bonusPayout: null } })),
   };
   const snapshot = (value) => snapshotProMatches([value]);
+  assert.notEqual(snapshotProMatches([match], "tournament-one")[0].tournamentId,
+    snapshotProMatches([match], "tournament-two")[0].tournamentId);
   const revised = updateRoundData(match, 0, "player1", { bonusPayout: 25 });
   assert.equal(revised.rounds[0].revision, 1, "A real round edit creates a saved visual revision");
   assert.equal(updateRoundData(revised, 0, "player1", { bonusPayout: 25 }).rounds[0].revision, 1,
@@ -36,6 +38,9 @@ try {
     index === 0 ? { ...round, player2: { ...round.player2, bonusPayout: 5 } } : round) };
   after = snapshot(completeRound);
   const result = diffProVisualEvents(before, after).events;
+  const otherTournament = diffProVisualEvents(snapshotProMatches([firstPayout], "tournament-two"),
+    snapshotProMatches([completeRound], "tournament-two")).events;
+  assert.notEqual(result[0].key, otherTournament[0].key, "Identical match revisions in different tournaments have distinct event identities");
   assert.equal(result.length, 1);
   assert.equal(result[0].type, "result");
   assert.equal(result[0].winner, "player1");

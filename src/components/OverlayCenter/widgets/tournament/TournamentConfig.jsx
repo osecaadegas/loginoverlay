@@ -298,6 +298,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
   const bracketPlayerCount = c.bracketPlayerCount || 8;
   const bracketActiveRound = c.bracketActiveRound ?? 0;
   const bracketActiveMatch = c.bracketActiveMatch ?? 0;
+  const [selectedPreviewMatchId, setSelectedPreviewMatchId] = useState(null);
   const bracketTypeConfig = c.bracketTypeConfig || {
     numSpins: 50,
     drawRule: "no_point",
@@ -509,6 +510,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
       tournamentType: bracketType,
       data: {
         active: true,
+        tournamentId: flatMatches[0]?.id || null,
         matches: flatMatches,
         currentMatchIdx: 0,
       },
@@ -531,6 +533,23 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
   /* ─── Bracket match editing ─── */
   const currentBracketMatch =
     bracketData[bracketActiveRound]?.matches[bracketActiveMatch] || null;
+  const matchQueue = bracketData.flatMap((round, roundIndex) =>
+    (round.matches || []).map((match, matchIndex) => ({ match, roundIndex, matchIndex, roundLabel: round.label })));
+  const liveQueueIndex = matchQueue.findIndex((entry) => entry.match === currentBracketMatch);
+  const selectedQueueIndex = selectedPreviewMatchId === null ? liveQueueIndex : matchQueue.findIndex((entry) => entry.match.id === selectedPreviewMatchId);
+  const previewQueueIndex = selectedQueueIndex >= 0 ? selectedQueueIndex : liveQueueIndex;
+  const previewEntry = matchQueue[previewQueueIndex] || null;
+  const activatePreviewMatch = () => {
+    if (!previewEntry || previewEntry.match.status === MATCH_STATUS.COMPLETED || previewEntry.match.winner
+      || !previewEntry.match.player1 || !previewEntry.match.player2
+      || previewEntry.match.player1 === "TBD" || previewEntry.match.player2 === "TBD") return;
+    setMulti({
+      bracketActiveRound: previewEntry.roundIndex,
+      bracketActiveMatch: previewEntry.matchIndex,
+      data: { ...c.data, currentMatchIdx: previewQueueIndex },
+    });
+    setSelectedPreviewMatchId(null);
+  };
 
   /* Helper: find next non-completed match after the current one */
   const findNextMatch = (bracket, curRound, curMatch) => {
@@ -542,7 +561,9 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
           mt.status !== MATCH_STATUS.COMPLETED &&
           mt.winner == null &&
           mt.player1 &&
-          mt.player2
+          mt.player2 &&
+          mt.player1 !== "TBD" &&
+          mt.player2 !== "TBD"
         ) {
           return { round: r, match: m };
         }
@@ -575,7 +596,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     let nextRound = pinnedRound;
     let nextMatch = pinnedMatch;
 
-    if (matchCompleted) {
+    if (matchCompleted && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(newBracket, pinnedRound, pinnedMatch);
       if (next) {
         nextRound = next.round;
@@ -738,7 +759,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
     let nextMatch = pinnedMatch;
     const finalMatch = finalBracket[pinnedRound]?.matches[pinnedMatch];
     const matchDone = finalMatch?.status === "completed";
-    if (matchDone) {
+    if (matchDone && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(finalBracket, pinnedRound, pinnedMatch);
       if (next) {
         nextRound = next.round;
@@ -791,7 +812,7 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
 
     let nextRound = bracketActiveRound;
     let nextMatch = bracketActiveMatch;
-    if (newWinner) {
+    if (newWinner && (c.layout !== "pro" || c.autoNextMatchActivation === true)) {
       const next = findNextMatch(
         newBracket,
         bracketActiveRound,
@@ -1329,6 +1350,31 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                 </div>
               )}
 
+              {c.layout === "pro" && c.matchNavigationEnabled !== false && previewEntry && (
+                <section className="tm-card" aria-label="Match queue" style={{ padding: 12, marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <strong style={{ marginRight: "auto" }}>Match {previewQueueIndex + 1} / {matchQueue.length}</strong>
+                    <button type="button" disabled={previewQueueIndex <= 0} onClick={() => setSelectedPreviewMatchId(matchQueue[previewQueueIndex - 1].match.id)}>← Previous</button>
+                    <button type="button" disabled={previewQueueIndex >= matchQueue.length - 1} onClick={() => setSelectedPreviewMatchId(matchQueue[previewQueueIndex + 1].match.id)}>Next →</button>
+                    {previewQueueIndex !== liveQueueIndex && <button type="button" onClick={activatePreviewMatch}
+                      disabled={previewEntry.match.status === MATCH_STATUS.COMPLETED || Boolean(previewEntry.match.winner) || !previewEntry.match.player1 || !previewEntry.match.player2 || previewEntry.match.player1 === "TBD" || previewEntry.match.player2 === "TBD"}>
+                      Activate this match
+                    </button>}
+                  </div>
+                  <p style={{ margin: "8px 0", color: "#c8def0" }}>
+                    {previewEntry.roundLabel} · {previewEntry.match.player1 || "TBD"} vs {previewEntry.match.player2 || "TBD"}
+                    {previewQueueIndex === liveQueueIndex ? " · LIVE" : " · Preview only"}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 6 }}>
+                    {(previewEntry.match.rounds || []).slice(0, 3).map((round, index) => <div key={round.id || index} style={{ minWidth: 0, padding: 6, border: "1px solid #285d7a", borderRadius: 8 }}>
+                      <strong>Round {index + 1}</strong><br />
+                      <span>{round.slot1?.name || previewEntry.match.slot1?.name || "Slot pending"} vs {round.slot2?.name || previewEntry.match.slot2?.name || "Slot pending"}</span><br />
+                      <small>Cost: {round.player1?.bonusCost ?? "—"} / {round.player2?.bonusCost ?? "—"} · Pay: {round.player1?.bonusPayout ?? "—"} / {round.player2?.bonusPayout ?? "—"}</small>
+                    </div>)}
+                  </div>
+                </section>
+              )}
+
               {/* ── Bracket tree + Match panel side-by-side ── */}
               <div className="bk-active-grid">
                 {/* ── Bracket tree (horizontal scroll) ── */}
@@ -1354,6 +1400,10 @@ export default function TournamentConfig({ config, onChange, mode = "full" }) {
                                   key={mIdx}
                                   className={`bk-match-card ${isActive ? "bk-match-card--active" : ""} ${isComplete ? "bk-match-card--done" : ""}`}
                                   onClick={() => {
+                                    if (c.layout === "pro") {
+                                      if (c.matchNavigationEnabled !== false) setSelectedPreviewMatchId(match.id);
+                                      return;
+                                    }
                                     const flatIdx =
                                       bracketData
                                         .slice(0, rIdx)

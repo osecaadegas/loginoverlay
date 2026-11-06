@@ -758,6 +758,10 @@ const BASE_BETTER_CONFIG = {
     enableWinnerEffects: true,
     enableChampionReveal: true,
     enableRoundTransitions: true,
+    showUpcomingMatches: true,
+    showRemainingMatchesCount: true,
+    matchNavigationEnabled: true,
+    autoNextMatchActivation: false,
     showBg: true,
     panelHi: "#0c1c40",
     bgColor: "#0a1734",
@@ -6643,7 +6647,7 @@ function BetterTournamentControls({
     ["cards", <Layers size={12} />, "Cards"],
     ["type", <Type size={12} />, "Text"],
     ["palette", <Palette size={12} />, "Palette"],
-    ...(c.layout === "pro" ? [["motion", <Wand2 size={12} />, "Motion"]] : []),
+    ...(c.layout === "pro" ? [["queue", <Layers size={12} />, "Match queue"], ["motion", <Wand2 size={12} />, "Motion"]] : []),
   ];
   const set = (patch) => {
     const nextConfig = c.layout === "pro" || patch.layout === "pro"
@@ -6680,6 +6684,16 @@ function BetterTournamentControls({
   return (
     <div className="bp-controls">
       <PanelTabs active={tab} onChange={setTab} tabs={tabs} />
+
+      {c.layout === "pro" && matchesControlTab(tab, "queue") && (
+        <Section title="PRO match queue" icon={<Layers size={13} />}>
+          <ToggleRow label="Show upcoming match" checked={c.showUpcomingMatches !== false} onChange={(showUpcomingMatches) => set({ showUpcomingMatches })} />
+          <ToggleRow label="Show remaining count" checked={c.showRemainingMatchesCount !== false} onChange={(showRemainingMatchesCount) => set({ showRemainingMatchesCount })} />
+          <ToggleRow label="Dashboard match preview" checked={c.matchNavigationEnabled !== false} onChange={(matchNavigationEnabled) => set({ matchNavigationEnabled })} />
+          <ToggleRow label="Automatically activate next match" checked={c.autoNextMatchActivation === true} onChange={(autoNextMatchActivation) => set({ autoNextMatchActivation })} />
+          <p className="bp-hint">Browsing the queue does not change OBS. With automatic activation off, finish the match animation before activating the next scheduled matchup.</p>
+        </Section>
+      )}
 
       {c.layout === "pro" && matchesControlTab(tab, "motion") && (
         <Section title="PRO tournament animation" icon={<Wand2 size={13} />}>

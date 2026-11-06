@@ -29,12 +29,13 @@ try {
     };
     document.body.innerHTML = '<div id="pro-host" style="width:560px;height:1080px"></div><div id="old-host" style="width:440px;height:820px"></div>';
     window.__match = match;
+    window.__upcoming = { id: "pro-next", type: "bonus_bo3", status: "pending", player1: "TurboSpin", player2: "DiamondDan", rounds: [] };
     window.__React = React;
     window.__TournamentWidget = TournamentWidget;
     window.__proRoot = ReactDOM.createRoot(document.getElementById("pro-host"));
     window.__oldRoot = ReactDOM.createRoot(document.getElementById("old-host"));
     window.__proAppearance = {};
-    window.__renderPro = () => window.__proRoot.render(React.createElement(TournamentWidget, { config: { layout: "pro", ...window.__proAppearance, data: { matches: [window.__match], currentMatchIdx: 0 } } }));
+    window.__renderPro = () => window.__proRoot.render(React.createElement(TournamentWidget, { config: { layout: "pro", ...window.__proAppearance, data: { matches: [window.__match, window.__upcoming], currentMatchIdx: 0 } } }));
     window.__renderPro();
     window.__oldRoot.render(React.createElement(TournamentWidget, { config: { layout: "vertical", data: { matches: [match], currentMatchIdx: 0 } } }));
   });
@@ -63,6 +64,13 @@ try {
   assert.ok(initial.firstCardMetrics.art / initial.firstCardMetrics.card >= .7, "Artwork dominates the card height");
   assert.equal(initial.valuesVisible, true, `Cost and pay values remain inside every card: ${JSON.stringify(initial.firstCardMetrics)}`);
   assert.match(initial.footer, /ROUND 2/);
+  assert.match(initial.footer, /UP NEXT.*TurboSpin.*DiamondDan/);
+  const versus = await page.evaluate(() => [...document.querySelectorAll("#pro-host .tw-pro-vs")].map((badge) => ({
+    text: badge.innerText.replace(/\s/g, ""), width: badge.getBoundingClientRect().width,
+    height: badge.getBoundingClientRect().height,
+  })));
+  assert.equal(versus.length, 3, "Every PRO round has a versus marker");
+  assert.ok(versus.every((badge) => badge.text === "VS" && badge.height > badge.width), "Every V/S marker is vertical without taking artwork width");
   assert.ok(initial.values.includes("—"), "Unpaid rounds display dashes");
   assert.ok(initial.values.includes("€80.00"), "Recorded payouts appear in the cards");
   assert.ok(initial.cardBounds.every((bounds) => bounds.width > 0 && bounds.height > 0 && bounds.y >= 0 && bounds.y + bounds.height <= 1080), "All six cards fit within the recommended widget height");

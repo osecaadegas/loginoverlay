@@ -8,6 +8,8 @@
     "build": "npx vite build && node scripts/prerender-public-pages.mjs",
     "validate:widgets": "node scripts/validate-widgets.mjs",
     "test:updates": "node scripts/test-updates.mjs",
+    "test:tournament-pro-queue": "node scripts/test-tournament-pro-queue.mjs",
+    "test:tournament-pro-dashboard": "node scripts/test-tournament-pro-dashboard.mjs",
     "test:public-seo": "node scripts/test-public-seo.mjs",
     "test:auto-draw-winners": "node --test scripts/test-auto-draw-winners.mjs",
     "test:updates-browser": "node scripts/test-updates-browser.mjs",

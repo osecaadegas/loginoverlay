@@ -36,7 +36,7 @@ const scoreThrough = (rounds, lastIndex) => rounds.slice(0, lastIndex + 1).reduc
   return score;
 }, { player1: 0, player2: 0 });
 
-export function snapshotProMatches(matches = []) {
+export function snapshotProMatches(matches = [], tournamentId = "") {
   return matches.filter(Boolean).map((match, matchIndex) => {
     const id = String(match.id || match.createdAt || `legacy:${matchIndex}:${match.player1}:${match.player2}`);
     const rounds = (match.rounds || []).map((round, index) => ({
@@ -47,6 +47,7 @@ export function snapshotProMatches(matches = []) {
       winner: calcRoundWinner(round, match.type),
     }));
     return {
+      tournamentId: String(tournamentId || matches[0]?.id || "legacy"),
       id,
       revision: Number(match.revision) || 0,
       status: match.status || "pending",
@@ -56,27 +57,27 @@ export function snapshotProMatches(matches = []) {
   });
 }
 
-function visualKey(matchId, roundId, type, revision) {
-  return JSON.stringify([matchId, roundId, type, revision]);
+function visualKey(tournamentId, matchId, roundId, type, revision) {
+  return JSON.stringify([tournamentId, matchId, roundId, type, revision]);
 }
 
 export function diffProVisualEvents(before = [], after = []) {
   const previous = new Map(before.map((match) => [match.id, match]));
   const current = new Map(after.map((match) => [match.id, match]));
-  let reset = before.some((match) => !current.has(match.id));
+  let reset = before.some((match) => !current.has(match.id) || current.get(match.id).tournamentId !== match.tournamentId);
   const events = [];
 
   for (const match of after) {
     const old = previous.get(match.id);
     if (!old) {
       if (match.status === "in_progress" && before.length) {
-        events.push({ type: "intro", matchId: match.id, key: visualKey(match.id, "match", "intro", "start") });
+        events.push({ type: "intro", matchId: match.id, key: visualKey(match.tournamentId, match.id, "match", "intro", "start") });
       }
       continue;
     }
     if (old.status !== "pending" && match.status === "pending") reset = true;
     if (old.status === "pending" && match.status === "in_progress") {
-      events.push({ type: "intro", matchId: match.id, key: visualKey(match.id, "match", "intro", "start") });
+      events.push({ type: "intro", matchId: match.id, key: visualKey(match.tournamentId, match.id, "match", "intro", "start") });
     }
 
     let resultChanged = false;
@@ -97,19 +98,19 @@ export function diffProVisualEvents(before = [], after = []) {
           winner: round.winner, payouts,
           fromScore: scoreThrough(old.rounds, index), toScore: scoreThrough(match.rounds, index),
           champion: old.winner !== match.winner && match.winner !== "draw" ? match.winner : null,
-          key: visualKey(match.id, round.id, "result", [round.revision, round.winner, round.payout1, round.payout2]),
+          key: visualKey(match.tournamentId, match.id, round.id, "result", [round.revision, round.winner, round.payout1, round.payout2]),
         });
       } else if (payouts.length) {
         events.push({
           type: "payout", matchId: match.id, roundIndex: index, roundId: round.id, payouts,
-          key: visualKey(match.id, round.id, "payout", [round.revision, round.payout1, round.payout2]),
+          key: visualKey(match.tournamentId, match.id, round.id, "payout", [round.revision, round.payout1, round.payout2]),
         });
       }
     });
     if (!resultChanged && old.winner !== match.winner && match.winner && match.winner !== "draw") {
       events.push({
         type: "champion", matchId: match.id, champion: match.winner,
-        key: visualKey(match.id, "match", "champion", [match.revision, match.winner]),
+        key: visualKey(match.tournamentId, match.id, "match", "champion", [match.revision, match.winner]),
       });
     }
   }

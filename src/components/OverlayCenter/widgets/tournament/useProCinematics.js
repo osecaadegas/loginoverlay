@@ -2,7 +2,7 @@ import React from "react";
 import { ProCinematicController } from "./proCinematicController";
 import { createProProcessedRegistry, diffProVisualEvents, snapshotProMatches } from "./proVisualEvents";
 
-export default function useProCinematics({ allMatches, match, settings, enabled, startSignal }) {
+export default function useProCinematics({ allMatches, match, tournamentId, settings, enabled, startSignal }) {
   const rootRef = React.useRef(null);
   const baselineRef = React.useRef(null);
   const startSignalRef = React.useRef(startSignal);
@@ -84,9 +84,9 @@ export default function useProCinematics({ allMatches, match, settings, enabled,
   }, [shatter]);
 
   // Fingerprints change only when tournament data changes; ordinary React renders do not restart playback.
-  const fingerprint = JSON.stringify(snapshotProMatches(allMatches));
+  const fingerprint = JSON.stringify(snapshotProMatches(allMatches, tournamentId));
   React.useLayoutEffect(() => {
-    const next = snapshotProMatches(latestRef.current.allMatches);
+    const next = snapshotProMatches(latestRef.current.allMatches, tournamentId);
     const started = startSignalRef.current !== "active" && startSignal === "active";
     startSignalRef.current = startSignal;
     if (!enabled) { baselineRef.current = next; cancel(); return; }
@@ -103,14 +103,14 @@ export default function useProCinematics({ allMatches, match, settings, enabled,
     const events = diff.events;
     if (started && next.length && !events.some((event) => event.type === "intro")) {
       const first = next.find((item) => item.id === String(latestRef.current.match?.id)) || next[0];
-      events.unshift({ type: "intro", matchId: first.id, key: JSON.stringify([first.id, "match", "intro", "start"]) });
+      events.unshift({ type: "intro", matchId: first.id, key: JSON.stringify([first.tournamentId, first.id, "match", "intro", "start"]) });
     }
     for (const event of events) {
       if (!registryRef.current.has(event.key) && playingRef.current?.key !== event.key
         && !queueRef.current.some((pending) => pending.key === event.key)) queueRef.current.push(event);
     }
     void drain();
-  }, [fingerprint, enabled, startSignal, cancel, drain]);
+  }, [fingerprint, tournamentId, enabled, startSignal, cancel, drain]);
 
   React.useEffect(() => {
     const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");

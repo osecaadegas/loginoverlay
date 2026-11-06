@@ -79,6 +79,11 @@ function TournamentWidget({ config, theme }) {
 
   /* Prefer the first in-progress match; fall back to stored index */
   const currentMatchIdx = (() => {
+    if (layout === "pro") {
+      const selected = allMatches[tData.currentMatchIdx ?? 0];
+      const selectedIndex = matches.indexOf(selected);
+      if (selectedIndex >= 0) return selectedIndex;
+    }
     const ipIdx = matches.findIndex((m) => m.status === "in_progress");
     if (ipIdx >= 0) return ipIdx;
     const orig = tData.currentMatchIdx ?? 0;

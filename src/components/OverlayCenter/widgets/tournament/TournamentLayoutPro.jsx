@@ -5,6 +5,7 @@ import { calcMatchWinner, calcRoundWinner, getBoScoreboard } from "./tournamentE
 import { subValue } from "../shared/appearanceStyles";
 import { normalizeProCinematicSettings } from "./proVisualEvents";
 import useProCinematics from "./useProCinematics";
+import { getProMatchQueue } from "./proMatchQueue";
 import "./TournamentLayoutPro.css";
 
 const element = (id) => ({ "data-widget-element": id, "data-appearance-part": id });
@@ -78,7 +79,7 @@ export default function TournamentLayoutPro({ match: selectedMatch, allMatches =
   const c = config || {};
   const motion = normalizeProCinematicSettings(c);
   const cinematicEnabled = motion.preset === "cinematic" && motion.enabled;
-  const cinematic = useProCinematics({ allMatches, match: selectedMatch, settings: motion, enabled: cinematicEnabled,
+  const cinematic = useProCinematics({ allMatches, match: selectedMatch, tournamentId: c.data?.tournamentId || allMatches[0]?.id, settings: motion, enabled: cinematicEnabled,
     startSignal: c.bracketPhase || (c.data?.active ? "active" : "setup") });
   const match = cinematicEnabled ? cinematic.renderMatch : selectedMatch;
   const shatterInfo = cinematicEnabled ? cinematic.shatterInfo : externalShatterInfo;
@@ -103,6 +104,8 @@ export default function TournamentLayoutPro({ match: selectedMatch, allMatches =
   const completed = Boolean(winner);
   const lastPlayedRound = results.findLastIndex((result) => result !== null);
   const shatterRound = shatterInfo?.roundIndex ?? lastPlayedRound;
+  const { next: nextMatch, remaining } = getProMatchQueue(allMatches, match?.id);
+  const showQueue = c.showUpcomingMatches !== false && Boolean(nextMatch);
 
   return (
     <div className="tw-pro" ref={cinematic.rootRef} data-layout="pro" data-animation-preset={motion.preset} data-cinematic-phase="idle" {...element("container")}
@@ -146,16 +149,22 @@ export default function TournamentLayoutPro({ match: selectedMatch, allMatches =
                 style={textAppearance(c, "roundHeading")}>ROUND {index + 1}</div>
               <div className="tw-pro-round-grid">
                 <ProSlotCard match={match} round={round} side="left" result={result} currency={currency} config={c} shatterTarget={Boolean(shatterInfo && index === shatterRound && shatterInfo.side === "left")} />
-                <span className="tw-pro-vs" aria-hidden="true">VS</span>
+                <span className="tw-pro-vs" role="img" aria-label="versus"><span>V</span><span>S</span></span>
                 <ProSlotCard match={match} round={round} side="right" result={result} currency={currency} config={c} shatterTarget={Boolean(shatterInfo && index === shatterRound && shatterInfo.side === "right")} />
               </div>
             </section>;
           })}
         </div>
-        <footer className={`tw-pro-footer${completed ? " tw-pro-footer--complete" : ""}`} {...element("statusBadge")}
+        <footer className={`tw-pro-footer${completed ? " tw-pro-footer--complete" : ""}${showQueue ? " tw-pro-footer--queue" : ""}`} {...element("statusBadge")}
           style={{ background: subValue(c, "statusBadge", "background", c.styleConfigs?.pro?.statusBadgeBg || undefined), borderColor: subValue(c, "statusBadge", "borderColor", undefined), borderRadius: subValue(c, "statusBadge", "radius", undefined) }}>
-          <small>{completed ? cinematicEnabled && winner !== "draw" ? "TOURNAMENT CHAMPION" : "MATCH COMPLETE" : "CURRENT ROUND"}</small>
-          <strong style={textAppearance(c, "statusBadge")}>{completed ? winner === "draw" ? "DRAW" : winner === "player1" ? playerOne : playerTwo : `ROUND ${currentRound}`}</strong>
+          <div className="tw-pro-footer-status">
+            <small>{completed ? cinematicEnabled && winner !== "draw" ? "MATCH CHAMPION" : "MATCH COMPLETE" : "CURRENT ROUND"}</small>
+            <strong style={textAppearance(c, "statusBadge")}>{completed ? winner === "draw" ? "DRAW" : winner === "player1" ? playerOne : playerTwo : `ROUND ${currentRound}`}</strong>
+          </div>
+          {showQueue && <div className="tw-pro-up-next" aria-label={`Up next: ${nextMatch.player1} versus ${nextMatch.player2}`}>
+            <small>UP NEXT{c.showRemainingMatchesCount !== false && remaining > 1 ? ` · +${remaining - 1} MORE` : ""}</small>
+            <strong title={`${nextMatch.player1} vs ${nextMatch.player2}`}><span>{nextMatch.player1}</span><em>VS</em><span>{nextMatch.player2}</span></strong>
+          </div>}
         </footer>
       </> : <div className="tw-pro-empty" {...element("emptyState")}>No active tournament</div>}
       {shatterInfo && <ShatterEffect

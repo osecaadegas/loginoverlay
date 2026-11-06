@@ -1,6 +1,18 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'tournament-pro-match-queue-2026-11-06', date: '2026-11-06', category: 'overlays',
+    title: 'Upcoming matches in PRO tournaments',
+    summary: 'PRO tournament widgets show the next assigned matchup and use a clearer vertical VS marker.',
+    changes: [
+      'Show the next eligible bracket match beside the current round, with an optional remaining-match count.',
+      'Add read-only previous and next match previews in the tournament dashboard; only an explicit action activates a previewed match.',
+      'Keep PRO match activation manual by default while preserving the existing automatic behavior for other tournament layouts.',
+      'Scope cinematic event identities to the tournament, match, round and result revision.',
+    ],
+    action: 'Select PRO and configure its Match queue options, save the overlay, then refresh its OBS Browser Source after deployment. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'arctic-tournament-material-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'Arctic glass on tournament layouts',
     summary: 'Tournament frames and PRO match panels now inherit the newer Arctic cracked-glass material.',
