@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'solverde-rtp-obs-parity-2026-11-24', date: '2026-11-24', category: 'overlays',
+    title: 'Solverde RTP bar matches the editor in OBS',
+    summary: 'The Solverde RTP statistics bar keeps its saved layout proportions in a single-widget OBS Browser Source.',
+    changes: [
+      'Scale the completed bar from its saved widget dimensions at higher OBS source resolutions instead of laying out its contents again.',
+      'Verify the editor preview and published single-widget source at 2× resolution with matching bar and title geometry.',
+    ],
+    action: 'Refresh the Solverde RTP Browser Source after deployment. Live OBS Studio playback remains unverified.',
+  },
+  {
     id: 'tournament-pro-bracket-2026-11-06', date: '2026-11-06', category: 'overlays',
     title: 'PRO BRACKET knockout presentation',
     summary: 'A new icy PRO tournament mode presents the current saved knockout stage with all of its matchups.',

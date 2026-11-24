@@ -250,11 +250,11 @@ export default function BetterObsOverlay() {
     : BETTER_CANVAS.height;
   const scaleMode = getObsScaleMode();
   // Keep layout-sensitive single widgets at their saved geometry and scale the
-  // completed surface. Arctic's slim RTP rail and attached icicles must keep
-  // the same proportions as the editor preview at high-DPI source sizes.
+  // completed surface. The Arctic and Solverde RTP rails must keep the same
+  // proportions as the editor preview at high-DPI source sizes.
   const preserveLogicalLayout = isSingleWidget &&
     ((targetInstance?.widgetType === "bonus_hunt" && targetInstance.config?.colourTheme === "clear_ice") ||
-      (targetInstance?.widgetType === "rtp_stats" && targetInstance.config?.colourTheme === "arctic") ||
+      (targetInstance?.widgetType === "rtp_stats" && ["arctic", "solverde"].includes(targetInstance.config?.colourTheme)) ||
       (targetInstance?.widgetType === "tournament" && ["esports", "pro", "pro_bracket"].includes(targetInstance.config?.layout)));
   const geometry = getObsRenderGeometry({
     viewportWidth: viewport.width,

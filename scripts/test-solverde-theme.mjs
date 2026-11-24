@@ -85,14 +85,15 @@ try {
     function Controls() { const [c, set] = React.useState(config(type, extra)); window.solverde.controlConfig = c; return h('div', { style: { width: 420 } }, h(BetterWidgetControls, { type, config: c, onChange: set })); }
     this.controlsVersion=(this.controlsVersion||0)+1;root.render(h(Controls, { key: type+this.controlsVersion }));
    },
-   obs() {
+   obs(singleInstanceId = null) {
     const layout = this.layout, id = 'bo_' + 'd'.repeat(48), owner = 'solverde-owner';
     const widgets = layout.instances.map(instance => ({ id: instance.instanceId, overlay_id: 'solverde-live', user_id: owner, widget_type: instance.widgetType, config: instance.config, is_visible: instance.visible !== false }));
     const { client, state } = createOverlayTestDatabase({ better_overlay_publications: [{ public_overlay_id: id, owner_user_id: owner, published_layout: layout, published_version: 1, revoked_at: null }], overlay_instances: [{ id: 'solverde-live', user_id: owner, is_active: true }], overlay_widgets: widgets, overlay_themes: [] });
     window.obsDatabase=state;
     supabase.from = client.from; supabase.channel = client.channel; supabase.removeChannel = client.removeChannel;
     this.obsVersion = (this.obsVersion || 0) + 1;
-    root.render(h(router.MemoryRouter, { key: this.obsVersion, initialEntries: ['/obs/overlay/' + id] }, h(router.Routes, null, h(router.Route, { path: '/obs/overlay/:publicOverlayId', element: h(BetterObsOverlay) }))));
+    const path = '/obs/overlay/' + id + (singleInstanceId ? '/widget/' + singleInstanceId : '');
+    root.render(h(router.MemoryRouter, { key: this.obsVersion, initialEntries: [path] }, h(router.Routes, null, h(router.Route, { path: singleInstanceId ? '/obs/overlay/:publicOverlayId/widget/:instanceId' : '/obs/overlay/:publicOverlayId', element: h(BetterObsOverlay) }))));
    },
   };
   window.solverde.render();
@@ -195,5 +196,15 @@ try {
  assert.equal(await page.$$eval('.solverde-prediction-row',els=>els.length),6);assert(await page.$$eval('.solverde-prediction-row',els=>els.every(e=>{const row=e.getBoundingClientRect(),bar=e.querySelector('.solverde-prediction-track').getBoundingClientRect();return bar.top>=row.top&&bar.bottom<=row.bottom})));
  assert(await page.$('.better-obs-overlay .solverde-giveaway-notice'));assert(await page.$('.better-obs-overlay .rtp-stats-bar'));
  const screenshot=await page.screenshot({path:folder+'/published-obs-route.png',omitBackground:true});const alpha=await page.evaluate(async image=>{const img=new Image();img.src=image;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);return {center:ctx.getImageData(800,400,1,1).data[3],corner:ctx.getImageData(1376,98,1,1).data[3]};},'data:image/png;base64,'+Buffer.from(screenshot).toString('base64'));assert.equal(alpha.center,0,'actual published gameplay opening is transparent');assert(alpha.corner>0,'rounded gameplay corners retain emerald scenery');
- assert.equal(await page.$$eval('canvas',els=>els.length),0,'no new per-widget GPU renderers');assert.deepEqual(errors,[]);console.log('Solverde: reference composition, pinned giveaway states, dock/live data/long hunts, media, controls/reload, 12 widget families, overrides, theme cleanup and published transparency PASS');
+ // A high-DPI single-widget OBS source must scale the saved Solverde RTP rail,
+ // rather than recompute its columns at the Browser Source's pixel dimensions.
+ await page.evaluate(()=>{const api=window.solverde;api.render(api.scene(true,'open'));});await settle();
+ const editorRail=await page.evaluate(()=>{const bar=document.querySelector('[data-fixture-widget=rtp_stats] .rtp-stats-bar');const rect=bar.getBoundingClientRect();const title=bar.querySelector('h1')?.getBoundingClientRect();return {width:rect.width,height:rect.height,titleWidth:title?.width,titleHeight:title?.height};});
+ await (await page.$('[data-fixture-widget=rtp_stats]')).screenshot({path:folder+'/rtp-editor.png'});
+ await page.setViewport({width:2716,height:172});await page.evaluate(()=>window.solverde.obs('solverde-rtp_stats'));await page.waitForSelector('.better-obs-overlay--single .rtp-stats-bar');await settle();
+ const obsRail=await page.evaluate(()=>{const host=document.querySelector('.better-obs-overlay--single');const canvas=host.querySelector('.better-obs-canvas');const bar=host.querySelector('.rtp-stats-bar');const rect=bar.getBoundingClientRect();const title=bar.querySelector('h1')?.getBoundingClientRect();return {mode:host.dataset.renderMode,canvasWidth:canvas.getBoundingClientRect().width,width:rect.width,height:rect.height,titleWidth:title?.width,titleHeight:title?.height};});
+ assert.equal(obsRail.mode,'logical');assert(Math.abs(obsRail.canvasWidth-2716)<2);
+ for(const key of ['width','height','titleWidth','titleHeight']) assert(Math.abs(obsRail[key]/2-editorRail[key])<2,`${key}: editor ${editorRail[key]} vs OBS ${obsRail[key]}`);
+ await (await page.$('.better-obs-overlay--single .rtp-stats-bar')).screenshot({path:folder+'/rtp-obs-single-2x.png'});
+ assert.equal(await page.$$eval('canvas',els=>els.length),0,'no new per-widget GPU renderers');assert.deepEqual(errors,[]);console.log('Solverde: reference composition, controls, published source and high-DPI RTP preview/OBS parity PASS');
 } finally { await browser.close();await server.close(); }
