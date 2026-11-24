@@ -1,5 +1,5 @@
 import { createSupabaseAdmin, setCors } from '../api-auth.js';
-import { getSlotIdentity, readSlotPersonalBest, SLOT_PERSONAL_BEST_BATCH_SIZE } from '../../../shared/slotPersonalBest.js';
+import { findSlotPersonalBestsInHistory, getSlotIdentity, readSlotPersonalBest, SLOT_PERSONAL_BEST_BATCH_SIZE } from '../../../shared/slotPersonalBest.js';
 
 const PUBLIC_ID = /^bo_[a-f0-9]{48}$/i;
 const LEGACY_TOKEN = /^[a-f0-9]{48}$/i;
@@ -35,8 +35,8 @@ function validSlot(slot) {
   );
 }
 
-async function loadOwnerPersonalBest(client, ownerId, slot) {
-  return readSlotPersonalBest(client, ownerId, slot);
+async function loadOwnerPersonalBest(client, ownerId, slot, options) {
+  return readSlotPersonalBest(client, ownerId, slot, options);
 }
 
 export async function loadOverlayPersonalBest(req, client) {
@@ -66,11 +66,16 @@ export async function loadOverlayPersonalBests(req, client) {
   const owner = await resolveOverlayOwner(client, publicOverlayId, overlayToken);
   if (!owner.ownerId) return { status: owner.status, body: { error: owner.status === 404 ? 'Overlay not found' : 'Invalid overlay' } };
 
+  let historyBests;
+  const historyFallback = (index) => async () => {
+    historyBests ||= findSlotPersonalBestsInHistory(client, owner.ownerId, slots);
+    return (await historyBests)[index];
+  };
   const bests = [];
   for (let offset = 0; offset < slots.length; offset += 4) {
     const batch = slots.slice(offset, offset + 4);
     bests.push(...await Promise.all(
-      batch.map((slot) => loadOwnerPersonalBest(client, owner.ownerId, slot)),
+      batch.map((slot, index) => loadOwnerPersonalBest(client, owner.ownerId, slot, { historyFallback: historyFallback(offset + index) })),
     ));
   }
   return { status: 200, body: { bests } };

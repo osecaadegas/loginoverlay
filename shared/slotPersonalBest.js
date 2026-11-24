@@ -71,9 +71,17 @@ export function pickPersonalBest(records) {
 }
 
 export async function findSlotPersonalBestInHistory(client, userId, slotLike) {
-  const slot = getSlotIdentity(slotLike);
-  if (!userId || (!slot.id && !slot.name)) return null;
-  let best = null;
+  const [best] = await findSlotPersonalBestsInHistory(client, userId, [slotLike]);
+  return best || null;
+}
+
+// A public hunt can request up to 40 bests at once. Scan the owner's legacy
+// history once for the whole batch instead of running the same unbounded query
+// separately for each missing aggregate record.
+export async function findSlotPersonalBestsInHistory(client, userId, slotLikes) {
+  const slots = slotLikes.map(getSlotIdentity);
+  const bests = slots.map(() => null);
+  if (!userId || !slots.some(slot => slot.id || slot.name)) return bests;
   const pageSize = 50;
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await client.from('bonus_hunt_history').select('bonuses')
@@ -83,25 +91,28 @@ export async function findSlotPersonalBestInHistory(client, userId, slotLike) {
     for (const hunt of data || []) {
       for (const bonus of Array.isArray(hunt.bonuses) ? hunt.bonuses : []) {
         const result = buildResultFromBonus(bonus);
-        if (!result || !recordMatchesSlot(result, slot)) continue;
-        const highestMultiplier = Math.max(Number(best?.best_multiplier || 0), result.multiplier);
-        best = pickPersonalBest([best, {
-          slot_id: result.slot_id, slot_name: result.slot_name, slot_provider: result.slot_provider,
-          best_win: result.payout, best_multiplier: result.multiplier,
-        }]);
-        best.best_multiplier = highestMultiplier;
+        if (!result) continue;
+        slots.forEach((slot, index) => {
+          if (!recordMatchesSlot(result, slot)) return;
+          const highestMultiplier = Math.max(Number(bests[index]?.best_multiplier || 0), result.multiplier);
+          bests[index] = pickPersonalBest([bests[index], {
+            slot_id: result.slot_id, slot_name: result.slot_name, slot_provider: result.slot_provider,
+            best_win: result.payout, best_multiplier: result.multiplier,
+          }]);
+          bests[index].best_multiplier = highestMultiplier;
+        });
       }
     }
-    if (!data || data.length < pageSize) return best;
+    if (!data || data.length < pageSize) return bests;
   }
 }
 
-async function readLegacyPersonalBest(client, userId, slotLike) {
+async function readLegacyPersonalBest(client, userId, slotLike, historyFallback) {
   const record = await queryUserSlotRecord(client, userId, slotLike,
     'slot_id, slot_name, slot_provider, best_win, best_multiplier');
   if (Number(record?.best_win) > 0 && recordMatchesSlot(record, slotLike)) return record;
   // Reading a best must never require INSERT/UPDATE permission or successful hydration.
-  return findSlotPersonalBestInHistory(client, userId, slotLike);
+  return historyFallback ? historyFallback() : findSlotPersonalBestInHistory(client, userId, slotLike);
 }
 
 // Both Bonus Hunt and Current Game append to this existing, owner-scoped ledger.
@@ -154,9 +165,9 @@ export function combineSlotResults(legacy, results, slotLike) {
   };
 }
 
-export async function readSlotPersonalBest(client, userId, slotLike) {
+export async function readSlotPersonalBest(client, userId, slotLike, { historyFallback } = {}) {
   const [legacy, results] = await Promise.all([
-    readLegacyPersonalBest(client, userId, slotLike), readSlotResults(client, userId, slotLike),
+    readLegacyPersonalBest(client, userId, slotLike, historyFallback), readSlotResults(client, userId, slotLike),
   ]);
   return combineSlotResults(legacy, results, slotLike);
 }

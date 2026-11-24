@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { beginOAuthSignIn } from '../../utils/loginOAuth';
 import './LoginPage.css';
 
 const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
@@ -36,6 +37,7 @@ export default function LoginPage() {
   const location = useLocation();
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState('');
+  const redirectTimer = useRef(null);
   const returnTo = useMemo(() => {
     const fromState = location.state?.from;
     const fromQuery = new URLSearchParams(location.search).get('redirectTo');
@@ -49,6 +51,17 @@ export default function LoginPage() {
     if (user) navigate(returnTo, { replace: true });
   }, [navigate, returnTo, user]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('error')) {
+      const detail = params.get('error_description')?.slice(0, 240);
+      setError(detail || 'Sign-in could not complete. Please try again.');
+      setLoading(null);
+    }
+  }, [location.search]);
+
+  useEffect(() => () => window.clearTimeout(redirectTimer.current), []);
+
   const closeLogin = () => {
     navigate('/', { replace: true });
   };
@@ -57,10 +70,18 @@ export default function LoginPage() {
     setError('');
     setLoading(provider);
     try {
-      const { error } = await signInFn(returnTo);
-      if (error) throw error;
+      await beginOAuthSignIn(signInFn, returnTo, provider);
+      // The SDK can return a URL before the browser manages to leave this page.
+      // A stalled provider/gateway navigation must not lock every login button.
+      redirectTimer.current = window.setTimeout(() => {
+        setError('The sign-in page did not open. Please try again shortly.');
+        setLoading(null);
+      }, 15000);
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      window.clearTimeout(redirectTimer.current);
+      setError(err.name === 'TimeoutError'
+        ? 'The sign-in service is taking too long. Please try again shortly.'
+        : err.message || 'Login failed. Please try again.');
       setLoading(null);
     }
   };

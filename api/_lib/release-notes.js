@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'oauth-timeout-history-batch-2026-11-24', date: '2026-11-24', category: 'website',
+    title: 'Clearer sign-in failures and lighter legacy history reads',
+    summary: 'OAuth sign-in reports a stalled service instead of leaving the login button indefinitely busy, and batched slot best lookups share one legacy history scan.',
+    changes: [
+      'Show a retryable error after a sign-in startup timeout or missing provider redirect.',
+      'Preserve historical personal-best values while scanning legacy Bonus Hunt history once per batch of requested slots.',
+    ],
+    action: 'Retry Twitch sign-in after the database service has recovered. This release does not change the Twitch provider configuration or repair an unavailable Supabase database.',
+  },
+  {
     id: 'overlay-egress-repeated-reads-2026-11-24', date: '2026-11-24', category: 'overlays',
     title: 'Reduced repeated overlay data transfers',
     summary: 'Live overlays avoid re-downloading unchanged published layouts and recently viewed slot bests.',

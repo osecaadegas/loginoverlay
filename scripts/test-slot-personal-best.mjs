@@ -108,6 +108,22 @@ assert.deepEqual(response.body.bests.map((best) => best?.best_win || null), [900
   'Batch lookup resolves one owner and preserves the requested slot order');
 assert.equal((await loadOverlayPersonalBests({ body: { publicOverlayId: publicB, slots: Array.from({length: 40}, () => slot) } }, client)).status, 200, 'A full batch is accepted');
 assert.equal((await loadOverlayPersonalBests({ body: { publicOverlayId: publicB, slots: Array.from({length: 41}, () => slot) } }, client)).status, 400, 'Oversized batches remain rejected; the client must split them');
+const legacySecond = { name: 'Legacy Second', provider: 'Reel Gaming' };
+const historyBatchClient = database({
+  better_overlay_publications: [{ public_overlay_id: publicA, owner_user_id: 'history-owner', revoked_at: null }],
+  bonus_hunt_history: Array.from({ length: 60 }, (_, index) => ({
+    id: index, user_id: 'history-owner', created_at: String(1000 - index),
+    bonuses: index === 0 ? [{ slot, betSize: 2, payout: 120 }]
+      : index === 55 ? [{ slot: legacySecond, betSize: 1, payout: 500 }] : [],
+  })),
+});
+const historyBatch = await loadOverlayPersonalBests({ body: {
+  publicOverlayId: publicA, slots: [slot, legacySecond, { name: 'Never Played' }],
+} }, historyBatchClient);
+assert.deepEqual(historyBatch.body.bests.map(best => best?.best_win || null), [120, 500, null],
+  'Batch history fallback preserves each slot and its original order');
+assert.equal(historyBatchClient.reads.filter(read => read.table === 'bonus_hunt_history').length, 2,
+  'A batch scans each history page once even when several slots lack aggregate records');
 const freshRequest = request({ publicOverlayId: publicB, slotName: 'Fresh Slot', slotId: '' });
 assert.equal((await loadOverlayPersonalBest(freshRequest, client)).body.best, null);
 tables.user_slot_records.push(record('owner-b', 700, { slot_id: null, slot_name: 'Fresh Slot' }));
