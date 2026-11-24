@@ -529,6 +529,17 @@ try {
   );
   assert.equal(publicRecord.ownerUserId, "admin-user");
   assert.equal(publicRecord.publishedLayout.name, "Miguel Streamer Overlay");
+  const publicationId = publicRecord.publicOverlayId;
+  const unchanged = await service.refreshPublishedBetterOverlay(publicationId, publicRecord);
+  assert.strictEqual(unchanged, publicRecord, "unchanged OBS publication reuses its full layout");
+  const publicationRow = state.tables.better_overlay_publications[0];
+  publicationRow.published_version += 1;
+  publicationRow.updated_at = "2026-11-24T12:00:00.000Z";
+  const republished = await service.refreshPublishedBetterOverlay(publicationId, publicRecord);
+  assert.equal(republished.publishedVersion, publicationRow.published_version, "a missed publish still reloads the full layout");
+  publicationRow.revoked_at = "2026-11-24T12:01:00.000Z";
+  assert.equal(await service.refreshPublishedBetterOverlay(publicationId, republished), null, "revocation is noticed by the lightweight fallback check");
+  publicationRow.revoked_at = null;
 
   const liveSource = await service.getPublishedBetterLiveSource(
     publicRecord.ownerUserId,

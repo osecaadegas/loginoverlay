@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   getPublishedBetterLiveSource,
-  getPublishedBetterOverlay,
+  refreshPublishedBetterOverlay,
   subscribeToBetterLiveSource,
   subscribeToPublishedBetterOverlay,
   unsubscribeBetterLiveSource,
@@ -90,10 +90,15 @@ export default function BetterObsOverlay() {
     theme: null,
   }));
   const [loaded, setLoaded] = useState(false);
+  const publicationRef = useRef(null);
+  const publicationRevision = useRef(0);
   const viewport = useViewportSize();
 
   const loadPublication = useCallback(async () => {
-    const nextPublication = await getPublishedBetterOverlay(publicOverlayId);
+    const revision = publicationRevision.current;
+    const nextPublication = await refreshPublishedBetterOverlay(publicOverlayId, publicationRef.current);
+    if (revision !== publicationRevision.current) return;
+    publicationRef.current = nextPublication;
     setPublication(nextPublication);
     setLoaded(true);
   }, [publicOverlayId]);
@@ -187,6 +192,8 @@ export default function BetterObsOverlay() {
 
   useEffect(() => {
     let alive = true;
+    publicationRevision.current += 1;
+    publicationRef.current = null;
     loadPublication().catch(() => {
       if (alive) setLoaded(true);
     });
@@ -194,10 +201,14 @@ export default function BetterObsOverlay() {
     const channel = subscribeToPublishedBetterOverlay(
       publicOverlayId,
       (nextPublication) => {
+        publicationRevision.current += 1;
         if (nextPublication) {
+          publicationRef.current = nextPublication;
           setPublication(nextPublication);
           setLoaded(true);
         } else {
+          publicationRef.current = null;
+          setPublication(null);
           loadPublication().catch(() => setPublication(null));
         }
       },

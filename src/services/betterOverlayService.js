@@ -559,6 +559,25 @@ export async function getPublishedBetterOverlay(publicOverlayId) {
   return normalizePublicRow(data);
 }
 
+// The published layout can contain every widget's configuration and artwork.
+// OBS checks for revocation and missed realtime updates regularly, but only
+// needs that full payload after the publication actually changes.
+export async function refreshPublishedBetterOverlay(publicOverlayId, current) {
+  if (!current || current.publicOverlayId !== publicOverlayId) {
+    return getPublishedBetterOverlay(publicOverlayId);
+  }
+  const { data, error } = await supabase
+    .from(PUBLIC_TABLE)
+    .select("published_version,updated_at,revoked_at")
+    .eq("public_overlay_id", publicOverlayId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data || data.revoked_at) return null;
+  if (Number(data.published_version || 0) === current.publishedVersion &&
+      data.updated_at === current.updatedAt) return current;
+  return getPublishedBetterOverlay(publicOverlayId);
+}
+
 export function subscribeToPublishedBetterOverlay(publicOverlayId, onChange) {
   if (!publicOverlayId || typeof onChange !== "function") return null;
   const channel = supabase.channel(`better_overlay_public_${publicOverlayId}`);

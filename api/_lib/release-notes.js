@@ -1,6 +1,16 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'overlay-egress-repeated-reads-2026-11-24', date: '2026-11-24', category: 'overlays',
+    title: 'Reduced repeated overlay data transfers',
+    summary: 'Live overlays avoid re-downloading unchanged published layouts and recently viewed slot bests.',
+    changes: [
+      'OBS checks publication version and revocation without transferring the full layout on every fallback refresh.',
+      'Rotating slot cards reuse a recent personal-best result while retaining scheduled refreshes, realtime updates and local save refreshes.',
+    ],
+    action: 'Refresh active OBS Browser Sources after deployment. Actual production egress savings depend on usage and have not yet been measured.',
+  },
+  {
     id: 'solverde-rtp-obs-parity-2026-11-24', date: '2026-11-24', category: 'overlays',
     title: 'Solverde RTP bar matches the editor in OBS',
     summary: 'The Solverde RTP statistics bar keeps its saved layout proportions in a single-widget OBS Browser Source.',

@@ -2,24 +2,35 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { getSlotIdentity, readSlotPersonalBest, recordMatchesSlot } from '../../shared/slotPersonalBest.js';
 
-// Command-deck variants share the same scoped transport. Other callers keep
-// their existing lifecycle. No result is retained after its last view unmounts.
+// A rotating slot card can remount every few seconds. Keep its last successful
+// lookup briefly so the same slot does not download its history every lap.
 const sharedLookups = new Map();
-export default function useSlotPersonalBest({ userId, slot, publicOverlayId, overlayToken, shared = false }) {
+const recentLookups = new Map();
+const REFRESH_MS = 60_000;
+const REMOUNT_CACHE_MS = REFRESH_MS;
+const MAX_RECENT_LOOKUPS = 200;
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('slot-result-saved', () => recentLookups.clear());
+}
+export default function useSlotPersonalBest({ userId, slot, publicOverlayId, overlayToken }) {
   const { id, name, provider } = getSlotIdentity(slot);
   const scope = JSON.stringify([userId, id, name, provider, publicOverlayId, overlayToken]);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
     if ((!userId && !publicOverlayId && !overlayToken) || (!id && !name)) return undefined;
-    const existing = shared && sharedLookups.get(scope);
+    const existing = sharedLookups.get(scope);
     if (existing) {
       existing.listeners.add(setResult);
       setResult(existing.result);
       return () => existing.release(setResult);
     }
-    const entry = {listeners:new Set([setResult]),result:null,release:null};
-    if (shared) sharedLookups.set(scope,entry);
+    const cached = recentLookups.get(scope);
+    const cacheAge = cached ? Date.now() - cached.at : Infinity;
+    const freshCache = cacheAge >= 0 && cacheAge < REMOUNT_CACHE_MS;
+    const entry = {listeners:new Set([setResult]),result:freshCache ? cached.result : null,release:null};
+    sharedLookups.set(scope,entry);
+    if (entry.result) setResult(entry.result);
     const activeSlot = { id, name, provider };
     const isPublic = Boolean(publicOverlayId || overlayToken);
     let cancelled = false;
@@ -44,21 +55,28 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
         if (!cancelled && revision === requestRevision) {
           clearTimeout(retryTimer);
           entry.result = { scope, best: best && recordMatchesSlot(best, activeSlot) ? best : null };
+          recentLookups.delete(scope);
+          recentLookups.set(scope, { result: entry.result, at: Date.now() });
+          if (recentLookups.size > MAX_RECENT_LOOKUPS) recentLookups.delete(recentLookups.keys().next().value);
           entry.listeners.forEach(listener => listener(entry.result));
         }
       } catch (error) {
         // Keep the same slot's last successful value during a temporary outage.
         if (!cancelled && revision === requestRevision) {
           console.warn('Personal best lookup failed:', error?.message);
-          if (!isPublic) retryTimer = setTimeout(refresh, 60_000);
+          if (!isPublic) retryTimer = setTimeout(refresh, REFRESH_MS);
         }
       }
     }
 
     window.addEventListener('slot-result-saved', refresh);
-    refresh();
+    if (!freshCache) refresh();
     // Anonymous OBS sources cannot receive private-table realtime events.
-    const timer = setInterval(refresh, 60_000);
+    let pollTimer;
+    const firstPoll = setTimeout(() => {
+      refresh();
+      pollTimer = setInterval(refresh, REFRESH_MS);
+    }, freshCache ? REFRESH_MS - cacheAge : REFRESH_MS);
     const channel = isPublic ? null : supabase.channel(`bestwin_${scope}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'user_slot_records', filter: `user_id=eq.${userId}`,
@@ -71,7 +89,8 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
       cancelled = true;
       controller.abort();
       clearTimeout(retryTimer);
-      if (timer) clearInterval(timer);
+      clearTimeout(firstPoll);
+      clearInterval(pollTimer);
       if (channel) supabase.removeChannel(channel);
     };
     entry.release = listener => {
@@ -82,7 +101,7 @@ export default function useSlotPersonalBest({ userId, slot, publicOverlayId, ove
       }
     };
     return () => entry.release(setResult);
-  }, [userId, id, name, provider, publicOverlayId, overlayToken, scope, shared]);
+  }, [userId, id, name, provider, publicOverlayId, overlayToken, scope]);
 
   return result?.scope === scope ? result.best : null;
 }

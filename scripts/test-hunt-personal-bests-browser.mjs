@@ -20,7 +20,7 @@ const best = (slot, owner) => {
 const browser = await puppeteer.launch({ headless: true });
 try {
   const page = await browser.newPage();
-  const errors = [], batches = [];
+  const errors = [], batches = [], singleLookups = [];
   let failed = false;
   page.on('pageerror', error => errors.push(error.message));
   await page.setRequestInterception(true);
@@ -37,6 +37,7 @@ try {
         const owner=body.publicOverlayId === publication ? 'owner-a' : 'owner-b';
         return json({bests:body.slots.map(slot=>best(slot,owner))});
       }
+      singleLookups.push([url.searchParams.get('slotId'), url.searchParams.get('slotName')]);
       const owner=url.searchParams.get('publicOverlayId') === publication ? 'owner-a' : 'owner-b';
       return json({best:best({id:url.searchParams.get('slotId'),name:url.searchParams.get('slotName'),provider:url.searchParams.get('provider')},owner)});
     }
@@ -72,6 +73,13 @@ try {
     await page.waitForFunction(amount=>document.querySelector('#rtp [data-appearance-part="personalBest"]')?.textContent.replaceAll(',','').includes(String(amount)),{},1000+i);
   }
   assert.deepEqual(batches,[40,7],'Changing RTP active slot must not refetch all cards');
+  const repeatedSlot = slots[46];
+  const priorReads = singleLookups.filter(([id,name])=>id===repeatedSlot.id&&name===repeatedSlot.name).length;
+  await page.evaluate(()=>window.huntRecords.render('owner-a',40));
+  await page.waitForFunction(amount=>document.querySelector('#rtp [data-appearance-part="personalBest"]')?.textContent.replaceAll(',','').includes(String(amount)),{},1040);
+  await page.evaluate(()=>window.huntRecords.render('owner-a',46));
+  await page.waitForFunction(amount=>document.querySelector('#rtp [data-appearance-part="personalBest"]')?.textContent.replaceAll(',','').includes(String(amount)),{},1046);
+  assert.equal(singleLookups.filter(([id,name])=>id===repeatedSlot.id&&name===repeatedSlot.name).length,priorReads,'rotating back to a recently shown slot reuses its best without another download');
   failed=true;await page.evaluate(()=>window.huntRecords.refresh());await page.waitForNetworkIdle();
   await wait(1046); // Keep the same account's successful all-time values during an outage.
   failed=false;
