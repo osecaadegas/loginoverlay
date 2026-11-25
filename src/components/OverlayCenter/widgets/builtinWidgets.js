@@ -251,6 +251,8 @@ registerWidget({
     showSocials: false,
     showCTA: false,
     ctaText: "Be Gamble Aware!",
+    startBalance: "",
+    startValue: "",
     cryptoCoins: [],
     socialDisplayStyle: "handles",
     socialIntervalMs: 4500,

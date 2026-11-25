@@ -522,6 +522,7 @@ const LIVE_DATA_KEYS = Object.freeze({
     "avatarUrl",
     "streamerAvatar",
     "avatarImageUrl",
+    "badgeImage",
     "badgeImageUrl",
     "badgeLabel",
     "clockFormat",
@@ -643,13 +644,6 @@ const NON_EMPTY_LIVE_DATA_KEYS = Object.freeze({
     "kickChannelId",
   ]),
   giveaway: new Set(["twitchChannel", "kickChannelId"]),
-  navbar: new Set([
-    "twitchUsername",
-    "kickChannelId",
-    "kickChannel",
-    "youtubeChannel",
-    "youtubeVideoId",
-  ]),
   bets: new Set(["twitchChannel"]),
   raid_shoutout: new Set(["twitchChannel"]),
 });
@@ -946,6 +940,23 @@ function mergeBetterLiveDataConfig(widgetType, baseConfig, liveWidget) {
     livePatch.chatCommandEnabled = false;
   }
   if (Object.keys(livePatch).length === 0) return baseConfig;
+  // The instance has already been normalized. Reapplying template defaults
+  // here would replace deliberately cleared setup text and commands.
+  if (widgetType === "navbar") {
+    return {
+      ...baseConfig,
+      ...livePatch,
+      ...(hasOwnKey(livePatch, "startBalance") && !hasOwnKey(livePatch, "startValue")
+        ? { startValue: "" }
+        : {}),
+      ...(hasOwnKey(livePatch, "startValue") && !hasOwnKey(livePatch, "startBalance")
+        ? { startBalance: "" }
+        : {}),
+      ...(hasOwnKey(livePatch, "casinoCommand")
+        ? { betterNavbarManualCasinoCommand: Boolean(livePatch.casinoCommand) }
+        : {}),
+    };
+  }
   return ensureBetterWidgetConfig(widgetType, {
     ...baseConfig,
     ...livePatch,

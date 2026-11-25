@@ -2307,8 +2307,9 @@ function NavbarWidget({
         .toLowerCase() === LEGACY_CASINO_COMMAND
         ? ""
         : rawCasinoCommand;
+    const casinoText = casinoCommand || (streamerSourceHeader ? "" : c.casinoName);
     const showCasino = Boolean(
-      c.showCasino !== false && (casinoCommand || casinoLogoUrl),
+      c.showCasino !== false && (casinoText || casinoLogoUrl),
     );
     const casinoLogoScaleValue = Number(c.casinoImageSize ?? 100);
     const casinoLogoScale = Number.isFinite(casinoLogoScaleValue)
@@ -2596,7 +2597,7 @@ function NavbarWidget({
               })}
             />
           ) : null}
-          {casinoCommand ? (
+          {casinoText ? (
             <span
               {...partAttrs("casinoCommand")}
               style={withElementOffset(c, "casinoCommand", {
@@ -2614,7 +2615,7 @@ function NavbarWidget({
                 whiteSpace: "nowrap",
               })}
             >
-              {casinoCommand}
+              {casinoText}
             </span>
           ) : null}
         </div>

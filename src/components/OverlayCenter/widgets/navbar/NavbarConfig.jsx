@@ -25,7 +25,13 @@ export default function NavbarConfig({ config, onChange }) {
 
   // Auto-fill on first load
   useEffect(() => {
-    if (isTwitch && !c.streamerName && twitchDisplayName) {
+    if (
+      isTwitch &&
+      !c.streamerName &&
+      c.avatarUrl === undefined &&
+      c.twitchUsername === undefined &&
+      twitchDisplayName
+    ) {
       setMulti({
         streamerName: twitchDisplayName,
         twitchUsername: twitchName,
@@ -46,6 +52,10 @@ export default function NavbarConfig({ config, onChange }) {
   return (
     <div className="nb-config">
       <div className="nb-section">
+        <p className="oc-config-hint">
+          These values feed Navbar widgets in Live Data mode and OBS. Use
+          Better Editor to choose which sections each widget shows.
+        </p>
         {/* Twitch sync */}
         {isTwitch && (
           <div className="oc-twitch-info" style={{ marginBottom: 12 }}>
@@ -91,6 +101,22 @@ export default function NavbarConfig({ config, onChange }) {
             placeholder="Just Content"
           />
         </label>
+        <label className="nb-field">
+          <span>Website URL</span>
+          <input
+            value={c.siteUrl || ""}
+            onChange={(e) => set("siteUrl", e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
+        <label className="nb-field">
+          <span>Avatar URL</span>
+          <input
+            value={c.avatarUrl || ""}
+            onChange={(e) => set("avatarUrl", e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
 
         <h4 className="nb-subtitle">Badge Image</h4>
         <p className="oc-config-hint" style={{ marginBottom: 6 }}>
@@ -105,6 +131,7 @@ export default function NavbarConfig({ config, onChange }) {
           ].map((b) => (
             <button
               key={b.value}
+              type="button"
               className={`nb-badge-option ${(c.badgeImage || "") === b.value ? "nb-badge-option--active" : ""}`}
               onClick={() => set("badgeImage", b.value)}
             >
@@ -118,16 +145,14 @@ export default function NavbarConfig({ config, onChange }) {
           ))}
         </div>
 
-        {c.showCTA && (
-          <label className="nb-field" style={{ marginTop: 6 }}>
-            <span>CTA Text</span>
-            <input
-              value={c.ctaText || ""}
-              onChange={(e) => set("ctaText", e.target.value)}
-              placeholder="Be Gamble Aware!"
-            />
-          </label>
-        )}
+        <label className="nb-field" style={{ marginTop: 6 }}>
+          <span>CTA Text</span>
+          <input
+            value={c.ctaText || ""}
+            onChange={(e) => set("ctaText", e.target.value)}
+            placeholder="Be Gamble Aware!"
+          />
+        </label>
 
         {/* ─── Start ─── */}
         <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
@@ -168,49 +193,55 @@ export default function NavbarConfig({ config, onChange }) {
         </label>
 
         {/* ─── Casino ─── */}
+        <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
+          Casino
+        </h4>
+        <label className="nb-field">
+          <span>Casino Name</span>
+          <input
+            value={c.casinoName || ""}
+            onChange={(e) => set("casinoName", e.target.value)}
+            placeholder="Stake"
+          />
+        </label>
+        <label className="nb-field">
+          <span>Casino Command</span>
+          <input
+            value={c.casinoCommand || ""}
+            onChange={(e) => set("casinoCommand", e.target.value)}
+            placeholder="!casino"
+          />
+        </label>
+        <label className="nb-field">
+          <span>Casino Logo URL</span>
+          <input
+            value={c.casinoLogoUrl || ""}
+            onChange={(e) => set("casinoLogoUrl", e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
         {c.showCasino && (
-          <>
-            <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
-              Casino
-            </h4>
-            <label className="nb-field">
-              <span>Casino Name</span>
-              <input
-                value={c.casinoName || ""}
-                onChange={(e) => set("casinoName", e.target.value)}
-                placeholder="Stake"
-              />
-            </label>
-            <label className="nb-field">
-              <span>Casino Logo URL</span>
-              <input
-                value={c.casinoLogoUrl || ""}
-                onChange={(e) => set("casinoLogoUrl", e.target.value)}
-                placeholder="https://..."
-              />
-            </label>
-            <label className="nb-slider-field">
-              <span className="nb-slider-label">Logo size</span>
-              <input
-                type="range"
-                min={20}
-                max={300}
-                step={5}
-                value={c.casinoImageSize ?? 100}
-                onChange={(e) => set("casinoImageSize", Number(e.target.value))}
-              />
-              <span className="nb-slider-value">
-                {c.casinoImageSize ?? 100}%
-              </span>
-            </label>
-          </>
+          <label className="nb-slider-field">
+          <span className="nb-slider-label">Logo size</span>
+          <input
+            type="range"
+            min={20}
+            max={300}
+            step={5}
+            value={c.casinoImageSize ?? 100}
+            onChange={(e) => set("casinoImageSize", Number(e.target.value))}
+          />
+          <span className="nb-slider-value">
+            {c.casinoImageSize ?? 100}%
+          </span>
+          </label>
         )}
 
+        <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
+          Socials
+        </h4>
         {c.showSocials && (
           <>
-            <h4 className="nb-subtitle" style={{ marginTop: 14 }}>
-              Socials
-            </h4>
             <label className="nb-field">
               <span>Display mode</span>
               <select
@@ -259,64 +290,64 @@ export default function NavbarConfig({ config, onChange }) {
                 </span>
               </label>
             )}
-            <label className="nb-field">
-              <span>Twitch</span>
-              <input
-                value={c.twitchUsername || ""}
-                onChange={(e) => set("twitchUsername", e.target.value)}
-                placeholder="channel"
-              />
-            </label>
-            <label className="nb-field">
-              <span>Kick</span>
-              <input
-                value={c.kickChannelId || c.kickChannel || ""}
-                onChange={(e) => set("kickChannelId", e.target.value)}
-                placeholder="channel"
-              />
-            </label>
-            <label className="nb-field">
-              <span>YouTube</span>
-              <input
-                value={c.youtubeChannel || ""}
-                onChange={(e) => set("youtubeChannel", e.target.value)}
-                placeholder="@channel"
-              />
-            </label>
-            <label className="nb-field">
-              <span>X</span>
-              <input
-                value={c.xUsername || ""}
-                onChange={(e) => set("xUsername", e.target.value)}
-                placeholder="handle"
-              />
-            </label>
-            <label className="nb-field">
-              <span>Instagram</span>
-              <input
-                value={c.instagramUsername || ""}
-                onChange={(e) => set("instagramUsername", e.target.value)}
-                placeholder="handle"
-              />
-            </label>
-            <label className="nb-field">
-              <span>Discord invite</span>
-              <input
-                value={c.discordUrl || ""}
-                onChange={(e) => set("discordUrl", e.target.value)}
-                placeholder="invite or URL"
-              />
-            </label>
-            <label className="nb-field">
-              <span>TikTok</span>
-              <input
-                value={c.tiktokUsername || ""}
-                onChange={(e) => set("tiktokUsername", e.target.value)}
-                placeholder="handle"
-              />
-            </label>
           </>
         )}
+        <label className="nb-field">
+          <span>Twitch</span>
+          <input
+            value={c.twitchUsername || ""}
+            onChange={(e) => set("twitchUsername", e.target.value)}
+            placeholder="channel"
+          />
+        </label>
+        <label className="nb-field">
+          <span>Kick</span>
+          <input
+            value={c.kickChannelId || c.kickChannel || ""}
+            onChange={(e) => setMulti({ kickChannelId: e.target.value, kickChannel: "" })}
+            placeholder="channel"
+          />
+        </label>
+        <label className="nb-field">
+          <span>YouTube</span>
+          <input
+            value={c.youtubeChannel || ""}
+            onChange={(e) => set("youtubeChannel", e.target.value)}
+            placeholder="@channel"
+          />
+        </label>
+        <label className="nb-field">
+          <span>X</span>
+          <input
+            value={c.xUsername || c.twitterUsername || ""}
+            onChange={(e) => setMulti({ xUsername: e.target.value, twitterUsername: "" })}
+            placeholder="handle"
+          />
+        </label>
+        <label className="nb-field">
+          <span>Instagram</span>
+          <input
+            value={c.instagramUsername || ""}
+            onChange={(e) => set("instagramUsername", e.target.value)}
+            placeholder="handle"
+          />
+        </label>
+        <label className="nb-field">
+          <span>Discord invite</span>
+          <input
+            value={c.discordUrl || c.discordInvite || c.discordTag || ""}
+            onChange={(e) => setMulti({ discordUrl: e.target.value, discordInvite: "", discordTag: "" })}
+            placeholder="invite or URL"
+          />
+        </label>
+        <label className="nb-field">
+          <span>TikTok</span>
+          <input
+            value={c.tiktokUsername || ""}
+            onChange={(e) => set("tiktokUsername", e.target.value)}
+            placeholder="handle"
+          />
+        </label>
 
         {/* ─── Spotify status (connect via Profile) ─── */}
         {c.showNowPlaying && (

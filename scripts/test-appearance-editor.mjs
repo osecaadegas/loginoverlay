@@ -738,6 +738,69 @@ try {
     ),
     "utf8",
   );
+  const navbarAppearance = {
+    textColor: "#123456",
+    socialDisplayStyle: "marquee",
+    showCTA: true,
+    showSocials: true,
+    startBalance: 2000,
+    startValue: "€2000",
+    ctaText: "Layout CTA",
+    twitchUsername: "layout_channel",
+  };
+  const navbarSetup = {
+    streamerName: "Saved Streamer",
+    motto: "Saved Motto",
+    avatarUrl: "https://example.com/avatar.png",
+    badgeImage: "/badges/raw.png",
+    casinoName: "Saved Casino",
+    casinoCommand: "",
+    casinoLogoUrl: "",
+    ctaText: "",
+    startBalance: 0,
+    balanceCurrency: "$",
+    twitchUsername: "",
+    instagramUsername: "saved_social",
+    showCTA: false,
+    showSocials: false,
+    socialDisplayStyle: "slide",
+    textColor: "#ffffff",
+  };
+  const navbarDisplay = resolveBetterWidgetConfig("navbar", navbarAppearance, "live", {
+    liveWidgets: [{ widget_type: "navbar", config: navbarSetup }],
+  });
+  for (const key of [
+    "streamerName", "motto", "avatarUrl", "badgeImage", "casinoName",
+    "casinoCommand", "casinoLogoUrl", "ctaText", "startBalance",
+    "balanceCurrency", "twitchUsername", "instagramUsername",
+  ]) {
+    assert.equal(navbarDisplay[key], navbarSetup[key], `Navbar setup supplies ${key}`);
+  }
+  assert.equal(navbarDisplay.startValue, "", "A source balance replaces old layout text");
+  assert.equal(navbarDisplay.textColor, navbarAppearance.textColor);
+  assert.equal(navbarDisplay.socialDisplayStyle, navbarAppearance.socialDisplayStyle);
+  assert.equal(navbarDisplay.showSocials, true);
+  assert.equal(resolveBetterWidgetConfig("navbar", navbarAppearance).twitchUsername, "layout_channel");
+  const legacyNavbarDisplay = resolveBetterWidgetConfig("navbar", navbarAppearance, "live", {
+    liveWidgets: [{ widget_type: "navbar", config: { startValue: "$325" } }],
+  });
+  assert.equal(legacyNavbarDisplay.startValue, "$325");
+  assert.equal(legacyNavbarDisplay.startBalance, "", "Saved legacy text takes precedence over a layout balance");
+  const navbarInstance = createBetterInstance("navbar", { config: navbarAppearance });
+  for (const runtime of ["editor", "obs"]) {
+    const markup = renderToStaticMarkup(renderBetterWidgetInstance({
+      instance: navbarInstance,
+      layout: { instances: [navbarInstance] },
+      liveWidgets: [{ widget_type: "navbar", config: navbarSetup }],
+      runtime,
+      accessVerified: true,
+    }));
+    assert.match(markup, /SAVED STREAMER/);
+    assert.match(markup, /\/badges\/raw\.png/);
+    assert.match(markup, /Saved Casino/);
+    assert.match(markup, /saved_social/);
+    assert.doesNotMatch(markup, /layout_channel|Layout CTA|€2000/);
+  }
   const spotifyAuthSource = readFileSync(
     new URL("../src/utils/spotifyAuth.js", import.meta.url),
     "utf8",

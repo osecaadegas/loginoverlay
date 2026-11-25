@@ -1,6 +1,17 @@
 // Server-only release history. Add entries here as part of each user-facing release.
 export const releaseNotes = [
   {
+    id: 'navbar-live-setup-values-2026-11-25', date: '2026-11-25', category: 'overlays',
+    title: 'Navbar widgets use saved setup values',
+    summary: 'Live Navbar widgets use content saved on the Navbar setup page while each widget keeps its own appearance and section visibility.',
+    changes: [
+      'Read the selected badge and preserve cleared CTA text, casino commands and social handles in live rendering.',
+      'Edit CTA, casino and social content on the setup page even when those sections are hidden in the widget.',
+      'Configure the website, avatar and casino command from the Navbar setup page.',
+    ],
+    action: 'Use Live Data in Better Editor to check saved values. Refresh an existing OBS Browser Source after deployment to load the updated renderer.',
+  },
+  {
     id: 'oauth-timeout-history-batch-2026-11-24', date: '2026-11-24', category: 'website',
     title: 'Clearer sign-in failures and lighter legacy history reads',
     summary: 'OAuth sign-in reports a stalled service instead of leaving the login button indefinitely busy, and batched slot best lookups share one legacy history scan.',
